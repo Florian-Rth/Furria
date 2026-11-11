@@ -76,6 +76,26 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_DropTheDeadline_When_ItPassesAtThisVeryMoment()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var pollId = ctx.Club.CalendarPolls.IdOf("cutoff");
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await ReopenAsync(ctx, "ilka", pollId, ct);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        );
+
+        await ctx.Expected.CalendarPoll(pollId).ToHaveVotesUntil(null).AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RefuseReopening_When_TheEntryHasStarted()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -83,7 +103,7 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
         var pollId = ctx.Club.CalendarPolls.IdOf("snack");
 
         await _fixture.AtInstantAsync(
-            AtTheCoffee.AddMinutes(1),
+            AtTheCoffee,
             async () =>
             {
                 var response = await ReopenAsync(ctx, "ilka", pollId, ct);
@@ -170,6 +190,14 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
                                 ["Kaffee", "Tee"],
                                 votesUntil: Now.AddDays(-1),
                                 position: 1
+                            )
+                            .AddCalendarPoll(
+                                "cutoff",
+                                "coffee",
+                                "Wer kommt?",
+                                ["Ich", "Niemand"],
+                                votesUntil: Now,
+                                position: 2
                             )
                     ),
             ct

@@ -48,7 +48,7 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
     <KkAddOnCard
       icon={CALENDAR_ADD_ON_ICONS.signUpList}
       title={CALENDAR_ADD_ON_LABELS.signUpList}
-      meta={card.lineCountLabel}
+      meta={card.metaLabel}
       removeLabel={card.removeLabel}
       onRemove={onRemove}
     >
@@ -56,6 +56,7 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
         name={card.fieldNames.title}
         label={TITLE_LABEL}
         required
+        readOnly={card.isFrozen}
         value={list.title}
         maxLength={SIGN_UP_LIST_TITLE_MAX_LENGTH}
         error={card.titleError.hasError}
@@ -67,6 +68,7 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
         label={HINT_LABEL}
         value={list.hint}
         rows={HINT_ROWS}
+        readOnly={card.isFrozen}
         maxLength={SIGN_UP_LIST_HINT_MAX_LENGTH}
         error={card.hintError.hasError}
         helperText={card.hintError.text}
@@ -82,6 +84,7 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
             onChange={card.setSignUpUntilDay}
             allowEmpty
             emptyLabel={DEADLINE_EMPTY_LABEL}
+            disabled={card.isFrozen}
           />
         }
         end={
@@ -90,7 +93,7 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
             label={DEADLINE_TIME_LABEL}
             value={list.signUpUntilTime}
             onChange={card.setSignUpUntilTime}
-            disabled={card.hasNoDeadline}
+            disabled={card.isDeadlineTimeLocked}
             error={card.deadlineError.hasError}
             helperText={card.deadlineError.text}
           />

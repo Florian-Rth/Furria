@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { toInstant } from '@/lib/day';
 import type { CalendarPollIssueCode } from './calendar-polls';
 import {
+  mayClosePoll,
   mayReopenPoll,
+  toMostVotes,
   toPollForm,
   toPollFormLocks,
   toPollIssues,
@@ -153,8 +155,25 @@ describe('toPollResults', () => {
 });
 
 describe('toPollFormLocks', () => {
+  const OPEN = {
+    isChoiceModeLocked: false,
+    isAnonymityLocked: false,
+    isDeadlineLocked: false,
+  };
+
   it.each([
-    ['a new poll', null, 2, [[], false, false, false, true, false, false]],
+    [
+      'a new poll',
+      null,
+      2,
+      {
+        ...OPEN,
+        lockedOptionIds: [],
+        canRemoveOptions: false,
+        canAddOptions: true,
+        isQuestionLocked: false,
+      },
+    ],
     [
       'a held multiple-choice anonymous poll with votes',
       poll({
@@ -164,41 +183,65 @@ describe('toPollFormLocks', () => {
         options: [option(1, 2), option(2, 0), option(3, 1)],
       }),
       3,
-      [[1, 3], true, true, true, true, true, false],
+      {
+        lockedOptionIds: [1, 3],
+        isChoiceModeLocked: true,
+        isAnonymityLocked: true,
+        canRemoveOptions: true,
+        canAddOptions: true,
+        isQuestionLocked: true,
+        isDeadlineLocked: false,
+      },
     ],
     [
       'a held multiple-choice poll where everyone holds one vote',
-      poll({
-        allowsMultipleChoices: true,
-        voterCount: 3,
-        options: [option(1, 2), option(2, 1)],
-      }),
+      poll({ allowsMultipleChoices: true, voterCount: 3, options: [option(1, 2), option(2, 1)] }),
       2,
-      [[1, 2], false, false, false, true, true, false],
+      {
+        ...OPEN,
+        lockedOptionIds: [1, 2],
+        canRemoveOptions: false,
+        canAddOptions: true,
+        isQuestionLocked: true,
+      },
     ],
     [
       'a held single-choice open poll with votes',
       poll({ voterCount: 1, options: [option(1, 0), option(2, 1)] }),
       20,
-      [[2], false, false, true, false, true, false],
+      {
+        ...OPEN,
+        lockedOptionIds: [2],
+        canRemoveOptions: true,
+        canAddOptions: false,
+        isQuestionLocked: true,
+      },
     ],
     [
       'a held multiple-choice poll without votes',
       poll({ allowsMultipleChoices: true, isAnonymous: true }),
       2,
-      [[], false, false, false, true, false, false],
-    ],
-    [
-      'a closed poll',
-      poll({ isClosed: true, voterCount: 1, options: [option(1, 1), option(2, 0)] }),
-      3,
-      [[1, 2], true, true, false, false, true, true],
+      {
+        ...OPEN,
+        lockedOptionIds: [],
+        canRemoveOptions: false,
+        canAddOptions: true,
+        isQuestionLocked: false,
+      },
     ],
     [
       'a closed poll without votes',
       poll({ isClosed: true }),
       3,
-      [[1, 2], true, true, false, false, true, true],
+      {
+        lockedOptionIds: [1, 2],
+        isChoiceModeLocked: true,
+        isAnonymityLocked: true,
+        canRemoveOptions: false,
+        canAddOptions: false,
+        isQuestionLocked: true,
+        isDeadlineLocked: true,
+      },
     ],
   ] as const)('locks %s', (_case, held, optionCount, expected) => {
     const locks = toPollFormLocks(held, {
@@ -209,15 +252,7 @@ describe('toPollFormLocks', () => {
       })),
     });
 
-    expect([
-      locks.lockedOptionIds,
-      locks.isChoiceModeLocked,
-      locks.isAnonymityLocked,
-      locks.canRemoveOptions,
-      locks.canAddOptions,
-      locks.isQuestionLocked,
-      locks.isDeadlineLocked,
-    ]).toEqual(expected);
+    expect(locks).toMatchObject(expected);
   });
 });
 
@@ -261,6 +296,16 @@ describe('poll round trip', () => {
   });
 });
 
+describe('toMostVotes', () => {
+  it.each([
+    [[], 0],
+    [[option(1, 0), option(2, 0)], 0],
+    [[option(1, 2), option(2, 5), option(3, 1)], 5],
+  ] as const)('finds the most votes among %o', (options, expected) => {
+    expect(toMostVotes(options)).toBe(expected);
+  });
+});
+
 describe('toPollOutcome', () => {
   it.each([
     ['an open poll', poll({ options: [option(1, 3), option(2, 1)] }), { kind: 'none' }],
@@ -268,27 +313,38 @@ describe('toPollOutcome', () => {
     [
       'a closed poll with one leading answer',
       poll({ isClosed: true, options: [option(1, 1), option(2, 3)] }),
-      { kind: 'winner', optionIds: [2], count: 3 },
+      { kind: 'winner', labels: ['Antwort 2'], count: 3 },
     ],
     [
       'a closed poll with a tie',
       poll({ isClosed: true, options: [option(1, 2), option(2, 0), option(3, 2)] }),
-      { kind: 'tie', optionIds: [1, 3], count: 2 },
+      { kind: 'tie', labels: ['Antwort 1', 'Antwort 3'], count: 2 },
     ],
   ] as const)('states the outcome of %s', (_case, held, expected) => {
     expect(toPollOutcome(held)).toEqual(expected);
   });
 });
 
+describe('mayClosePoll', () => {
+  it.each([
+    [true, false, true],
+    [true, true, false],
+    [false, false, false],
+  ] as const)('with mayClose %s and closed %s gives %s', (mayClose, isClosed, expected) => {
+    expect(mayClosePoll({ poll: poll({ isClosed }), mayClose })).toBe(expected);
+  });
+});
+
 describe('mayReopenPoll', () => {
-  const now = new Date('2027-01-15T12:00:00Z');
+  const nowMs = Date.parse('2027-01-15T12:00:00Z');
 
   it.each([
     ['an organiser before the start', true, true, '2027-01-20T15:00:00Z', true],
+    ['an organiser at the start', true, true, '2027-01-15T12:00:00Z', false],
     ['an organiser after the start', true, true, '2027-01-15T11:00:00Z', false],
     ['an organiser on an open poll', true, false, '2027-01-20T15:00:00Z', false],
     ['a member', false, true, '2027-01-20T15:00:00Z', false],
   ] as const)('lets %s reopen: %s', (_case, mayClose, isClosed, startsAt, expected) => {
-    expect(mayReopenPoll(poll({ isClosed }), mayClose, startsAt, now)).toBe(expected);
+    expect(mayReopenPoll({ poll: poll({ isClosed }), mayClose, startsAt, nowMs })).toBe(expected);
   });
 });

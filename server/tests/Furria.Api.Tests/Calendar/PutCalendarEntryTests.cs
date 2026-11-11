@@ -56,6 +56,15 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
+    private static readonly DateTimeOffset EarlyMeetingStart = new(
+        2027,
+        2,
+        10,
+        18,
+        0,
+        0,
+        TimeSpan.Zero
+    );
     private static readonly DateTimeOffset InsideTheAbendprobe = new(
         2027,
         1,
@@ -651,8 +660,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             meetingStart.AddHours(1),
             async () =>
             {
-                var response = await MovePollMeetingAsync(
+                var response = await MoveEntryAsync(
                     ctx,
+                    "poll-meeting",
                     meetingStart.AddDays(7),
                     [
                         Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
@@ -668,9 +678,80 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 
         await ctx
             .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
-            .ToBeClosedBy(null)
+            .ToBeClosedAt(meetingStart, null)
             .CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
-            .ToBeClosedBy(null)
+            .ToBeClosedAt(meetingStart, null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepThePollClosedAtItsDeadline_When_TheEntryMovesLaterAfterTheDeadline()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var deadline = EarlyMeetingStart.AddDays(-1);
+        var early = PollAddOn(
+            ctx.Club.CalendarPolls.IdOf("early"),
+            "Wer fährt?",
+            false,
+            false,
+            ctx,
+            ("early:Ich", "Ich"),
+            ("early:Du", "Du")
+        );
+
+        await _fixture.AtInstantAsync(
+            deadline.AddHours(1),
+            async () =>
+            {
+                var response = await MoveEntryAsync(
+                    ctx,
+                    "early-meeting",
+                    EarlyMeetingStart.AddDays(7),
+                    [early with { Poll = early.Poll! with { VotesUntil = deadline } }],
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("early"))
+            .ToBeClosedAt(deadline, null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheChange_When_AClosedListIsEdited()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var meetingStart = AbendprobeStart.AddDays(6);
+
+        await _fixture.AtInstantAsync(
+            meetingStart.AddHours(1),
+            async () =>
+            {
+                var response = await MoveEntryAsync(
+                    ctx,
+                    "poll-meeting",
+                    meetingStart,
+                    [
+                        Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
+                        Days(ctx),
+                        SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Abbau", null),
+                    ],
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .ToHaveSettings("Aufbau", null, null)
             .AssertAsync(ct);
     }
 
@@ -691,8 +772,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             meetingStart.AddHours(1),
             async () =>
             {
-                var response = await MovePollMeetingAsync(
+                var response = await MoveEntryAsync(
                     ctx,
+                    "poll-meeting",
                     meetingStart,
                     [snack, Days(ctx), Duties(ctx)],
                     ct
@@ -1106,8 +1188,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     private static PutCalendarEntryAddOnDataDto Duties(SeededContext ctx) =>
         SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Aufbau", null);
 
-    private static async Task<HttpResponseMessage> MovePollMeetingAsync(
+    private static async Task<HttpResponseMessage> MoveEntryAsync(
         SeededContext ctx,
+        string entryAlias,
         DateTimeOffset startsAt,
         IReadOnlyList<PutCalendarEntryAddOnDataDto> addOns,
         CancellationToken ct
@@ -1119,7 +1202,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             PutCalendarEntryRequest,
             PutCalendarEntryResponse
         >(
-            ClubOwned(ctx.Club.CalendarEntries.IdOf("poll-meeting"), Farewell) with
+            ClubOwned(ctx.Club.CalendarEntries.IdOf(entryAlias), Farewell) with
             {
                 StartsAt = startsAt,
                 EndsAt = null,
@@ -1344,6 +1427,14 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                             .AddCalendarPollVote("days", "Dienstag", "dana")
                             .AddCalendarPoll("elsewhere", "farewell", DaysQuestion, ["Ja", "Nein"])
                             .AddCalendarSignUpList("duties", "poll-meeting", "Aufbau", position: 2)
+                            .AddCalendarEntry("early-meeting", Farewell, EarlyMeetingStart)
+                            .AddCalendarPoll(
+                                "early",
+                                "early-meeting",
+                                "Wer fährt?",
+                                ["Ich", "Du"],
+                                votesUntil: EarlyMeetingStart.AddDays(-1)
+                            )
                             .AddCalendarSignUpLine("chris-duty", "duties", "chris", "Tische")
                             .AddCalendarSignUpList("elsewhere-list", "farewell", "Geschenk")
                             .AddCalendarDaySchedule("trip-plan", "poll-meeting", null, position: 4)

@@ -204,10 +204,22 @@ interface ClosingFacts {
   closedByLastName: string | null;
 }
 
-const toClosedLabel = (closedLabel: string, closing: ClosingFacts): string =>
+export const toCloserName = (closing: ClosingFacts): string | null =>
   closing.closedByFirstName === null || closing.closedByLastName === null
-    ? closedLabel
-    : `${closedLabel} von ${closing.closedByFirstName} ${closing.closedByLastName}`;
+    ? null
+    : toPersonName({ firstName: closing.closedByFirstName, lastName: closing.closedByLastName });
+
+const toClosedLabel = (closedLabel: string, closing: ClosingFacts): string => {
+  const closer = toCloserName(closing);
+
+  return closer === null ? closedLabel : `${closedLabel} von ${closer}`;
+};
+
+const joinMeta = (parts: readonly (string | undefined)[]): string | undefined => {
+  const shown = parts.filter((part): part is string => part !== undefined);
+
+  return shown.length === 0 ? undefined : shown.join(META_SEPARATOR);
+};
 
 interface PollMetaFacts extends ClosingFacts {
   isClosed: boolean;
@@ -227,13 +239,12 @@ const toPollDeadlineLabel = (poll: PollMetaFacts): string | undefined => {
 
 export const toPollMetaLabel = (poll: PollMetaFacts): string | undefined => {
   const anonymity = poll.isAnonymous ? POLL_ANONYMOUS_LABEL : undefined;
-  const parts = [
+
+  return joinMeta([
     toPollDeadlineLabel(poll),
     anonymity,
     toVoterShareLabel(toAnswerShare(poll.voterCount, poll.concernedCount)),
-  ].filter((part): part is string => part !== undefined);
-
-  return parts.length === 0 ? undefined : parts.join(META_SEPARATOR);
+  ]);
 };
 
 export const toPollVotersLabel = (voters: readonly AudiencePerson[]): string | undefined =>
@@ -242,26 +253,17 @@ export const toPollVotersLabel = (voters: readonly AudiencePerson[]): string | u
 export const toPollCardMetaLabel = (
   held: Pick<CalendarPoll, 'isClosed' | 'voterCount'> | null,
 ): string | undefined => {
-  const voters = toVoterCountLabel(held?.voterCount ?? 0);
+  const closed = held?.isClosed === true ? POLL_CLOSED_LABEL : undefined;
 
-  if (held?.isClosed !== true) {
-    return voters;
-  }
-
-  return voters === undefined
-    ? POLL_CLOSED_LABEL
-    : `${POLL_CLOSED_LABEL}${META_SEPARATOR}${voters}`;
+  return joinMeta([closed, toVoterCountLabel(held?.voterCount ?? 0)]);
 };
 
-export const toPollOutcomeLabel = (
-  outcome: CalendarPollOutcome,
-  labelOf: (optionId: number) => string,
-): string | undefined => {
+export const toPollOutcomeLabel = (outcome: CalendarPollOutcome): string | undefined => {
   if (outcome.kind === 'none') {
     return undefined;
   }
 
-  const answers = outcome.optionIds.map(labelOf).join(', ');
+  const answers = outcome.labels.join(', ');
 
   return outcome.kind === 'winner'
     ? `Ergebnis: ${answers} · ${toVotesLabel(outcome.count)}`
@@ -300,12 +302,18 @@ const toSignUpDeadlineLabel = (list: SignUpListMetaFacts): string | undefined =>
 };
 
 export const toSignUpListMetaLabel = (list: SignUpListMetaFacts): string | undefined => {
-  const parts = [
+  return joinMeta([
     toSignUpDeadlineLabel(list),
     toLineShareLabel(toAnswerShare(list.lines.length, list.concernedCount)),
-  ].filter((part): part is string => part !== undefined);
+  ]);
+};
 
-  return parts.length === 0 ? undefined : parts.join(META_SEPARATOR);
+export const toSignUpListCardMetaLabel = (
+  held: Pick<CalendarSignUpList, 'isClosed' | 'lines'> | null,
+): string | undefined => {
+  const closed = held?.isClosed === true ? SIGN_UP_LIST_CLOSED_LABEL : undefined;
+
+  return joinMeta([closed, toLineCountLabel(held?.lines.length ?? 0)]);
 };
 
 export const toSignUpListCloseQuestion = (title: string): string => `„${title}“ schließen?`;

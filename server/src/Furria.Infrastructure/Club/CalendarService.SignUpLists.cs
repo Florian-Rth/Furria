@@ -129,33 +129,36 @@ public sealed partial class CalendarService
         CancellationToken ct
     )
     {
+        var closerPersonId = await _authorizer.ActivePersonIdAsync(actorAccountId, ct);
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await LockSignUpListAsync(signUpListId, ct);
 
-        var owner = await _dbContext
-            .CalendarSignUpLists.AsNoTracking()
-            .Where(list => list.Id == signUpListId)
-            .Select(list => new SignUpOwnerRow(list.CalendarEntry!.OwnerGroupId))
+        var held = await _dbContext
+            .CalendarSignUpLists.Where(list => list.Id == signUpListId)
+            .Select(list => new
+            {
+                List = list,
+                list.CalendarEntry!.OwnerGroupId,
+                list.CalendarEntry.StartsAt,
+            })
             .SingleOrDefaultAsync(ct);
 
-        if (owner is null)
+        if (held is null)
             return Result.NotFound(UnknownSignUpListMessage);
 
-        if (!await MayOwnAsync(actorAccountId, owner.OwnerGroupId, ct))
+        if (!await MayOwnAsync(actorAccountId, held.OwnerGroupId, ct))
             return Result.Forbidden(NotOwnedMessage);
 
-        var list = await _dbContext.CalendarSignUpLists.SingleOrDefaultAsync(
-            row => row.Id == signUpListId,
-            ct
-        );
-
-        if (list is null)
-            return Result.NotFound(UnknownSignUpListMessage);
-
-        if (list.ClosedAt is null)
+        if (held.List.ClosedAt is null)
         {
-            list.ClosedAt = _timeProvider.GetUtcNow();
-            list.ClosedByPersonId = await _authorizer.ActivePersonIdAsync(actorAccountId, ct);
+            var closing = CalendarAddOnClosing.CloseOf(
+                held.List.SignUpUntil,
+                held.StartsAt,
+                _timeProvider.GetUtcNow(),
+                closerPersonId
+            );
+            held.List.ClosedAt = closing.ClosedAt;
+            held.List.ClosedByPersonId = closing.ClosedByPersonId;
         }
 
         await _dbContext.SaveChangesAsync(ct);

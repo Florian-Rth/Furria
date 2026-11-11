@@ -63,7 +63,7 @@ export const CalendarPollCard: FC<CalendarPollCardProps> = ({
     <KkAddOnCard
       icon={CALENDAR_ADD_ON_ICONS.poll}
       title={CALENDAR_ADD_ON_LABELS.poll}
-      meta={card.voterCountLabel}
+      meta={card.metaLabel}
       removeLabel={card.removeLabel}
       onRemove={onRemove}
     >

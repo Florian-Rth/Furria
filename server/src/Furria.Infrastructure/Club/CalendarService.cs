@@ -307,23 +307,16 @@ public sealed partial class CalendarService
         CalendarEntryAddOns.Attach(entry, addOnKinds);
         Reconcile(entry, participatingGroupIds, audience);
 
+        var addOnClock = _timeProvider.GetUtcNow();
+
         if (
-            await _dbContext.ReconcilePollsAsync(
-                entry,
-                command.AddOns,
-                _timeProvider.GetUtcNow(),
-                ct
-            ) is
+            await _dbContext.ReconcilePollsAsync(entry, command.AddOns, addOnClock, ct) is
             { } pollRefusal
         )
             return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
 
         if (
-            CalendarSignUpListRecords.ReconcileSignUpLists(
-                entry,
-                command.AddOns,
-                _timeProvider.GetUtcNow()
-            ) is
+            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns, addOnClock) is
             { } listRefusal
         )
             return Result<CalendarEntryWriteResult>.Validation(listRefusal);
@@ -409,23 +402,16 @@ public sealed partial class CalendarService
         if (refusal is not null)
             return Result<CalendarEntryWriteResult>.Validation(refusal);
 
+        var addOnClock = _timeProvider.GetUtcNow();
+
         if (
-            await _dbContext.ReconcilePollsAsync(
-                entry,
-                command.AddOns,
-                _timeProvider.GetUtcNow(),
-                ct
-            ) is
+            await _dbContext.ReconcilePollsAsync(entry, command.AddOns, addOnClock, ct) is
             { } pollRefusal
         )
             return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
 
         if (
-            CalendarSignUpListRecords.ReconcileSignUpLists(
-                entry,
-                command.AddOns,
-                _timeProvider.GetUtcNow()
-            ) is
+            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns, addOnClock) is
             { } listRefusal
         )
             return Result<CalendarEntryWriteResult>.Validation(listRefusal);

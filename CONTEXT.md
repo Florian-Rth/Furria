@@ -1097,7 +1097,7 @@ recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further 
 - **Sign-up list** — a list everyone who may answer the entry may add to: one short line per person,
   always named, its text optional, which only she may change or delete afterwards (e.g. who
   brings what to the summer party). Whoever may edit the entry may remove a line, never rewrite it. It has a title and an
-  optional hint, closes like a poll, an entry may hold several, and it is never asked on Start. It
+  optional hint, closes and stays closed like a poll (but is never reopened), an entry may hold several, and it is never asked on Start. It
   has no prepared slots.
 - **Day schedule** — the plan of a long day: steps of a time and a short text, an optional title,
   always shown sorted by time. A step belongs to a day of the entry (counted from its start day),

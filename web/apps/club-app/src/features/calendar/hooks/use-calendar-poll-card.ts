@@ -46,7 +46,7 @@ export interface CalendarPollFieldNames {
 export interface CalendarPollCardControl {
   fieldNames: CalendarPollFieldNames;
   removeLabel: string;
-  voterCountLabel: string | undefined;
+  metaLabel: string | undefined;
   questionError: CalendarFieldError;
   deadlineError: CalendarFieldError;
   rows: CalendarPollOptionRowControl[];
@@ -126,7 +126,7 @@ export const useCalendarPollCard = ({
       votesUntilTime: deadlinePath,
     },
     removeLabel: toPollRemoveLabel(poll.question),
-    voterCountLabel: toPollCardMetaLabel(held),
+    metaLabel: toPollCardMetaLabel(held),
     questionError: errorAt(questionPath),
     deadlineError: errorAt(deadlinePath),
     rows,

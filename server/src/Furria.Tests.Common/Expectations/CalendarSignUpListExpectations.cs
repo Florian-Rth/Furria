@@ -59,6 +59,16 @@ public sealed class CalendarSignUpListExpectations
                 Assert.Equal(isClosed, (await SingleAsync(dbContext, ct)).ClosedAt is not null)
         );
 
+    public Expected ToBeClosedAt(DateTimeOffset closedAt, int? personId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var list = await SingleAsync(dbContext, ct);
+                Assert.Equal(closedAt, list.ClosedAt);
+                Assert.Equal(personId, list.ClosedByPersonId);
+            }
+        );
+
     public Expected ToBeClosedBy(int? personId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

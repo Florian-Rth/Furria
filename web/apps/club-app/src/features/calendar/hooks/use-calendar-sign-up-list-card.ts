@@ -2,7 +2,7 @@ import { useFormState } from 'react-hook-form';
 import { hasNoDeadline } from '../calendar-deadlines';
 import type { CalendarFieldError } from '../calendar-field-error';
 import { toFieldError } from '../calendar-field-error';
-import { toLineCountLabel, toSignUpListRemoveLabel } from '../calendar-labels';
+import { toSignUpListCardMetaLabel, toSignUpListRemoveLabel } from '../calendar-labels';
 import type { SignUpListFieldPath } from '../calendar-sign-up-lists';
 import { toHeldSignUpList, withSignUpUntilDay } from '../calendar-sign-up-lists';
 import type { CalendarEntry, CalendarSignUpListForm } from '../schemas';
@@ -18,11 +18,12 @@ export interface CalendarSignUpListFieldNames {
 export interface CalendarSignUpListCardControl {
   fieldNames: CalendarSignUpListFieldNames;
   removeLabel: string;
-  lineCountLabel: string | undefined;
+  metaLabel: string | undefined;
+  isFrozen: boolean;
   titleError: CalendarFieldError;
   hintError: CalendarFieldError;
   deadlineError: CalendarFieldError;
-  hasNoDeadline: boolean;
+  isDeadlineTimeLocked: boolean;
   setTitle: (title: string) => void;
   setHint: (hint: string) => void;
   setSignUpUntilDay: (day: string | null) => void;
@@ -51,6 +52,7 @@ export const useCalendarSignUpListCard = ({
   const errorAt = (path: SignUpListFieldPath): CalendarFieldError =>
     toFieldError(control.form.getFieldState(path, formState).error?.message);
   const held = toHeldSignUpList(entry?.addOns ?? null, list.signUpListId);
+  const isFrozen = held?.isClosed === true;
 
   const change = (edit: (current: CalendarSignUpListForm) => CalendarSignUpListForm): void => {
     control.updateSignUpList(cardKey, edit);
@@ -64,11 +66,12 @@ export const useCalendarSignUpListCard = ({
       signUpUntilTime: deadlinePath,
     },
     removeLabel: toSignUpListRemoveLabel(list.title),
-    lineCountLabel: toLineCountLabel(held?.lines.length ?? 0),
+    metaLabel: toSignUpListCardMetaLabel(held),
+    isFrozen,
     titleError: errorAt(titlePath),
     hintError: errorAt(hintPath),
     deadlineError: errorAt(deadlinePath),
-    hasNoDeadline: hasNoDeadline(list.signUpUntilDay),
+    isDeadlineTimeLocked: isFrozen || hasNoDeadline(list.signUpUntilDay),
     setTitle: (title) => {
       change((current) => ({ ...current, title }));
       control.recheckSignUpListField(titlePath);

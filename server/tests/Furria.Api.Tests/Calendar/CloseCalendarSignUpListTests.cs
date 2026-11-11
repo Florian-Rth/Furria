@@ -60,6 +60,33 @@ public sealed class CloseCalendarSignUpListTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    public static TheoryData<string, DateTimeOffset> ListsClosedByTime =>
+        new() { { "deadline", LastWeek }, { "late", AtTheBreakfast } };
+
+    [Theory]
+    [MemberData(nameof(ListsClosedByTime))]
+    public async Task Should_StampTheMomentItClosedWithoutACloser_When_TheListHadClosedByTime(
+        string listAlias,
+        DateTimeOffset closedAt
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var listId = ctx.Club.CalendarSignUpLists.IdOf(listAlias);
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await CloseAsync(ctx, "ilka", listId, ct);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        );
+
+        await ctx.Expected.CalendarSignUpList(listId).ToBeClosedAt(closedAt, null).AssertAsync(ct);
+    }
+
     [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerMayNotEditTheEntry()
     {

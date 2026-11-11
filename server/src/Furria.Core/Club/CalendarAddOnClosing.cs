@@ -29,6 +29,17 @@ public static class CalendarAddOnClosing
     }
 
     [Pure]
+    public static CalendarAddOnClose CloseOf(
+        DateTimeOffset? deadline,
+        DateTimeOffset entryStartsAt,
+        DateTimeOffset now,
+        int? closerPersonId
+    ) =>
+        StampOf(deadline, entryStartsAt, now) is { } closedAt
+            ? new CalendarAddOnClose(closedAt, null)
+            : new CalendarAddOnClose(now, closerPersonId);
+
+    [Pure]
     public static DateTimeOffset EntryEndOf(DateTimeOffset startsAt, DateTimeOffset? endsAt) =>
         endsAt ?? startsAt.AddHours(CalendarDefaults.OpenEndedHours);
 

@@ -9,6 +9,8 @@ namespace Furria.Infrastructure.Club;
 internal static class CalendarSignUpListRecords
 {
     private const string UnknownSignUpListMessage = "Diese Eintragsliste gibt es nicht.";
+    private const string ClosedSignUpListEditMessage =
+        "Eine geschlossene Eintragsliste kann nicht mehr geändert werden.";
 
     private static readonly IReadOnlyDictionary<
         int,
@@ -28,6 +30,9 @@ internal static class CalendarSignUpListRecords
 
         if (!wanted.All(placed => IsNewOrHeld(entry, placed)))
             return UnknownSignUpListMessage;
+
+        if (wanted.Any(placed => ChangesAClosedList(entry, placed)))
+            return ClosedSignUpListEditMessage;
 
         foreach (var dropped in entry.SignUpLists.Where(list => !IsKept(list, wanted)).ToList())
             entry.SignUpLists.Remove(dropped);
@@ -149,6 +154,16 @@ internal static class CalendarSignUpListRecords
     private static bool IsNewOrHeld(CalendarEntry entry, WantedSignUpList placed) =>
         placed.List.SignUpListId is not { } listId
         || entry.SignUpLists.Any(list => list.Id == listId);
+
+    [Pure]
+    private static bool ChangesAClosedList(CalendarEntry entry, WantedSignUpList placed) =>
+        entry.SignUpLists.FirstOrDefault(list => list.Id == placed.List.SignUpListId)
+            is { ClosedAt: not null } held
+        && (
+            held.Title != placed.List.Title.Trim()
+            || held.Hint != HintOf(placed.List.Hint)
+            || held.SignUpUntil != placed.List.SignUpUntil
+        );
 
     [Pure]
     private static bool IsKept(CalendarSignUpList held, IReadOnlyList<WantedSignUpList> wanted) =>

@@ -437,8 +437,11 @@ Decisions taken while building phase 10:
   a passed *Abstimmen bis* is cleared with it. Once the entry has started a poll cannot reopen
   (closing at the start is not a deadline that can be dropped), so the server refuses and the
   button is hidden. Lists have no reopen.
-- **Frozen polls:** a closed poll accepts only an unchanged resubmission or its removal; its form
-  fields are read-only. The question is frozen once votes exist.
+- **Frozen polls and lists:** a closed poll or list accepts only an unchanged resubmission or its
+  removal (removal still asks first when answers exist); its form fields are read-only. A poll's
+  question is frozen once votes exist. A closed list cannot be reopened.
+- **Closing by hand after time ran out:** closing a poll or list that had already closed by its
+  deadline or by the entry start stamps the moment it closed, without a closer.
 - **Result line:** a closed poll with votes states *Ergebnis: … · n Stimmen* or
   *Gleichstand: …, … · je n Stimmen*.
 

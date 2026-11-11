@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   toAnswerShare,
+  toCloserName,
   toScheduleDayLabel,
   toScheduleDayOptions,
   toStartDayQuickChoices,
@@ -44,5 +45,15 @@ describe('toAnswerShare', () => {
     { count: 2, concernedCount: null, expected: { kind: 'count', count: 2 } },
   ])('shares $count of $concernedCount', ({ count, concernedCount, expected }) => {
     expect(toAnswerShare(count, concernedCount)).toEqual(expected);
+  });
+});
+
+describe('toCloserName', () => {
+  it.each([
+    [{ closedByFirstName: 'Ilka', closedByLastName: 'Kalender' }, 'Ilka Kalender'],
+    [{ closedByFirstName: null, closedByLastName: null }, null],
+    [{ closedByFirstName: 'Ilka', closedByLastName: null }, null],
+  ] as const)('names the closer of %o', (closing, expected) => {
+    expect(toCloserName(closing)).toBe(expected);
   });
 });

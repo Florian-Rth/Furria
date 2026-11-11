@@ -14,6 +14,10 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
 
     private static readonly DateTimeOffset AtTheCoffee = new(2027, 1, 20, 15, 0, 0, TimeSpan.Zero);
 
+    private static readonly DateTimeOffset Now = new(2027, 1, 15, 12, 0, 0, TimeSpan.Zero);
+
+    private static readonly DateTimeOffset LastWeek = new(2027, 1, 8, 12, 0, 0, TimeSpan.Zero);
+
     private readonly ApiTestFixture _fixture;
 
     public CloseCalendarPollTests(ApiTestFixture fixture)
@@ -28,15 +32,49 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         var pollId = ctx.Club.CalendarPolls.IdOf("snack");
 
-        var response = await CloseAsync(ctx, "ilka", pollId, ct);
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await CloseAsync(ctx, "ilka", pollId, ct);
 
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        );
+
         await ctx
             .Expected.CalendarPoll(pollId)
-            .ToBeClosedBy(ctx.Identity.People.IdOf("ilka"))
+            .ToBeClosedAt(Now, ctx.Identity.People.IdOf("ilka"))
             .CalendarPoll(pollId)
             .ToHaveVoteCount(1)
             .AssertAsync(ct);
+    }
+
+    public static TheoryData<string, DateTimeOffset> PollsClosedByTime =>
+        new() { { "drinks", LastWeek }, { "sausages", LastWeek.AddDays(1) } };
+
+    [Theory]
+    [MemberData(nameof(PollsClosedByTime))]
+    public async Task Should_StampTheMomentItClosedWithoutACloser_When_ThePollHadClosedByTime(
+        string pollAlias,
+        DateTimeOffset closedAt
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var pollId = ctx.Club.CalendarPolls.IdOf(pollAlias);
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await CloseAsync(ctx, "ilka", pollId, ct);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        );
+
+        await ctx.Expected.CalendarPoll(pollId).ToBeClosedAt(closedAt, null).AssertAsync(ct);
     }
 
     [Fact]
@@ -97,6 +135,21 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
                                 ["Kuchen", "Obst"]
                             )
                             .AddCalendarPollVote("snack", "Kuchen", "chris")
+                            .AddCalendarPoll(
+                                "drinks",
+                                "coffee",
+                                "Was trinkst du?",
+                                ["Kaffee", "Tee"],
+                                votesUntil: LastWeek,
+                                position: 1
+                            )
+                            .AddCalendarEntry("brunch", "Brunch", LastWeek.AddDays(1))
+                            .AddCalendarPoll(
+                                "sausages",
+                                "brunch",
+                                "Wie viele Würste?",
+                                ["Eine", "Zwei"]
+                            )
                     ),
             ct
         );

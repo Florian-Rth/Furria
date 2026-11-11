@@ -79,30 +79,36 @@ public sealed partial class CalendarService
 
     public async Task<Result> ClosePollAsync(int actorAccountId, int pollId, CancellationToken ct)
     {
+        var closerPersonId = await _authorizer.ActivePersonIdAsync(actorAccountId, ct);
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await LockPollAsync(pollId, ct);
 
-        var ownerGroup = await _dbContext
-            .CalendarPolls.AsNoTracking()
-            .Where(poll => poll.Id == pollId)
-            .Select(poll => new PollOwnerRow(poll.CalendarEntry!.OwnerGroupId))
+        var held = await _dbContext
+            .CalendarPolls.Where(poll => poll.Id == pollId)
+            .Select(poll => new
+            {
+                Poll = poll,
+                poll.CalendarEntry!.OwnerGroupId,
+                poll.CalendarEntry.StartsAt,
+            })
             .SingleOrDefaultAsync(ct);
 
-        if (ownerGroup is null)
+        if (held is null)
             return Result.NotFound(UnknownPollMessage);
 
-        if (!await MayOwnAsync(actorAccountId, ownerGroup.OwnerGroupId, ct))
+        if (!await MayOwnAsync(actorAccountId, held.OwnerGroupId, ct))
             return Result.Forbidden(NotOwnedMessage);
 
-        var poll = await _dbContext.CalendarPolls.SingleOrDefaultAsync(row => row.Id == pollId, ct);
-
-        if (poll is null)
-            return Result.NotFound(UnknownPollMessage);
-
-        if (poll.ClosedAt is null)
+        if (held.Poll.ClosedAt is null)
         {
-            poll.ClosedAt = _timeProvider.GetUtcNow();
-            poll.ClosedByPersonId = await _authorizer.ActivePersonIdAsync(actorAccountId, ct);
+            var closing = CalendarAddOnClosing.CloseOf(
+                held.Poll.VotesUntil,
+                held.StartsAt,
+                _timeProvider.GetUtcNow(),
+                closerPersonId
+            );
+            held.Poll.ClosedAt = closing.ClosedAt;
+            held.Poll.ClosedByPersonId = closing.ClosedByPersonId;
         }
 
         await _dbContext.SaveChangesAsync(ct);
@@ -200,8 +206,6 @@ public sealed partial class CalendarService
                 poll.Options.Select(option => option.Id).ToList()
             ))
             .SingleOrDefaultAsync(ct);
-
-    private sealed record PollOwnerRow(int? OwnerGroupId);
 
     private sealed record PollBallot(
         bool AllowsMultipleChoices,

@@ -135,7 +135,7 @@ export interface PollVoteInput {
   optionIds: number[];
 }
 
-export interface PollClosingInput {
+export interface PollInput {
   pollId: number;
 }
 
@@ -147,20 +147,21 @@ export const usePollVoteMutation = (): UseMutationResult<void, Error, PollVoteIn
     notice: { failure: () => POLL_VOTE_FAILED_MESSAGE },
   });
 
-export const usePollClosingMutation = (): UseMutationResult<void, Error, PollClosingInput> =>
+const usePollStateMutation = (
+  request: (pollId: number, accessToken: string) => Promise<void>,
+  failureMessage: string,
+): UseMutationResult<void, Error, PollInput> =>
   useApiMutation({
-    request: ({ pollId }: PollClosingInput, accessToken) => requestPollClosing(pollId, accessToken),
+    request: ({ pollId }: PollInput, accessToken) => request(pollId, accessToken),
     changes: ['calendarEntry'],
-    notice: { failure: () => POLL_CLOSE_FAILED_MESSAGE },
+    notice: { failure: () => failureMessage },
   });
 
-export const usePollReopeningMutation = (): UseMutationResult<void, Error, PollClosingInput> =>
-  useApiMutation({
-    request: ({ pollId }: PollClosingInput, accessToken) =>
-      requestPollReopening(pollId, accessToken),
-    changes: ['calendarEntry'],
-    notice: { failure: () => POLL_REOPEN_FAILED_MESSAGE },
-  });
+export const usePollClosingMutation = (): UseMutationResult<void, Error, PollInput> =>
+  usePollStateMutation(requestPollClosing, POLL_CLOSE_FAILED_MESSAGE);
+
+export const usePollReopeningMutation = (): UseMutationResult<void, Error, PollInput> =>
+  usePollStateMutation(requestPollReopening, POLL_REOPEN_FAILED_MESSAGE);
 
 export interface OwnSignUpLineInput {
   signUpListId: number;

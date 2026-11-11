@@ -12,6 +12,7 @@ import type {
   CalendarEntryAddOn,
   CalendarPoll,
   CalendarPollForm,
+  CalendarPollOption,
   CalendarPollOptionForm,
 } from './schemas';
 
@@ -272,7 +273,7 @@ export const toPollResults = (
   const percents = poll.allowsMultipleChoices
     ? toPlainPercents(counts, poll.voterCount)
     : toBalancedPercents(counts, totalVotes);
-  const most = Math.max(0, ...counts);
+  const most = toMostVotes(poll.options);
 
   return poll.options.map((option, index) => ({
     optionId: option.optionId,
@@ -287,32 +288,44 @@ export const toPollResults = (
 
 export type CalendarPollOutcome =
   | { kind: 'none' }
-  | { kind: 'winner' | 'tie'; optionIds: number[]; count: number };
+  | { kind: 'winner' | 'tie'; labels: string[]; count: number };
 
 const NO_OUTCOME: CalendarPollOutcome = { kind: 'none' };
+
+export const toMostVotes = (options: readonly Pick<CalendarPollOption, 'voteCount'>[]): number =>
+  Math.max(0, ...options.map((option) => option.voteCount));
 
 export const toPollOutcome = (
   poll: Pick<CalendarPoll, 'isClosed' | 'options'>,
 ): CalendarPollOutcome => {
-  const most = Math.max(0, ...poll.options.map((option) => option.voteCount));
+  const most = toMostVotes(poll.options);
 
   if (!poll.isClosed || most === 0) {
     return NO_OUTCOME;
   }
 
-  const optionIds = poll.options
+  const labels = poll.options
     .filter((option) => option.voteCount === most)
-    .map((option) => option.optionId);
+    .map((option) => option.label);
 
-  return { kind: optionIds.length === 1 ? 'winner' : 'tie', optionIds, count: most };
+  return { kind: labels.length === 1 ? 'winner' : 'tie', labels, count: most };
 };
 
-export const mayReopenPoll = (
-  poll: Pick<CalendarPoll, 'isClosed'>,
-  mayClose: boolean,
-  entryStartsAt: string,
-  now: Date,
-): boolean => mayClose && poll.isClosed && now.getTime() < Date.parse(entryStartsAt);
+interface PollModeration {
+  poll: Pick<CalendarPoll, 'isClosed'>;
+  mayClose: boolean;
+}
+
+interface PollReopening extends PollModeration {
+  startsAt: string;
+  nowMs: number;
+}
+
+export const mayClosePoll = ({ poll, mayClose }: PollModeration): boolean =>
+  mayClose && !poll.isClosed;
+
+export const mayReopenPoll = ({ poll, mayClose, startsAt, nowMs }: PollReopening): boolean =>
+  mayClose && poll.isClosed && nowMs < Date.parse(startsAt);
 
 export const toDiscardedVoterCount = (
   addOns: readonly CalendarEntryAddOn[] | null,
