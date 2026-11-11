@@ -7,7 +7,13 @@ on:
 
 jobs:
   backend:
+    name: backend (shard ${{ matrix.shard }} of 4)
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1, 2, 3]
     defaults:
       run:
         working-directory: server
@@ -17,13 +23,31 @@ jobs:
         with:
           dotnet-version: 10.0.x
       - name: Install libvips and ffmpeg (the media worker's tests render real photos and videos)
+        timeout-minutes: 5
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends libvips42t64 libheif-plugin-libde265 ffmpeg
       - run: dotnet tool restore
       - run: dotnet build
-      - run: dotnet csharpier check .
-      - run: dotnet test # integration tests run against Testcontainers Postgres (Docker is preinstalled on ubuntu-latest)
+      - if: matrix.shard == 0
+        run: dotnet csharpier check .
+      - if: matrix.shard == 0
+        run: dotnet test tests/Furria.Tests.Analyzers.Tests --no-build
+      # Every fourth test class (sorted by name) runs in this shard, against Testcontainers
+      # Postgres (Docker is preinstalled on ubuntu-latest).
+      - name: Integration tests of shard ${{ matrix.shard }}
+        run: |
+          mapfile -t classes < <(
+            dotnet run --project tests/Furria.Api.Tests --no-build -- -list classes \
+              | grep '^Furria\.' | sort | awk -v shard=${{ matrix.shard }} 'NR % 4 == shard'
+          )
+          if [ "${#classes[@]}" -eq 0 ]; then
+            echo "No test classes found for this shard." >&2
+            exit 1
+          fi
+          filters=()
+          for class in "${classes[@]}"; do filters+=(-class "$class"); done
+          dotnet run --project tests/Furria.Api.Tests --no-build -- "${filters[@]}"
 
   web:
     runs-on: ubuntu-latest

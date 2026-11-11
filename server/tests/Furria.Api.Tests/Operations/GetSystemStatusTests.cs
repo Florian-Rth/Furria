@@ -159,8 +159,7 @@ public sealed class GetSystemStatusTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
         var now = _fixture.TimeProvider.GetUtcNow();
-        await ApiTestFixture.StageOutboxMailAsync(
-            _fixture,
+        await _fixture.StageOutboxMailAsync(
             new OutboxMail
             {
                 Template = MailTemplate.PasswordReset,
