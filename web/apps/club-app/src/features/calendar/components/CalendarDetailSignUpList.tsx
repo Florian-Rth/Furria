@@ -1,7 +1,5 @@
-import { KkButton } from '@furria/ui/KkButton';
 import { KkSignUpSheet } from '@furria/ui/KkSignUpSheet';
 import type { FC } from 'react';
-import { SIGN_UP_LINE_TEXT_MAX_LENGTH } from '../calendar-sign-up-lists';
 import { useCalendarSignUpLineRemoval } from '../hooks/use-calendar-sign-up-line-removal';
 import { useCalendarSignUpList } from '../hooks/use-calendar-sign-up-list';
 import { useCalendarSignUpListClosing } from '../hooks/use-calendar-sign-up-list-closing';
@@ -11,11 +9,10 @@ import { CalendarNamesSheet } from './CalendarNamesSheet';
 import { CalendarNotAnsweredRoll } from './CalendarNotAnsweredRoll';
 import { CalendarReminderAction } from './CalendarReminderAction';
 import { CalendarSignUpLineRemovalDialog } from './CalendarSignUpLineRemovalDialog';
+import { CalendarSignUpOwnBox } from './CalendarSignUpOwnBox';
 
-const LINES_LABEL = 'Einträge';
-const OWN_LINE_LABEL = 'Dein Eintrag';
+const LINES_HEADING = 'Eingetragen';
 const CLOSE_LABEL = 'Liste schließen';
-const ACTION_SX = { alignSelf: 'flex-start' } as const;
 
 interface CalendarDetailSignUpListProps {
   list: CalendarSignUpList;
@@ -39,8 +36,6 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
       key={line.lineId}
       name={line.name}
       text={line.text}
-      own={line.isOwn}
-      ownLabel={OWN_LINE_LABEL}
       removeLabel={line.removeLabel}
       removeDisabled={control.isBusy}
       onRemove={line.askRemoval}
@@ -48,31 +43,14 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
   ));
   const linesList =
     lines.length === 0 ? null : (
-      <KkSignUpSheet.Lines label={LINES_LABEL} busy={control.isBusy}>
+      <KkSignUpSheet.Lines heading={LINES_HEADING} busy={control.isBusy}>
         {lines}
       </KkSignUpSheet.Lines>
     );
   const allLines =
     control.allLinesLabel === undefined ? null : (
-      <KkButton variant="text" size="small" onClick={control.openAllLines} sx={ACTION_SX}>
-        {control.allLinesLabel}
-      </KkButton>
+      <KkSignUpSheet.More label={control.allLinesLabel} onClick={control.openAllLines} />
     );
-  const ownLineField = control.takesLines ? (
-    <KkSignUpSheet.Entry
-      name={entryName}
-      label={OWN_LINE_LABEL}
-      value={control.draft}
-      maxLength={SIGN_UP_LINE_TEXT_MAX_LENGTH}
-      saveLabel={control.saveLabel}
-      canSave={control.canSave}
-      saving={control.isBusy}
-      removeLabel={control.deleteOwnLabel}
-      onChange={control.setDraft}
-      onSave={control.save}
-      onRemove={control.deleteOwnLine}
-    />
-  ) : null;
   const closeAction = closing.canClose ? (
     <CalendarCloseAction
       label={CLOSE_LABEL}
@@ -84,7 +62,8 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
 
   return (
     <KkSignUpSheet label={control.title}>
-      <KkSignUpSheet.Head title={control.title} hint={control.hint} meta={control.meta} />
+      <KkSignUpSheet.Head title={control.title} count={control.count} note={control.note} />
+      <CalendarSignUpOwnBox control={control} fieldName={entryName} />
       {linesList}
       {allLines}
       <CalendarNotAnsweredRoll
@@ -94,11 +73,11 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
       />
       <CalendarNamesSheet
         title={control.title}
+        count={control.sheetCount}
         tabs={control.tabs}
         sheet={control.sheet}
         openAction={<CalendarReminderAction source={control.reminder} />}
       />
-      {ownLineField}
       {closeAction}
       <CalendarSignUpLineRemovalDialog
         open={isRemovalOpen}

@@ -4,6 +4,7 @@ import {
   toCloserName,
   toScheduleDayLabel,
   toScheduleDayOptions,
+  toSignUpListCountLabel,
   toStartDayQuickChoices,
 } from './calendar-labels';
 
@@ -55,5 +56,24 @@ describe('toCloserName', () => {
     [{ closedByFirstName: 'Ilka', closedByLastName: null }, null],
   ] as const)('names the closer of %o', (closing, expected) => {
     expect(toCloserName(closing)).toBe(expected);
+  });
+});
+
+describe('toSignUpListCountLabel', () => {
+  it.each([
+    [3, 17, '3 von 17'],
+    [0, 17, '0 von 17'],
+    [0, null, undefined],
+  ])('%i lines of %s concerned → %s', (count, concernedCount, expected) => {
+    const lines = Array.from({ length: count }, (_, index) => ({
+      lineId: index + 1,
+      personId: index + 1,
+      firstName: 'Anna',
+      lastName: 'Berg',
+      text: null,
+      byViewer: false,
+    }));
+
+    expect(toSignUpListCountLabel({ lines, concernedCount })).toBe(expected);
   });
 });

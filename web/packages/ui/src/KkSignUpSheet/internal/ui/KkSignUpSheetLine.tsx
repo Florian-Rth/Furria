@@ -2,55 +2,57 @@ import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { inkWash } from '../../../internal/ink-wash';
+import { rowDividerTop } from '../../../internal/row-divider';
 import { KkIconButton } from '../../../KkIconButton';
-import { KkVisuallyHidden } from '../../../KkVisuallyHidden';
 import type { KkSx } from '../../../kk-sx';
-import { kkTokens } from '../../../tokens';
+
+const SINGLE_LINE = {
+  minWidth: 0,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+} as const;
+const NAME_MAX_SHARE = '45%';
 
 interface KkSignUpSheetLineProps {
   name: string;
   text?: string;
-  own?: boolean;
-  ownLabel?: string;
   removeLabel?: string;
   removeDisabled?: boolean;
   onRemove?: () => void;
   sx?: KkSx;
 }
 
+const linePaint = (theme: Theme): CSSObject => ({
+  ...rowDividerTop,
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: theme.spacing(1.5),
+  minWidth: 0,
+  minHeight: theme.spacing(5),
+  paddingBlock: theme.spacing(0.5),
+});
+
 export const KkSignUpSheetLine: FC<KkSignUpSheetLineProps> = ({
   name,
   text,
-  own = false,
-  ownLabel,
   removeLabel,
   removeDisabled = false,
   onRemove,
   sx,
 }) => {
-  const linePaint = (theme: Theme): CSSObject => ({
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: theme.spacing(1),
-    minWidth: 0,
-    padding: theme.spacing(0.5, 1),
-    borderRadius: `${kkTokens.radius.bar * 2}px`,
-    backgroundColor: own ? inkWash(theme, '7%') : 'transparent',
-  });
-  const textLine =
+  const lead = text ?? name;
+  const byline =
     text === undefined ? null : (
       <Typography
         component="span"
         variant="body2"
-        sx={{ color: 'text.secondary', overflowWrap: 'anywhere' }}
+        sx={{ ...SINGLE_LINE, flexShrink: 0, maxWidth: NAME_MAX_SHARE, color: 'text.secondary' }}
       >
-        {text}
+        {name}
       </Typography>
     );
-  const ownMark =
-    own && ownLabel !== undefined ? <KkVisuallyHidden>{ownLabel}</KkVisuallyHidden> : null;
   const removeButton =
     removeLabel === undefined || onRemove === undefined ? null : (
       <KkIconButton
@@ -66,20 +68,16 @@ export const KkSignUpSheetLine: FC<KkSignUpSheetLineProps> = ({
     <Stack
       component="li"
       data-kk-sign-up-sheet-line
-      data-kk-sign-up-sheet-own={own}
       sx={[linePaint, ...(Array.isArray(sx) ? sx : [sx])]}
     >
-      <Stack sx={{ flexGrow: 1, minWidth: 0 }}>
-        <Typography
-          component="span"
-          variant="body2"
-          sx={{ fontWeight: own ? 800 : 600, overflowWrap: 'anywhere' }}
-        >
-          {name}
-        </Typography>
-        {ownMark}
-        {textLine}
-      </Stack>
+      <Typography
+        component="span"
+        variant="body2"
+        sx={{ ...SINGLE_LINE, flexGrow: 1, fontWeight: 700 }}
+      >
+        {lead}
+      </Typography>
+      {byline}
       {removeButton}
     </Stack>
   );

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CalendarSignUpListIssueCode } from './calendar-sign-up-lists';
 import {
   toLineText,
+  toOwnLineBox,
   toOwnLineState,
   toSignUpLineRows,
   toSignUpListForm,
@@ -183,5 +184,20 @@ describe('toSignUpLineRows', () => {
       [4, false],
       [2, true],
     ]);
+  });
+});
+
+describe('toOwnLineBox', () => {
+  it.each([
+    [{ isClosed: false, mayAnswer: true, hasLine: false, isEditing: false }, 'entry'],
+    [{ isClosed: false, mayAnswer: true, hasLine: false, isEditing: true }, 'entry'],
+    [{ isClosed: false, mayAnswer: true, hasLine: true, isEditing: false }, 'line'],
+    [{ isClosed: false, mayAnswer: true, hasLine: true, isEditing: true }, 'editing'],
+    [{ isClosed: true, mayAnswer: true, hasLine: true, isEditing: true }, 'readOnly'],
+    [{ isClosed: true, mayAnswer: true, hasLine: false, isEditing: false }, 'hidden'],
+    [{ isClosed: false, mayAnswer: false, hasLine: true, isEditing: false }, 'readOnly'],
+    [{ isClosed: false, mayAnswer: false, hasLine: false, isEditing: false }, 'hidden'],
+  ] as const)('%o shows %s', (facts, expected) => {
+    expect(toOwnLineBox(facts)).toBe(expected);
   });
 });

@@ -15,6 +15,7 @@ const OWN_LABEL = '(du)';
 
 interface CalendarNamesSheetProps {
   title: string;
+  count?: string;
   tabs: readonly NamesTab[];
   sheet: NamesSheetControl;
   openAction?: ReactNode;
@@ -22,6 +23,7 @@ interface CalendarNamesSheetProps {
 
 export const CalendarNamesSheet: FC<CalendarNamesSheetProps> = ({
   title,
+  count,
   tabs,
   sheet,
   openAction = null,
@@ -49,6 +51,7 @@ export const CalendarNamesSheet: FC<CalendarNamesSheetProps> = ({
       onChange={sheet.setQuery}
     />
   ) : null;
+  const titleCount = view.hasTabs ? undefined : count;
   const action = view.isOpenTab ? openAction : null;
   const rows = view.rows.map((row) => (
     <KkNamesSheet.Row
@@ -69,7 +72,7 @@ export const CalendarNamesSheet: FC<CalendarNamesSheetProps> = ({
   return (
     <KkNamesSheet open={sheet.isOpen} label={title} closeLabel={CLOSE_LABEL} onClose={sheet.close}>
       <KkNamesSheet.Head>
-        <KkNamesSheet.Title title={title} />
+        <KkNamesSheet.Title title={title} count={titleCount} />
         {tabBar}
         {action}
         {search}

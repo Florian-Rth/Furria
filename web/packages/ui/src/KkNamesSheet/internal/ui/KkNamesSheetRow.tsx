@@ -8,6 +8,14 @@ import { KkIconButton } from '../../../KkIconButton';
 import { KkVisuallyHidden } from '../../../KkVisuallyHidden';
 import { kkTokens } from '../../../tokens';
 
+const SINGLE_LINE = {
+  minWidth: 0,
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+} as const;
+const BYLINE_MAX_SHARE = '45%';
+
 interface KkNamesSheetRowProps {
   name: string;
   note?: string;
@@ -33,7 +41,7 @@ export const KkNamesSheetRow: FC<KkNamesSheetRowProps> = ({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing(1),
+    gap: theme.spacing(1.5),
     minWidth: 0,
     minHeight: theme.spacing(5),
     padding: theme.spacing(0.5, 1),
@@ -46,18 +54,40 @@ export const KkNamesSheetRow: FC<KkNamesSheetRowProps> = ({
         {note}
       </Box>
     );
-  const textLine =
-    text === undefined ? null : (
+  const ownMark =
+    own && ownLabel !== undefined ? <KkVisuallyHidden>{ownLabel}</KkVisuallyHidden> : null;
+  const lead =
+    text === undefined ? (
       <Typography
         component="span"
         variant="body2"
-        sx={{ color: 'text.secondary', overflowWrap: 'anywhere' }}
+        sx={{ flexGrow: 1, fontWeight: own ? 800 : 600, overflowWrap: 'anywhere' }}
+      >
+        {name}
+        {noteText}
+        {ownMark}
+      </Typography>
+    ) : (
+      <Typography
+        component="span"
+        variant="body2"
+        sx={{ ...SINGLE_LINE, flexGrow: 1, fontWeight: 700 }}
       >
         {text}
       </Typography>
     );
-  const ownMark =
-    own && ownLabel !== undefined ? <KkVisuallyHidden>{ownLabel}</KkVisuallyHidden> : null;
+  const byline =
+    text === undefined ? null : (
+      <Typography
+        component="span"
+        variant="body2"
+        sx={{ ...SINGLE_LINE, flexShrink: 0, maxWidth: BYLINE_MAX_SHARE, color: 'text.secondary' }}
+      >
+        {name}
+        {noteText}
+        {ownMark}
+      </Typography>
+    );
   const removeButton =
     removeLabel === undefined || onRemove === undefined ? null : (
       <KkIconButton
@@ -71,18 +101,8 @@ export const KkNamesSheetRow: FC<KkNamesSheetRowProps> = ({
 
   return (
     <Stack component="li" data-kk-names-sheet-row data-kk-names-sheet-own={own} sx={rowPaint}>
-      <Stack sx={{ flexGrow: 1, minWidth: 0 }}>
-        <Typography
-          component="span"
-          variant="body2"
-          sx={{ fontWeight: own ? 800 : 600, overflowWrap: 'anywhere' }}
-        >
-          {name}
-          {noteText}
-        </Typography>
-        {ownMark}
-        {textLine}
-      </Stack>
+      {lead}
+      {byline}
       {removeButton}
     </Stack>
   );

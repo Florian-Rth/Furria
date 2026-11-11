@@ -12,7 +12,7 @@ export const KkSignUpSheetRoot: FC<KkSignUpSheetRootProps> = ({ label, sx, child
     component="section"
     aria-label={label}
     data-kk-sign-up-sheet
-    sx={[{ gap: 1, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
+    sx={[{ gap: 1.5, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
   >
     {children}
   </Stack>

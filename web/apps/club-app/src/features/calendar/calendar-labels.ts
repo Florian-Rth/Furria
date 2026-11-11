@@ -272,11 +272,6 @@ export const toPollCloseQuestion = (question: string): string => `„${question}
 export const toLineCountLabel = (count: number): string | undefined =>
   count === 0 ? undefined : byCount(count, '1 Eintrag', `${count} Einträge`);
 
-const toLineShareLabel = (share: AnswerShare): string | undefined =>
-  share.kind === 'count'
-    ? toLineCountLabel(share.count)
-    : `${share.count} von ${share.of} eingetragen`;
-
 export const toSignUpUntilLabel = (signUpUntil: string): string =>
   `Eintragen bis ${toDayNumberLabel(signUpUntil)}, ${toTimeLabel(signUpUntil)} Uhr`;
 
@@ -298,11 +293,20 @@ const toSignUpDeadlineLabel = (list: SignUpListMetaFacts): string | undefined =>
   return list.signUpUntil === null ? undefined : toSignUpUntilLabel(list.signUpUntil);
 };
 
-export const toSignUpListMetaLabel = (list: SignUpListMetaFacts): string | undefined => {
-  return joinMeta([
-    toSignUpDeadlineLabel(list),
-    toLineShareLabel(toAnswerShare(list.lines.length, list.concernedCount)),
-  ]);
+export const toSignUpListCountLabel = (
+  list: Pick<CalendarSignUpList, 'lines' | 'concernedCount'>,
+): string | undefined => {
+  const share = toAnswerShare(list.lines.length, list.concernedCount);
+
+  return share.kind === 'count' ? toLineCountLabel(share.count) : `${share.count} von ${share.of}`;
+};
+
+export const toSignUpListNoteLabel = (
+  list: SignUpListMetaFacts & Pick<CalendarSignUpList, 'hint'>,
+): string | undefined => {
+  const hint = list.hint?.trim() ?? '';
+
+  return joinMeta([hint === '' ? undefined : hint, toSignUpDeadlineLabel(list)]);
 };
 
 export const toSignUpListCardMetaLabel = (

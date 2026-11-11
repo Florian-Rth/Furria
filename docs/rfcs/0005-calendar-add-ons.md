@@ -532,6 +532,8 @@ away. Ruled 2026-11-11: one line of names with a remainder inline, the full name
 - [x] Form people picker: many chosen people collapse to the first chips plus *+N*, expandable
 - [x] Phone browser check with a large audience (light and dark)
 
+- **Eintragsliste layout (2026-11-11):** your own line sits first in a tinted *Du* box (field + *Eintragen*, or your text + *Ändern* → *Speichern* / *Austragen* / *Abbrechen*) and is not repeated below; the others follow under *Eingetragen* as one-line rows (item strong, name grey), *Alle N Einträge* is a full-width row; the head carries the count right-aligned and hint plus deadline or *Geschlossen* as one line.
+
 Checked and unaffected: *Mitwirkende Gruppen* (bounded by the club's groups), *Tagesablauf*
 (written by the organiser), calendar and hub marks (one mark per kind), the *Erinnern* confirm
 (counts only).

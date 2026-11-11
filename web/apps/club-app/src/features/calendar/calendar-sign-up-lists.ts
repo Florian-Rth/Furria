@@ -183,3 +183,25 @@ export const toSignUpLineRows = (
     ...line,
     canRemove: mayModerate && (!line.byViewer || list.isClosed),
   }));
+
+export type OwnLineBox = 'hidden' | 'entry' | 'line' | 'editing' | 'readOnly';
+
+export interface OwnLineBoxFacts {
+  isClosed: boolean;
+  mayAnswer: boolean;
+  hasLine: boolean;
+  isEditing: boolean;
+}
+
+export const toOwnLineBox = (facts: OwnLineBoxFacts): OwnLineBox => {
+  const takesLines = !facts.isClosed && facts.mayAnswer;
+
+  if (!facts.hasLine) {
+    return takesLines ? 'entry' : 'hidden';
+  }
+  if (!takesLines) {
+    return 'readOnly';
+  }
+
+  return facts.isEditing ? 'editing' : 'line';
+};
