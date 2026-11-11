@@ -1,4 +1,3 @@
-import { KkRule } from '@furria/ui/KkRule';
 import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { EventList } from '@/features/events/components/EventList/EventList';
@@ -17,7 +16,6 @@ export const EventListPage: FC<EventListPageProps> = ({ events, now }) => (
   <PageLayout>
     <PageLayout.Body>
       <EventsHero events={events} now={now} aside={<NextEventCard events={events} now={now} />} />
-      <KkRule />
       <EventList events={events} now={now} />
       <EventsFilmstrip />
       <EventsFaq />

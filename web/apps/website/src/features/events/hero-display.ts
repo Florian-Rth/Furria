@@ -1,5 +1,5 @@
 import { sessionAt } from '@/lib/club';
-import { formatLongDate, parseBerlinDateTime } from '@/lib/date';
+import { formatLongDate, formatLongDateRange, parseBerlinDateTime } from '@/lib/date';
 import { formatEuros } from '@/lib/money';
 import type { Event } from '@/lib/public-events/schemas';
 import { selectOfferedEventsByDate } from './event-display';
@@ -72,12 +72,14 @@ export const deriveHeroIntro = (events: Event[]): string | null => {
     return null;
   }
 
-  const venueClause = facts.sharedVenueName === null ? '' : ` im ${facts.sharedVenueName}`;
+  const when =
+    facts.eveningCount === 1
+      ? `Ein Abend am ${formatLongDate(facts.firstStartsAt)}.`
+      : `${countWord(facts.eveningCount)} Abende, ${formatLongDateRange(facts.firstStartsAt, facts.lastStartsAt)}.`;
 
-  if (facts.eveningCount === 1) {
-    return `Ein Abend${venueClause}, am ${formatLongDate(facts.firstStartsAt)}.`;
-  }
-  return `${countWord(facts.eveningCount)} Abende${venueClause}, vom ${formatLongDate(facts.firstStartsAt)} bis zum ${formatLongDate(facts.lastStartsAt)}.`;
+  return facts.sharedVenueName === null
+    ? when
+    : `${when} Veranstaltungsort: ${facts.sharedVenueName}.`;
 };
 
 export const deriveHeroStats = (events: Event[]): HeroStat[] => {
