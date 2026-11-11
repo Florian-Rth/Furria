@@ -20,6 +20,7 @@ public sealed class ActAttendanceService
     private const string NothingMarkedMessage = "Für diese Person ist nichts eingetragen.";
     private const string AnsweredHerselfMessage =
         "Sie hat inzwischen selbst geantwortet – ihre Antwort bleibt.";
+    private const string NoResponseWantedMessage = "Dieser Eintrag fragt nicht nach einer Antwort.";
     private const string MarkedMeanwhileMessage =
         "Gerade wurde für diese Person schon etwas eingetragen. Lade neu.";
 
@@ -56,6 +57,9 @@ public sealed class ActAttendanceService
 
         var recorder = await _authorizer.ActivePersonIdAsync(accountId, ct);
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        if (!await _dbContext.StillAsksForResponseAsync(target.CalendarEntryId, ct))
+            return Result.Validation(NoResponseWantedMessage);
+
         _dbContext.Record(
             await _dbContext.LockedResponseAsync(target.CalendarEntryId, target.PersonId, ct),
             new AttendanceRecord(

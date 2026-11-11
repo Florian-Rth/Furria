@@ -471,6 +471,23 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.SaveChangesAsync(ct);
     }
 
+    public Task CalendarPushesDrainedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                return
+                    await db.OutboxCalendarPushes.AnyAsync(token)
+                    || await db.OutboxPushes.AnyAsync(token)
+                    ? null
+                    : db;
+            },
+            OutboxDrainTimeout,
+            "The calendar push outbox still holds pushes",
+            ct
+        );
+
     public Task OutboxDrainedAsync(CancellationToken ct = default) =>
         Polling.UntilAsync(
             async token =>
@@ -604,6 +621,36 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
         await db.Database.ExecuteSqlAsync(
             $"UPDATE event SET cancelled_at = now() WHERE calendar_entry_id = {eventId}",
+            ct
+        );
+    }
+
+    public async Task RewriteCalendarEntryKindDirectlyAsync(
+        int calendarEntryId,
+        string kind,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE calendar_entry SET kind = {kind} WHERE id = {calendarEntryId}",
+            ct
+        );
+    }
+
+    public async Task RewriteCalendarEntryVisibilityDirectlyAsync(
+        int calendarEntryId,
+        string visibility,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE calendar_entry SET visibility = {visibility} WHERE id = {calendarEntryId}",
             ct
         );
     }
@@ -967,6 +1014,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
         var entry = await db
             .CalendarEntries.AsNoTracking()
+            .Include(row => row.AudienceGroups)
+            .Include(row => row.AudiencePeople)
             .SingleAsync(row => row.Id == calendarEntryId, ct);
 
         return await calendarService.UpdateAsync(
@@ -982,13 +1031,30 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
                 StartsAt = entry.StartsAt,
                 EndsAt = entry.EndsAt,
                 Kind = entry.Kind,
-                Visibility = entry.Visibility,
-                AsksForResponse = entry.AsksForResponse,
+                Audience = entry.Audience,
+                AudienceGroupIds = [.. entry.AudienceGroups.Select(link => link.GroupId)],
+                AudiencePersonIds = [.. entry.AudiencePeople.Select(link => link.PersonId)],
+                AddOns =
+                [
+                    .. entry.AsksForResponse
+                        ? [SingleUseAddOn(CalendarEntryAddOnKind.Attendance)]
+                        : Array.Empty<CalendarEntryAddOnInput>(),
+                    SingleUseAddOn(CalendarEntryAddOnKind.ParticipatingGroups),
+                ],
                 ParticipatingGroupIds = [groupId],
             },
             ct
         );
     }
+
+    private static CalendarEntryAddOnInput SingleUseAddOn(CalendarEntryAddOnKind kind) =>
+        new()
+        {
+            Kind = kind,
+            Poll = null,
+            SignUpList = null,
+            DaySchedule = null,
+        };
 
     public async Task<Result> SaveSecondActiveGroupAsync(
         string name,

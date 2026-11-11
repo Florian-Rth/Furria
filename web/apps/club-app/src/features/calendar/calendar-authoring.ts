@@ -2,12 +2,22 @@ import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import type { CalendarEntryKind } from '@/features/club/schemas';
 import type { MyGroupSummary } from '@/features/group-hub/schemas';
 import { toDayNumberLabel, toTimeSpanLabel } from '@/lib/calendar-days';
-import { toIsoDay } from '@/lib/day';
+import type { DayTime } from '@/lib/day';
+import { daysBetween, toDayTime, toInstant, toIsoDay } from '@/lib/day';
+import { toAddOnCards } from './calendar-add-ons';
+import type { CalendarDaySchedulePayload } from './calendar-day-schedules';
+import { toDaySchedulePayload } from './calendar-day-schedules';
+import type { CalendarPollPayload } from './calendar-polls';
+import { toPollPayload } from './calendar-polls';
+import type { CalendarSignUpListPayload } from './calendar-sign-up-lists';
+import { toSignUpListPayload } from './calendar-sign-up-lists';
 import type {
+  CalendarAddOnCardForm,
+  CalendarAddOnKind,
   CalendarCollision,
   CalendarEntry,
+  CalendarEntryAudience,
   CalendarEntryForm,
-  CalendarEntryVisibility,
 } from './schemas';
 
 export const CLUB_OWNER_ID = 'club';
@@ -16,22 +26,20 @@ export const NO_VENUE_ID = '';
 const CLUB_OWNER_OPTION_LABEL = 'Verein';
 const TRAINING_TITLE = 'Training';
 const DEFAULT_START_TIME = '19:00';
-const DEFAULT_END_TIME = '21:00';
+const ADDED_END_SPAN_MINUTES = 120;
+const MINUTE_MS = 60_000;
+const HOUR_MINUTES = 60;
+const DAY_MINUTES = 24 * HOUR_MINUTES;
+const NO_END_DAY = '';
+const NO_END_TIME = '';
 const ONE_COLLISION = 1;
 const ARCHIVED_SUFFIX = ' — archiviert';
 const PARTICIPANTS_EMPTY = 'Keine weiteren Gruppen verfügbar.';
 const PARTICIPANTS_UNAVAILABLE = 'Die Gruppen konnten nicht geladen werden.';
 
-const KIND_ORDER: readonly CalendarEntryKind[] = [
-  'training',
-  'rehearsal',
-  'performance',
-  'meeting',
-  'party',
-  'other',
-];
+export const AUTHORED_KINDS: readonly CalendarEntryKind[] = ['plain', 'training', 'trip'];
 
-const VISIBILITY_ORDER: readonly CalendarEntryVisibility[] = ['group', 'club', 'public'];
+export const AUDIENCE_ORDER: readonly CalendarEntryAudience[] = ['club', 'groups', 'people'];
 
 export interface CalendarParticipantGroup {
   groupId: number;
@@ -44,7 +52,14 @@ export interface CalendarOwnerOption {
   label: string;
 }
 
-export interface CalendarEntryPayload {
+export type CalendarAddOnPayload = {
+  kind: CalendarAddOnKind;
+  poll: CalendarPollPayload | null;
+  signUpList: CalendarSignUpListPayload | null;
+  daySchedule: CalendarDaySchedulePayload | null;
+};
+
+export type CalendarEntryPayload = {
   title: string;
   description: string | null;
   ownerGroupId: number | null;
@@ -52,17 +67,12 @@ export interface CalendarEntryPayload {
   startsAt: string;
   endsAt: string | null;
   kind: CalendarEntryKind;
-  visibility: CalendarEntryVisibility;
-  asksForResponse: boolean;
+  audience: CalendarEntryAudience;
+  audienceGroupIds: number[];
+  audiencePersonIds: number[];
+  addOns: CalendarAddOnPayload[];
   participatingGroupIds: number[];
-}
-
-export interface CalendarDayTime {
-  day: string;
-  time: string;
-}
-
-const pad = (value: number): string => String(value).padStart(2, '0');
+};
 
 export const toOwnerId = (ownerGroupId: number | null): string =>
   ownerGroupId === null ? CLUB_OWNER_ID : String(ownerGroupId);
@@ -106,32 +116,43 @@ export interface CalendarParticipantChoice extends CalendarParticipantGroup {
   isArchived: boolean;
 }
 
-export const toParticipatingGroupChoices = (
+export const toGroupChoices = (
   pool: CalendarParticipantPool,
   held: readonly CalendarParticipantGroup[],
-  ownerId: string,
+  excludedId: string | null,
 ): CalendarParticipantChoice[] => {
   const running = pool.state === 'ready' ? pool.groups : [];
   const offered = running
-    .filter((group) => toOwnerId(group.groupId) !== ownerId)
-    .map((group) => ({ ...group, isArchived: false }));
+    .filter((group) => toOwnerId(group.groupId) !== excludedId)
+    .map((group) => ({ groupId: group.groupId, name: group.name, isArchived: false }));
   const listed = new Set(offered.map((choice) => choice.groupId));
   const kept = held
-    .filter((group) => toOwnerId(group.groupId) !== ownerId && !listed.has(group.groupId))
-    .map((group) => ({ ...group, isArchived: pool.state === 'ready' }));
+    .filter((group) => toOwnerId(group.groupId) !== excludedId && !listed.has(group.groupId))
+    .map((group) => ({
+      groupId: group.groupId,
+      name: group.name,
+      isArchived: pool.state === 'ready',
+    }));
 
   return [...offered, ...kept].sort((left, right) => left.name.localeCompare(right.name, 'de'));
 };
+
+const toGroupOptions = (choices: readonly CalendarParticipantChoice[]): KkSelectOption[] =>
+  choices.map((choice) => ({
+    value: toOwnerId(choice.groupId),
+    label: choice.isArchived ? `${choice.name}${ARCHIVED_SUFFIX}` : choice.name,
+  }));
 
 export const toParticipatingGroupOptions = (
   pool: CalendarParticipantPool,
   held: readonly CalendarParticipantGroup[],
   ownerId: string,
-): KkSelectOption[] =>
-  toParticipatingGroupChoices(pool, held, ownerId).map((choice) => ({
-    value: toOwnerId(choice.groupId),
-    label: choice.isArchived ? `${choice.name}${ARCHIVED_SUFFIX}` : choice.name,
-  }));
+): KkSelectOption[] => toGroupOptions(toGroupChoices(pool, held, ownerId));
+
+export const toAudienceGroupOptions = (
+  pool: CalendarParticipantPool,
+  held: readonly CalendarParticipantGroup[],
+): KkSelectOption[] => toGroupOptions(toGroupChoices(pool, held, null));
 
 export const toParticipatingGroupIds = (values: readonly string[], ownerId: string): number[] => [
   ...new Set(values.filter((value) => value !== ownerId).map((value) => Number(value))),
@@ -140,7 +161,7 @@ export const toParticipatingGroupIds = (values: readonly string[], ownerId: stri
 export const toParticipationKeptForOwner = (values: readonly string[], ownerId: string): string[] =>
   values.filter((value) => value !== ownerId);
 
-export const toToggledParticipation = (values: readonly string[], value: string): string[] =>
+export const toToggledValue = (values: readonly string[], value: string): string[] =>
   values.includes(value) ? values.filter((held) => held !== value) : [...values, value];
 
 export interface CalendarEntryOwnership {
@@ -173,39 +194,82 @@ export const mayOwnCalendarEntry = (
 ): boolean =>
   entry.kind !== 'event' && options.some((option) => option.ownerGroupId === entry.ownerGroupId);
 
-export const toDefaultVisibility = (
-  ownerGroupId: number | null,
-  kind: CalendarEntryKind,
-): CalendarEntryVisibility => {
-  if (ownerGroupId === null) {
-    return 'club';
+export const toDefaultAudience = (ownerId: string): CalendarEntryAudience =>
+  ownerId === CLUB_OWNER_ID ? 'club' : 'groups';
+
+type AudienceChoice = Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds'>;
+
+const ownerGroupIdsOf = (ownerId: string): string[] => (ownerId === CLUB_OWNER_ID ? [] : [ownerId]);
+
+const followsTheOwner = (form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>): boolean =>
+  form.audienceGroupIds.length === 0 ||
+  (form.audienceGroupIds.length === 1 && form.audienceGroupIds[0] === form.ownerId);
+
+export const toAudienceAfterOwnerChange = (
+  form: Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds' | 'ownerId'>,
+  nextOwnerId: string,
+): AudienceChoice => {
+  const kept = { audience: form.audience, audienceGroupIds: form.audienceGroupIds };
+
+  if (form.audience === 'club') {
+    return form.ownerId === CLUB_OWNER_ID && nextOwnerId !== CLUB_OWNER_ID
+      ? { audience: 'groups', audienceGroupIds: [nextOwnerId] }
+      : kept;
+  }
+  if (form.audience !== 'groups' || !followsTheOwner(form)) {
+    return kept;
   }
 
-  return kind === 'training' ? 'club' : 'group';
+  return nextOwnerId === CLUB_OWNER_ID
+    ? { audience: 'groups', audienceGroupIds: ownerGroupIdsOf(form.ownerId) }
+    : { audience: 'groups', audienceGroupIds: [nextOwnerId] };
 };
 
+export const toAudienceSwitch = (
+  form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>,
+  audience: CalendarEntryAudience,
+): AudienceChoice =>
+  audience === 'groups' && form.audienceGroupIds.length === 0
+    ? { audience, audienceGroupIds: ownerGroupIdsOf(form.ownerId) }
+    : { audience, audienceGroupIds: form.audienceGroupIds };
+
+export const toAudienceGroupIds = (
+  form: Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds'>,
+): number[] =>
+  form.audience === 'groups' ? form.audienceGroupIds.map((groupId) => Number(groupId)) : [];
+
+export const toAudiencePersonIds = (
+  form: Pick<CalendarEntryForm, 'audience' | 'audiencePersonIds'>,
+): number[] =>
+  form.audience === 'people' ? form.audiencePersonIds.map((personId) => Number(personId)) : [];
+
 export const toCalendarKind = (value: string): CalendarEntryKind =>
-  KIND_ORDER.find((known) => known === value) ?? 'other';
+  AUTHORED_KINDS.find((known) => known === value) ?? 'plain';
 
-export const toCalendarVisibility = (value: string): CalendarEntryVisibility =>
-  VISIBILITY_ORDER.find((known) => known === value) ?? 'club';
+export const toCalendarAudience = (value: string): CalendarEntryAudience | null =>
+  AUDIENCE_ORDER.find((known) => known === value) ?? null;
 
-export const toInstant = (isoDay: string, time: string): string =>
-  new Date(
-    Number(isoDay.slice(0, 4)),
-    Number(isoDay.slice(5, 7)) - 1,
-    Number(isoDay.slice(8, 10)),
-    Number(time.slice(0, 2)),
-    Number(time.slice(3, 5)),
-  ).toISOString();
+const NO_ADD_ON_DETAILS = { poll: null, signUpList: null, daySchedule: null } as const;
 
-export const toDayTime = (isoInstant: string): CalendarDayTime => {
-  const moment = new Date(isoInstant);
-
-  return {
-    day: toIsoDay(moment),
-    time: `${pad(moment.getHours())}:${pad(moment.getMinutes())}`,
-  };
+const toAddOnPayload = (card: CalendarAddOnCardForm): CalendarAddOnPayload => {
+  switch (card.kind) {
+    case 'poll':
+      return { ...NO_ADD_ON_DETAILS, kind: card.kind, poll: toPollPayload(card.poll) };
+    case 'signUpList':
+      return {
+        ...NO_ADD_ON_DETAILS,
+        kind: card.kind,
+        signUpList: toSignUpListPayload(card.signUpList),
+      };
+    case 'daySchedule':
+      return {
+        ...NO_ADD_ON_DETAILS,
+        kind: card.kind,
+        daySchedule: toDaySchedulePayload(card.daySchedule),
+      };
+    default:
+      return { ...NO_ADD_ON_DETAILS, kind: card.kind };
+  }
 };
 
 export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload => {
@@ -220,9 +284,13 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
     startsAt: toInstant(form.startDay, form.startTime),
     endsAt: endDay === '' ? null : toInstant(endDay, form.endTime),
     kind: form.kind,
-    visibility: form.visibility,
-    asksForResponse: form.asksForResponse,
-    participatingGroupIds: toParticipatingGroupIds(form.participatingGroupIds, form.ownerId),
+    audience: form.audience,
+    audienceGroupIds: toAudienceGroupIds(form),
+    audiencePersonIds: toAudiencePersonIds(form),
+    addOns: form.addOns.map(toAddOnPayload),
+    participatingGroupIds: form.addOns.some((card) => card.kind === 'participatingGroups')
+      ? toParticipatingGroupIds(form.participatingGroupIds, form.ownerId)
+      : [],
   };
 };
 
@@ -255,7 +323,7 @@ export interface CalendarEntryDraftInput {
 
 export const toEntryDraft = (search: CalendarEntryDraftInput): CalendarEntryDraft => ({
   ownerGroupId: search.group ?? null,
-  kind: KIND_ORDER.find((known) => known === search.kind) ?? null,
+  kind: AUTHORED_KINDS.find((known) => known === search.kind) ?? null,
   startTime: search.start ?? null,
   endTime: search.end ?? null,
   venueId: search.venue ?? null,
@@ -294,6 +362,14 @@ const nextDayOf = (isoDay: string): string =>
     ),
   );
 
+const toDraftedEnd = (startDay: string, startTime: string, endTime: string | null): DayTime => {
+  if (endTime === null) {
+    return { day: NO_END_DAY, time: NO_END_TIME };
+  }
+
+  return { day: endTime > startTime ? startDay : nextDayOf(startDay), time: endTime };
+};
+
 const toDraftedFormValues = (
   options: readonly CalendarOwnerOption[],
   startDay: string,
@@ -303,23 +379,25 @@ const toDraftedFormValues = (
     options.find(
       (option) => option.ownerGroupId === draft.ownerGroupId && draft.ownerGroupId !== null,
     ) ?? options[0];
-  const ownerGroupId = owner?.ownerGroupId ?? null;
-  const kind = draft.kind ?? 'meeting';
+  const ownerId = owner?.id ?? CLUB_OWNER_ID;
+  const kind = draft.kind ?? 'plain';
   const startTime = draft.startTime ?? DEFAULT_START_TIME;
-  const endTime = draft.endTime ?? DEFAULT_END_TIME;
+  const end = toDraftedEnd(startDay, startTime, draft.endTime);
 
   return {
     title: draft.kind === 'training' ? TRAINING_TITLE : '',
     description: '',
-    ownerId: owner?.id ?? CLUB_OWNER_ID,
+    ownerId,
     venueId: draft.venueId === null ? NO_VENUE_ID : String(draft.venueId),
     kind,
-    visibility: toDefaultVisibility(ownerGroupId, kind),
+    audience: toDefaultAudience(ownerId),
+    audienceGroupIds: ownerGroupIdsOf(ownerId),
+    audiencePersonIds: [],
     startDay,
     startTime,
-    endDay: endTime > startTime ? startDay : nextDayOf(startDay),
-    endTime,
-    asksForResponse: false,
+    endDay: end.day,
+    endTime: end.time,
+    addOns: [],
     participatingGroupIds: [],
   };
 };
@@ -343,34 +421,60 @@ export const toEntryFormValues = (
     ownerId: toOwnerId(entry.ownerGroupId),
     venueId: entry.venueId === null ? NO_VENUE_ID : String(entry.venueId),
     kind: entry.kind,
-    visibility: entry.visibility,
+    audience: entry.audience,
+    audienceGroupIds: entry.audienceGroups.map((group) => String(group.groupId)),
+    audiencePersonIds: entry.audiencePeople.map((person) => String(person.personId)),
     startDay: start.day,
     startTime: start.time,
-    endDay: end?.day ?? '',
-    endTime: end?.time ?? DEFAULT_END_TIME,
-    asksForResponse: entry.asksForResponse,
+    endDay: end?.day ?? NO_END_DAY,
+    endTime: end?.time ?? NO_END_TIME,
+    addOns: toAddOnCards(entry.addOns),
     participatingGroupIds: entry.participatingGroups.map((group) => toOwnerId(group.groupId)),
   };
 };
 
-const atInstant = (moment: CalendarDayTime): number =>
-  Date.parse(toInstant(moment.day, moment.time));
+const atInstant = (moment: DayTime): number => Date.parse(toInstant(moment.day, moment.time));
 
 export const toEndKeptInStep = (
-  previousStart: CalendarDayTime,
-  nextStart: CalendarDayTime,
-  end: CalendarDayTime,
-): CalendarDayTime => {
-  const endsAt = atInstant(end);
-  const startsAt = atInstant(nextStart);
+  previousStart: DayTime,
+  nextStart: DayTime,
+  end: DayTime,
+): DayTime => {
+  const span = Math.max(atInstant(end) - atInstant(previousStart), 0);
 
-  if (endsAt >= startsAt) {
-    return end;
+  return toDayTime(new Date(atInstant(nextStart) + span).toISOString());
+};
+
+export const toAddedEnd = (start: DayTime): DayTime =>
+  toDayTime(new Date(atInstant(start) + ADDED_END_SPAN_MINUTES * MINUTE_MS).toISOString());
+
+const toHourSpanLabel = (minutes: number): string => {
+  const hours = Math.floor(minutes / HOUR_MINUTES);
+  const rest = minutes % HOUR_MINUTES;
+
+  if (hours === 0) {
+    return `${rest} Min.`;
+  }
+  if (rest === 0) {
+    return `${hours} Std.`;
   }
 
-  const span = Math.max(endsAt - atInstant(previousStart), 0);
+  return `${hours} Std. ${rest} Min.`;
+};
 
-  return toDayTime(new Date(startsAt + span).toISOString());
+export const toEndSpanLabel = (start: DayTime, end: DayTime): string | null => {
+  const minutes = Math.round((atInstant(end) - atInstant(start)) / MINUTE_MS);
+
+  if (Number.isNaN(minutes) || minutes <= 0) {
+    return null;
+  }
+  if (minutes < DAY_MINUTES) {
+    return toHourSpanLabel(minutes);
+  }
+
+  const days = daysBetween(start.day, end.day) + 1;
+
+  return `${days} Tage`;
 };
 
 export const toCollisionName = (collision: CalendarCollision): string =>

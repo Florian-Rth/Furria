@@ -11,24 +11,46 @@ internal static class EntryFactsRows
             entry.Id,
             entry.OwnerGroupId,
             entry.ParticipatingGroups.Select(link => link.GroupId).ToList(),
-            entry.Visibility,
+            new AudienceRow(
+                entry.Audience,
+                entry.AudienceGroups.Select(link => link.GroupId).ToList(),
+                entry.AudiencePeople.Select(link => link.PersonId).ToList()
+            ),
             entry.Kind,
             entry.StartsAt,
+            entry.EndsAt,
             entry.AsksForResponse
         );
 }
+
+internal sealed record AudienceRow(
+    CalendarEntryAudience Audience,
+    IReadOnlyList<int> GroupIds,
+    IReadOnlyList<int> PersonIds
+);
 
 internal sealed record EntryFactsRow(
     int CalendarEntryId,
     int? OwnerGroupId,
     IReadOnlyList<int> ParticipatingGroupIds,
-    CalendarEntryVisibility Visibility,
+    AudienceRow Audience,
     CalendarEntryKind Kind,
     DateTimeOffset StartsAt,
+    DateTimeOffset? EndsAt,
     bool AsksForResponse
 )
 {
     [Pure]
     public CalendarEntryFacts ToFacts() =>
-        CalendarEntryFacts.Of(OwnerGroupId, ParticipatingGroupIds, Visibility, Kind, StartsAt);
+        new()
+        {
+            OwnerGroupId = OwnerGroupId,
+            ParticipatingGroupIds = ParticipatingGroupIds,
+            Audience = Audience.Audience,
+            AudienceGroupIds = Audience.GroupIds,
+            AudiencePersonIds = Audience.PersonIds,
+            Kind = Kind,
+            AsksForResponse = AsksForResponse,
+            StartsAt = StartsAt,
+        };
 }

@@ -27,7 +27,7 @@ public sealed class CalendarPersistenceTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepVenueGroupAndVisibility_When_AnEntryIsRecorded()
+    public async Task Should_KeepVenueGroupAndAudience_When_AnEntryIsRecorded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -41,7 +41,6 @@ public sealed class CalendarPersistenceTests : IClassFixture<ApiTestFixture>
                                 "Training der Tanzgarde",
                                 AtTheBall,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 venueAlias: "buehnenhaus",
                                 ownerGroupAlias: "tanzgarde",
                                 asksForResponse: true
@@ -58,7 +57,9 @@ public sealed class CalendarPersistenceTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(entryId)
             .ToHaveKind(CalendarEntryKind.Training)
             .CalendarEntry(entryId)
-            .ToHaveVisibility(CalendarEntryVisibility.Group)
+            .ToHaveAudience(CalendarEntryAudience.Groups)
+            .CalendarEntry(entryId)
+            .ToCarryAudienceGroups(ctx.Groups.Groups.IdOf("tanzgarde"))
             .CalendarEntry(entryId)
             .ToBeHeldAt(ctx.Club.Venues.IdOf("buehnenhaus"))
             .CalendarEntry(entryId)
@@ -69,7 +70,7 @@ public sealed class CalendarPersistenceTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheEntry_When_GroupVisibilityNamesNoGroup()
+    public async Task Should_RefuseAnEvent_When_ItsAudienceIsNotTheClub()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -78,10 +79,11 @@ public sealed class CalendarPersistenceTests : IClassFixture<ApiTestFixture>
                 builder =>
                     builder.Club(club =>
                         club.AddCalendarEntry(
-                            "ownerless",
-                            "Geheime Sitzung",
+                            "gala",
+                            "Prunksitzung",
                             AtTheBall,
-                            visibility: CalendarEntryVisibility.Group
+                            kind: CalendarEntryKind.Event,
+                            audience: CalendarEntryAudience.People
                         )
                     ),
                 ct
@@ -90,7 +92,7 @@ public sealed class CalendarPersistenceTests : IClassFixture<ApiTestFixture>
 
         var violation = Assert.IsType<PostgresException>(rejection.InnerException);
         Assert.Equal(PostgresErrorCodes.CheckViolation, violation.SqlState);
-        Assert.Equal("ck_calendar_entry_owner_visibility", violation.ConstraintName);
+        Assert.Equal("ck_calendar_entry_event_club", violation.ConstraintName);
     }
 
     [Fact]

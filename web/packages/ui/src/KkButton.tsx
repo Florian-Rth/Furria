@@ -94,6 +94,7 @@ interface KkButtonProps extends PropsWithChildren {
   search?: KkLinkSearch;
   href?: string;
   ariaLabel?: string;
+  ariaDescribedBy?: string;
   sx?: KkSx;
 }
 
@@ -113,6 +114,7 @@ export const KkButton: FC<KkButtonProps> = ({
   search,
   href,
   ariaLabel,
+  ariaDescribedBy,
   sx,
   children,
 }) => {
@@ -137,6 +139,7 @@ export const KkButton: FC<KkButtonProps> = ({
       {...routeProps}
       href={href}
       aria-label={ariaLabel}
+      aria-describedby={ariaDescribedBy}
       data-kk-button
       sx={[
         (theme) => ({

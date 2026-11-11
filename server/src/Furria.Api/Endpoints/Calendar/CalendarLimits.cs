@@ -6,4 +6,15 @@ internal static class CalendarLimits
     internal const int MaxWindowDays = 400;
     internal const int TitleLength = 120;
     internal const int DescriptionLength = 2_000;
+    internal const int PollQuestionLength = 200;
+    internal const int PollOptionLabelLength = 120;
+    internal const int PollMinOptions = 2;
+    internal const int PollMaxOptions = 20;
+    internal const int SignUpListTitleLength = 120;
+    internal const int SignUpListHintLength = 300;
+    internal const int SignUpLineTextLength = 120;
+    internal const int DayScheduleTitleLength = 120;
+    internal const int DayScheduleStepTextLength = 120;
+    internal const int DayScheduleMaxSteps = 50;
+    internal const int MaxAddOns = 30;
 }

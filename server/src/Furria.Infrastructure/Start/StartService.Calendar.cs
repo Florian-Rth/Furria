@@ -25,8 +25,8 @@ public sealed partial class StartService
         StartEntryRow row,
         AttendanceAnswer? answer,
         Viewer viewer,
-        IReadOnlySet<GroupSession> actSessions,
-        StartEvent? tiedEvent
+        StartEvent? tiedEvent,
+        OpenFunctionsOfEntries functions
     )
     {
         var facts = row.ToFacts();
@@ -44,15 +44,18 @@ public sealed partial class StartService
                 row.Venue is { } venue && viewer.KeyVenueIds.Contains(venue.VenueId),
             OwnerGroup = row.OwnerGroup is null ? null : ToGroupRef(row.OwnerGroup),
             ParticipatingGroups = [.. row.ParticipatingGroups.Select(ToGroupRef)],
+            Audience = row.Audience.Audience,
+            AudienceGroups = [.. row.Audience.Groups.Select(ToGroupRef)],
             ViewerGroupIds =
             [
                 .. row.GroupIds().Where(groupId => IsTiedToGroup(viewer.Ties, groupId)).Distinct(),
             ],
             ViewerRuns = ViewerRunsOf(viewer.Ties, facts),
-            Attendance =
-                row.AsksForResponse || facts.AsksTheCastOf(actSessions)
-                    ? AttendanceOf(row, answer, viewer.Ties.Concerns(facts), viewer.Moment.Now)
-                    : null,
+            Attendance = row.AsksForResponse
+                ? AttendanceOf(row, answer, viewer.Ties.Concerns(facts), viewer.Moment.Now)
+                : null,
+            OpenPolls = functions.PollsOf(row.CalendarEntryId),
+            OpenSignUpLists = functions.SignUpListsOf(row.CalendarEntryId),
             Description = row.Description,
             Event = tiedEvent,
         };
@@ -121,34 +124,52 @@ public sealed partial class StartService
             [.. rows.Select(row => row.CalendarEntryId)],
             ct
         );
-        var actSessions = await _dbContext.ActSessionsOfAsync(
-            [
-                .. rows.Where(row => CastAttendance.AsksTheCastOn(row.Kind))
-                    .SelectMany(row => row.GroupIds())
-                    .Distinct(),
-            ],
-            ct
-        );
+        var hers = rows.Where(row =>
+                IsHersAndNotDeclined(
+                    row,
+                    answers.GetValueOrDefault(row.CalendarEntryId),
+                    viewer.Ties
+                )
+            )
+            .ToList();
+        var functions = await OpenFunctionsOfAsync(viewer, hers, ct);
 
         return
         [
-            .. rows.Where(row =>
-                    IsHersAndNotDeclined(
-                        row,
-                        answers.GetValueOrDefault(row.CalendarEntryId),
-                        viewer.Ties
-                    )
+            .. hers.Select(row =>
+                ToEntrySummary(
+                    row,
+                    answers.GetValueOrDefault(row.CalendarEntryId),
+                    viewer,
+                    EventOf(row),
+                    functions
                 )
-                .Select(row =>
-                    ToEntrySummary(
-                        row,
-                        answers.GetValueOrDefault(row.CalendarEntryId),
-                        viewer,
-                        actSessions,
-                        EventOf(row)
-                    )
-                ),
+            ),
         ];
+    }
+
+    private async Task<OpenFunctionsOfEntries> OpenFunctionsOfAsync(
+        Viewer viewer,
+        IReadOnlyList<StartEntryRow> rows,
+        CancellationToken ct
+    )
+    {
+        var calendarEntryIds = rows.Select(row => row.CalendarEntryId).ToList();
+
+        return new OpenFunctionsOfEntries(
+            await _dbContext.PollsOfEntriesAsync(
+                calendarEntryIds,
+                viewer.PersonId,
+                viewer.Moment.Now,
+                ct
+            ),
+            await _dbContext.SignUpListsOfEntriesAsync(
+                calendarEntryIds,
+                viewer.PersonId,
+                viewer.Moment.Now,
+                ct
+            )
+        );
     }
 
     private StartEvent? EventOf(StartEntryRow row) =>
@@ -173,13 +194,25 @@ public sealed partial class StartService
         );
         var holdsRunningMembership = viewer.Ties.HoldsRunningMembership;
         var tieGroupIds = TieGroupIdsOf(viewer.Ties);
+        var personId = viewer.PersonId;
+        var administeredGroupIds = viewer.Ties.AdminFunctions.Keys.ToList();
 
         return _dbContext
             .CalendarEntries.AsNoTracking()
             .Where(entry =>
-                (entry.OwnerGroupId == null && holdsRunningMembership)
-                || (entry.OwnerGroupId != null && tieGroupIds.Contains(entry.OwnerGroupId.Value))
-                || entry.ParticipatingGroups.Any(link => tieGroupIds.Contains(link.GroupId))
+                entry.Audience == CalendarEntryAudience.People
+                    ? entry.AudiencePeople.Any(link => link.PersonId == personId)
+                        || (
+                            entry.OwnerGroupId != null
+                            && administeredGroupIds.Contains(entry.OwnerGroupId.Value)
+                        )
+                    : (entry.Audience == CalendarEntryAudience.Club && holdsRunningMembership)
+                        || (
+                            entry.OwnerGroupId != null
+                            && tieGroupIds.Contains(entry.OwnerGroupId.Value)
+                        )
+                        || entry.ParticipatingGroups.Any(link => tieGroupIds.Contains(link.GroupId))
+                        || entry.AudienceGroups.Any(link => tieGroupIds.Contains(link.GroupId))
             )
             .Where(entry =>
                 entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now

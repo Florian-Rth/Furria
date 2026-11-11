@@ -27,15 +27,25 @@ public sealed record CalendarEntrySummary
 
     public required IReadOnlyList<ParticipatingGroup> ParticipatingGroups { get; init; }
 
-    public required CalendarEntryVisibility Visibility { get; init; }
+    public required CalendarEntryAudience Audience { get; init; }
+
+    public required IReadOnlyList<AudienceGroup> AudienceGroups { get; init; }
+
+    public required IReadOnlyList<AudiencePerson> AudiencePeople { get; init; }
 
     public required bool AsksForResponse { get; init; }
 
-    public required bool AsksTheCast { get; init; }
+    public required IReadOnlyList<CalendarEntryAddOnDetails> AddOns { get; init; }
+
+    public required IReadOnlyList<CalendarOpenFunction> OpenFunctions { get; init; }
+
+    public required CalendarAttendanceDetails? Attendance { get; init; }
 
     public required string? Description { get; init; }
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }
+
+    public required bool MayAnswer { get; init; }
 
     public required bool IsRunning { get; init; }
 

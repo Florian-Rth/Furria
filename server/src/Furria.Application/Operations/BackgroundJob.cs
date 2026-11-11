@@ -13,4 +13,5 @@ public enum BackgroundJob
     ActCastFreeze = 10,
     BeerTabReminders = 11,
     BeerStockWarnings = 12,
+    PushDispatcher = 13,
 }

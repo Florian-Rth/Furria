@@ -79,8 +79,9 @@ English rendering anywhere else, so two translations never drift apart.
 | seating standard | Tische & Stühle | `SeatingStandard` |
 | live direction | Live-Regie | — |
 | calendar entry | Kalendereintrag | `CalendarEntry` |
-| owner / visibility | Eigentümer / Sichtbarkeit | `Owner…`, `CalendarEntryVisibility` |
-| participating groups | Mitwirkende Gruppen | `CalendarEntryGroup` |
+| owner / audience | Eigentümer / Für wen | `Owner…`, `CalendarEntryAudience` |
+| add-on (calendar entry) | Funktion | `CalendarEntryAddOn` |
+| participating groups (add-on) | Mitwirkende Gruppen | `CalendarEntryGroup` |
 | attendance response | Zu-/Absage | `AttendanceResponse` |
 | venue / city / note | Ort / Stadt / Hinweis | `Venue` |
 | key holding | Schlüssel | `KeyHolding` |
@@ -962,9 +963,9 @@ _UI copy_: Platz, Aufstellung, Bewegung, Fassung
 _Avoid_: position (for the spot), dancer slot, formation (for the whole document)
 
 **Open spot** (training):
-A **spot** whose holder's answer to one of the group's coming trainings or rehearsals is *Nein*
-(*Absage*) — the group owns the calendar entry or takes part in it, and the *Nein* is hers or a
-group admin's mark for her (every training asks its cast, ruled 2026-10-30). For that training the spot
+A **spot** whose holder's answer to one of the group's coming trainings is *Nein*
+(*Absage*) — the group owns the calendar entry or is its audience, the training carries the Zu-/Absage add-on, and the *Nein* is hers or a
+group admin's mark for her (ADR-0038, 2026-11-10). For that training the spot
 shows open on the stage, and the training names the **steps** in which the open spot moves, since
 that is where the others lose their reference. *Vielleicht* and no answer leave the spot held;
 trainings are always the session's version — the evening's changes never reach them. The
@@ -998,43 +999,70 @@ The word was the project's largest open block from 2026-09-10 until Florian sett
 **kind** of calendar entry (`CalendarEntryKind`), not a synonym for it — event stays narrow (a
 ticketed hall evening) and never widens to cover a training.
 
+An entry's **kind** is one of four, and a new kind is never the answer to a new need — an
+**add-on** is (ruled 2026-11-10, calendar grilling):
+- **plain** (*Allgemein*) — the default; a meeting, a party, the club-wide general rehearsal are plain entries
+  whose title says what they are.
+- **training** — a group's training (see **Training** below).
+- **trip** (*Ausflug*) — the club or some of its groups going somewhere: the autumn hike, a fun
+  trip, a guest performance at another club's evening.
+- **event** — made only in the **events workbench**, never in the calendar.
+Rehearsal, performance, meeting, party and other were retired as kinds on 2026-11-10.
+
 Every entry carries three independent things, never collapsed into one: its **owner** (the club,
 or one group — who may edit it, and who a running entry summons through the Notice), its
-**visibility** (`Group` / `Club` / `Public`, chosen when it is created; a group's training
-defaults to `Club` so the club can see what the hall is doing) and its **venue**. Visible is not
-the same as summoned: a training everyone can see still concerns only its group (decided
-2026-09-19).
+**audience** and its **venue**. The owner is never one person: only whoever manages the club
+calendar (for the club) or a group's admins (for that group) schedule an entry, chosen-people
+entries included — the calendar is the club's, not a private planner (ruled 2026-11-10).
 
-A fourth thing sits beside them and is never confused with the owner: the entry's
-**participating groups** (`CalendarEntryGroup`) — who is expected there, many per entry (added
-2026-09-21, CA-P6 shaping;
-[ADR-0015](docs/adr/0015-a-calendar-entry-carries-participating-groups.md)). The gala session is
-club-owned and the guard dances at it; without this the biggest date of a group's year is missing
-from its own hub. Participating grants nothing: it never confers the right to edit the entry, and
-it never summons the Notice — the owner alone does both. A group never lists itself as
-participating on an entry it owns.
+The **audience** (*Für wen*) says who the entry is for, and sight follows from it (ruled
+2026-11-10, calendar grilling — it replaced the chosen **visibility** *Gruppe / Verein /
+Öffentlich*; the **participating groups** of
+[ADR-0015](docs/adr/0015-a-calendar-entry-carries-participating-groups.md) live on as an **add-on**):
+- **Club** (*Verein*) — seen by every member, concerns every member.
+- **Groups** (*Gruppen*, one or more) — seen by every member, concerns the members of those groups.
+  A club-owned entry meant for the guard alone (its general rehearsal) has the guard as audience;
+  a group that only dances somewhere is a **participating group**, not the audience.
+- **Chosen people** (*Ausgewählte Personen*) — seen and concerning only those people (and whoever
+  scheduled it). Anyone who may use the club app can be chosen: a running club member, a current
+  member or admin of a running group though no club member, with or without an account — an admin
+  may record an answer for someone who has none. A whole group may be added at once; that adds its
+  current members as people, and later group changes leave the list alone. Someone taken off the
+  list loses sight of the entry; her answers stay. Something a group keeps to itself is scheduled for chosen people, never hidden
+  by a group-only sight.
+There is no public calendar entry: only an **event** is public, and it is public by being an event.
+Seen is not the same as concerned: a training everyone can see still concerns only its group.
+Being in the audience grants nothing: never the right to edit the entry, never the Notice — the
+owner alone does both.
 
-A calendar entry may optionally ask for an **attendance response** (`AttendanceResponse`, answers
-yes / no / maybe) — per entry, switched on by whoever schedules it, and available for every kind
-including a group's training (decided 2026-09-18). An entry that does not ask for one collects
+A calendar entry may ask for an **attendance response** (`AttendanceResponse`, answers
+yes / no / maybe) — the **Zu-/Absage add-on**, attached by whoever schedules it to any kind,
+including a group's training (decided 2026-09-18, made an add-on 2026-11-10). An entry that does not ask for one collects
 nothing. An **owed response** is an entry that asks for one, concerns
 her and has not yet started, which she has not answered (*vielleicht* is an answer) — personal,
-answered in place on **Start**, never a **to-do**. An entry **concerns** everyone with a running
-membership when the club owns it, and the current members of its owner group and of its
-participating groups when a group owns it — never a group admin for being one. Anyone who can see
-an entry may still answer it; *owed* only decides what Start asks for (ruled 2026-10-02, L2
-shaping).
+answered in place on **Start**, never a **to-do**. An entry **concerns** everyone in its **audience** —
+for the club everyone with a running membership, for groups their current members, for chosen
+people those people — never a group admin for being one (ruled 2026-11-10). Only whom the entry
+is for may answer it (see **Answering**); *owed* only decides what Start asks for.
 
 Made precise when L2 was built (ruled 2026-10-02):
-- **Visibility.** A *Group*-visible entry is visible to the running members and admins of its owner
-  group **and of its participating groups**. An archived group confers no concern, no running and
-  no sight.
-- **Calendar without membership.** Without `club.read` (a group admin who is no member) her
-  calendar holds only the entries tied to her groups; club-wide entries stay hidden (ruled
-  2026-10-30, RFC #53 phase 4).
-- **Answering.** She may answer an entry she **sees** on one of her surfaces: she holds `club.read`
-  or a tie to its owner or a participating group, and its visibility admits her. Concern always
-  grants answering; a past entry stays answerable.
+- **Archived group.** An archived group confers no concern, no running and no sight.
+- **Calendar without membership.** Without `club.read` (a group member or admin who is no club
+  member) her calendar holds only the entries whose audience or participating groups include one of
+  her groups, and the chosen-people entries she is chosen for; club-audience entries stay hidden
+  (ruled 2026-10-30, RFC #53 phase 4; audience 2026-11-10).
+- **Answering.** She may answer an entry — Zu-/Absage, a poll vote, her own sign-up line — only
+  when it is one of **her dates** (it concerns her, she runs it via the owner or a participating
+  group, or her group takes part in a club entry) or she may edit it. Everyone else who sees the
+  entry sees its results but cannot answer (ruled 2026-11-10, RFC 0005 phase 9; until then anyone
+  who saw an entry could answer). Withdrawing her own sign-up line stays possible. Organisers see,
+  for each Funktion that asks, who it concerns that has not answered yet, and everyone sees
+  *x von y*. Answering **closes once the entry is over** — its end, or start + 3 h for an
+  open end (ruled 2026-11-10, RFC 0005 phase 8; until then a past entry stayed answerable).
+- **Who answered what** (ruled 2026-11-10). Everyone who sees an entry sees every answer with its
+  name, who recorded it on her behalf, and the *Zusage / Vielleicht / Absage* counts, also after it
+  closed. Whoever may edit the entry also sees **who has not answered yet**: the people the entry
+  concerns without an answer, kids without accounts included.
 - **Pause.** A club-owned entry does not concern a member whose membership is paused for that
   entry's session.
 - **Her dates.** An entry is one of her dates when it concerns her, when she **runs** it — she holds
@@ -1042,22 +1070,62 @@ Made precise when L2 was built (ruled 2026-10-02):
   when she is **expected** at it: a club-owned entry in which a group she is a current member of
   participates. Running and expected never make a response owed. An *Absage* takes an entry off
   Start.
-- **Owed horizon.** Start asks from 14 days before a training, rehearsal or meeting and from 42
-  days before any other kind. The horizon limits what Start asks, not what is owed.
-- **Every training asks its cast** (ruled 2026-10-30, RFC 0002 phase 7;
-  [ADR-0032](docs/adr/0032-every-training-asks-its-cast.md)). A training or rehearsal that a group
-  owns or takes part in asks for a response whenever that group has an act (not archived) in the
-  entry's relevant session, switch or no switch. It **concerns** the act's whole cast, a guest from
-  another group included, so it is owed on her Start and she may answer it.
+- **Owed horizon.** Start asks from 14 days before a training and from 42 days before any other
+  kind. The horizon limits what Start asks, not what is owed.
+- **Nothing asks by default** (ruled 2026-11-10, superseding 2026-10-30;
+  [ADR-0038](docs/adr/0038-attendance-is-an-add-on-nothing-asks-by-default.md)). An entry asks for a
+  response only when its scheduler attached the **Zu-/Absage add-on** — a training too. Attached to
+  a training that a group owns or is the audience of, it also **concerns** the whole cast of that
+  group's act (not archived) in the entry's relevant session, a guest from another group included.
+  A training without it has no open spots and takes no marks.
 - **Recorded on behalf.** A group admin of the act's group may mark a cast member present or absent
   on one of the act's coming trainings — kids without accounts too. The mark is stored as her
   response, naming who recorded it; the latest answer wins (her own answer replaces a mark), and
   the training's trail shows both. Undoing a mark restores the answer before it.
-_UI copy_: Kalendereintrag; Eigentümer; Sichtbarkeit (Gruppe / Verein / Öffentlich); Mitwirkende
-Gruppen; Zu-/Absage
-_Avoid_: **appointment**, **group appointment**, schedule, calling it an event, collapsing
-participating groups into the owner, participant (that is one person's attendance response),
-guest group
+- **Push** (ruled 2026-11-10). A phone is pushed when a new entry asks her for an attendance
+  response, when she is chosen for a chosen-people entry, and when an entry she answered *Ja* or
+  *Vielleicht* moves in time or place or is deleted.
+- **Reminder** (*Erinnern*, ruled 2026-11-10). An organiser may push everyone a Zu-/Absage, an
+  Umfrage or an Eintragsliste still waits for — the people it concerns who have not answered, not
+  herself. Only by hand, at most once per Funktion every six hours, and only while it is open.
+  Nothing reminds automatically, and day schedules never push.
+_UI copy_: Kalendereintrag; Eigentümer; Für wen (Verein / Gruppen / Ausgewählte Personen);
+Zu-/Absage; Erinnern, Erinnert um …
+_Avoid_: **appointment**, **group appointment**, schedule, calling it an event, collapsing the
+audience into the owner, participant (that is one person's attendance response), guest group,
+**visibility** (retired 2026-11-10 — say **audience**), confusing participating groups with the
+audience, a public calendar entry
+
+**Add-on** (calendar entry, `CalendarEntryAddOn`):
+A piece whoever schedules a **calendar entry** attaches to it so the entry does more than state a
+date — the members build what they need themselves instead of the calendar growing new kinds
+(ruled 2026-11-10, calendar grilling). The **attendance response** is one add-on and keeps its
+fixed meaning (yes / maybe / no), because Start, the cast's trainings, open spots and answers
+recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further add-ons:
+- **Poll** — a question with answers the scheduler sets, single or multiple choice. Nothing in the
+  app reads meaning into its answers. Whoever may answer the entry may vote and change her vote until the
+  poll **closes** — when the entry starts, at an earlier closing time, or when closed by hand.
+  A closed poll stays closed (moving the entry or the closing time later never reopens it), names
+  who closed it by hand and states its result; only an explicit **reopen** by whoever may edit
+  the entry, before the entry starts, opens it again. Once closed it can no longer be changed, and
+  its question is fixed as soon as anyone voted. Votes carry names unless the poll is **anonymous**, then only counts are shown, to its scheduler
+  too. Nobody adds her own answer; answers may be added later, and changed or removed only while
+  nobody chose them. An entry may hold several polls; a poll is never owed and never asked on
+  Start.
+- **Sign-up list** — a list everyone who may answer the entry may add to: one short line per person,
+  always named, its text optional, which only she may change or delete afterwards (e.g. who
+  brings what to the summer party). Whoever may edit the entry may remove a line, never rewrite it. It has a title and an
+  optional hint, closes and stays closed like a poll (but is never reopened), an entry may hold several, and it is never asked on Start. It
+  has no prepared slots.
+- **Day schedule** — the plan of a long day: steps of a time and a short text, an optional title,
+  always shown sorted by time. A step belongs to a day of the entry (counted from its start day),
+  so moving the entry moves its schedule with it; a day only appears once the entry spans several.
+  Nobody answers it, it never closes, an entry may hold several, and it is never on Start. Never
+  called *Ablauf* — that is the evening's running order.
+_UI copy_: Funktion, Funktion hinzufügen; Zu-/Absage, Umfrage, Eintragsliste, Mitwirkende Gruppen,
+Tagesablauf; Anonym,
+Abstimmen bis, Eintragen bis
+_Avoid_: Baustein; feature, function, module, widget as code names; building attendance from a poll
 
 **Usual training time** (`UsualTrainingTime`):
 What a group says it usually does — optional, any number of `(weekday, time, duration, venue)`.
@@ -1073,9 +1141,9 @@ _Avoid_: training rhythm, training slot (retired 2026-10-31), generating trainin
 **Training** (planned):
 A concrete, dated **calendar entry** of kind *Training* that a group plans one at a time — from its
 hub (*Training planen*, prefilled from the next usual training time) or from a usual-time hint in
-the calendar (prefilled with that day). It is a real appointment: solid in the calendar, it asks
-the cast ([ADR-0032](docs/adr/0032-every-training-asks-its-cast.md)) and carries the act training
-attendance. A training needs no usual training time and may differ from it.
+the calendar (prefilled with that day). It is a real appointment: solid in the calendar; with the Zu-/Absage add-on attached it asks the
+cast and carries the act training attendance
+([ADR-0038](docs/adr/0038-attendance-is-an-add-on-nothing-asks-by-default.md)). A training needs no usual training time and may differ from it.
 _UI copy_: Training, Training planen
 _Avoid_: generated training, training batch
 

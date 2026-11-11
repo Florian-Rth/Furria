@@ -1,6 +1,7 @@
 import { useMyActsQuery } from '@/features/acts/api';
 import type { MyAct } from '@/features/acts/schemas';
 import { usePendingAnswers } from '@/features/attendance/hooks/use-pending-answers';
+import { useSettledAnswers } from '@/features/attendance/hooks/use-settled-answers';
 import { useOpenBeerPotQuery } from '@/features/beer-list/api';
 import { useMeQuery } from '@/features/session/api';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
@@ -10,7 +11,7 @@ import { useStartQuery } from '../api';
 import { withBeerDesk } from '../beer-desk-tile';
 import { boardPanelsOf, practisableActsOf } from '../practice-tile';
 import type { BoardPanel, Start } from '../schemas';
-import { withPendingAnswers } from '../start-answer';
+import { toHeldAnswers, withPendingAnswers } from '../start-answer';
 import { startScreenOf, withoutQuiet } from '../start-board';
 import { toStartErrorMessage } from '../start-messages';
 import { useQuietMemory } from './use-quiet-memory';
@@ -47,7 +48,7 @@ export const useStartView = (): StartView => {
   const { visit, touched, touch } = useStartVisit(query.data);
   const personId = me.data?.person?.id ?? null;
   const { memory, quiet } = useQuietMemory(personId);
-  const pendingAnswers = usePendingAnswers();
+  const heldAnswers = toHeldAnswers(usePendingAnswers(), useSettledAnswers(), query.data);
   const practised = practisableActsOf(useMyActsQuery().data?.acts ?? NO_ACTS);
   const operates = permissions.has(PERMISSION_KEYS.beerListManage);
   const openBeerPotId = useOpenBeerPotQuery(operates).data?.pot?.beerPotId ?? null;
@@ -56,7 +57,7 @@ export const useStartView = (): StartView => {
   const errorMessage = visit === null ? toStartErrorMessage(query.error) : null;
   const skeletonDue = useSkeletonDelay(!ready && errorMessage === null);
   const start = ready
-    ? withPendingAnswers(withoutQuiet(visit.start, memory, touched), pendingAnswers)
+    ? withPendingAnswers(withoutQuiet(visit.start, memory, touched), heldAnswers)
     : null;
 
   const refetch = (): void => {

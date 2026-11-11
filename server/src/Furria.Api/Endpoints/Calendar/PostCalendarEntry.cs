@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
@@ -62,10 +63,63 @@ public sealed class PostCalendarEntry
             StartsAt = req.StartsAt,
             EndsAt = req.EndsAt,
             Kind = req.Kind,
-            Visibility = req.Visibility,
-            AsksForResponse = req.AsksForResponse,
+            Audience = req.Audience,
+            AudienceGroupIds = req.AudienceGroupIds,
+            AudiencePersonIds = req.AudiencePersonIds,
+            AddOns = [.. req.AddOns.Select(ToInput)],
             ParticipatingGroupIds = req.ParticipatingGroupIds,
         };
+
+    private static CalendarEntryAddOnInput ToInput(PostCalendarEntryAddOnDataDto addOn) =>
+        new()
+        {
+            Kind = addOn.Kind,
+            Poll = addOn.Poll is { } poll ? ToInput(poll) : null,
+            SignUpList = addOn.SignUpList is { } list ? ToInput(list) : null,
+            DaySchedule = addOn.DaySchedule is { } schedule ? ToInput(schedule) : null,
+        };
+
+    private static CalendarDayScheduleInput ToInput(PostCalendarEntryDayScheduleDataDto schedule) =>
+        new()
+        {
+            DayScheduleId = schedule.DayScheduleId,
+            Title = schedule.Title,
+            Steps = [.. schedule.Steps.Select(ToInput)],
+        };
+
+    private static CalendarDayScheduleStepInput ToInput(
+        PostCalendarEntryDayScheduleStepDataDto step
+    ) =>
+        new()
+        {
+            StepId = step.StepId,
+            Day = step.Day,
+            Time = step.Time,
+            Text = step.Text,
+        };
+
+    private static CalendarSignUpListInput ToInput(PostCalendarEntrySignUpListDataDto list) =>
+        new()
+        {
+            SignUpListId = list.SignUpListId,
+            Title = list.Title,
+            Hint = list.Hint,
+            SignUpUntil = list.SignUpUntil,
+        };
+
+    private static CalendarPollInput ToInput(PostCalendarEntryPollDataDto poll) =>
+        new()
+        {
+            PollId = poll.PollId,
+            Question = poll.Question,
+            AllowsMultipleChoices = poll.AllowsMultipleChoices,
+            IsAnonymous = poll.IsAnonymous,
+            VotesUntil = poll.VotesUntil,
+            Options = [.. poll.Options.Select(ToInput)],
+        };
+
+    private static CalendarPollOptionInput ToInput(PostCalendarEntryPollOptionDataDto option) =>
+        new() { OptionId = option.OptionId, Label = option.Label };
 
     private static PostCalendarEntryResponse ToResponse(CalendarEntryWriteResult written) =>
         new()
@@ -100,9 +154,13 @@ public sealed record PostCalendarEntryRequest
 
     public required CalendarEntryKind Kind { get; init; }
 
-    public required CalendarEntryVisibility Visibility { get; init; }
+    public required CalendarEntryAudience Audience { get; init; }
 
-    public required bool AsksForResponse { get; init; }
+    public required IReadOnlyList<int> AudienceGroupIds { get; init; }
+
+    public required IReadOnlyList<int> AudiencePersonIds { get; init; }
+
+    public required IReadOnlyList<PostCalendarEntryAddOnDataDto> AddOns { get; init; }
 
     public required IReadOnlyList<int> ParticipatingGroupIds { get; init; }
 }
@@ -112,10 +170,24 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
     private const string UnknownKindMessage = "Diese Art von Eintrag gibt es nicht.";
     private const string EventsLiveInTheWorkbenchMessage =
         "Eine Veranstaltung wird in den Veranstaltungen gepflegt.";
-    private const string UnknownVisibilityMessage = "Diese Sichtbarkeit gibt es nicht.";
+    private const string UnknownAudienceMessage = "Diese Auswahl für „Für wen“ gibt es nicht.";
+    private const string NoAudienceGroupMessage = "Wähle mindestens eine Gruppe.";
+    private const string NoAudiencePersonMessage = "Wähle mindestens eine Person.";
+    private const string AudienceMismatchMessage = "Diese Auswahl passt nicht zu „Für wen“.";
+    private const string UnknownPersonMessage = "Diese Person gibt es nicht.";
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
     private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
     private const string TitleMissingMessage = "Der Eintrag braucht einen Titel.";
+    private const string AddOnTwiceMessage = "Jeder Baustein kann nur einmal angehängt werden.";
+    private const string TooManyAddOnsMessage = "Ein Eintrag trägt höchstens 30 Bausteine.";
+    private const string VotesAfterTheStartMessage =
+        "Die Abstimmung kann nicht nach dem Beginn enden.";
+    private const string SignUpAfterTheStartMessage =
+        "Das Eintragen kann nicht nach dem Beginn enden.";
+    private const string StepOutsideTheDaysMessage =
+        "Ein Schritt im Tagesablauf liegt außerhalb der Tage des Eintrags.";
+    private const string ParticipationWithoutAddOnMessage =
+        "Ohne den Baustein „Mitwirkende Gruppen“ wirken keine Gruppen mit.";
     private const string EndsBeforeItStartsMessage =
         "Ein Zeitraum kann nicht vor seinem Beginn enden.";
 
@@ -138,15 +210,399 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
         RuleFor(request => request.Kind)
             .NotEqual(CalendarEntryKind.Event)
             .WithMessage(EventsLiveInTheWorkbenchMessage);
-        RuleFor(request => request.Visibility).IsInEnum().WithMessage(UnknownVisibilityMessage);
+        RuleFor(request => request.Audience).IsInEnum().WithMessage(UnknownAudienceMessage);
+        RuleFor(request => request.AudienceGroupIds).NotNull();
+        RuleFor(request => request.AudiencePersonIds).NotNull();
+        RuleFor(request => request.AudienceGroupIds)
+            .NotEmpty()
+            .When(request => request.Audience == CalendarEntryAudience.Groups)
+            .WithMessage(NoAudienceGroupMessage);
+        RuleFor(request => request.AudienceGroupIds)
+            .Empty()
+            .When(request => request.Audience != CalendarEntryAudience.Groups)
+            .WithMessage(AudienceMismatchMessage);
+        RuleFor(request => request.AudiencePersonIds)
+            .NotEmpty()
+            .When(request => request.Audience == CalendarEntryAudience.People)
+            .WithMessage(NoAudiencePersonMessage);
+        RuleFor(request => request.AudiencePersonIds)
+            .Empty()
+            .When(request => request.Audience != CalendarEntryAudience.People)
+            .WithMessage(AudienceMismatchMessage);
+        RuleForEach(request => request.AudienceGroupIds)
+            .GreaterThan(0)
+            .WithMessage(UnknownGroupMessage);
+        RuleForEach(request => request.AudiencePersonIds)
+            .GreaterThan(0)
+            .WithMessage(UnknownPersonMessage);
         RuleFor(request => request.EndsAt)
             .GreaterThanOrEqualTo(request => request.StartsAt)
             .When(request => request.EndsAt is not null)
             .WithMessage(EndsBeforeItStartsMessage);
+        RuleFor(request => request.AddOns).NotNull();
+        RuleFor(request => request.AddOns.Count)
+            .LessThanOrEqualTo(CalendarLimits.MaxAddOns)
+            .When(request => request.AddOns is not null)
+            .WithMessage(TooManyAddOnsMessage);
+        RuleForEach(request => request.AddOns)
+            .SetValidator(new PostCalendarEntryAddOnDataValidator());
+        RuleForEach(request => request.AddOns)
+            .Must((request, addOn) => VotesBeforeTheStart(addOn, request.StartsAt))
+            .WithMessage(VotesAfterTheStartMessage);
+        RuleForEach(request => request.AddOns)
+            .Must((request, addOn) => SignsUpBeforeTheStart(addOn, request.StartsAt))
+            .WithMessage(SignUpAfterTheStartMessage);
+        RuleForEach(request => request.AddOns)
+            .Must((request, addOn) => StepsWithinTheDays(addOn, request.StartsAt, request.EndsAt))
+            .WithMessage(StepOutsideTheDaysMessage);
+        RuleFor(request => request.AddOns)
+            .Must(EachSingleUseAddOnOnce)
+            .When(request => request.AddOns is not null)
+            .WithMessage(AddOnTwiceMessage);
         RuleFor(request => request.ParticipatingGroupIds).NotNull();
+        RuleFor(request => request.ParticipatingGroupIds)
+            .Empty()
+            .When(request =>
+                request.AddOns is not null
+                && !request.AddOns.Any(addOn =>
+                    addOn?.Kind == CalendarEntryAddOnKind.ParticipatingGroups
+                )
+            )
+            .WithMessage(ParticipationWithoutAddOnMessage);
         RuleForEach(request => request.ParticipatingGroupIds)
             .GreaterThan(0)
             .WithMessage(UnknownGroupMessage);
+    }
+
+    [Pure]
+    private static bool VotesBeforeTheStart(
+        PostCalendarEntryAddOnDataDto addOn,
+        DateTimeOffset startsAt
+    ) => addOn?.Poll?.VotesUntil is not { } votesUntil || votesUntil <= startsAt;
+
+    [Pure]
+    private static bool SignsUpBeforeTheStart(
+        PostCalendarEntryAddOnDataDto addOn,
+        DateTimeOffset startsAt
+    ) => addOn?.SignUpList?.SignUpUntil is not { } signUpUntil || signUpUntil <= startsAt;
+
+    [Pure]
+    private static bool StepsWithinTheDays(
+        PostCalendarEntryAddOnDataDto addOn,
+        DateTimeOffset startsAt,
+        DateTimeOffset? endsAt
+    ) =>
+        addOn?.DaySchedule?.Steps is not { } steps
+        || steps.All(step => step is null || step.Day < ClubClock.DaysSpanned(startsAt, endsAt));
+
+    [Pure]
+    private static bool EachSingleUseAddOnOnce(IReadOnlyList<PostCalendarEntryAddOnDataDto> addOns)
+    {
+        var singleUse = addOns
+            .Where(addOn => addOn is not null && !IsMultiUse(addOn.Kind))
+            .Select(addOn => addOn.Kind)
+            .ToList();
+        var pollIds = addOns.Select(addOn => addOn?.Poll?.PollId).OfType<int>().ToList();
+        var signUpListIds = addOns
+            .Select(addOn => addOn?.SignUpList?.SignUpListId)
+            .OfType<int>()
+            .ToList();
+        var dayScheduleIds = addOns
+            .Select(addOn => addOn?.DaySchedule?.DayScheduleId)
+            .OfType<int>()
+            .ToList();
+
+        return singleUse.Distinct().Count() == singleUse.Count
+            && pollIds.Distinct().Count() == pollIds.Count
+            && signUpListIds.Distinct().Count() == signUpListIds.Count
+            && dayScheduleIds.Distinct().Count() == dayScheduleIds.Count;
+    }
+
+    [Pure]
+    private static bool IsMultiUse(CalendarEntryAddOnKind kind) =>
+        kind
+            is CalendarEntryAddOnKind.Poll
+                or CalendarEntryAddOnKind.SignUpList
+                or CalendarEntryAddOnKind.DaySchedule;
+}
+
+public sealed record PostCalendarEntryAddOnDataDto
+{
+    public required CalendarEntryAddOnKind Kind { get; init; }
+
+    public required PostCalendarEntryPollDataDto? Poll { get; init; }
+
+    public required PostCalendarEntrySignUpListDataDto? SignUpList { get; init; }
+
+    public required PostCalendarEntryDayScheduleDataDto? DaySchedule { get; init; }
+}
+
+public sealed record PostCalendarEntryDayScheduleDataDto
+{
+    public required int? DayScheduleId { get; init; }
+
+    public required string? Title { get; init; }
+
+    public required IReadOnlyList<PostCalendarEntryDayScheduleStepDataDto> Steps { get; init; }
+}
+
+public sealed record PostCalendarEntryDayScheduleStepDataDto
+{
+    public required int? StepId { get; init; }
+
+    public required int Day { get; init; }
+
+    public required TimeOnly Time { get; init; }
+
+    public required string Text { get; init; }
+}
+
+public sealed record PostCalendarEntrySignUpListDataDto
+{
+    public required int? SignUpListId { get; init; }
+
+    public required string Title { get; init; }
+
+    public required string? Hint { get; init; }
+
+    public required DateTimeOffset? SignUpUntil { get; init; }
+}
+
+public sealed record PostCalendarEntryPollDataDto
+{
+    public required int? PollId { get; init; }
+
+    public required string Question { get; init; }
+
+    public required bool AllowsMultipleChoices { get; init; }
+
+    public required bool IsAnonymous { get; init; }
+
+    public required DateTimeOffset? VotesUntil { get; init; }
+
+    public required IReadOnlyList<PostCalendarEntryPollOptionDataDto> Options { get; init; }
+}
+
+public sealed record PostCalendarEntryPollOptionDataDto
+{
+    public required int? OptionId { get; init; }
+
+    public required string Label { get; init; }
+}
+
+public sealed class PostCalendarEntryAddOnDataValidator
+    : AbstractValidator<PostCalendarEntryAddOnDataDto>
+{
+    private const string UnknownAddOnMessage = "Diesen Baustein gibt es nicht.";
+    private const string PollWithoutQuestionMessage = "Die Umfrage braucht eine Frage.";
+    private const string PollOutsideAPollMessage = "Nur eine Umfrage trägt Fragen und Antworten.";
+    private const string SignUpListWithoutTitleMessage = "Die Eintragsliste braucht einen Titel.";
+    private const string SignUpListOutsideAListMessage =
+        "Nur eine Eintragsliste trägt Titel und Hinweis.";
+    private const string DayScheduleWithoutStepsMessage = "Der Tagesablauf braucht Schritte.";
+    private const string DayScheduleOutsideAScheduleMessage = "Nur ein Tagesablauf trägt Schritte.";
+
+    public PostCalendarEntryAddOnDataValidator()
+    {
+        RuleFor(addOn => addOn.Kind).IsInEnum().WithMessage(UnknownAddOnMessage);
+        RuleFor(addOn => addOn.Poll)
+            .NotNull()
+            .When(addOn => addOn.Kind == CalendarEntryAddOnKind.Poll)
+            .WithMessage(PollWithoutQuestionMessage);
+        RuleFor(addOn => addOn.Poll)
+            .Null()
+            .When(addOn => addOn.Kind != CalendarEntryAddOnKind.Poll)
+            .WithMessage(PollOutsideAPollMessage);
+        RuleFor(addOn => addOn.Poll!)
+            .SetValidator(new PostCalendarEntryPollDataValidator())
+            .When(addOn => addOn.Poll is not null);
+        RuleFor(addOn => addOn.SignUpList)
+            .NotNull()
+            .When(addOn => addOn.Kind == CalendarEntryAddOnKind.SignUpList)
+            .WithMessage(SignUpListWithoutTitleMessage);
+        RuleFor(addOn => addOn.SignUpList)
+            .Null()
+            .When(addOn => addOn.Kind != CalendarEntryAddOnKind.SignUpList)
+            .WithMessage(SignUpListOutsideAListMessage);
+        RuleFor(addOn => addOn.SignUpList!)
+            .SetValidator(new PostCalendarEntrySignUpListDataValidator())
+            .When(addOn => addOn.SignUpList is not null);
+        RuleFor(addOn => addOn.DaySchedule)
+            .NotNull()
+            .When(addOn => addOn.Kind == CalendarEntryAddOnKind.DaySchedule)
+            .WithMessage(DayScheduleWithoutStepsMessage);
+        RuleFor(addOn => addOn.DaySchedule)
+            .Null()
+            .When(addOn => addOn.Kind != CalendarEntryAddOnKind.DaySchedule)
+            .WithMessage(DayScheduleOutsideAScheduleMessage);
+        RuleFor(addOn => addOn.DaySchedule!)
+            .SetValidator(new PostCalendarEntryDayScheduleDataValidator())
+            .When(addOn => addOn.DaySchedule is not null);
+    }
+}
+
+public sealed class PostCalendarEntryDayScheduleDataValidator
+    : AbstractValidator<PostCalendarEntryDayScheduleDataDto>
+{
+    private const string UnknownDayScheduleMessage = "Diesen Tagesablauf gibt es nicht.";
+    private const string TitleTooLongMessage = "Ein Ablauftitel hat höchstens 120 Zeichen.";
+    private const string NoStepsMessage = "Der Tagesablauf braucht mindestens einen Schritt.";
+    private const string TooManyStepsMessage = "Ein Tagesablauf hat höchstens 50 Schritte.";
+    private const string StepTwiceMessage = "Jeder Schritt kann nur einmal vorkommen.";
+
+    public PostCalendarEntryDayScheduleDataValidator()
+    {
+        RuleFor(schedule => schedule.DayScheduleId)
+            .GreaterThan(0)
+            .When(schedule => schedule.DayScheduleId is not null)
+            .WithMessage(UnknownDayScheduleMessage);
+        RuleFor(schedule => schedule.Title)
+            .Must(title =>
+                title is null || title.Trim().Length <= CalendarLimits.DayScheduleTitleLength
+            )
+            .WithMessage(TitleTooLongMessage);
+        RuleFor(schedule => schedule.Steps)
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(NoStepsMessage)
+            .Must(steps => steps.Count <= CalendarLimits.DayScheduleMaxSteps)
+            .WithMessage(TooManyStepsMessage)
+            .Must(EachStepOnce)
+            .WithMessage(StepTwiceMessage);
+        RuleForEach(schedule => schedule.Steps)
+            .NotNull()
+            .SetValidator(new PostCalendarEntryDayScheduleStepDataValidator());
+    }
+
+    [Pure]
+    private static bool EachStepOnce(IReadOnlyList<PostCalendarEntryDayScheduleStepDataDto> steps)
+    {
+        var stepIds = steps.Select(step => step?.StepId).OfType<int>().ToList();
+
+        return stepIds.Distinct().Count() == stepIds.Count;
+    }
+}
+
+public sealed class PostCalendarEntryDayScheduleStepDataValidator
+    : AbstractValidator<PostCalendarEntryDayScheduleStepDataDto>
+{
+    private const string UnknownStepMessage = "Diesen Schritt gibt es nicht.";
+    private const string DayBeforeTheStartMessage =
+        "Ein Schritt kann nicht vor dem ersten Tag liegen.";
+    private const string TextMissingMessage = "Jeder Schritt braucht einen Text.";
+    private const string TextTooLongMessage = "Ein Schritt hat höchstens 120 Zeichen.";
+
+    public PostCalendarEntryDayScheduleStepDataValidator()
+    {
+        RuleFor(step => step.StepId)
+            .GreaterThan(0)
+            .When(step => step.StepId is not null)
+            .WithMessage(UnknownStepMessage);
+        RuleFor(step => step.Day).GreaterThanOrEqualTo(0).WithMessage(DayBeforeTheStartMessage);
+        RuleFor(step => step.Text)
+            .Cascade(CascadeMode.Stop)
+            .Must(text => !string.IsNullOrWhiteSpace(text))
+            .WithMessage(TextMissingMessage)
+            .Must(text => text.Trim().Length <= CalendarLimits.DayScheduleStepTextLength)
+            .WithMessage(TextTooLongMessage);
+    }
+}
+
+public sealed class PostCalendarEntrySignUpListDataValidator
+    : AbstractValidator<PostCalendarEntrySignUpListDataDto>
+{
+    private const string UnknownSignUpListMessage = "Diese Eintragsliste gibt es nicht.";
+    private const string TitleMissingMessage = "Die Eintragsliste braucht einen Titel.";
+    private const string TitleTooLongMessage = "Ein Listentitel hat höchstens 120 Zeichen.";
+    private const string HintTooLongMessage = "Ein Hinweis hat höchstens 300 Zeichen.";
+
+    public PostCalendarEntrySignUpListDataValidator()
+    {
+        RuleFor(list => list.SignUpListId)
+            .GreaterThan(0)
+            .When(list => list.SignUpListId is not null)
+            .WithMessage(UnknownSignUpListMessage);
+        RuleFor(list => list.Title)
+            .Cascade(CascadeMode.Stop)
+            .Must(title => !string.IsNullOrWhiteSpace(title))
+            .WithMessage(TitleMissingMessage)
+            .Must(title => title.Trim().Length <= CalendarLimits.SignUpListTitleLength)
+            .WithMessage(TitleTooLongMessage);
+        RuleFor(list => list.Hint)
+            .Must(hint => hint is null || hint.Trim().Length <= CalendarLimits.SignUpListHintLength)
+            .WithMessage(HintTooLongMessage);
+    }
+}
+
+public sealed class PostCalendarEntryPollDataValidator
+    : AbstractValidator<PostCalendarEntryPollDataDto>
+{
+    private const string UnknownPollMessage = "Diese Umfrage gibt es nicht.";
+    private const string UnknownOptionMessage = "Diese Antwort gibt es nicht.";
+    private const string QuestionMissingMessage = "Die Umfrage braucht eine Frage.";
+    private const string QuestionTooLongMessage = "Eine Frage hat höchstens 200 Zeichen.";
+    private const string LabelMissingMessage = "Jede Antwort braucht einen Text.";
+    private const string LabelTooLongMessage = "Eine Antwort hat höchstens 120 Zeichen.";
+    private const string OptionCountMessage = "Eine Umfrage hat 2 bis 20 Antworten.";
+    private const string LabelTwiceMessage = "Jede Antwort kann nur einmal vorkommen.";
+
+    public PostCalendarEntryPollDataValidator()
+    {
+        RuleFor(poll => poll.PollId)
+            .GreaterThan(0)
+            .When(poll => poll.PollId is not null)
+            .WithMessage(UnknownPollMessage);
+        RuleFor(poll => poll.Question)
+            .Cascade(CascadeMode.Stop)
+            .Must(question => !string.IsNullOrWhiteSpace(question))
+            .WithMessage(QuestionMissingMessage)
+            .MaximumLength(CalendarLimits.PollQuestionLength)
+            .WithMessage(QuestionTooLongMessage);
+        RuleFor(poll => poll.Options).NotNull();
+        RuleFor(poll => poll.Options.Count)
+            .InclusiveBetween(CalendarLimits.PollMinOptions, CalendarLimits.PollMaxOptions)
+            .When(poll => poll.Options is not null)
+            .WithMessage(OptionCountMessage);
+        RuleForEach(poll => poll.Options)
+            .Cascade(CascadeMode.Stop)
+            .Must(option => option is not null && !string.IsNullOrWhiteSpace(option.Label))
+            .WithMessage(LabelMissingMessage)
+            .Must(option => option.Label.Length <= CalendarLimits.PollOptionLabelLength)
+            .WithMessage(LabelTooLongMessage)
+            .Must(option => option.OptionId is not { } optionId || optionId > 0)
+            .WithMessage(UnknownOptionMessage);
+        RuleFor(poll => poll.Options)
+            .Must(EachLabelOnce)
+            .When(poll => poll.Options is not null && poll.Options.All(HasLabel))
+            .WithMessage(LabelTwiceMessage);
+        RuleFor(poll => poll.Options)
+            .Must(EachOptionOnce)
+            .When(poll => poll.Options is not null && poll.Options.All(HasLabel))
+            .WithMessage(UnknownOptionMessage);
+        RuleFor(poll => poll.Options)
+            .Must(options => options.All(option => option.OptionId is null))
+            .When(poll =>
+                poll.PollId is null && poll.Options is not null && poll.Options.All(HasLabel)
+            )
+            .WithMessage(UnknownOptionMessage);
+    }
+
+    [Pure]
+    private static bool HasLabel(PostCalendarEntryPollOptionDataDto? option) =>
+        option?.Label is not null;
+
+    [Pure]
+    private static bool EachLabelOnce(IReadOnlyList<PostCalendarEntryPollOptionDataDto> options) =>
+        options
+            .Select(option => option.Label.Trim().ToLowerInvariant())
+            .Distinct(StringComparer.Ordinal)
+            .Count() == options.Count;
+
+    [Pure]
+    private static bool EachOptionOnce(IReadOnlyList<PostCalendarEntryPollOptionDataDto> options)
+    {
+        var held = options.Select(option => option.OptionId).OfType<int>().ToList();
+        return held.Distinct().Count() == held.Count;
     }
 }
 

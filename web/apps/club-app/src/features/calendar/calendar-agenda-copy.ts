@@ -1,13 +1,12 @@
-import type { KkEntryKindGlyphKind } from '@furria/ui/KkEntryKindGlyph';
-import type { CalendarKindKey } from '@/lib/calendar-copy';
+import { shiftDay } from '@/lib/day';
 import type {
   CalendarLandmark,
   CalendarRelative,
   CalendarTime,
   CalendarWeekName,
 } from './calendar-agenda';
-import { isoWeekOf, shiftDay, weekdayIndexOf } from './calendar-agenda';
-import type { CalendarEntryVisibility } from './schemas';
+import { isoWeekOf, weekdayIndexOf } from './calendar-agenda';
+import type { OpenMarkKind } from './calendar-open-marks';
 
 export const BOARD_LABEL = 'Termine nach Tagen';
 export const STRIP_LABEL = 'Woche';
@@ -24,6 +23,11 @@ export const TODAY = 'Heute';
 export const ADD_LABEL = 'Termin hinzufügen';
 export const NO_ENTRIES_NOTE = 'keine Termine';
 export const RUNNING_LABEL = 'läuft gerade';
+
+export const OPEN_MARK_LABELS: Record<OpenMarkKind, string> = {
+  vote: 'Abstimmen',
+  signUpList: 'Eintragen',
+};
 export const LOADING_LABEL = 'Der Kalender wird geladen';
 export const ERROR_MESSAGE = 'Der Kalender konnte nicht geladen werden.';
 export const RETRY_LABEL = 'Noch einmal';
@@ -47,8 +51,8 @@ export const DETAIL_MISSING = 'Dieser Termin ist nicht mehr im Kalender.';
 export const FACT_LABELS = {
   when: 'Wann',
   where: 'Wo',
-  groups: 'Gruppen',
-  visibility: 'Sichtbar',
+  owner: 'Eigentümer',
+  audience: 'Für wen',
   event: 'Karten',
 } as const;
 
@@ -88,21 +92,8 @@ export const LANDMARK_LABELS: Record<CalendarLandmark, string> = {
   ashWednesday: 'Aschermittwoch',
 };
 
-export const VISIBILITY_LABELS: Record<CalendarEntryVisibility, string> = {
-  group: 'Nur Gruppe',
-  club: 'Ganzer Verein',
-  public: 'Öffentlich',
-};
-
-export const KIND_GLYPHS: Record<CalendarKindKey, KkEntryKindGlyphKind> = {
-  training: 'training',
-  rehearsal: 'rehearsal',
-  performance: 'performance',
-  meeting: 'meeting',
-  party: 'party',
-  other: 'other',
-  event: 'event',
-};
+export const WHOLE_CLUB_AUDIENCE_LABEL = 'Ganzer Verein';
+export const AUDIENCE_SEPARATOR = ', ';
 
 const CLUB_LABEL = 'Verein';
 

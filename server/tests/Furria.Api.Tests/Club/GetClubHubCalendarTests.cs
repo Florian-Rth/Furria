@@ -190,7 +190,7 @@ public sealed class GetClubHubCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveOutAGroupEntry_When_TheGroupOwnsItAtClubVisibility()
+    public async Task Should_LeaveOutAGroupEntry_When_TheGroupOwnsIt()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -205,7 +205,6 @@ public sealed class GetClubHubCalendarTests : IClassFixture<ApiTestFixture>
                                 "Training der Tanzgarde",
                                 Tomorrow,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde"
                             )
                             .AddCalendarEntry("vereinsprobe", "Stellprobe", DayAfterTomorrow),

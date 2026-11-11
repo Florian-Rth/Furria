@@ -207,15 +207,25 @@ public sealed record CalendarEntryDto
 
     public required IReadOnlyList<ParticipatingGroupDto> ParticipatingGroups { get; init; }
 
-    public required CalendarEntryVisibility Visibility { get; init; }
+    public required CalendarEntryAudience Audience { get; init; }
+
+    public required IReadOnlyList<AudienceGroupDto> AudienceGroups { get; init; }
+
+    public required IReadOnlyList<AudiencePersonDto> AudiencePeople { get; init; }
 
     public required bool AsksForResponse { get; init; }
 
-    public required bool AsksTheCast { get; init; }
+    public required IReadOnlyList<CalendarEntryAddOnDto> AddOns { get; init; }
+
+    public required IReadOnlyList<CalendarOpenFunctionDto> OpenFunctions { get; init; }
+
+    public required CalendarAttendanceDto? Attendance { get; init; }
 
     public required string? Description { get; init; }
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }
+
+    public required bool MayAnswer { get; init; }
 
     public required bool IsRunning { get; init; }
 
@@ -236,13 +246,371 @@ public sealed record CalendarEntryDto
             OwnerGroupName = entry.OwnerGroupName,
             OwnerGroupTone = entry.OwnerGroupTone,
             ParticipatingGroups = [.. entry.ParticipatingGroups.Select(ParticipatingGroupDto.From)],
-            Visibility = entry.Visibility,
+            Audience = entry.Audience,
+            AudienceGroups = [.. entry.AudienceGroups.Select(AudienceGroupDto.From)],
+            AudiencePeople = [.. entry.AudiencePeople.Select(AudiencePersonDto.From)],
             AsksForResponse = entry.AsksForResponse,
-            AsksTheCast = entry.AsksTheCast,
+            AddOns = [.. entry.AddOns.Select(CalendarEntryAddOnDto.From)],
+            OpenFunctions = [.. entry.OpenFunctions.Select(CalendarOpenFunctionDto.From)],
+            Attendance = entry.Attendance is { } attendance
+                ? CalendarAttendanceDto.From(attendance)
+                : null,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
+            MayAnswer = entry.MayAnswer,
             IsRunning = entry.IsRunning,
             Event = entry.Event is { } facts ? CalendarEventFactsDto.From(facts) : null,
+        };
+}
+
+public sealed record CalendarAttendanceDto
+{
+    public required bool IsClosed { get; init; }
+
+    public required int Yes { get; init; }
+
+    public required int Maybe { get; init; }
+
+    public required int No { get; init; }
+
+    public required IReadOnlyList<CalendarAttendanceAnswerDto>? Answers { get; init; }
+
+    public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
+
+    public required CalendarReminderDto? Reminder { get; init; }
+
+    [Pure]
+    public static CalendarAttendanceDto From(CalendarAttendanceDetails attendance) =>
+        new()
+        {
+            IsClosed = attendance.IsClosed,
+            Yes = attendance.Yes,
+            Maybe = attendance.Maybe,
+            No = attendance.No,
+            Answers = attendance.Answers is { } answers
+                ? [.. answers.Select(CalendarAttendanceAnswerDto.From)]
+                : null,
+            NotAnswered = attendance.NotAnswered is { } people
+                ? [.. people.Select(CalendarAttendancePersonDto.From)]
+                : null,
+            Reminder = CalendarReminderDto.From(attendance.Reminder),
+        };
+}
+
+public sealed record CalendarReminderDto
+{
+    public required DateTimeOffset? LastRemindedAt { get; init; }
+
+    public required DateTimeOffset? RemindableFrom { get; init; }
+
+    public required int ReachableCount { get; init; }
+
+    [Pure]
+    public static CalendarReminderDto? From(CalendarReminderDetails? reminder) =>
+        reminder is null
+            ? null
+            : new()
+            {
+                LastRemindedAt = reminder.LastRemindedAt,
+                RemindableFrom = reminder.RemindableFrom,
+                ReachableCount = reminder.ReachableCount,
+            };
+}
+
+public sealed record CalendarAttendanceAnswerDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    public required AttendanceAnswer Answer { get; init; }
+
+    public required string? RecordedByFirstName { get; init; }
+
+    public required string? RecordedByLastName { get; init; }
+
+    public required DateTimeOffset AnsweredAt { get; init; }
+
+    [Pure]
+    public static CalendarAttendanceAnswerDto From(CalendarAttendanceAnswerDetails answer) =>
+        new()
+        {
+            PersonId = answer.PersonId,
+            FirstName = answer.FirstName,
+            LastName = answer.LastName,
+            Answer = answer.Answer,
+            RecordedByFirstName = answer.RecordedByFirstName,
+            RecordedByLastName = answer.RecordedByLastName,
+            AnsweredAt = answer.AnsweredAt,
+        };
+}
+
+public sealed record CalendarAttendancePersonDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    [Pure]
+    public static CalendarAttendancePersonDto From(CalendarAttendancePerson person) =>
+        new()
+        {
+            PersonId = person.PersonId,
+            FirstName = person.FirstName,
+            LastName = person.LastName,
+        };
+}
+
+public sealed record CalendarOpenFunctionDto
+{
+    public required CalendarEntryAddOnKind Kind { get; init; }
+
+    public required int AddOnId { get; init; }
+
+    public required bool HasAnswered { get; init; }
+
+    [Pure]
+    public static CalendarOpenFunctionDto From(CalendarOpenFunction open) =>
+        new()
+        {
+            Kind = open.Kind,
+            AddOnId = open.AddOnId,
+            HasAnswered = open.HasAnswered,
+        };
+}
+
+public sealed record CalendarEntryAddOnDto
+{
+    public required CalendarEntryAddOnKind Kind { get; init; }
+
+    public required CalendarPollDto? Poll { get; init; }
+
+    public required CalendarSignUpListDto? SignUpList { get; init; }
+
+    public required CalendarDayScheduleDto? DaySchedule { get; init; }
+
+    [Pure]
+    public static CalendarEntryAddOnDto From(CalendarEntryAddOnDetails addOn) =>
+        new()
+        {
+            Kind = addOn.Kind,
+            Poll = addOn.Poll is { } poll ? CalendarPollDto.From(poll) : null,
+            SignUpList = addOn.SignUpList is { } list ? CalendarSignUpListDto.From(list) : null,
+            DaySchedule = addOn.DaySchedule is { } schedule
+                ? CalendarDayScheduleDto.From(schedule)
+                : null,
+        };
+}
+
+public sealed record CalendarDayScheduleDto
+{
+    public required int DayScheduleId { get; init; }
+
+    public required string? Title { get; init; }
+
+    public required IReadOnlyList<CalendarDayScheduleStepDto> Steps { get; init; }
+
+    [Pure]
+    public static CalendarDayScheduleDto From(CalendarDayScheduleDetails schedule) =>
+        new()
+        {
+            DayScheduleId = schedule.DayScheduleId,
+            Title = schedule.Title,
+            Steps = [.. schedule.Steps.Select(CalendarDayScheduleStepDto.From)],
+        };
+}
+
+public sealed record CalendarDayScheduleStepDto
+{
+    public required int StepId { get; init; }
+
+    public required int Day { get; init; }
+
+    public required TimeOnly Time { get; init; }
+
+    public required string Text { get; init; }
+
+    [Pure]
+    public static CalendarDayScheduleStepDto From(CalendarDayScheduleStepDetails step) =>
+        new()
+        {
+            StepId = step.StepId,
+            Day = step.Day,
+            Time = step.Time,
+            Text = step.Text,
+        };
+}
+
+public sealed record CalendarSignUpListDto
+{
+    public required int SignUpListId { get; init; }
+
+    public required string Title { get; init; }
+
+    public required string? Hint { get; init; }
+
+    public required DateTimeOffset? SignUpUntil { get; init; }
+
+    public required DateTimeOffset? ClosedAt { get; init; }
+
+    public required string? ClosedByFirstName { get; init; }
+
+    public required string? ClosedByLastName { get; init; }
+
+    public required bool IsClosed { get; init; }
+
+    public required IReadOnlyList<CalendarSignUpLineDto> Lines { get; init; }
+
+    public required int? ConcernedCount { get; init; }
+
+    public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
+
+    public required CalendarReminderDto? Reminder { get; init; }
+
+    [Pure]
+    public static CalendarSignUpListDto From(CalendarSignUpListDetails list) =>
+        new()
+        {
+            SignUpListId = list.SignUpListId,
+            Title = list.Title,
+            Hint = list.Hint,
+            SignUpUntil = list.SignUpUntil,
+            ClosedAt = list.ClosedAt,
+            ClosedByFirstName = list.ClosedBy?.FirstName,
+            ClosedByLastName = list.ClosedBy?.LastName,
+            IsClosed = list.IsClosed,
+            Lines = [.. list.Lines.Select(CalendarSignUpLineDto.From)],
+            ConcernedCount = list.ConcernedCount,
+            NotAnswered = list.NotAnswered is { } missing
+                ? [.. missing.Select(CalendarAttendancePersonDto.From)]
+                : null,
+            Reminder = CalendarReminderDto.From(list.Reminder),
+        };
+}
+
+public sealed record CalendarSignUpLineDto
+{
+    public required int LineId { get; init; }
+
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    public required string? Text { get; init; }
+
+    public required bool ByViewer { get; init; }
+
+    [Pure]
+    public static CalendarSignUpLineDto From(CalendarSignUpLineDetails line) =>
+        new()
+        {
+            LineId = line.LineId,
+            PersonId = line.PersonId,
+            FirstName = line.FirstName,
+            LastName = line.LastName,
+            Text = line.Text,
+            ByViewer = line.ByViewer,
+        };
+}
+
+public sealed record CalendarPollDto
+{
+    public required int PollId { get; init; }
+
+    public required string Question { get; init; }
+
+    public required bool AllowsMultipleChoices { get; init; }
+
+    public required bool IsAnonymous { get; init; }
+
+    public required DateTimeOffset? VotesUntil { get; init; }
+
+    public required DateTimeOffset? ClosedAt { get; init; }
+
+    public required string? ClosedByFirstName { get; init; }
+
+    public required string? ClosedByLastName { get; init; }
+
+    public required bool IsClosed { get; init; }
+
+    public required int VoterCount { get; init; }
+
+    public required int? ConcernedCount { get; init; }
+
+    public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
+
+    public required CalendarReminderDto? Reminder { get; init; }
+
+    public required IReadOnlyList<CalendarPollOptionDto> Options { get; init; }
+
+    [Pure]
+    public static CalendarPollDto From(CalendarPollDetails poll) =>
+        new()
+        {
+            PollId = poll.PollId,
+            Question = poll.Question,
+            AllowsMultipleChoices = poll.AllowsMultipleChoices,
+            IsAnonymous = poll.IsAnonymous,
+            VotesUntil = poll.VotesUntil,
+            ClosedAt = poll.ClosedAt,
+            ClosedByFirstName = poll.ClosedBy?.FirstName,
+            ClosedByLastName = poll.ClosedBy?.LastName,
+            IsClosed = poll.IsClosed,
+            VoterCount = poll.VoterCount,
+            ConcernedCount = poll.ConcernedCount,
+            NotAnswered = poll.NotAnswered is { } missing
+                ? [.. missing.Select(CalendarAttendancePersonDto.From)]
+                : null,
+            Reminder = CalendarReminderDto.From(poll.Reminder),
+            Options = [.. poll.Options.Select(CalendarPollOptionDto.From)],
+        };
+}
+
+public sealed record CalendarPollOptionDto
+{
+    public required int OptionId { get; init; }
+
+    public required string Label { get; init; }
+
+    public required int VoteCount { get; init; }
+
+    public required bool ViewerChose { get; init; }
+
+    public required IReadOnlyList<CalendarPollVoterDto> Voters { get; init; }
+
+    [Pure]
+    public static CalendarPollOptionDto From(CalendarPollOptionDetails option) =>
+        new()
+        {
+            OptionId = option.OptionId,
+            Label = option.Label,
+            VoteCount = option.VoteCount,
+            ViewerChose = option.ViewerChose,
+            Voters = [.. option.Voters.Select(CalendarPollVoterDto.From)],
+        };
+}
+
+public sealed record CalendarPollVoterDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    [Pure]
+    public static CalendarPollVoterDto From(CalendarPollVoter voter) =>
+        new()
+        {
+            PersonId = voter.PersonId,
+            FirstName = voter.FirstName,
+            LastName = voter.LastName,
         };
 }
 
@@ -273,6 +641,42 @@ public sealed record CalendarEventFactsDto
             PresaleStartsAt = facts.PresaleStartsAt,
             Status = facts.Status,
             Picture = PictureDto.From(facts.Picture),
+        };
+}
+
+public sealed record AudienceGroupDto
+{
+    public required int GroupId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required GroupTone? Tone { get; init; }
+
+    [Pure]
+    public static AudienceGroupDto From(AudienceGroup group) =>
+        new()
+        {
+            GroupId = group.GroupId,
+            Name = group.Name,
+            Tone = group.Tone,
+        };
+}
+
+public sealed record AudiencePersonDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    [Pure]
+    public static AudiencePersonDto From(AudiencePerson person) =>
+        new()
+        {
+            PersonId = person.PersonId,
+            FirstName = person.FirstName,
+            LastName = person.LastName,
         };
 }
 

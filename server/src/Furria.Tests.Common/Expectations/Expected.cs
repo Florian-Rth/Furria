@@ -86,6 +86,14 @@ public sealed class Expected
     public BoardSeatSetExpectations BoardSeatsOfOffice(int boardOfficeId) =>
         new(this, boardOfficeId);
 
+    public CalendarPollExpectations CalendarPoll(int pollId) => new(this, pollId);
+
+    public CalendarSignUpListExpectations CalendarSignUpList(int signUpListId) =>
+        new(this, signUpListId);
+
+    public CalendarDayScheduleExpectations CalendarDaySchedule(int dayScheduleId) =>
+        new(this, dayScheduleId);
+
     public CalendarEntryExpectations CalendarEntry(int calendarEntryId) =>
         new(this, calendarEntryId);
 

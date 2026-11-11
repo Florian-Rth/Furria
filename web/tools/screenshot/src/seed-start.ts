@@ -68,8 +68,8 @@ type GroupTone =
   | 'orchid'
   | 'rose';
 type ClubIcon = 'crown' | 'euro' | 'key' | 'camera' | 'wrench' | 'star' | 'heart' | 'mask' | 'flag';
-type EntryKind = 'training' | 'rehearsal' | 'performance' | 'meeting' | 'party' | 'other';
-type EntryVisibility = 'group' | 'club' | 'public';
+type EntryKind = 'plain' | 'training' | 'trip';
+type EntryAudience = 'club' | 'groups';
 
 interface MembershipSpec {
   readonly startedOn: IsoDay;
@@ -175,7 +175,7 @@ interface EntrySpec {
   readonly startsAt: Date;
   readonly endsAt: Date | null;
   readonly kind: EntryKind;
-  readonly visibility: EntryVisibility;
+  readonly audience: EntryAudience;
   readonly asksForResponse: boolean;
   readonly participating: readonly string[];
 }
@@ -630,7 +630,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: runningStart,
       endsAt: hoursAfter(runningStart, 2),
       kind: 'training',
-      visibility: 'group',
+      audience: 'groups',
       asksForResponse: false,
       participating: [],
     },
@@ -643,7 +643,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(tomorrow, '17:00'),
       endsAt: at(tomorrow, '18:00'),
       kind: 'training',
-      visibility: 'group',
+      audience: 'groups',
       asksForResponse: false,
       participating: [],
     },
@@ -655,8 +655,8 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Festhalle Großfurra',
       startsAt: at(tomorrow, '18:00'),
       endsAt: at(tomorrow, '20:00'),
-      kind: 'rehearsal',
-      visibility: 'group',
+      kind: 'plain',
+      audience: 'groups',
       asksForResponse: true,
       participating: [],
     },
@@ -669,8 +669,8 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Festhalle Großfurra',
       startsAt: at(generalprobeDay, '19:00'),
       endsAt: at(generalprobeDay, '21:30'),
-      kind: 'rehearsal',
-      visibility: 'group',
+      kind: 'plain',
+      audience: 'groups',
       asksForResponse: true,
       participating: ['Männerballett', 'Elferrat'],
     },
@@ -683,7 +683,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(tuesday, '20:00'),
       endsAt: at(tuesday, '21:30'),
       kind: 'training',
-      visibility: 'group',
+      audience: 'groups',
       asksForResponse: true,
       participating: [],
     },
@@ -695,8 +695,8 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Vereinsraum',
       startsAt: at(thursday, '19:30'),
       endsAt: at(thursday, '21:30'),
-      kind: 'meeting',
-      visibility: 'group',
+      kind: 'plain',
+      audience: 'groups',
       asksForResponse: true,
       participating: [],
     },
@@ -708,8 +708,8 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Vereinsraum',
       startsAt: at(saturday, '14:11'),
       endsAt: at(saturday, '17:00'),
-      kind: 'other',
-      visibility: 'club',
+      kind: 'plain',
+      audience: 'club',
       asksForResponse: false,
       participating: [],
     },
@@ -721,8 +721,8 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Vereinsraum',
       startsAt: at(assembly, '19:30'),
       endsAt: at(assembly, '21:30'),
-      kind: 'meeting',
-      visibility: 'club',
+      kind: 'plain',
+      audience: 'club',
       asksForResponse: false,
       participating: [],
     },
@@ -734,8 +734,8 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Festhalle Großfurra',
       startsAt: at(opening, '11:11'),
       endsAt: at(opening, '18:00'),
-      kind: 'performance',
-      visibility: 'public',
+      kind: 'trip',
+      audience: 'club',
       asksForResponse: true,
       participating: ['Tanzgarde', 'Elferrat', 'Männerballett'],
     },
@@ -747,8 +747,8 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Festhalle Großfurra',
       startsAt: at(christmasParty, '18:00'),
       endsAt: at(christmasParty, '23:00'),
-      kind: 'party',
-      visibility: 'club',
+      kind: 'plain',
+      audience: 'club',
       asksForResponse: false,
       participating: [],
     },
@@ -1245,8 +1245,17 @@ const ensureCalendar = async (
       startsAt: spec.startsAt.toISOString(),
       endsAt: spec.endsAt?.toISOString() ?? null,
       kind: spec.kind,
-      visibility: spec.visibility,
-      asksForResponse: spec.asksForResponse,
+      audience: spec.audience,
+      audienceGroupIds: spec.audience === 'groups' && ownerGroupId !== null ? [ownerGroupId] : [],
+      audiencePersonIds: [],
+      addOns: [
+        ...(spec.asksForResponse
+          ? [{ kind: 'attendance', poll: null, signUpList: null, daySchedule: null }]
+          : []),
+        ...(spec.participating.length > 0
+          ? [{ kind: 'participatingGroups', poll: null, signUpList: null, daySchedule: null }]
+          : []),
+      ],
       participatingGroupIds: spec.participating.map((group) => lookUp(groupIds, group, 'group')),
     };
     const knownId = known.get(entryLookupKeyOf(spec.title, ownerGroupId));

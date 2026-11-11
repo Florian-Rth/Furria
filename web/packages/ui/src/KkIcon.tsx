@@ -64,6 +64,7 @@ import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LayersClearOutlinedIcon from '@mui/icons-material/LayersClearOutlined';
 import LinkOffOutlinedIcon from '@mui/icons-material/LinkOffOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
+import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MailOutlinedIcon from '@mui/icons-material/MailOutlined';
@@ -85,6 +86,7 @@ import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
+import PollOutlinedIcon from '@mui/icons-material/PollOutlined';
 import PolylineOutlinedIcon from '@mui/icons-material/PolylineOutlined';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
@@ -93,6 +95,7 @@ import RedoOutlinedIcon from '@mui/icons-material/RedoOutlined';
 import RemoveOutlinedIcon from '@mui/icons-material/RemoveOutlined';
 import RotateLeftOutlinedIcon from '@mui/icons-material/RotateLeftOutlined';
 import RotateRightOutlinedIcon from '@mui/icons-material/RotateRightOutlined';
+import RouteOutlinedIcon from '@mui/icons-material/RouteOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
@@ -218,6 +221,9 @@ export type KkIconName =
   | 'openInBrowser'
   | 'pin'
   | 'pinFilled'
+  | 'poll'
+  | 'signUpList'
+  | 'daySchedule'
   | 'block'
   | 'unblock'
   | 'wish'
@@ -354,6 +360,9 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   stage: TheaterComedyOutlinedIcon,
   pin: PushPinOutlinedIcon,
   pinFilled: PushPinIcon,
+  poll: PollOutlinedIcon,
+  signUpList: ListAltOutlinedIcon,
+  daySchedule: RouteOutlinedIcon,
   block: ViewAgendaOutlinedIcon,
   unblock: LinkOffOutlinedIcon,
   wish: TuneRoundedIcon,

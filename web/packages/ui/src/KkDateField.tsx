@@ -27,6 +27,7 @@ interface KkDateFieldProps {
   emptyLabel?: string;
   hint?: string;
   required?: boolean;
+  disabled?: boolean;
   error?: boolean;
   helperText?: string;
   sx?: KkSx;
@@ -42,6 +43,7 @@ export const KkDateField: FC<KkDateFieldProps> = ({
   emptyLabel,
   hint,
   required,
+  disabled,
   error,
   helperText,
   sx,
@@ -68,6 +70,7 @@ export const KkDateField: FC<KkDateFieldProps> = ({
         label={label}
         choices={choices}
         selectedId={dateChoiceId(value)}
+        disabled={disabled}
         onSelect={selectChoice}
       />
     );
@@ -79,6 +82,7 @@ export const KkDateField: FC<KkDateFieldProps> = ({
         value={parseIsoDate(value)}
         onChange={change}
         format={DISPLAY_FORMAT}
+        disabled={disabled}
         slotProps={{
           field: { clearable: allowEmpty },
           textField: { name, required, error, helperText: helper, fullWidth: true },

@@ -32,6 +32,23 @@ public sealed class AttendanceResponseExpectations
             async (dbContext, ct) => Assert.Empty(await AnswersOfAsync(dbContext, personId, ct))
         );
 
+    public Expected ToCarryNoAnswer() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                Assert.False(
+                    await dbContext
+                        .AttendanceResponses.AsNoTracking()
+                        .AnyAsync(row => row.CalendarEntryId == _calendarEntryId, ct)
+                );
+                Assert.False(
+                    await dbContext
+                        .AttendanceResponseChanges.AsNoTracking()
+                        .AnyAsync(row => row.CalendarEntryId == _calendarEntryId, ct)
+                );
+            }
+        );
+
     public Expected ToCarryMarkFrom(
         int personId,
         AttendanceAnswer answer,

@@ -118,6 +118,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<BeerStockWarningService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
+        services.AddScoped<ChoosablePeopleService>();
         services.AddScoped<EventService>();
         services.AddScoped<ActCatalogue>();
         services.AddScoped<ActService>();
@@ -207,6 +208,9 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<ActCastFreeze>();
         services.AddHostedService<BeerTabReminders>();
         services.AddHostedService<BeerStockWarnings>();
+        services.AddScoped<CalendarPushExpansion>();
+        services.AddScoped<PushOutboxDelivery>();
+        services.AddHostedService<PushDispatcher>();
         services.AddSingleton<ChangeFeed>();
         services.AddHostedService<ChangeListener>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
@@ -227,6 +231,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MailOutboxSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>
             serviceProvider.GetRequiredService<MailOutboxSignal>()
+        );
+        services.AddSingleton<PushOutboxSignal>();
+        services.AddSingleton<OutboxSignal>(serviceProvider =>
+            serviceProvider.GetRequiredService<PushOutboxSignal>()
         );
         services.AddSingleton<MediaFileReaperSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>

@@ -15,6 +15,7 @@ using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
 using Furria.Core.Studio;
 using Furria.Core.Website;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
@@ -50,6 +51,15 @@ public static class ChangedTables
         [typeof(UsualTrainingTime)] = [DomainChange.UsualTrainingTime],
         [typeof(CalendarEntry)] = [DomainChange.CalendarEntry],
         [typeof(CalendarEntryGroup)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarEntryAudienceGroup)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarEntryAudiencePerson)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarPoll)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarPollOption)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarPollVote)] = [DomainChange.CalendarPollVote],
+        [typeof(CalendarSignUpList)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarSignUpLine)] = [DomainChange.CalendarSignUpLine],
+        [typeof(CalendarDaySchedule)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarDayScheduleStep)] = [DomainChange.CalendarEntry],
         [typeof(AttendanceResponse)] = [DomainChange.AttendanceResponse],
         [typeof(AttendanceResponseChange)] = [DomainChange.AttendanceResponse],
         [typeof(Event)] = [DomainChange.Event],
@@ -114,6 +124,8 @@ public static class ChangedTables
         typeof(PasskeyChallenge),
         typeof(DataProtectionKey),
         typeof(OutboxMail),
+        typeof(OutboxPush),
+        typeof(OutboxCalendarPush),
         typeof(LogEntry),
         typeof(MediaJob),
         typeof(MediaFileTombstone),

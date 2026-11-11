@@ -1,5 +1,11 @@
 import { z } from 'zod';
 import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
+import {
+  AudienceGroupSchema,
+  AudiencePersonSchema,
+  CalendarEntryAudienceSchema,
+  CalendarOpenFunctionSchema,
+} from '@/features/calendar/schemas';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail/schemas';
 import { AppSearchSchema } from '@/features/session/schemas';
 import { PersonRefSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
@@ -193,9 +199,6 @@ export type UsualTrainingTimeForm = z.infer<typeof UsualTrainingTimeFormSchema>;
 export const GroupCalendarKindSchema = z.enum(CALENDAR_KIND_KEYS);
 export type GroupCalendarKind = z.infer<typeof GroupCalendarKindSchema>;
 
-export const GroupCalendarVisibilitySchema = z.enum(['group', 'club', 'public']);
-export type GroupCalendarVisibility = z.infer<typeof GroupCalendarVisibilitySchema>;
-
 export const GroupCalendarParticipantSchema = z.object({
   groupId: z.number().int(),
   name: z.string(),
@@ -215,11 +218,14 @@ export const GroupCalendarEntrySchema = z.object({
   ownerGroupName: z.string().nullable(),
   ownerGroupTone: GroupToneSchema.nullable(),
   participatingGroups: z.array(GroupCalendarParticipantSchema),
-  visibility: GroupCalendarVisibilitySchema,
+  audience: CalendarEntryAudienceSchema,
+  audienceGroups: z.array(AudienceGroupSchema),
+  audiencePeople: z.array(AudiencePersonSchema),
   asksForResponse: z.boolean(),
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
-  viewerMayAnswer: z.boolean(),
+  mayAnswer: z.boolean(),
+  openFunctions: z.array(CalendarOpenFunctionSchema),
   isRunning: z.boolean(),
 });
 export type GroupCalendarEntry = z.infer<typeof GroupCalendarEntrySchema>;

@@ -21,9 +21,15 @@ public sealed class CalendarEntry : ITimestamped
 
     public CalendarEntryKind Kind { get; set; }
 
-    public CalendarEntryVisibility Visibility { get; set; }
+    public CalendarEntryAudience Audience { get; set; }
 
     public bool AsksForResponse { get; set; }
+
+    public int? AttendancePosition { get; set; }
+
+    public DateTimeOffset? AttendanceLastRemindedAt { get; set; }
+
+    public int? ParticipatingGroupsPosition { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 
@@ -36,4 +42,14 @@ public sealed class CalendarEntry : ITimestamped
     public Event? Event { get; set; }
 
     public ICollection<CalendarEntryGroup> ParticipatingGroups { get; set; } = [];
+
+    public ICollection<CalendarEntryAudienceGroup> AudienceGroups { get; set; } = [];
+
+    public ICollection<CalendarEntryAudiencePerson> AudiencePeople { get; set; } = [];
+
+    public ICollection<CalendarPoll> Polls { get; set; } = [];
+
+    public ICollection<CalendarSignUpList> SignUpLists { get; set; } = [];
+
+    public ICollection<CalendarDaySchedule> DaySchedules { get; set; } = [];
 }

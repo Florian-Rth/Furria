@@ -40,7 +40,21 @@ internal static class StartEntryRows
                 .ThenBy(link => link.GroupId)
                 .Select(link => new StartGroupRow(link.GroupId, link.Group!.Name, link.Group!.Tone))
                 .ToList(),
-            entry.Visibility,
+            new StartAudienceRow(
+                entry.Audience,
+                entry
+                    .AudienceGroups.OrderBy(link =>
+                        EF.Functions.Collate(link.Group!.Name, GermanCollation.Name)
+                    )
+                    .ThenBy(link => link.GroupId)
+                    .Select(link => new StartGroupRow(
+                        link.GroupId,
+                        link.Group!.Name,
+                        link.Group!.Tone
+                    ))
+                    .ToList(),
+                entry.AudiencePeople.Select(link => link.PersonId).ToList()
+            ),
             entry.AsksForResponse,
             entry.Description,
             entry.Event == null
@@ -62,7 +76,7 @@ internal sealed record StartEntryRow(
     StartVenueRow? Venue,
     StartGroupRow? OwnerGroup,
     IReadOnlyList<StartGroupRow> ParticipatingGroups,
-    CalendarEntryVisibility Visibility,
+    StartAudienceRow Audience,
     bool AsksForResponse,
     string? Description,
     StartEventRow? Event
@@ -70,18 +84,23 @@ internal sealed record StartEntryRow(
 {
     [Pure]
     public CalendarEntryFacts ToFacts() =>
-        CalendarEntryFacts.Of(
-            OwnerGroup?.GroupId,
-            [.. ParticipatingGroups.Select(group => group.GroupId)],
-            Visibility,
-            Kind,
-            StartsAt
-        );
+        new()
+        {
+            OwnerGroupId = OwnerGroup?.GroupId,
+            ParticipatingGroupIds = [.. ParticipatingGroups.Select(group => group.GroupId)],
+            Audience = Audience.Audience,
+            AudienceGroupIds = [.. Audience.Groups.Select(group => group.GroupId)],
+            AudiencePersonIds = Audience.PersonIds,
+            Kind = Kind,
+            AsksForResponse = AsksForResponse,
+            StartsAt = StartsAt,
+        };
 
     [Pure]
     public IEnumerable<int> GroupIds() =>
         new[] { OwnerGroup }
             .Concat(ParticipatingGroups)
+            .Concat(Audience.Groups)
             .OfType<StartGroupRow>()
             .Select(group => group.GroupId);
 
@@ -111,3 +130,9 @@ internal sealed record StartEventRow(
 );
 
 internal sealed record StartGroupRow(int GroupId, string Name, GroupTone? Tone);
+
+internal sealed record StartAudienceRow(
+    CalendarEntryAudience Audience,
+    IReadOnlyList<StartGroupRow> Groups,
+    IReadOnlyList<int> PersonIds
+);

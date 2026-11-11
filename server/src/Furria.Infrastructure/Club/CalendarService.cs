@@ -17,11 +17,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
 
-public sealed class CalendarService
+public sealed partial class CalendarService
 {
     private const string UnknownEntryMessage = "Diesen Kalendereintrag gibt es nicht.";
     private const string NoPersonMessage = "Dieser Zugang gehört zu keiner Person.";
-    private const bool SeesEveryClubEntry = true;
     private const string NotYoursMessage = "Auf diesen Kalendereintrag kannst du nicht antworten.";
     private const string NotOwnedMessage = "Diesen Kalendereintrag darfst du nicht pflegen.";
     private const string NoResponseWantedMessage = "Dieser Eintrag fragt nicht nach einer Antwort.";
@@ -35,13 +34,18 @@ public sealed class CalendarService
         "Eine archivierte Gruppe kann nicht mitwirken.";
     private const string EventsLiveInTheWorkbenchMessage =
         "Eine Veranstaltung wird in den Veranstaltungen gepflegt.";
-    private const string ClubEntryCannotBeGroupOnlyMessage =
-        "Ein Eintrag des Vereins kann nicht gruppenintern sein.";
+    private const string ArchivedAudienceGroupMessage =
+        "Eine archivierte Gruppe kann nicht gewählt werden.";
+    private const string UnchoosablePersonMessage = "Diese Person kann nicht ausgewählt werden.";
+    private const string NoParticipatingGroupMessage = "Wähle mindestens eine mitwirkende Gruppe.";
+
+    private static readonly CalendarRights SeesEveryClubEntry = new(
+        HoldsClubRead: true,
+        ManagesClubCalendar: false
+    );
 
     private static readonly IReadOnlyDictionary<int, AttendanceAnswer> NoAnswers =
         new Dictionary<int, AttendanceAnswer>();
-
-    private static readonly IReadOnlySet<GroupSession> NoActSessions = new HashSet<GroupSession>();
 
     private static readonly IReadOnlyDictionary<
         VenueCollisionQuery,
@@ -92,23 +96,20 @@ public sealed class CalendarService
             )
             .Where(entry => !query.ClubOwnedOnly || entry.OwnerGroupId == null)
             .Where(entry => query.OwnerGroupId == null || entry.OwnerGroupId == query.OwnerGroupId)
-            .Where(VisibleTo(viewer.PersonId, viewer.HoldsClubRead, today))
+            .Where(VisibleTo(viewer.PersonId, viewer.Rights, today))
             .Where(PublishedEvents.IsListedEntry)
             .OrderBy(entry => entry.StartsAt)
             .ThenBy(entry => entry.Id)
             .Select(RowProjection(now, openEndedCutoff))
             .ToListAsync(ct);
+        var ties = await _dbContext.CalendarTiesOfAsync(viewer.PersonId, today, ct);
+        rows = [.. rows.Where(row => ties.Sees(FactsOf(row), viewer.Rights))];
 
-        var answers = await AnswersOfAsync(
-            viewer.PersonId,
-            [.. rows.Select(row => row.CalendarEntryId)],
-            ct
-        );
-
-        var actSessions = await ActSessionsOfAsync(rows, ct);
+        var extras = await ExtrasOfAsync(viewer.PersonId, rows, now, ct);
+        var organised = await OrganisedOwnersAsync(query.ViewerAccountId, rows, ties, ct);
 
         return Result<IReadOnlyList<CalendarEntrySummary>>.Success([
-            .. rows.Select(row => ToSummary(row, answers, actSessions, now)),
+            .. rows.Select(row => ToSummary(row, extras, now, MayAnswer(row, ties, organised))),
         ]);
     }
 
@@ -128,7 +129,7 @@ public sealed class CalendarService
         var row = await _dbContext
             .CalendarEntries.AsNoTracking()
             .Where(entry => entry.Id == calendarEntryId)
-            .Where(VisibleTo(viewer.PersonId, viewer.HoldsClubRead, today))
+            .Where(VisibleTo(viewer.PersonId, viewer.Rights, today))
             .Where(PublishedEvents.IsListedEntry)
             .Select(RowProjection(now, openEndedCutoff))
             .SingleOrDefaultAsync(ct);
@@ -136,27 +137,40 @@ public sealed class CalendarService
         if (row is null)
             return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
 
-        var answers = await AnswersOfAsync(viewer.PersonId, [row.CalendarEntryId], ct);
+        var ties = await _dbContext.CalendarTiesOfAsync(viewer.PersonId, today, ct);
+        if (!ties.Sees(FactsOf(row), viewer.Rights))
+            return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
+
+        var extras = await ExtrasOfAsync(viewer.PersonId, [row], now, ct);
+        var organises = await MayOwnAsync(viewerAccountId, row.OwnerGroupId, ct);
+        var concern = await ConcernOfAsync(
+            row,
+            extras,
+            new ConcernViewer(viewer.PersonId, organises),
+            today,
+            ct
+        );
+        var mayAnswer = MayAnswer(row, ties, OrganisedOwners.Of(row.OwnerGroupId, organises));
 
         return Result<CalendarEntrySummary>.Success(
-            ToSummary(row, answers, await ActSessionsOfAsync([row], ct), now)
+            ToSummary(row, concern.Extras, now, mayAnswer, concern.Roll)
         );
     }
 
-    public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
-        int? personId,
-        int groupId,
-        DateOnly from,
-        DateOnly to,
-        bool holdsClubRead,
+    public async Task<IReadOnlyList<CalendarEntrySummary>> GetGroupEntriesAsync(
+        GroupCalendarQuery query,
         CancellationToken ct
     )
     {
         var now = _timeProvider.GetUtcNow();
         var today = ClubClock.Today(_timeProvider);
         var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
-        var windowStart = ClubClock.StartOfDay(from);
-        var windowEnd = ClubClock.StartOfDay(to.AddDays(1));
+        var personId = query.ViewerPersonId;
+        var groupId = query.GroupId;
+        var windowStart = ClubClock.StartOfDay(query.From);
+        var windowEnd = ClubClock.StartOfDay(query.To.AddDays(1));
+        var rights = await RightsOfAsync(query.ViewerAccountId, ct);
+        var sight = rights with { HoldsClubRead = true };
 
         var rows = await _dbContext
             .CalendarEntries.AsNoTracking()
@@ -164,28 +178,27 @@ public sealed class CalendarService
             .Where(entry =>
                 entry.OwnerGroupId == groupId
                 || entry.ParticipatingGroups.Any(link => link.GroupId == groupId)
+                || entry.AudienceGroups.Any(link => link.GroupId == groupId)
             )
-            .Where(VisibleTo(personId, SeesEveryClubEntry, today))
+            .Where(VisibleTo(personId, sight, today))
             .Where(PublishedEvents.IsListedEntry)
             .OrderBy(entry => entry.StartsAt)
             .ThenBy(entry => entry.Id)
             .Select(RowProjection(now, openEndedCutoff))
             .ToListAsync(ct);
 
-        var answers = await AnswersOfAsync(
-            personId,
-            [.. rows.Select(row => row.CalendarEntryId)],
-            ct
-        );
+        var extras = await ExtrasOfAsync(personId, rows, now, ct);
         var ties = await _dbContext.CalendarTiesOfAsync(personId, today, ct);
-        var actSessions = await ActSessionsOfAsync(rows, ct);
+        var organised = await OrganisedOwnersAsync(query.ViewerAccountId, rows, ties, ct);
 
         return
         [
             .. rows.Select(row =>
-                ToGroupSummary(
-                    ToSummary(row, answers, actSessions, now),
-                    MayAnswer(row, ties, actSessions, holdsClubRead)
+                ToSummary(
+                    row,
+                    extras,
+                    now,
+                    ties.Sees(FactsOf(row), rights) && MayAnswer(row, ties, organised)
                 )
             ),
         ];
@@ -244,7 +257,7 @@ public sealed class CalendarService
                 found[probe] =
                 [
                     .. rows.Where(row => Collides(row, probe))
-                        .Select(row => ToSummary(row, NoAnswers, NoActSessions, now)),
+                        .Select(row => ToSummary(row, EntryExtras.Nothing, now, mayAnswer: false)),
                 ];
             }
         }
@@ -265,9 +278,20 @@ public sealed class CalendarService
             command.OwnerGroupId
         );
 
+        var addOnKinds = CalendarAddOnRecords.KindsOf(command.AddOns);
+
+        if (AddOnRefusalOf(addOnKinds, participatingGroupIds) is { } addOnRefusal)
+            return Result<CalendarEntryWriteResult>.Validation(addOnRefusal);
+
+        var audience = AudienceChoice.Of(
+            command.Audience,
+            command.AudienceGroupIds,
+            command.AudiencePersonIds
+        );
+
         var refusal = await PlacementRefusalAsync(
-            new Placement(command.OwnerGroupId, command.VenueId, command.Visibility),
-            participatingGroupIds,
+            new Placement(command.OwnerGroupId, command.VenueId, participatingGroupIds, audience),
+            HeldLinks.Nothing,
             ct
         );
 
@@ -283,22 +307,45 @@ public sealed class CalendarService
             StartsAt = command.StartsAt,
             EndsAt = command.EndsAt,
             Kind = command.Kind,
-            Visibility = command.Visibility,
-            AsksForResponse = command.AsksForResponse,
-            ParticipatingGroups =
-            [
-                .. participatingGroupIds.Select(groupId => new CalendarEntryGroup
-                {
-                    GroupId = groupId,
-                }),
-            ],
+            Audience = audience.Audience,
         };
+        CalendarEntryAddOns.Attach(entry, addOnKinds);
+        Reconcile(entry, participatingGroupIds, audience);
 
+        var addOnClock = _timeProvider.GetUtcNow();
+
+        if (
+            await _dbContext.ReconcilePollsAsync(entry, command.AddOns, addOnClock, ct) is
+            { } pollRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
+
+        if (
+            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns, addOnClock) is
+            { } listRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(listRefusal);
+
+        if (
+            CalendarDayScheduleRecords.ReconcileDaySchedules(
+                entry,
+                command.AddOns,
+                ClubClock.DaysSpanned(command.StartsAt, command.EndsAt)
+            ) is
+            { } scheduleRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(scheduleRefusal);
+
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         _dbContext.CalendarEntries.Add(entry);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
             return Result<CalendarEntryWriteResult>.Carrying(saved);
+
+        await EnqueueCreatePushesAsync(entry, command.ViewerPersonId, ct);
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         return Result<CalendarEntryWriteResult>.Success(
             await WrittenAsync(entry, command.ViewerPersonId, ct)
@@ -325,21 +372,70 @@ public sealed class CalendarService
         if (entry.Kind == CalendarEntryKind.Event)
             return Result<CalendarEntryWriteResult>.Conflict(EventsLiveInTheWorkbenchMessage);
 
+        var pushBaseline = await PushBaselineOfAsync(
+            entry,
+            new CalendarEntrySlot(command.StartsAt, command.EndsAt, command.VenueId),
+            ct
+        );
+
         var participatingGroupIds = ParticipationOf(
             command.ParticipatingGroupIds,
             command.OwnerGroupId
         );
 
+        var addOnKinds = CalendarAddOnRecords.KindsOf(command.AddOns);
+
+        if (AddOnRefusalOf(addOnKinds, participatingGroupIds) is { } addOnRefusal)
+            return Result<CalendarEntryWriteResult>.Validation(addOnRefusal);
+
+        var audience = AudienceChoice.Of(
+            command.Audience,
+            command.AudienceGroupIds,
+            command.AudiencePersonIds
+        );
+
         var refusal = await PlacementRefusalAsync(
-            new Placement(command.OwnerGroupId, command.VenueId, command.Visibility),
-            participatingGroupIds,
+            new Placement(command.OwnerGroupId, command.VenueId, participatingGroupIds, audience),
+            new HeldLinks(
+                [.. entry.ParticipatingGroups.Select(link => link.GroupId)],
+                [.. entry.AudienceGroups.Select(link => link.GroupId)],
+                [.. entry.AudiencePeople.Select(link => link.PersonId)]
+            ),
             ct
         );
 
         if (refusal is not null)
             return Result<CalendarEntryWriteResult>.Validation(refusal);
 
-        Reconcile(entry, participatingGroupIds);
+        var addOnClock = _timeProvider.GetUtcNow();
+
+        if (
+            await _dbContext.ReconcilePollsAsync(entry, command.AddOns, addOnClock, ct) is
+            { } pollRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
+
+        if (
+            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns, addOnClock) is
+            { } listRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(listRefusal);
+
+        if (
+            CalendarDayScheduleRecords.ReconcileDaySchedules(
+                entry,
+                command.AddOns,
+                ClubClock.DaysSpanned(command.StartsAt, command.EndsAt)
+            ) is
+            { } scheduleRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(scheduleRefusal);
+
+        if (DropsAttendance(entry, addOnKinds))
+            await DiscardAnswersAsync(entry.Id, ct);
+
+        CalendarEntryAddOns.Attach(entry, addOnKinds);
+        Reconcile(entry, participatingGroupIds, audience);
 
         entry.Title = command.Title;
         entry.Description = command.Description;
@@ -348,8 +444,8 @@ public sealed class CalendarService
         entry.StartsAt = command.StartsAt;
         entry.EndsAt = command.EndsAt;
         entry.Kind = command.Kind;
-        entry.Visibility = command.Visibility;
-        entry.AsksForResponse = command.AsksForResponse;
+        entry.Audience = audience.Audience;
+        await EnqueueUpdatePushesAsync(entry, pushBaseline, command.ViewerPersonId, ct);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
@@ -380,6 +476,11 @@ public sealed class CalendarService
             return Result.Conflict(EventsLiveInTheWorkbenchMessage);
 
         await _dbContext.KeepSessionOfAlbumsOnAsync(entry, ct);
+        await EnqueueDeletePushAsync(
+            entry,
+            await _authorizer.ActivePersonIdAsync(actorAccountId, ct),
+            ct
+        );
         _dbContext.CalendarEntries.Remove(entry);
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
@@ -395,33 +496,15 @@ public sealed class CalendarService
         if (await _authorizer.ActivePersonIdAsync(command.ActorAccountId, ct) is not { } personId)
             return Result.Forbidden(NotYoursMessage);
 
-        var holdsClubRead = await _authorizer.IsGrantedAsync(
-            command.ActorAccountId,
-            FurriaPermissions.ClubRead,
-            ct
-        );
-        var entry = await _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(row => row.Id == command.CalendarEntryId)
-            .Select(EntryFactsRows.Projection)
-            .SingleOrDefaultAsync(ct);
-        var ties = await _dbContext.CalendarTiesOfAsync(
-            personId,
-            ClubClock.Today(_timeProvider),
-            ct
-        );
-
-        if (entry is null || !ties.Sees(entry.ToFacts(), holdsClubRead))
-        {
-            return holdsClubRead
-                ? Result.NotFound(UnknownEntryMessage)
-                : Result.Forbidden(NotYoursMessage);
-        }
-
-        if (!await AsksForResponseAsync(entry, ct))
-            return Result.Validation(NoResponseWantedMessage);
-
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.Database.ExecuteSqlAsync(
+            $"SELECT 1 FROM calendar_entry WHERE id = {command.CalendarEntryId} FOR SHARE",
+            ct
+        );
+
+        if (await ResponseRefusalAsync(command, personId, ct) is { } refusal)
+            return refusal;
+
         _dbContext.Record(
             await _dbContext.LockedResponseAsync(command.CalendarEntryId, personId, ct),
             new AttendanceRecord(
@@ -443,12 +526,56 @@ public sealed class CalendarService
         return Result.Success();
     }
 
-    [Pure]
-    private static Expression<Func<CalendarEntry, EntryRow>> RowProjection(
+    private async Task<Result?> ResponseRefusalAsync(
+        SetAttendanceResponseCommand command,
+        int personId,
+        CancellationToken ct
+    )
+    {
+        var rights = await RightsOfAsync(command.ActorAccountId, ct);
+        var entry = await _dbContext
+            .CalendarEntries.AsNoTracking()
+            .Where(row => row.Id == command.CalendarEntryId)
+            .Select(EntryFactsRows.Projection)
+            .SingleOrDefaultAsync(ct);
+        var ties = await _dbContext.CalendarTiesOfAsync(
+            personId,
+            ClubClock.Today(_timeProvider),
+            ct
+        );
+
+        var facts = entry?.ToFacts();
+
+        if (entry is null || facts is null || !ties.Sees(facts, rights))
+        {
+            return rights.HoldsClubRead
+                ? Result.NotFound(UnknownEntryMessage)
+                : Result.Forbidden(NotYoursMessage);
+        }
+
+        if (await AnswerRefusalAsync(command.ActorAccountId, facts, ties, ct) is { } notMeant)
+            return notMeant;
+
+        if (!entry.AsksForResponse)
+            return Result.Validation(NoResponseWantedMessage);
+
+        return CalendarAddOnClosing.IsAttendanceClosed(
+            entry.StartsAt,
+            entry.EndsAt,
+            _timeProvider.GetUtcNow()
+        )
+            ? Result.Validation(AnswersClosedMessage)
+            : null;
+    }
+
+    private Expression<Func<CalendarEntry, EntryRow>> RowProjection(
         DateTimeOffset now,
         DateTimeOffset openEndedCutoff
-    ) =>
-        entry => new EntryRow(
+    )
+    {
+        var responses = _dbContext.AttendanceResponses;
+
+        return entry => new EntryRow(
             entry.Id,
             entry.Title,
             entry.StartsAt,
@@ -463,14 +590,44 @@ public sealed class CalendarService
                 .ParticipatingGroups.OrderBy(link =>
                     EF.Functions.Collate(link.Group!.Name, GermanCollation.Name)
                 )
-                .Select(link => new ParticipatingGroupRow(
-                    link.GroupId,
-                    link.Group!.Name,
-                    link.Group!.Tone
-                ))
+                .Select(link => new GroupRow(link.GroupId, link.Group!.Name, link.Group!.Tone))
                 .ToList(),
-            entry.Visibility,
+            new AudienceNamesRow(
+                entry.Audience,
+                entry
+                    .AudienceGroups.OrderBy(link =>
+                        EF.Functions.Collate(link.Group!.Name, GermanCollation.Name)
+                    )
+                    .Select(link => new GroupRow(link.GroupId, link.Group!.Name, link.Group!.Tone))
+                    .ToList(),
+                entry
+                    .AudiencePeople.OrderBy(link =>
+                        EF.Functions.Collate(link.Person!.FirstName, GermanCollation.Name)
+                    )
+                    .ThenBy(link =>
+                        EF.Functions.Collate(link.Person!.LastName, GermanCollation.Name)
+                    )
+                    .Select(link => new PersonRow(
+                        link.PersonId,
+                        link.Person!.FirstName,
+                        link.Person!.LastName
+                    ))
+                    .ToList()
+            ),
             entry.AsksForResponse,
+            new AddOnPositionsRow(entry.AttendancePosition, entry.ParticipatingGroupsPosition),
+            new AttendanceCountsRow(
+                responses.Count(response =>
+                    response.CalendarEntryId == entry.Id && response.Answer == AttendanceAnswer.Yes
+                ),
+                responses.Count(response =>
+                    response.CalendarEntryId == entry.Id
+                    && response.Answer == AttendanceAnswer.Maybe
+                ),
+                responses.Count(response =>
+                    response.CalendarEntryId == entry.Id && response.Answer == AttendanceAnswer.No
+                )
+            ),
             entry.Description,
             entry.StartsAt <= now
                 && (entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now),
@@ -488,26 +645,37 @@ public sealed class CalendarService
                     entry.Event.Picture == null ? null : entry.Event.Picture.RenderedAt
                 )
         );
+    }
 
     [Pure]
-    private static bool MayAnswer(
-        EntryRow row,
-        CalendarTies ties,
-        IReadOnlySet<GroupSession> actSessions,
-        bool holdsClubRead
+    private static string? AddOnRefusalOf(
+        IReadOnlyList<CalendarEntryAddOnKind> addOns,
+        IReadOnlyList<int> participatingGroupIds
     ) =>
-        (row.AsksForResponse || FactsOf(row).AsksTheCastOf(actSessions))
-        && ties.Sees(FactsOf(row), holdsClubRead);
+        addOns.Contains(CalendarEntryAddOnKind.ParticipatingGroups)
+        && participatingGroupIds.Count == 0
+            ? NoParticipatingGroupMessage
+            : null;
+
+    [Pure]
+    private static bool DropsAttendance(
+        CalendarEntry entry,
+        IReadOnlyList<CalendarEntryAddOnKind> addOns
+    ) => entry.AsksForResponse && !addOns.Contains(CalendarEntryAddOnKind.Attendance);
 
     [Pure]
     private static CalendarEntryFacts FactsOf(EntryRow row) =>
-        CalendarEntryFacts.Of(
-            row.OwnerGroupId,
-            [.. row.ParticipatingGroups.Select(group => group.GroupId)],
-            row.Visibility,
-            row.Kind,
-            row.StartsAt
-        );
+        new()
+        {
+            OwnerGroupId = row.OwnerGroupId,
+            ParticipatingGroupIds = [.. row.ParticipatingGroups.Select(group => group.GroupId)],
+            Audience = row.Audience.Audience,
+            AudienceGroupIds = [.. row.Audience.Groups.Select(group => group.GroupId)],
+            AudiencePersonIds = [.. row.Audience.People.Select(person => person.PersonId)],
+            Kind = row.Kind,
+            AsksForResponse = row.AsksForResponse,
+            StartsAt = row.StartsAt,
+        };
 
     [Pure]
     private static DateTimeOffset ProbeEndOf(VenueCollisionQuery probe) =>
@@ -530,23 +698,50 @@ public sealed class CalendarService
         int? ownerGroupId
     ) => [.. wanted.Where(groupId => groupId != ownerGroupId).Distinct()];
 
-    private static void Reconcile(CalendarEntry entry, IReadOnlyList<int> participatingGroupIds)
+    private static void Reconcile(
+        CalendarEntry entry,
+        IReadOnlyList<int> participatingGroupIds,
+        AudienceChoice audience
+    )
     {
-        var dropped = entry
-            .ParticipatingGroups.Where(link => !participatingGroupIds.Contains(link.GroupId))
-            .ToList();
+        ReconcileLinks(
+            entry.ParticipatingGroups,
+            participatingGroupIds,
+            link => link.GroupId,
+            groupId => new CalendarEntryGroup { GroupId = groupId }
+        );
+        ReconcileLinks(
+            entry.AudienceGroups,
+            audience.GroupIds,
+            link => link.GroupId,
+            groupId => new CalendarEntryAudienceGroup { GroupId = groupId }
+        );
+        ReconcileLinks(
+            entry.AudiencePeople,
+            audience.PersonIds,
+            link => link.PersonId,
+            personId => new CalendarEntryAudiencePerson { PersonId = personId }
+        );
+    }
 
-        foreach (var link in dropped)
-            entry.ParticipatingGroups.Remove(link);
+    private static void ReconcileLinks<TLink>(
+        ICollection<TLink> links,
+        IReadOnlyList<int> wantedIds,
+        Func<TLink, int> idOf,
+        Func<int, TLink> linkTo
+    )
+    {
+        foreach (var dropped in links.Where(link => !wantedIds.Contains(idOf(link))).ToList())
+            links.Remove(dropped);
 
-        var held = entry.ParticipatingGroups.Select(link => link.GroupId).ToHashSet();
+        var held = links.Select(idOf).ToHashSet();
 
-        foreach (var groupId in participatingGroupIds.Where(groupId => !held.Contains(groupId)))
-            entry.ParticipatingGroups.Add(new CalendarEntryGroup { GroupId = groupId });
+        foreach (var id in wantedIds.Where(id => !held.Contains(id)))
+            links.Add(linkTo(id));
     }
 
     [Pure]
-    private static ParticipatingGroup ToParticipatingGroup(ParticipatingGroupRow row) =>
+    private static ParticipatingGroup ToParticipatingGroup(GroupRow row) =>
         new()
         {
             GroupId = row.GroupId,
@@ -554,13 +749,35 @@ public sealed class CalendarService
             Tone = row.Tone,
         };
 
+    [Pure]
+    private static AudienceGroup ToAudienceGroup(GroupRow row) =>
+        new()
+        {
+            GroupId = row.GroupId,
+            Name = row.Name,
+            Tone = row.Tone,
+        };
+
+    [Pure]
+    private static AudiencePerson ToAudiencePerson(PersonRow row) =>
+        new()
+        {
+            PersonId = row.PersonId,
+            FirstName = row.FirstName,
+            LastName = row.LastName,
+        };
+
     private CalendarEntrySummary ToSummary(
         EntryRow row,
-        IReadOnlyDictionary<int, AttendanceAnswer> answers,
-        IReadOnlySet<GroupSession> actSessions,
-        DateTimeOffset now
-    ) =>
-        new()
+        EntryExtras extras,
+        DateTimeOffset now,
+        bool mayAnswer,
+        AttendanceRoll? roll = null
+    )
+    {
+        var addOns = AddOnsOf(row, extras);
+
+        return new()
         {
             CalendarEntryId = row.CalendarEntryId,
             Title = row.Title,
@@ -573,15 +790,53 @@ public sealed class CalendarService
             OwnerGroupName = row.OwnerGroupName,
             OwnerGroupTone = row.OwnerGroupTone,
             ParticipatingGroups = [.. row.ParticipatingGroups.Select(ToParticipatingGroup)],
-            Visibility = row.Visibility,
+            Audience = row.Audience.Audience,
+            AudienceGroups = [.. row.Audience.Groups.Select(ToAudienceGroup)],
+            AudiencePeople = [.. row.Audience.People.Select(ToAudiencePerson)],
             AsksForResponse = row.AsksForResponse,
-            AsksTheCast = FactsOf(row).AsksTheCastOf(actSessions),
+            AddOns = addOns,
+            OpenFunctions = mayAnswer ? CalendarOpenFunctions.Of(addOns) : [],
+            Attendance = row.AsksForResponse ? ToAttendance(row, now, roll) : null,
             Description = row.Description,
-            ViewerAnswer = answers.TryGetValue(row.CalendarEntryId, out var answer) ? answer : null,
+            ViewerAnswer = extras.Answers.TryGetValue(row.CalendarEntryId, out var answer)
+                ? answer
+                : null,
+            MayAnswer = mayAnswer,
             IsRunning = row.IsRunning,
             Event = row.Event is { } facts
                 ? ToEventFacts(facts, now, EventPictureOf(row.CalendarEntryId, facts))
                 : null,
+        };
+    }
+
+    [Pure]
+    private static IReadOnlyList<CalendarEntryAddOnDetails> AddOnsOf(
+        EntryRow row,
+        EntryExtras extras
+    ) =>
+        CalendarAddOnRecords.InCardOrder(
+            row.AddOnPositions.Attendance,
+            row.AddOnPositions.ParticipatingGroups,
+            extras.Polls.TryGetValue(row.CalendarEntryId, out var polls) ? polls : [],
+            extras.SignUpLists.TryGetValue(row.CalendarEntryId, out var lists) ? lists : [],
+            extras.DaySchedules.TryGetValue(row.CalendarEntryId, out var schedules) ? schedules : []
+        );
+
+    [Pure]
+    private static CalendarAttendanceDetails ToAttendance(
+        EntryRow row,
+        DateTimeOffset now,
+        AttendanceRoll? roll
+    ) =>
+        new()
+        {
+            IsClosed = CalendarAddOnClosing.IsAttendanceClosed(row.StartsAt, row.EndsAt, now),
+            Yes = row.AttendanceCounts.Yes,
+            Maybe = row.AttendanceCounts.Maybe,
+            No = row.AttendanceCounts.No,
+            Answers = roll?.Answers,
+            NotAnswered = roll?.NotAnswered,
+            Reminder = roll?.Reminder,
         };
 
     private PictureDetails? EventPictureOf(int eventId, EventFactsRow facts) =>
@@ -609,35 +864,6 @@ public sealed class CalendarService
             Picture = picture,
         };
 
-    [Pure]
-    private static GroupCalendarEntrySummary ToGroupSummary(
-        CalendarEntrySummary entry,
-        bool viewerMayAnswer
-    ) => new() { Entry = entry, ViewerMayAnswer = viewerMayAnswer };
-
-    private Task<IReadOnlySet<GroupSession>> ActSessionsOfAsync(
-        IReadOnlyList<EntryRow> rows,
-        CancellationToken ct
-    ) =>
-        _dbContext.ActSessionsOfAsync(
-            [
-                .. rows.Where(row => CastAttendance.AsksTheCastOn(row.Kind))
-                    .SelectMany(row => FactsOf(row).GroupIds())
-                    .Distinct(),
-            ],
-            ct
-        );
-
-    private async Task<bool> AsksForResponseAsync(EntryFactsRow entry, CancellationToken ct)
-    {
-        if (entry.AsksForResponse)
-            return true;
-
-        var facts = entry.ToFacts();
-
-        return facts.AsksTheCastOf(await _dbContext.ActSessionsOfAsync([.. facts.GroupIds()], ct));
-    }
-
     private Task<bool> MayOwnAsync(int actorAccountId, int? ownerGroupId, CancellationToken ct) =>
         ownerGroupId is { } groupId
             ? _authorizer.CanAdministerGroupAsync(actorAccountId, groupId, ct)
@@ -652,7 +878,25 @@ public sealed class CalendarService
 
         return await _dbContext
             .CalendarEntries.Include(row => row.ParticipatingGroups)
+            .Include(row => row.AudienceGroups)
+            .Include(row => row.AudiencePeople)
+            .Include(row => row.Polls)
+                .ThenInclude(poll => poll.Options)
+            .Include(row => row.SignUpLists)
+            .Include(row => row.DaySchedules)
+                .ThenInclude(schedule => schedule.Steps)
+            .AsSplitQuery()
             .SingleOrDefaultAsync(row => row.Id == calendarEntryId, ct);
+    }
+
+    private async Task DiscardAnswersAsync(int calendarEntryId, CancellationToken ct)
+    {
+        await _dbContext
+            .AttendanceResponseChanges.Where(change => change.CalendarEntryId == calendarEntryId)
+            .ExecuteDeleteAsync(ct);
+        await _dbContext
+            .AttendanceResponses.Where(response => response.CalendarEntryId == calendarEntryId)
+            .ExecuteDeleteAsync(ct);
     }
 
     private async Task<CalendarEntryWriteResult> WrittenAsync(
@@ -690,22 +934,45 @@ public sealed class CalendarService
 
     private async Task<string?> PlacementRefusalAsync(
         Placement placement,
-        IReadOnlyList<int> participatingGroupIds,
+        HeldLinks held,
         CancellationToken ct
     )
     {
-        if (placement.OwnerGroupId is null && placement.Visibility == CalendarEntryVisibility.Group)
-            return ClubEntryCannotBeGroupOnlyMessage;
-
         if (placement.OwnerGroupId is { } ownerGroupId && !await GroupExistsAsync(ownerGroupId, ct))
             return UnknownOwnerGroupMessage;
 
-        var participationRefusal = await ParticipationRefusalAsync(participatingGroupIds, ct);
+        return await GroupsRefusalAsync(
+                [.. placement.ParticipatingGroupIds.Except(held.ParticipatingGroupIds)],
+                ArchivedParticipatingGroupMessage,
+                ct
+            )
+            ?? await GroupsRefusalAsync(
+                [.. placement.Audience.GroupIds.Except(held.GroupIds)],
+                ArchivedAudienceGroupMessage,
+                ct
+            )
+            ?? await ChosenPeopleRefusalAsync(
+                [.. placement.Audience.PersonIds.Except(held.PersonIds)],
+                ct
+            )
+            ?? (placement.VenueId is { } venueId ? await VenueRefusalAsync(venueId, ct) : null);
+    }
 
-        if (participationRefusal is not null)
-            return participationRefusal;
+    private async Task<string?> ChosenPeopleRefusalAsync(
+        IReadOnlyList<int> newlyChosenIds,
+        CancellationToken ct
+    )
+    {
+        if (newlyChosenIds.Count == 0)
+            return null;
 
-        return placement.VenueId is { } venueId ? await VenueRefusalAsync(venueId, ct) : null;
+        var choosableCount = await _dbContext
+            .ChoosablePersonIds(ClubClock.Today(_timeProvider))
+            .Where(personId => newlyChosenIds.Contains(personId))
+            .Distinct()
+            .CountAsync(ct);
+
+        return choosableCount == newlyChosenIds.Count ? null : UnchoosablePersonMessage;
     }
 
     private async Task<string?> VenueRefusalAsync(int venueId, CancellationToken ct)
@@ -722,26 +989,25 @@ public sealed class CalendarService
         return venue.ArchivedOn is null ? null : ArchivedVenueMessage;
     }
 
-    private async Task<string?> ParticipationRefusalAsync(
-        IReadOnlyList<int> participatingGroupIds,
+    private async Task<string?> GroupsRefusalAsync(
+        IReadOnlyList<int> groupIds,
+        string archivedMessage,
         CancellationToken ct
     )
     {
-        if (participatingGroupIds.Count == 0)
+        if (groupIds.Count == 0)
             return null;
 
         var groups = await _dbContext
             .Groups.AsNoTracking()
-            .Where(group => participatingGroupIds.Contains(group.Id))
+            .Where(group => groupIds.Contains(group.Id))
             .Select(group => new GroupStateRow(group.Id, group.ArchivedOn))
             .ToListAsync(ct);
 
-        if (groups.Count != participatingGroupIds.Count)
+        if (groups.Count != groupIds.Count)
             return UnknownOwnerGroupMessage;
 
-        return groups.Any(group => group.ArchivedOn is not null)
-            ? ArchivedParticipatingGroupMessage
-            : null;
+        return groups.Any(group => group.ArchivedOn is not null) ? archivedMessage : null;
     }
 
     private Task<bool> GroupExistsAsync(int groupId, CancellationToken ct) =>
@@ -752,38 +1018,78 @@ public sealed class CalendarService
         if (await _authorizer.ActivePersonIdAsync(accountId, ct) is not { } personId)
             return null;
 
-        var holdsClubRead = await _authorizer.IsGrantedAsync(
-            accountId,
-            FurriaPermissions.ClubRead,
-            ct
-        );
-
-        return new CalendarViewer(personId, holdsClubRead);
+        return new CalendarViewer(personId, await RightsOfAsync(accountId, ct));
     }
+
+    private async Task<CalendarRights> RightsOfAsync(int accountId, CancellationToken ct) =>
+        new(
+            HoldsClubRead: await _authorizer.IsGrantedAsync(
+                accountId,
+                FurriaPermissions.ClubRead,
+                ct
+            ),
+            ManagesClubCalendar: await _authorizer.IsGrantedAsync(
+                accountId,
+                FurriaPermissions.CalendarManageClub,
+                ct
+            )
+        );
 
     private Expression<Func<CalendarEntry, bool>> VisibleTo(
         int? personId,
-        bool holdsClubRead,
+        CalendarRights rights,
         DateOnly today
     )
     {
         var tiedGroupIds = _dbContext.TiedGroupIds(personId, today);
+        var administeredGroupIds = _dbContext.AdministeredGroupIds(personId, today);
         var castGroupIds = _dbContext.CastGroupIds(personId, today);
-        var castKinds = CastAttendance.Kinds;
+        var holdsClubRead = rights.HoldsClubRead;
+        var managesClubCalendar = rights.ManagesClubCalendar;
 
         return entry =>
-            (
-                entry.OwnerGroupId != null && tiedGroupIds.Contains(entry.OwnerGroupId.Value)
-                || entry.ParticipatingGroups.Any(link => tiedGroupIds.Contains(link.GroupId))
-            )
-            || holdsClubRead && entry.Visibility != CalendarEntryVisibility.Group
-            || (
-                castKinds.Contains(entry.Kind)
-                && (
-                    (entry.OwnerGroupId != null && castGroupIds.Contains(entry.OwnerGroupId.Value))
-                    || entry.ParticipatingGroups.Any(link => castGroupIds.Contains(link.GroupId))
-                )
-            );
+            entry.Audience == CalendarEntryAudience.People
+                ? entry.AudiencePeople.Any(link => link.PersonId == personId)
+                    || (
+                        entry.OwnerGroupId == null
+                            ? managesClubCalendar
+                            : administeredGroupIds.Contains(entry.OwnerGroupId.Value)
+                    )
+                : holdsClubRead
+                    || (
+                        entry.OwnerGroupId != null
+                        && tiedGroupIds.Contains(entry.OwnerGroupId.Value)
+                    )
+                    || entry.ParticipatingGroups.Any(link => tiedGroupIds.Contains(link.GroupId))
+                    || entry.AudienceGroups.Any(link => tiedGroupIds.Contains(link.GroupId))
+                    || (
+                        entry.Kind == CastAttendance.Kind
+                        && entry.AsksForResponse
+                        && (
+                            (
+                                entry.OwnerGroupId != null
+                                && castGroupIds.Contains(entry.OwnerGroupId.Value)
+                            )
+                            || entry.AudienceGroups.Any(link => castGroupIds.Contains(link.GroupId))
+                        )
+                    );
+    }
+
+    private async Task<EntryExtras> ExtrasOfAsync(
+        int? personId,
+        IReadOnlyList<EntryRow> rows,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        var calendarEntryIds = rows.Select(row => row.CalendarEntryId).ToList();
+
+        return new EntryExtras(
+            await AnswersOfAsync(personId, calendarEntryIds, ct),
+            await _dbContext.PollsOfEntriesAsync(calendarEntryIds, personId, now, ct),
+            await _dbContext.SignUpListsOfEntriesAsync(calendarEntryIds, personId, now, ct),
+            await _dbContext.DaySchedulesOfEntriesAsync(calendarEntryIds, ct)
+        );
     }
 
     private async Task<IReadOnlyDictionary<int, AttendanceAnswer>> AnswersOfAsync(
@@ -818,9 +1124,11 @@ public sealed class CalendarService
         int? OwnerGroupId,
         string? OwnerGroupName,
         GroupTone? OwnerGroupTone,
-        IReadOnlyList<ParticipatingGroupRow> ParticipatingGroups,
-        CalendarEntryVisibility Visibility,
+        IReadOnlyList<GroupRow> ParticipatingGroups,
+        AudienceNamesRow Audience,
         bool AsksForResponse,
+        AddOnPositionsRow AddOnPositions,
+        AttendanceCountsRow AttendanceCounts,
         string? Description,
         bool IsRunning,
         EventFactsRow? Event
@@ -838,17 +1146,54 @@ public sealed class CalendarService
         DateTimeOffset? PictureRenderedAt
     );
 
-    private sealed record ParticipatingGroupRow(int GroupId, string Name, GroupTone? Tone);
+    private sealed record GroupRow(int GroupId, string Name, GroupTone? Tone);
 
-    private readonly record struct CalendarViewer(int PersonId, bool HoldsClubRead);
+    private sealed record EntryExtras(
+        IReadOnlyDictionary<int, AttendanceAnswer> Answers,
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>> Polls,
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedSignUpList>> SignUpLists,
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedDaySchedule>> DaySchedules
+    )
+    {
+        public static readonly EntryExtras Nothing = new(
+            new Dictionary<int, AttendanceAnswer>(),
+            new Dictionary<int, IReadOnlyList<PlacedPoll>>(),
+            new Dictionary<int, IReadOnlyList<PlacedSignUpList>>(),
+            new Dictionary<int, IReadOnlyList<PlacedDaySchedule>>()
+        );
+    }
+
+    private sealed record AddOnPositionsRow(int? Attendance, int? ParticipatingGroups);
+
+    private sealed record AttendanceCountsRow(int Yes, int Maybe, int No);
+
+    private sealed record PersonRow(int PersonId, string FirstName, string LastName);
+
+    private sealed record AudienceNamesRow(
+        CalendarEntryAudience Audience,
+        IReadOnlyList<GroupRow> Groups,
+        IReadOnlyList<PersonRow> People
+    );
+
+    private readonly record struct CalendarViewer(int PersonId, CalendarRights Rights);
 
     private sealed record GroupStateRow(int GroupId, DateOnly? ArchivedOn);
 
     private sealed record VenueStateRow(int VenueId, DateOnly? ArchivedOn);
 
+    private sealed record HeldLinks(
+        IReadOnlyList<int> ParticipatingGroupIds,
+        IReadOnlyList<int> GroupIds,
+        IReadOnlyList<int> PersonIds
+    )
+    {
+        public static readonly HeldLinks Nothing = new([], [], []);
+    }
+
     private readonly record struct Placement(
         int? OwnerGroupId,
         int? VenueId,
-        CalendarEntryVisibility Visibility
+        IReadOnlyList<int> ParticipatingGroupIds,
+        AudienceChoice Audience
     );
 }

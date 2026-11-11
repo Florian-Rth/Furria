@@ -76,10 +76,13 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(BackgroundJob)] =
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
-            + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings",
+            + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings "
+            + "pushDispatcher",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",
+        [typeof(CalendarEntryAddOnKind)] =
+            "attendance participatingGroups poll signUpList daySchedule",
         [typeof(RunningOrderRuleKind)] =
             "first last firstHalf secondHalf early late before after apart kindSpread",
         [typeof(RuleStrength)] = "must prefer",
@@ -108,7 +111,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "clubRecord announcement announcementSeen media newsPost websitePicture act "
             + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
             + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
-            + "tablePlan seating claimWindow",
+            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine",
         [typeof(ChangeLineKind)] = "ready changes ping",
     };
 

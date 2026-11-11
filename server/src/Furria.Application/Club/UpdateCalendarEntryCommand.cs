@@ -24,9 +24,13 @@ public sealed record UpdateCalendarEntryCommand
 
     public required CalendarEntryKind Kind { get; init; }
 
-    public required CalendarEntryVisibility Visibility { get; init; }
+    public required CalendarEntryAudience Audience { get; init; }
 
-    public required bool AsksForResponse { get; init; }
+    public required IReadOnlyList<int> AudienceGroupIds { get; init; }
+
+    public required IReadOnlyList<int> AudiencePersonIds { get; init; }
+
+    public required IReadOnlyList<CalendarEntryAddOnInput> AddOns { get; init; }
 
     public required IReadOnlyList<int> ParticipatingGroupIds { get; init; }
 }

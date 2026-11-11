@@ -12,6 +12,7 @@ using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
 using Furria.Core.Studio;
 using Furria.Core.Website;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
@@ -90,6 +91,27 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<CalendarEntryGroup> CalendarEntryGroups => Set<CalendarEntryGroup>();
 
+    public DbSet<CalendarEntryAudienceGroup> CalendarEntryAudienceGroups =>
+        Set<CalendarEntryAudienceGroup>();
+
+    public DbSet<CalendarEntryAudiencePerson> CalendarEntryAudiencePeople =>
+        Set<CalendarEntryAudiencePerson>();
+
+    public DbSet<CalendarPoll> CalendarPolls => Set<CalendarPoll>();
+
+    public DbSet<CalendarPollOption> CalendarPollOptions => Set<CalendarPollOption>();
+
+    public DbSet<CalendarPollVote> CalendarPollVotes => Set<CalendarPollVote>();
+
+    public DbSet<CalendarSignUpList> CalendarSignUpLists => Set<CalendarSignUpList>();
+
+    public DbSet<CalendarSignUpLine> CalendarSignUpLines => Set<CalendarSignUpLine>();
+
+    public DbSet<CalendarDaySchedule> CalendarDaySchedules => Set<CalendarDaySchedule>();
+
+    public DbSet<CalendarDayScheduleStep> CalendarDayScheduleSteps =>
+        Set<CalendarDayScheduleStep>();
+
     public DbSet<Event> Events => Set<Event>();
 
     public DbSet<EventPresalePlace> EventPresalePlaces => Set<EventPresalePlace>();
@@ -99,6 +121,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<OutboxMail> OutboxMails => Set<OutboxMail>();
+
+    public DbSet<OutboxCalendarPush> OutboxCalendarPushes => Set<OutboxCalendarPush>();
+
+    public DbSet<OutboxPush> OutboxPushes => Set<OutboxPush>();
 
     public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();
 

@@ -47,11 +47,16 @@ const entry = (
   ownerGroupName: null,
   ownerGroupTone: null,
   participatingGroups: [],
-  visibility: 'club',
+  audience: 'club',
+  audienceGroups: [],
+  audiencePeople: [],
   asksForResponse: false,
-  asksTheCast: false,
+  addOns: [],
+  attendance: null,
   description: null,
   viewerAnswer: null,
+  mayAnswer: true,
+  openFunctions: [],
   isRunning: false,
   event: null,
   ...extra,
@@ -147,10 +152,9 @@ describe('owedIdsOf', () => {
       entry(4, at('2026-10-22', '19:00'), null),
       entry(5, at('2026-10-23', '19:00'), null, { asksForResponse: true }),
       entry(6, at('2026-10-20', '11:00'), at('2026-10-20', '13:00'), { asksForResponse: true }),
-      entry(7, at('2026-10-24', '18:30'), null, { asksTheCast: true }),
     ];
 
-    expect(owedIdsOf(entries, NOW, new Map([[5, 'yes']]))).toEqual([1, 6, 7]);
+    expect(owedIdsOf(entries, NOW, new Map([[5, 'yes']]))).toEqual([1, 6]);
   });
 });
 

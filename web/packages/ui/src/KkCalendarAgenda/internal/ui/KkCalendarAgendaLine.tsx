@@ -150,6 +150,7 @@ interface KkCalendarAgendaLineProps {
   accessibleLabel: string;
   landing?: string;
   time: ReactNode;
+  marks?: ReactNode;
   trailing?: ReactNode;
   aside?: ReactNode;
   below?: ReactNode;
@@ -170,6 +171,7 @@ export const KkCalendarAgendaLine: FC<KkCalendarAgendaLineProps> = ({
   accessibleLabel,
   landing,
   time,
+  marks,
   trailing,
   aside,
   below,
@@ -274,6 +276,7 @@ export const KkCalendarAgendaLine: FC<KkCalendarAgendaLineProps> = ({
             {liveMark}
             {venueMark}
             {groupMarks}
+            {marks}
           </Box>
         </Box>
       </ButtonBase>
