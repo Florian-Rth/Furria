@@ -6,7 +6,7 @@ import { KkPhoto } from '@furria/ui/KkPhoto';
 import { KkSheet } from '@furria/ui/KkSheet';
 import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
 import type { EntrySheetView } from '../types';
 import { EntryGroupsSection } from './EntryGroupsSection';
@@ -19,9 +19,10 @@ const COVER_ASPECT_RATIO = aspectRatioCss('banner');
 
 interface EntrySheetBodyProps {
   sheet: EntrySheetView;
+  children?: ReactNode;
 }
 
-export const EntrySheetBody: FC<EntrySheetBodyProps> = ({ sheet }) => {
+export const EntrySheetBody: FC<EntrySheetBodyProps> = ({ sheet, children }) => {
   const { answer, cover } = sheet;
 
   const opener =
@@ -79,6 +80,7 @@ export const EntrySheetBody: FC<EntrySheetBodyProps> = ({ sheet }) => {
         <EntryGroupsSection owner={sheet.owner} participating={sheet.participating} />
         {runs}
         {choice}
+        {children}
       </KkSheet.Body>
       <KkSheet.Actions primary={sheet.primary} secondary={sheet.secondary} />
     </KkSheet>

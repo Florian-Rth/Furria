@@ -44,7 +44,7 @@ const positionOf = (item: OwedItem): number => {
   return -1;
 };
 
-const functionItemsOf = (entry: StartEntry): OwedItem[] => {
+export const toFunctionItems = (entry: StartEntry): OwedItem[] => {
   const polls = entry.openPolls.map(
     (poll): OwedItem => ({
       kind: 'poll',
@@ -68,7 +68,7 @@ const functionItemsOf = (entry: StartEntry): OwedItem[] => {
 };
 
 export const toAnswerItems = (entries: readonly StartEntry[]): OwedItem[] =>
-  entries.flatMap((entry) => [...attendanceItemsOf(entry), ...functionItemsOf(entry)]);
+  entries.flatMap((entry) => [...attendanceItemsOf(entry), ...toFunctionItems(entry)]);
 
 export const owesAnything = (entry: StartEntry): boolean =>
   toAnswerItems([entry]).some((item) => item.isOwed);

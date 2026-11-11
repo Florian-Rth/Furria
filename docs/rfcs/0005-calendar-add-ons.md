@@ -571,6 +571,8 @@ on Start" for Umfrage and Eintragsliste.
 - [x] Integration and pure-function tests
 
 Decisions taken while building phase 14:
+- **The Start entry sheet** (tapping an entry on Start) shows the same open polls and lists below
+  *Deine Antwort*, answerable in place with the same parts as the open-answers sheet.
 - **Owed follows phase 12's rule.** Every entry on Start is already hers (`CalendarTies.IsHers`),
   which is the same gate as `mayAnswer`, so the read lists every still-open poll and list of an
   entry; closed ones are left out. An entry she declined stays off Start, polls included.
