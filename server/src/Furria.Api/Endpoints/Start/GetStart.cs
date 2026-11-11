@@ -236,7 +236,19 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
         };
 
     private static StartToDoDto ToDto(ToDoSummary toDo) =>
-        new() { Kind = toDo.Kind, Count = toDo.Count };
+        new()
+        {
+            Kind = toDo.Kind,
+            Count = toDo.Count,
+            Group = toDo.Group is { } group
+                ? new()
+                {
+                    GroupId = group.GroupId,
+                    Name = group.Name,
+                    Tone = group.Tone,
+                }
+                : null,
+        };
 }
 
 public sealed record GetStartResponse
@@ -497,4 +509,15 @@ public sealed record StartToDoDto
     public required ToDoKind Kind { get; init; }
 
     public required int Count { get; init; }
+
+    public required StartToDoGroupDto? Group { get; init; }
+}
+
+public sealed record StartToDoGroupDto
+{
+    public required int GroupId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required GroupTone? Tone { get; init; }
 }

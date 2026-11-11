@@ -113,13 +113,26 @@ unanswered + changed). The public read answers 404 when absent.
 
 ### Phase 2 — Backend: club review and to-dos
 Goal: the pool can be managed end to end and both to-dos appear.
-- [ ] 2.1 Management endpoints: overview (pool, proposals, coverage), approve (cap 10), reject, reword (changed flag), reorder, delete (stances cascade)
-- [ ] 2.2 To-do kinds: group statements open/changed (group admins), proposals waiting (`group_matcher.manage`)
-- [ ] 2.3 Integration tests (cap, reword keeps stances + flags, delete cascades, to-do audiences)
+- [x] 2.1 Management endpoints: overview (pool, proposals, coverage), approve (cap 10), reject, reword (changed flag), reorder, delete (stances cascade)
+- [x] 2.2 To-do kinds: group statements open/changed (group admins), proposals waiting (`group_matcher.manage`)
+- [x] 2.3 Integration tests (cap, reword keeps stances + flags, delete cascades, to-do audiences)
 
 Notes from phase 1 review: make the cap and order a database guarantee (partial unique
 `sort_order` for approved rows, or a lock around approve/reorder); deleting or rejecting a
 statement can complete a group, so it re-runs the guarded taking-part stamp for all groups.
+
+Built 2026-11-11. As built: routes under `manage/group-matcher` (`GET` pool with coverage,
+`POST …/statements/{id}/approval` with optional reworded text, `POST …/rejection`,
+`PUT …/text`, `PUT …/statement-order`, `DELETE …/statements/{id}`). Cap and order are database
+guarantees: `sort_order BETWEEN 1 AND 10` plus `UNIQUE (sort_order) DEFERRABLE` (non-approved rows
+are NULL); every pool write (approve, reject, reword, reorder, delete, withdraw) runs in one
+transaction under a shared advisory lock, so slots stay gapless — approve takes the next slot,
+delete closes the gap, reorder is one statement. Only
+proposals can be approved or rejected; only deleting an approved statement can complete a group,
+so only delete re-runs the stamp (never when the pool becomes empty). To-dos:
+`groupMatcherStatementsOpen` once per administered, non-archived group with a `group` ref;
+`groupMatcherProposalWaiting` for `group_matcher.manage`. The manage hub read gains
+`groupMatcher { approvedCount, waitingProposalCount }` for phase 4.1.
 
 ### Phase 3 — Club app: the group's Jeck-Check page
 Goal: group admins maintain admission ages, stances and proposals from the group hub.

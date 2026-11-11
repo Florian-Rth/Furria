@@ -34,6 +34,7 @@ public static class AppDbContextExtensions
             ["pk_table_plan"] = WriteConflictMessages.TablePlanExists,
             ["pk_group_matcher_stance"] = WriteConflictMessages.ChangedMeanwhile,
             ["pk_group_admission_age"] = WriteConflictMessages.ChangedMeanwhile,
+            ["uq_group_matcher_statement_sort_order"] = WriteConflictMessages.ChangedMeanwhile,
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static async Task<Result> SaveOrConflictAsync(

@@ -24,6 +24,10 @@ public sealed class MatcherStatementConfiguration : IEntityTypeConfiguration<Mat
                     "(status = 'Approved') = (sort_order IS NOT NULL AND approved_at IS NOT NULL)"
                 );
                 table.HasCheckConstraint(
+                    "ck_group_matcher_statement_sort_order",
+                    $"sort_order BETWEEN 1 AND {MatcherStatement.MaxApproved}"
+                );
+                table.HasCheckConstraint(
                     "ck_group_matcher_statement_status",
                     $"status IN ({KnownValues})"
                 );

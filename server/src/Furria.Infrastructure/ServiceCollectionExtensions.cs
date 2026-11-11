@@ -102,6 +102,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<FeeReductionService>();
         services.AddScoped<GroupService>();
         services.AddScoped<GroupMatcherService>();
+        services.AddScoped<StatementPoolService>();
         services.AddScoped<GroupKindService>();
         services.AddScoped<UsualTrainingService>();
         services.AddScoped<RoleService>();

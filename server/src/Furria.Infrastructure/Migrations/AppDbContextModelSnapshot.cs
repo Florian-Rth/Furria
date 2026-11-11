@@ -1478,6 +1478,8 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_group_matcher_statement_approval", "(status = 'Approved') = (sort_order IS NOT NULL AND approved_at IS NOT NULL)");
 
+                            t.HasCheckConstraint("ck_group_matcher_statement_sort_order", "sort_order BETWEEN 1 AND 10");
+
                             t.HasCheckConstraint("ck_group_matcher_statement_status", "status IN ('Proposed', 'Approved', 'Rejected')");
                         });
                 });

@@ -6,6 +6,7 @@ using Furria.Core.MembershipApplications;
 using Furria.Core.Ties;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.GroupMatcher;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.MembershipApplications;
 using Furria.Infrastructure.Persistence;
@@ -20,18 +21,21 @@ public sealed class ManagementService
     private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
     private readonly ClubRecordService _clubRecordService;
+    private readonly StatementPoolService _statementPoolService;
 
     public ManagementService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
         TimeProvider timeProvider,
-        ClubRecordService clubRecordService
+        ClubRecordService clubRecordService,
+        StatementPoolService statementPoolService
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
         _timeProvider = timeProvider;
         _clubRecordService = clubRecordService;
+        _statementPoolService = statementPoolService;
     }
 
     public async Task<ManageHubDetails> HubAsync(int accountId, CancellationToken ct)
@@ -69,8 +73,18 @@ public sealed class ManagementService
             Applications = granted.Contains(FurriaPermissions.MembershipApplicationsDecide)
                 ? await ApplicationsAsync(today, ct)
                 : null,
+            GroupMatcher = granted.Contains(FurriaPermissions.GroupMatcherManage)
+                ? await GroupMatcherAsync(ct)
+                : null,
         };
     }
+
+    private async Task<ManageHubGroupMatcher> GroupMatcherAsync(CancellationToken ct) =>
+        new()
+        {
+            ApprovedCount = await _statementPoolService.CountApprovedAsync(ct),
+            WaitingProposalCount = await _statementPoolService.CountWaitingProposalsAsync(ct),
+        };
 
     private async Task<ManageHubApplications> ApplicationsAsync(
         DateOnly today,

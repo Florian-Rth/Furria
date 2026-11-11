@@ -3,6 +3,7 @@ using Furria.Application.Management;
 using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.GroupMatcher;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.MembershipApplications;
 using Furria.Infrastructure.Persistence;
@@ -17,6 +18,8 @@ public sealed class ToDoService
     private readonly PermissionAuthorizer _authorizer;
     private readonly InvitationRoundService _invitationRoundService;
     private readonly ClubRecordService _clubRecordService;
+    private readonly GroupMatcherService _groupMatcherService;
+    private readonly StatementPoolService _statementPoolService;
     private readonly TimeProvider _timeProvider;
 
     public ToDoService(
@@ -24,6 +27,8 @@ public sealed class ToDoService
         PermissionAuthorizer authorizer,
         InvitationRoundService invitationRoundService,
         ClubRecordService clubRecordService,
+        GroupMatcherService groupMatcherService,
+        StatementPoolService statementPoolService,
         TimeProvider timeProvider
     )
     {
@@ -31,6 +36,8 @@ public sealed class ToDoService
         _authorizer = authorizer;
         _invitationRoundService = invitationRoundService;
         _clubRecordService = clubRecordService;
+        _groupMatcherService = groupMatcherService;
+        _statementPoolService = statementPoolService;
         _timeProvider = timeProvider;
     }
 
@@ -56,6 +63,12 @@ public sealed class ToDoService
 
         if (ToDoKeys.Shows(ToDoKind.ApplicationWaiting, granted))
             toDos.Add(await WaitingApplicationsAsync(ct));
+
+        if (ToDoKeys.Shows(ToDoKind.GroupMatcherStatementsOpen, granted))
+            toDos.AddRange(await GroupMatcherStatementToDosAsync(accountId, ct));
+
+        if (ToDoKeys.Shows(ToDoKind.GroupMatcherProposalWaiting, granted))
+            toDos.Add(await WaitingProposalsAsync(ct));
 
         return
         [
@@ -109,5 +122,33 @@ public sealed class ToDoService
         ToDoOf(
             ToDoKind.ClubRecordGap,
             ClubRecordGaps.CountOf(await _clubRecordService.GetAsync(ct))
+        );
+
+    private async Task<IReadOnlyList<ToDoSummary>> GroupMatcherStatementToDosAsync(
+        int accountId,
+        CancellationToken ct
+    )
+    {
+        var groupIds = await _authorizer.AdministeredGroupIdsAsync(accountId, ct);
+        if (groupIds.Count == 0)
+            return [];
+
+        var attention = await _groupMatcherService.AttentionOfAsync(groupIds, ct);
+
+        return
+        [
+            .. attention.Select(group =>
+                ToDoOf(ToDoKind.GroupMatcherStatementsOpen, group.StatementCount) with
+                {
+                    Group = group.Group,
+                }
+            ),
+        ];
+    }
+
+    private async Task<ToDoSummary> WaitingProposalsAsync(CancellationToken ct) =>
+        ToDoOf(
+            ToDoKind.GroupMatcherProposalWaiting,
+            await _statementPoolService.CountWaitingProposalsAsync(ct)
         );
 }

@@ -7,6 +7,7 @@ using Furria.Api.Tests.Invitations;
 using Furria.Application.Authorization;
 using Furria.Application.Management;
 using Furria.Application.Start;
+using Furria.Core.GroupMatcher;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -438,6 +439,100 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_ListEachAdministeredGroupWithItsOpenStatements_When_TheJeckCheckWaits()
+    {
+        await OnTuesdayEveningAsync(
+            identity => identity,
+            async ctx =>
+            {
+                var toDos = ToDosOf(await StartOfAsync(ctx, "lena"));
+
+                Assert.Equal(
+                    [("Kindergarde", 2), ("Tanzgarde", 2)],
+                    toDos
+                        .Where(toDo => toDo.Kind == ToDoKind.GroupMatcherStatementsOpen)
+                        .Select(toDo => (toDo.Group?.Name, toDo.Count))
+                );
+            },
+            arrangeGroups: groups =>
+                groups
+                    .AddGroup("tanzgarde", "Tanzgarde")
+                    .AddGroup("kindergarde", "Kindergarde")
+                    .AddGroup("elferrat", "Elferrat")
+                    .AddGroup("altgarde", "Altgarde", archivedOn: Yesterday)
+                    .AddGroupAdmin("lena-tanzgarde", "tanzgarde", "lena", "Trainerin", JoinedIn2015)
+                    .AddGroupAdmin(
+                        "lena-kindergarde",
+                        "kindergarde",
+                        "lena",
+                        "Trainerin",
+                        JoinedIn2015
+                    )
+                    .AddGroupAdmin("lena-elferrat", "elferrat", "lena", "Trainerin", JoinedIn2015)
+                    .AddGroupAdmin("lena-altgarde", "altgarde", "lena", "Trainerin", JoinedIn2015),
+            arrangeMatcher: matcher =>
+                matcher
+                    .AddStatement(
+                        "konfetti",
+                        "Konfetti ist Pflicht.",
+                        rewordedAt: TuesdayEvening.AddDays(-1)
+                    )
+                    .AddStatement("bierbank", "Bierbänke stelle ich auf.")
+                    .AddStance("tanzgarde", "konfetti", StancePosition.Yes)
+                    .AddStance("elferrat", "konfetti", StancePosition.Yes, takenAt: TuesdayEvening)
+                    .AddStance("elferrat", "bierbank", StancePosition.No)
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutTheJeckCheck_When_TheViewerAdministersNoGroup()
+    {
+        await OnTuesdayEveningAsync(
+            identity => identity,
+            async ctx =>
+            {
+                var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
+
+                Assert.Null(CountOf(toDos, ToDoKind.GroupMatcherStatementsOpen));
+                Assert.Null(CountOf(toDos, ToDoKind.GroupMatcherProposalWaiting));
+            },
+            arrangeGroups: groups => groups.AddGroup("tanzgarde", "Tanzgarde"),
+            arrangeMatcher: matcher =>
+                matcher
+                    .AddStatement("konfetti", "Konfetti ist Pflicht.")
+                    .AddProposal("vorschlag", "Wir tanzen rückwärts.", "tanzgarde")
+        );
+    }
+
+    [Fact]
+    public async Task Should_CountWaitingProposals_When_TheViewerManagesTheJeckCheck()
+    {
+        await OnTuesdayEveningAsync(
+            identity => identity,
+            async ctx =>
+            {
+                var start = await StartOfAsync(
+                    await ctx.Identity.ManagingLoginClientAsync(
+                        TestContext.Current.CancellationToken
+                    )
+                );
+
+                Assert.Equal(1, CountOf(ToDosOf(start), ToDoKind.GroupMatcherProposalWaiting));
+            },
+            arrangeGroups: groups => groups.AddGroup("tanzgarde", "Tanzgarde"),
+            arrangeMatcher: matcher =>
+                matcher
+                    .AddProposal("vorschlag", "Wir tanzen rückwärts.", "tanzgarde")
+                    .AddProposal(
+                        "abgelehnt",
+                        "Wir tanzen auf dem Tisch.",
+                        "tanzgarde",
+                        MatcherStatementStatus.Rejected
+                    )
+        );
+    }
+
     private async Task AssertKeyToTakeBackCountAsync(
         int? expected,
         Action<ClubSeedBuilder> arrangeKey
@@ -496,7 +591,8 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
         Func<IdentitySeedBuilder, IdentitySeedBuilder> arrangePeople,
         Func<SeededContext, Task> actAndAssert,
         Action<ClubSeedBuilder>? arrangeClub = null,
-        Action<GroupSeedBuilder>? arrangeGroups = null
+        Action<GroupSeedBuilder>? arrangeGroups = null,
+        Action<GroupMatcherSeedBuilder>? arrangeMatcher = null
     )
     {
         var ct = TestContext.Current.CancellationToken;
@@ -568,6 +664,7 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
                                     )
                             )
                             .Groups(groups => arrangeGroups?.Invoke(groups))
+                            .GroupMatcher(matcher => arrangeMatcher?.Invoke(matcher))
                             .Club(club =>
                             {
                                 club.AddVenue("sporthalle", "Sporthalle Am Ring")

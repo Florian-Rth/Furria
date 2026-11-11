@@ -552,7 +552,8 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `AddTakingPart(groupAlias, joinedAt)` (stamps the group as taking part, 10 days ago by default —
    the stamp is set directly, so a test arranges taking part without answering through the API).
    Statements resolve through `ctx.GroupMatcher.Statements`. State is asserted on
-   `Expected.MatcherStatement(id)` (`ToBeProposedBy`, `ToHaveStatus`, `ToNotExist`),
+   `Expected.MatcherStatement(id)` (`ToBeProposedBy`, `ToBeApprovedAs(text, sortOrder)`,
+   `ToBeRewordedAt`, `ToHaveStatus`, `ToNotExist`),
    `Expected.Stance(groupId, statementId)` (`ToBe`, `ToBeTakenAt`, `ToNotExist`),
    `Expected.AdmissionAgesOf(groupId)` (`ToBeExactly`) and
    `Expected.Group(id).ToHaveJoinedTheGroupMatcherAt(joinedAt)`. The migration's ten carried-over

@@ -5,6 +5,7 @@ using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
 using Furria.Application.Authorization;
 using Furria.Application.Management;
+using Furria.Core.GroupMatcher;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -218,6 +219,35 @@ public sealed class GetManageHubTests : IClassFixture<ApiTestFixture>
         Assert.NotNull(result.Applications);
         Assert.Equal(3, result.Applications.UndecidedCount);
         Assert.Equal(1, result.Applications.MinorCount);
+    }
+
+    [Fact]
+    public async Task Should_CountApprovedStatementsAndWaitingProposals_When_TheHubIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        var result = await ReadTheHubAsAdminAsync(
+            builder =>
+                builder
+                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde"))
+                    .GroupMatcher(matcher =>
+                        matcher
+                            .AddStatement("konfetti", "Konfetti ist Pflicht.")
+                            .AddStatement("bierbank", "Bierbänke stelle ich auf.")
+                            .AddProposal("rueckwaerts", "Wir tanzen rückwärts.", "tanzgarde")
+                            .AddProposal(
+                                "tisch",
+                                "Wir tanzen auf dem Tisch.",
+                                "tanzgarde",
+                                MatcherStatementStatus.Rejected
+                            )
+                    ),
+            ct
+        );
+
+        Assert.NotNull(result.GroupMatcher);
+        Assert.Equal(2, result.GroupMatcher.ApprovedCount);
+        Assert.Equal(1, result.GroupMatcher.WaitingProposalCount);
     }
 
     [Fact]

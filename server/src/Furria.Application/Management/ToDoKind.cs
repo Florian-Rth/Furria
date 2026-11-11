@@ -9,4 +9,6 @@ public enum ToDoKind
     KeyToTakeBack = 5,
     ClubRecordGap = 6,
     ApplicationWaiting = 7,
+    GroupMatcherStatementsOpen = 8,
+    GroupMatcherProposalWaiting = 9,
 }

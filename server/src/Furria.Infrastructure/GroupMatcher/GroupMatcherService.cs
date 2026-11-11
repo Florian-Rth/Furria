@@ -30,6 +30,14 @@ public sealed class GroupMatcherService
             .OrderBy(statement => statement.SortOrder)
             .ThenBy(statement => statement.Id);
 
+    private IQueryable<Stance> CurrentStances =>
+        _dbContext.Stances.Where(stance =>
+            stance.Statement!.Status == MatcherStatementStatus.Approved
+            && (
+                stance.Statement.RewordedAt == null || stance.Statement.RewordedAt <= stance.TakenAt
+            )
+        );
+
     public GroupMatcherService(
         AppDbContext dbContext,
         PublicFace publicFace,
@@ -68,15 +76,45 @@ public sealed class GroupMatcherService
         return new GroupMatcherStatusDetails
         {
             IsTakingPart = group?.IsTakingPart ?? false,
-            OpenStatements = await ApprovedStatements.CountAsync(
-                statement =>
-                    !statement.Stances.Any(stance =>
-                        stance.GroupId == groupId
-                        && (statement.RewordedAt == null || statement.RewordedAt <= stance.TakenAt)
-                    ),
-                ct
-            ),
+            OpenStatements =
+                await ApprovedStatements.CountAsync(ct)
+                - await CurrentStances.CountAsync(stance => stance.GroupId == groupId, ct),
         };
+    }
+
+    public async Task<IReadOnlyList<GroupAttentionSummary>> AttentionOfAsync(
+        IReadOnlyCollection<int> groupIds,
+        CancellationToken ct
+    )
+    {
+        var approvedCount = await ApprovedStatements.CountAsync(ct);
+        var groups = await _dbContext
+            .Groups.AsNoTracking()
+            .Where(group => groupIds.Contains(group.Id) && group.ArchivedOn == null)
+            .OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
+            .ThenBy(group => group.Id)
+            .Select(group => new
+            {
+                Group = new MatcherGroupRef
+                {
+                    GroupId = group.Id,
+                    Name = group.Name,
+                    Tone = group.Tone,
+                },
+                CurrentCount = CurrentStances.Count(stance => stance.GroupId == group.Id),
+            })
+            .ToListAsync(ct);
+
+        return
+        [
+            .. groups
+                .Select(row => new GroupAttentionSummary
+                {
+                    Group = row.Group,
+                    StatementCount = approvedCount - row.CurrentCount,
+                })
+                .Where(summary => summary.StatementCount > 0),
+        ];
     }
 
     public async Task<Result> TakeStanceAsync(TakeStanceCommand command, CancellationToken ct)
@@ -140,7 +178,10 @@ public sealed class GroupMatcherService
         return Result<int>.Success(statement.Id);
     }
 
-    public async Task<Result> WithdrawProposalAsync(
+    public Task<Result> WithdrawProposalAsync(int groupId, int statementId, CancellationToken ct) =>
+        _dbContext.UnderPoolLockAsync(() => WithdrawLockedAsync(groupId, statementId, ct), ct);
+
+    private async Task<Result> WithdrawLockedAsync(
         int groupId,
         int statementId,
         CancellationToken ct
@@ -293,22 +334,11 @@ public sealed class GroupMatcherService
     }
 
     private Task StampTakingPartAsync(int groupId, DateTimeOffset now, CancellationToken ct) =>
-        _dbContext
-            .Groups.Where(group =>
-                group.Id == groupId
-                && group.GroupMatcherJoinedAt == null
-                && !_dbContext.MatcherStatements.Any(statement =>
-                    statement.Status == MatcherStatementStatus.Approved
-                    && !statement.Stances.Any(stance => stance.GroupId == groupId)
-                )
-            )
-            .ExecuteUpdateAsync(
-                setters =>
-                    setters
-                        .SetProperty(group => group.GroupMatcherJoinedAt, now)
-                        .SetProperty(group => group.UpdatedAt, now),
-                ct
-            );
+        _dbContext.StampCompleteAsync(
+            _dbContext.Groups.Where(group => group.Id == groupId),
+            now,
+            ct
+        );
 
     private async Task<Result?> GroupRefusalAsync(int groupId, CancellationToken ct)
     {

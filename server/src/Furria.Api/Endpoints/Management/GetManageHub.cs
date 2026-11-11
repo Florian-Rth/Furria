@@ -27,7 +27,8 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             FurriaPermissions.BoardManage,
             FurriaPermissions.AccountsManage,
             FurriaPermissions.PersonsDelete,
-            FurriaPermissions.MembershipApplicationsDecide
+            FurriaPermissions.MembershipApplicationsDecide,
+            FurriaPermissions.GroupMatcherManage
         );
     }
 
@@ -58,6 +59,7 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             ClubRecord = hub.ClubRecord is null ? null : ToDto(hub.ClubRecord),
             Accounts = hub.Accounts is null ? null : ToDto(hub.Accounts),
             Applications = hub.Applications is null ? null : ToDto(hub.Applications),
+            GroupMatcher = hub.GroupMatcher is null ? null : ToDto(hub.GroupMatcher),
         };
 
     private static ManageHubPersonsDto ToDto(ManageHubPersons persons) =>
@@ -108,6 +110,13 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             EligibleWithoutEmailCount = accounts.EligibleWithoutEmailCount,
         };
 
+    private static ManageHubGroupMatcherDto ToDto(ManageHubGroupMatcher groupMatcher) =>
+        new()
+        {
+            ApprovedCount = groupMatcher.ApprovedCount,
+            WaitingProposalCount = groupMatcher.WaitingProposalCount,
+        };
+
     private static ManageHubApplicationsDto ToDto(ManageHubApplications applications) =>
         new()
         {
@@ -137,6 +146,8 @@ public sealed record GetManageHubResponse
     public required ManageHubAccountsDto? Accounts { get; init; }
 
     public required ManageHubApplicationsDto? Applications { get; init; }
+
+    public required ManageHubGroupMatcherDto? GroupMatcher { get; init; }
 }
 
 public sealed record ManageHubPersonsDto
@@ -217,4 +228,11 @@ public sealed record ManageHubApplicationsDto
     public required int UndecidedCount { get; init; }
 
     public required int MinorCount { get; init; }
+}
+
+public sealed record ManageHubGroupMatcherDto
+{
+    public required int ApprovedCount { get; init; }
+
+    public required int WaitingProposalCount { get; init; }
 }
