@@ -1,11 +1,11 @@
 import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
 import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import type { FC } from 'react';
+import { useShownPane } from '@/lib/use-shown-pane';
 import type { BeerRosterRow } from '../beer-hub';
 import { useBeerHubContext } from '../beer-hub-context';
 import { CLOSE_LABEL, HUB_TITLE } from '../beer-hub-copy';
 import { beerPaneKeyOf } from '../beer-pane';
-import { useShownPane } from '../hooks/use-shown-pane';
 import { HUB_SPANS } from '../hub-layout';
 import { BeerHubRoster } from './BeerHubRoster';
 import { BeerPaneView } from './BeerPaneView';
@@ -16,7 +16,7 @@ interface BeerPaneSlotProps {
 
 export const BeerPaneSlot: FC<BeerPaneSlotProps> = ({ roster }) => {
   const hub = useBeerHubContext();
-  const shown = useShownPane(hub.pane);
+  const shown = useShownPane(hub.pane, beerPaneKeyOf);
   const shownKey = beerPaneKeyOf(shown);
   const paneOpen = hub.pane !== null;
 

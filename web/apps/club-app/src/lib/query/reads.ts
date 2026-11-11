@@ -131,6 +131,7 @@ export const READ_NAMES = [
   'claimWindowStatus',
   'claimWindowOverview',
   'groupMatcherPage',
+  'statementPool',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -216,6 +217,7 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   claimWindowStatus: ['claim-window', 'status'],
   claimWindowOverview: ['claim-window', 'overview'],
   groupMatcherPage: ['group-matcher', 'group'],
+  statementPool: ['group-matcher', 'pool'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -493,6 +495,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   claimWindowStatus: ['claimWindow'],
   claimWindowOverview: ['claimWindow', 'account', 'person'],
   groupMatcherPage: ['groupMatcher', 'group'],
+  statementPool: ['groupMatcher', 'group'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -607,4 +610,5 @@ export const queryKeys = {
   claimWindowStatus: READ_ROOTS.claimWindowStatus,
   claimWindowOverview: READ_ROOTS.claimWindowOverview,
   groupMatcherPage: (groupId: number | null): QueryKey => keyOf('groupMatcherPage', groupId),
+  statementPool: READ_ROOTS.statementPool,
 } as const;

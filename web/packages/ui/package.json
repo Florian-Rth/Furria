@@ -88,6 +88,7 @@
     "./KkCountdownFuse": "./src/KkCountdownFuse/KkCountdownFuse.tsx",
     "./KkCountHead": "./src/KkCountHead/KkCountHead.tsx",
     "./KkCountShifts": "./src/KkCountShifts.tsx",
+    "./KkCoverageGrid": "./src/KkCoverageGrid/KkCoverageGrid.tsx",
     "./KkCoverThumb": "./src/KkCoverThumb/KkCoverThumb.tsx",
     "./KkCropFrame": "./src/KkCropFrame/KkCropFrame.tsx",
     "./KkCropPreview": "./src/KkCropPreview.tsx",

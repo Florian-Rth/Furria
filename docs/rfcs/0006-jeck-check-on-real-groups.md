@@ -154,11 +154,23 @@ to-dos now carry the optional `group` ref.
 
 ### Phase 4 — Club app: Jeck-Check management
 Goal: `group_matcher.manage` holders run the pool from *Verein verwalten*.
-- [ ] 4.1 Permission in the role editor + manage-hub entry
-- [ ] 4.2 Proposal queue (approve, reword-and-approve, reject)
-- [ ] 4.3 Approved pool: drag order, reword, delete, `n / 10` counter
-- [ ] 4.4 Coverage grid group × statement with taking-part column
-- [ ] 4.5 Proposals-waiting to-do on Start; logic tests + shots
+- [x] 4.1 Permission in the role editor + manage-hub entry
+- [x] 4.2 Proposal queue (approve, reword-and-approve, reject)
+- [x] 4.3 Approved pool: drag order, reword, delete, `n / 10` counter
+- [x] 4.4 Coverage grid group × statement with taking-part column
+- [x] 4.5 Proposals-waiting to-do on Start; logic tests + shots
+
+Built 2026-11-11. As built: `/manage/group-matcher` is a pro hub in *Vereinsdaten* (row shows
+`n / 10 Aussagen` and waiting proposals); panes are the child routes `proposals/$statementId` and
+`statements/$statementId` (bottom drawer on phones). Master: *Vorschläge* as a work queue with a
+quick *Aufnehmen* (hidden at 10), *Aussagen · n / 10* as a dnd-kit sortable list (new
+`KkStatementList.SortRow` + `PressRow`), *Abdeckung* on the new `KkCoverageGrid` kit (group ×
+statement marks plus a *Dabei* column, legend). The proposal pane rewords-and-approves (text sent
+only when changed) or rejects; the statement pane rewords, lists answered / changed / open groups
+and deletes after a confirm. All writes run through one operations hook in the hub context and are
+optimistic (approve appends the statement). `group_matcher.manage` sits in the role editor's
+*Verein* group; the `groupMatcherProposalWaiting` Start to-do links to the hub. The pool limit is
+one constant (`APPROVED_STATEMENT_LIMIT`) and the kept-pane hook is shared (`lib/use-shown-pane`).
 
 ### Phase 5 — Website on the API
 Goal: the public Jeck-Check runs on real data; the seed is gone.

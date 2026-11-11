@@ -22,6 +22,7 @@ export const PROPOSAL_STATUSES = ['proposed', 'approved', 'rejected'] as const;
 export type ProposalStatus = (typeof PROPOSAL_STATUSES)[number];
 
 export const STATEMENT_MAX_LENGTH = 160;
+export const APPROVED_STATEMENT_LIMIT = 10;
 
 const ImportanceSchema = z.literal(IMPORTANCES);
 
@@ -69,7 +70,7 @@ export type ProposedStatement = z.infer<typeof ProposedStatementSchema>;
 export const STATEMENT_REQUIRED_MESSAGE = 'Schreib die Aussage auf.';
 export const STATEMENT_TOO_LONG_MESSAGE = `Höchstens ${STATEMENT_MAX_LENGTH} Zeichen.`;
 
-export const StatementProposalFormSchema = z.object({
+export const StatementTextFormSchema = z.object({
   text: z
     .string()
     .trim()

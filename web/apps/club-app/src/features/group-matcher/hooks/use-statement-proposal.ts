@@ -1,7 +1,7 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import { useState } from 'react';
 import { useProposeStatementMutation } from '../api';
-import { StatementProposalFormSchema } from '../schemas';
+import { StatementTextFormSchema } from '../schemas';
 
 export interface StatementProposalControl {
   text: string;
@@ -23,7 +23,7 @@ export const useStatementProposal = (groupId: number): StatementProposalControl 
 
   const submit = (event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
-    const parsed = StatementProposalFormSchema.safeParse({ text });
+    const parsed = StatementTextFormSchema.safeParse({ text });
 
     if (!parsed.success) {
       setError(parsed.error.issues[0]?.message);

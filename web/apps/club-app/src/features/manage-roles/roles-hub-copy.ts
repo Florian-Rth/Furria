@@ -193,6 +193,7 @@ export const RIGHT_GROUP_DEFINITIONS: readonly RightGroupDefinition[] = [
       'key_holdings.manage',
       'announcements.post',
       'calendar.manage_club',
+      'group_matcher.manage',
     ],
   },
   { id: 'events', keys: ['events.manage'] },
