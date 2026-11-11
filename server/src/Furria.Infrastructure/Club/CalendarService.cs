@@ -774,8 +774,11 @@ public sealed partial class CalendarService
         DateTimeOffset now,
         bool mayAnswer,
         AttendanceRoll? roll = null
-    ) =>
-        new()
+    )
+    {
+        var addOns = AddOnsOf(row, extras);
+
+        return new()
         {
             CalendarEntryId = row.CalendarEntryId,
             Title = row.Title,
@@ -792,15 +795,8 @@ public sealed partial class CalendarService
             AudienceGroups = [.. row.Audience.Groups.Select(ToAudienceGroup)],
             AudiencePeople = [.. row.Audience.People.Select(ToAudiencePerson)],
             AsksForResponse = row.AsksForResponse,
-            AddOns = CalendarAddOnRecords.InCardOrder(
-                row.AddOnPositions.Attendance,
-                row.AddOnPositions.ParticipatingGroups,
-                extras.Polls.TryGetValue(row.CalendarEntryId, out var polls) ? polls : [],
-                extras.SignUpLists.TryGetValue(row.CalendarEntryId, out var lists) ? lists : [],
-                extras.DaySchedules.TryGetValue(row.CalendarEntryId, out var schedules)
-                    ? schedules
-                    : []
-            ),
+            AddOns = addOns,
+            OpenFunctions = CalendarOpenFunctions.Of(addOns),
             Attendance = row.AsksForResponse ? ToAttendance(row, now, roll) : null,
             Description = row.Description,
             ViewerAnswer = extras.Answers.TryGetValue(row.CalendarEntryId, out var answer)
@@ -812,6 +808,20 @@ public sealed partial class CalendarService
                 ? ToEventFacts(facts, now, EventPictureOf(row.CalendarEntryId, facts))
                 : null,
         };
+    }
+
+    [Pure]
+    private static IReadOnlyList<CalendarEntryAddOnDetails> AddOnsOf(
+        EntryRow row,
+        EntryExtras extras
+    ) =>
+        CalendarAddOnRecords.InCardOrder(
+            row.AddOnPositions.Attendance,
+            row.AddOnPositions.ParticipatingGroups,
+            extras.Polls.TryGetValue(row.CalendarEntryId, out var polls) ? polls : [],
+            extras.SignUpLists.TryGetValue(row.CalendarEntryId, out var lists) ? lists : [],
+            extras.DaySchedules.TryGetValue(row.CalendarEntryId, out var schedules) ? schedules : []
+        );
 
     [Pure]
     private static CalendarAttendanceDetails ToAttendance(

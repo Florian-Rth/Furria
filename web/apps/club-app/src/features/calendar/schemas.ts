@@ -169,6 +169,13 @@ export const CalendarDayScheduleSchema = z.object({
 });
 export type CalendarDaySchedule = z.infer<typeof CalendarDayScheduleSchema>;
 
+export const CalendarOpenFunctionSchema = z.object({
+  kind: CalendarAddOnKindSchema,
+  addOnId: z.number().int(),
+  hasAnswered: z.boolean(),
+});
+export type CalendarOpenFunction = z.infer<typeof CalendarOpenFunctionSchema>;
+
 export const CalendarEntryAddOnSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('attendance') }),
   z.object({ kind: z.literal('participatingGroups') }),
@@ -232,6 +239,7 @@ export const CalendarEntrySchema = z.object({
   audiencePeople: z.array(AudiencePersonSchema),
   asksForResponse: z.boolean(),
   addOns: z.array(CalendarEntryAddOnSchema),
+  openFunctions: z.array(CalendarOpenFunctionSchema),
   attendance: CalendarAttendanceSchema.nullable(),
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),

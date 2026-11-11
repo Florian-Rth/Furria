@@ -56,6 +56,7 @@ const entry = (
   description: null,
   viewerAnswer: null,
   mayAnswer: true,
+  openFunctions: [],
   isRunning: false,
   event: null,
   ...extra,

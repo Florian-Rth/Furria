@@ -1,12 +1,17 @@
 import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkOpenMarks } from '@furria/ui/KkOpenMarks';
 import { KkText } from '@furria/ui/KkText';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { AttendanceChoice } from '@/features/attendance/components/AttendanceChoice';
+import { toOpenMarks } from '@/features/calendar/calendar-open-marks';
 import { canAnswer } from '@/lib/calendar-answering';
-import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
+import { toDayNumberLabel, toLocalIsoDay, toWeekdayEyebrow } from '@/lib/calendar-days';
 import { toCalendarEntryMark, toCalendarEntryMetaLine } from '../group-calendar-entries';
 import type { GroupCalendarEntry } from '../schemas';
 import { HubCalendarEntryMark } from './HubCalendarEntryMark';
+
+const CALENDAR_ROUTE = '/calendar';
 
 interface HubCalendarEntryRowProps {
   groupId: number;
@@ -24,11 +29,21 @@ export const HubCalendarEntryRow: FC<HubCalendarEntryRowProps> = ({ groupId, ent
   const span = toDayNumberLabel(entry.startsAt);
   const spanLabel = toWeekdayEyebrow(entry.startsAt);
   const meta = toCalendarEntryMetaLine(entry, groupId);
+  const search = { day: toLocalIsoDay(entry.startsAt), entry: entry.calendarEntryId };
+  const openMarks = toOpenMarks(entry);
+  const marks = openMarks.length === 0 ? null : <KkOpenMarks marks={openMarks} />;
   const description =
     entry.description === null ? null : (
       <KkText variant="body2" tone="secondary">
         {entry.description}
       </KkText>
+    );
+  const nested =
+    marks === null && description === null ? null : (
+      <>
+        {marks}
+        {description}
+      </>
     );
 
   return (
@@ -40,8 +55,11 @@ export const HubCalendarEntryRow: FC<HubCalendarEntryRowProps> = ({ groupId, ent
       tone={tone}
       chip={chip}
       actions={actions}
+      component={Link}
+      to={CALENDAR_ROUTE}
+      search={search}
     >
-      {description}
+      {nested}
     </KkFactRow>
   );
 };

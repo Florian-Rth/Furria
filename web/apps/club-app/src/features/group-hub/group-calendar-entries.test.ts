@@ -25,6 +25,8 @@ const anEntry = (overrides: Partial<GroupCalendarEntry>): GroupCalendarEntry => 
   description: null,
   viewerAnswer: null,
   viewerMayAnswer: false,
+  mayAnswer: false,
+  openFunctions: [],
   isRunning: false,
   ...overrides,
 });

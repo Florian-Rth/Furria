@@ -353,6 +353,7 @@
     "./KkLaneFocus": "./src/KkLaneFocus.tsx",
     "./KkMenuItem": "./src/KkMenuItem.tsx",
     "./KkMomentField": "./src/KkMomentField/KkMomentField.tsx",
+    "./KkOpenMarks": "./src/KkOpenMarks.tsx",
     "./KkJobPanel": "./src/KkJobPanel/KkJobPanel.tsx",
     "./KkEditorStage": "./src/KkEditorStage/KkEditorStage.tsx",
     "./KkSelectionChip": "./src/KkSelectionChip.tsx",

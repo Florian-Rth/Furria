@@ -488,10 +488,26 @@ Decisions taken while building phase 11:
 
 ### Phase 12 — Open Funktionen outside the entry
 Goal: the calendar list and the group hub show what is open and what she still owes.
-- [ ] Calendar list and group calendar carry per entry: open poll or list and whether she answered, the attendance counts
-- [ ] Club app: marks on calendar lines (*Umfrage offen*, *Du fehlst noch*, *Liste offen*)
-- [ ] Group hub rows link to the entry detail and carry the same marks
-- [ ] Tests for the mark rules
+- [x] Calendar list and group calendar carry per entry: open poll or list and whether she answered, the attendance counts
+- [x] Club app: marks on calendar lines (*Umfrage offen*, *Du fehlst noch*, *Liste offen*)
+- [x] Group hub rows link to the entry detail and carry the same marks
+- [x] Tests for the mark rules
+
+Decisions taken while building phase 12:
+- **`openFunctions`** on every calendar list, detail and group calendar entry: one item per poll or
+  sign-up list that is still open, with its id and whether she has voted or holds a line. It is
+  derived from the add-ons the read already loads, so no query is added. Closed ones are left out.
+  The group calendar also carries the entry's `mayAnswer` (its `viewerMayAnswer` stays the
+  Zu-/Absage flag).
+- **Marks only for what she still owes:** a line shows *Abstimmen* (poll glyph) or *Eintragen*
+  (list glyph) when she may answer and has not; one mark per kind, however many are open. Nothing
+  is shown once she answered or when she may not answer — results stay on the entry, and a quiet
+  glyph on every line with a Funktion would add noise without a task. The marks sit in the line's
+  meta row (after venue and groups), so the line keeps its height and the trailing badge column.
+  The wording replaces the RFC's draft labels (*Umfrage offen*, *Du fehlst noch*, *Liste offen*)
+  with the action itself.
+- **Group hub rows** open the entry detail (`/calendar?day=…&entry=…`) and carry the same marks
+  above the description. The hub's owed count stays Zu-/Absage only.
 
 ## Risks & alternatives
 

@@ -217,6 +217,8 @@ public sealed record CalendarEntryDto
 
     public required IReadOnlyList<CalendarEntryAddOnDto> AddOns { get; init; }
 
+    public required IReadOnlyList<CalendarOpenFunctionDto> OpenFunctions { get; init; }
+
     public required CalendarAttendanceDto? Attendance { get; init; }
 
     public required string? Description { get; init; }
@@ -249,6 +251,7 @@ public sealed record CalendarEntryDto
             AudiencePeople = [.. entry.AudiencePeople.Select(AudiencePersonDto.From)],
             AsksForResponse = entry.AsksForResponse,
             AddOns = [.. entry.AddOns.Select(CalendarEntryAddOnDto.From)],
+            OpenFunctions = [.. entry.OpenFunctions.Select(CalendarOpenFunctionDto.From)],
             Attendance = entry.Attendance is { } attendance
                 ? CalendarAttendanceDto.From(attendance)
                 : null,
@@ -359,6 +362,24 @@ public sealed record CalendarAttendancePersonDto
             PersonId = person.PersonId,
             FirstName = person.FirstName,
             LastName = person.LastName,
+        };
+}
+
+public sealed record CalendarOpenFunctionDto
+{
+    public required CalendarEntryAddOnKind Kind { get; init; }
+
+    public required int AddOnId { get; init; }
+
+    public required bool HasAnswered { get; init; }
+
+    [Pure]
+    public static CalendarOpenFunctionDto From(CalendarOpenFunction open) =>
+        new()
+        {
+            Kind = open.Kind,
+            AddOnId = open.AddOnId,
+            HasAnswered = open.HasAnswered,
         };
 }
 

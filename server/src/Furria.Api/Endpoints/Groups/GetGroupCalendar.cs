@@ -97,10 +97,20 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
             AudiencePeople = [.. entry.AudiencePeople.Select(ToDto)],
             AsksForResponse = entry.AsksForResponse,
             AddOns = [.. entry.AddOns.Select(addOn => addOn.Kind)],
+            OpenFunctions = [.. entry.OpenFunctions.Select(ToDto)],
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             ViewerMayAnswer = viewerMayAnswer,
+            MayAnswer = entry.MayAnswer,
             IsRunning = entry.IsRunning,
+        };
+
+    private static GroupCalendarOpenFunctionDto ToDto(CalendarOpenFunction open) =>
+        new()
+        {
+            Kind = open.Kind,
+            AddOnId = open.AddOnId,
+            HasAnswered = open.HasAnswered,
         };
 
     private static GroupCalendarAudienceGroupDto ToDto(AudienceGroup group) =>
@@ -214,13 +224,26 @@ public sealed record GroupCalendarEntryDto
 
     public required IReadOnlyList<CalendarEntryAddOnKind> AddOns { get; init; }
 
+    public required IReadOnlyList<GroupCalendarOpenFunctionDto> OpenFunctions { get; init; }
+
     public required string? Description { get; init; }
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }
 
     public required bool ViewerMayAnswer { get; init; }
 
+    public required bool MayAnswer { get; init; }
+
     public required bool IsRunning { get; init; }
+}
+
+public sealed record GroupCalendarOpenFunctionDto
+{
+    public required CalendarEntryAddOnKind Kind { get; init; }
+
+    public required int AddOnId { get; init; }
+
+    public required bool HasAnswered { get; init; }
 }
 
 public sealed record GroupCalendarParticipantDto

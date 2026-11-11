@@ -2,6 +2,7 @@ import type { KkCalendarDayData } from '@furria/ui/calendar-strip-types';
 import type { KkCalendarLineGroup } from '@furria/ui/KkCalendarAgendaLine';
 import type { KkCalendarTimeTone } from '@furria/ui/KkCalendarAgendaTime';
 import type { KkEntryKindGlyphKind } from '@furria/ui/KkEntryKindGlyph';
+import type { KkOpenMark } from '@furria/ui/KkOpenMarks';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeLabel, toTimeSpanLabel } from '@/lib/calendar-days';
 import { shiftDay } from '@/lib/day';
@@ -47,6 +48,7 @@ import {
   WHOLE_CLUB_AUDIENCE_LABEL,
   weekdayOf,
 } from './calendar-agenda-copy';
+import { toOpenMarks } from './calendar-open-marks';
 import { toPersonName } from './calendar-people';
 import type { CalendarEntry, CalendarEntryAddOn, UsualTraining } from './schemas';
 
@@ -110,7 +112,10 @@ export interface CalendarLineView {
   timeTone: KkCalendarTimeTone;
   spoken: string;
   thumb: EventCover | null;
+  marks: KkOpenMark[];
 }
+
+const SPOKEN_SEPARATOR = ', ';
 
 export const toLineView = (line: CalendarLine, nowMs: number): CalendarLineView => {
   const { entry } = line;
@@ -118,6 +123,11 @@ export const toLineView = (line: CalendarLine, nowMs: number): CalendarLineView 
   const quiet = !live && (line.dayIndex > 0 || isPastLine(line, nowMs));
   const time = toTimeCopy(toCalendarTime(line));
   const kindLabel = CALENDAR_KIND_LABELS[entry.kind];
+  const marks = line.dayIndex === 0 ? toOpenMarks(entry) : [];
+  const spoken = [
+    toLineSpoken(entry.title, kindLabel, time.spoken, entry.venueName),
+    ...marks.map((mark) => mark.label),
+  ].join(SPOKEN_SEPARATOR);
 
   return {
     glyph: entry.kind,
@@ -129,8 +139,9 @@ export const toLineView = (line: CalendarLine, nowMs: number): CalendarLineView 
     quiet,
     time,
     timeTone: live ? 'live' : quiet ? 'quiet' : 'ink',
-    spoken: toLineSpoken(entry.title, kindLabel, time.spoken, entry.venueName),
+    spoken,
     thumb: thumbOf(entry, THUMB_SIZES),
+    marks,
   };
 };
 

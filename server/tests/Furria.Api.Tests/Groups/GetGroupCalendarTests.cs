@@ -164,6 +164,29 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_SummariseTheOpenFunctionsForHer_When_SheReadsTheGroupCalendar()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildCalendarAsync(ct);
+
+        var result = await ReadAsync(ctx, "bea", Window(ctx.Groups.Groups.IdOf("tanzgarde")), ct);
+
+        var training = EntryTitled(result, DanceGuardTraining);
+        Assert.Equal(
+            [
+                (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("garde-drinks"), true),
+                (
+                    CalendarEntryAddOnKind.SignUpList,
+                    ctx.Club.CalendarSignUpLists.IdOf("garde-chairs"),
+                    false
+                ),
+            ],
+            training.OpenFunctions.Select(open => (open.Kind, open.AddOnId, open.HasAnswered))
+        );
+        Assert.True(training.MayAnswer);
+    }
+
+    [Fact]
     public async Task Should_LeaveOutTheClubEntry_When_TheGroupDoesNotParticipate()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -361,6 +384,14 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
                                 kind: CalendarEntryKind.Training,
                                 ownerGroupAlias: "tanzgarde"
                             )
+                            .AddCalendarPoll(
+                                "garde-drinks",
+                                "garde-training",
+                                "Was trinken wir?",
+                                ["Saft", "Tee"]
+                            )
+                            .AddCalendarPollVote("garde-drinks", "Tee", "bea")
+                            .AddCalendarSignUpList("garde-chairs", "garde-training", "Stühle")
                             .AddCalendarEntry(
                                 "kinder-probe",
                                 ChildrensRehearsal,

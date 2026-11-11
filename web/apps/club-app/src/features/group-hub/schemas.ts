@@ -4,6 +4,7 @@ import {
   AudienceGroupSchema,
   AudiencePersonSchema,
   CalendarEntryAudienceSchema,
+  CalendarOpenFunctionSchema,
 } from '@/features/calendar/schemas';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail/schemas';
 import { AppSearchSchema } from '@/features/session/schemas';
@@ -224,6 +225,8 @@ export const GroupCalendarEntrySchema = z.object({
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
   viewerMayAnswer: z.boolean(),
+  mayAnswer: z.boolean(),
+  openFunctions: z.array(CalendarOpenFunctionSchema),
   isRunning: z.boolean(),
 });
 export type GroupCalendarEntry = z.infer<typeof GroupCalendarEntrySchema>;

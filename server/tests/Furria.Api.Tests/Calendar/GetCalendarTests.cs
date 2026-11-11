@@ -530,6 +530,118 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_SummariseTheOpenFunctionsForHer_When_SheReadsTheCalendar()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildOpenFunctionsAsync(ct);
+
+                var result = await ReadAsync(ctx, "alice", new GetCalendarRequest(), ct);
+
+                var meeting = result.Entries.Single(entry => entry.Title == ClubMeeting);
+                Assert.Equal(
+                    [
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("food"), true),
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("drinks"), false),
+                        (
+                            CalendarEntryAddOnKind.SignUpList,
+                            ctx.Club.CalendarSignUpLists.IdOf("bring"),
+                            true
+                        ),
+                        (
+                            CalendarEntryAddOnKind.SignUpList,
+                            ctx.Club.CalendarSignUpLists.IdOf("setup"),
+                            false
+                        ),
+                    ],
+                    meeting.OpenFunctions.Select(open =>
+                        (open.Kind, open.AddOnId, open.HasAnswered)
+                    )
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryNoOpenFunction_When_HerEntryHoldsOnlyClosedOnes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildOpenFunctionsAsync(ct);
+
+                var result = await ReadAsync(ctx, "alice", new GetCalendarRequest(), ct);
+
+                Assert.Empty(result.Entries.Single(entry => entry.Title == ClubTrip).OpenFunctions);
+            }
+        );
+    }
+
+    private Task<SeededContext> BuildOpenFunctionsAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(WholeClub)
+                    .Club(club =>
+                        club.AddCalendarEntry("club-meeting", ClubMeeting, AtTheMeeting)
+                            .AddCalendarPoll(
+                                "food",
+                                "club-meeting",
+                                "Was essen wir?",
+                                ["Pizza", "Suppe"],
+                                position: 0
+                            )
+                            .AddCalendarPollVote("food", "Pizza", "alice")
+                            .AddCalendarPoll(
+                                "drinks",
+                                "club-meeting",
+                                "Was trinken wir?",
+                                ["Saft", "Tee"],
+                                position: 1
+                            )
+                            .AddCalendarPollVote("drinks", "Tee", "bea")
+                            .AddCalendarSignUpList(
+                                "bring",
+                                "club-meeting",
+                                "Mitbringen",
+                                position: 2
+                            )
+                            .AddCalendarSignUpLine("alice-bring", "bring", "alice", "Salat")
+                            .AddCalendarSignUpList("setup", "club-meeting", "Aufbau", position: 3)
+                            .AddCalendarPoll(
+                                "music",
+                                "club-meeting",
+                                "Welche Musik?",
+                                ["Schlager", "Polka"],
+                                closedAt: Now.AddDays(-1),
+                                position: 4
+                            )
+                            .AddCalendarEntry("club-trip", ClubTrip, AtTheParade)
+                            .AddCalendarPoll(
+                                "bus",
+                                "club-trip",
+                                "Welcher Bus?",
+                                ["Früh", "Spät"],
+                                votesUntil: Now.AddHours(-1)
+                            )
+                            .AddCalendarSignUpList(
+                                "seats",
+                                "club-trip",
+                                "Sitzplätze",
+                                closedAt: Now.AddDays(-2)
+                            )
+                    ),
+            ct
+        );
+
     private static string[] TitlesOf(GetCalendarResponse result) =>
         [.. result.Entries.Select(entry => entry.Title)];
 
