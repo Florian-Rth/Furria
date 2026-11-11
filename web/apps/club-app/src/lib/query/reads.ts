@@ -46,6 +46,7 @@ export const DOMAIN_CHANGES = [
   'hall',
   'tablePlan',
   'seating',
+  'claimWindow',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -128,6 +129,9 @@ export const READ_NAMES = [
   'hall',
   'tablePlans',
   'tablePlan',
+  'promoMembers',
+  'claimWindowStatus',
+  'claimWindowOverview',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -210,6 +214,9 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   hall: ['halls', 'detail'],
   tablePlans: ['table-plans', 'list'],
   tablePlan: ['table-plans', 'detail'],
+  promoMembers: ['promo', 'members'],
+  claimWindowStatus: ['claim-window', 'status'],
+  claimWindowOverview: ['claim-window', 'overview'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -493,6 +500,9 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   hall: ['venue'],
   tablePlans: ['tablePlan', 'hall', 'event', 'seating'],
   tablePlan: ['hall', 'venue', 'seating'],
+  promoMembers: ['person', 'account', 'membership', 'groupMembership', 'roleHolding'],
+  claimWindowStatus: ['claimWindow'],
+  claimWindowOverview: ['claimWindow', 'account', 'person'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -604,4 +614,7 @@ export const queryKeys = {
   hall: (hallId: number): QueryKey => keyOf('hall', hallId),
   tablePlans: READ_ROOTS.tablePlans,
   tablePlan: (eventId: number): QueryKey => keyOf('tablePlan', eventId),
+  promoMembers: READ_ROOTS.promoMembers,
+  claimWindowStatus: READ_ROOTS.claimWindowStatus,
+  claimWindowOverview: READ_ROOTS.claimWindowOverview,
 } as const;

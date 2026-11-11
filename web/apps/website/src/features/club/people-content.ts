@@ -6,8 +6,8 @@ import { resolveCycleTint } from './tint-cycle';
 
 export const peopleChapter = {
   numeral: '05',
-  kicker: 'WER FURRIA ZUSAMMENHÄLT',
-  title: 'MENSCHEN, DIE FURRIA SIND',
+  kicker: 'WER DEN VEREIN FÜHRT',
+  title: 'DER VORSTAND',
 } as const;
 
 export interface BoardTile {

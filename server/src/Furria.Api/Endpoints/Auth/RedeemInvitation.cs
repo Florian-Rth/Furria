@@ -47,7 +47,7 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
     {
         Post("auth/invitations/redeem");
         AllowAnonymous();
-        Options(route => route.RequireRateLimiting(SignedOutRateLimiting.PerIpPolicy));
+        Options(route => route.RequireRateLimiting(SignedOutRateLimiting.OnboardingPerIpPolicy));
     }
 
     public override async Task HandleAsync(RedeemInvitationRequest req, CancellationToken ct)
@@ -246,10 +246,7 @@ public sealed class RedeemInvitationValidator : Validator<RedeemInvitationReques
         When(
             request => !IsClaim(request) || request.Password is not null,
             () =>
-                RuleFor(request => request.Password)
-                    .NotEmpty()
-                    .MinimumLength(PasswordRule.MinimumLength)
-                    .MaximumLength(MaximumPasswordLength)
+                RuleFor(request => request.Password).NotEmpty().MaximumLength(MaximumPasswordLength)
         );
         When(
             request => request.ClaimPassword is not null,

@@ -7,7 +7,7 @@ export type AccountState = z.infer<typeof AccountStateSchema>;
 export const AccessBlockSchema = z.enum(['notAffiliated', 'noBirthDate', 'underAge']);
 export type AccessBlock = z.infer<typeof AccessBlockSchema>;
 
-export const InvitationChannelSchema = z.enum(['mail', 'inPerson', 'request']);
+export const InvitationChannelSchema = z.enum(['mail', 'inPerson', 'request', 'claimWindow']);
 export type InvitationChannel = z.infer<typeof InvitationChannelSchema>;
 
 export const AccountEventKindSchema = z.enum([
@@ -20,6 +20,7 @@ export const AccountEventKindSchema = z.enum([
   'deleted',
   'loginEmailChanged',
   'recoveryIssued',
+  'claimed',
 ]);
 export type AccountEventKind = z.infer<typeof AccountEventKindSchema>;
 

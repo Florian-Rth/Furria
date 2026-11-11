@@ -4794,6 +4794,48 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("account_event", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Infrastructure.Identity.ClaimWindow", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<DateTimeOffset>("ClosesAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closes_at");
+
+                    b.Property<DateTimeOffset>("OpenedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("opened_at");
+
+                    b.Property<int?>("OpenedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("opened_by_person_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_claim_window");
+
+                    b.HasIndex("OpenedAt")
+                        .HasDatabaseName("ix_claim_window_opened_at");
+
+                    b.HasIndex("OpenedByPersonId")
+                        .HasDatabaseName("ix_claim_window_opened_by_person_id");
+
+                    b.ToTable("claim_window", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_claim_window_closed_after_opening", "closed_at IS NULL OR closed_at >= opened_at");
+
+                            t.HasCheckConstraint("ck_claim_window_end", "closes_at > opened_at");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Infrastructure.Identity.EmailConfirmation", b =>
                 {
                     b.Property<long>("Id")
@@ -7034,6 +7076,17 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Actor");
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.Identity.ClaimWindow", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "OpenedBy")
+                        .WithMany()
+                        .HasForeignKey("OpenedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_claim_window_person_opened_by_person_id");
+
+                    b.Navigation("OpenedBy");
                 });
 
             modelBuilder.Entity("Furria.Infrastructure.Identity.EmailConfirmation", b =>

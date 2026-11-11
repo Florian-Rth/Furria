@@ -88,6 +88,7 @@ public static class ReferencesToPerson
         ),
         HerAct<AccountEvent>(nameof(AccountEvent.ActorPersonId)),
         HerAct<Invitation>(nameof(Invitation.IssuedByPersonId)),
+        HerAct<ClaimWindow>(nameof(ClaimWindow.OpenedByPersonId)),
         HerAct<Membership>(nameof(Membership.AdmittedByPersonId)),
         HerAct<Person>(nameof(Person.ContactChangedByPersonId)),
         HerAct<Person>(nameof(Person.ArchivedByPersonId)),

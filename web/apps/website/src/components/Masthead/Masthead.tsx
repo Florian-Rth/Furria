@@ -35,6 +35,7 @@ export const Masthead: FC = () => {
           scrolled ? alpha(bg, kkTokens.glass.tintOpacity) : 'transparent';
 
         return {
+          color: 'text.primary',
           backgroundColor: glassBackground(kkTokens.color.light.bg),
           backdropFilter: scrolled ? `blur(${kkTokens.glass.blur})` : 'none',
           WebkitBackdropFilter: scrolled ? `blur(${kkTokens.glass.blur})` : 'none',

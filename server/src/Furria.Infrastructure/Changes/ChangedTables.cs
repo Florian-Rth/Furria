@@ -111,6 +111,7 @@ public static class ChangedTables
         [typeof(TablePlan)] = [DomainChange.TablePlan],
         [typeof(TableType)] = [DomainChange.Seating],
         [typeof(SeatingStandard)] = [DomainChange.Seating],
+        [typeof(ClaimWindow)] = [DomainChange.ClaimWindow],
     }.ToFrozenDictionary();
 
     private static readonly FrozenSet<Type> Unrelated = new[]

@@ -6,6 +6,7 @@ namespace Furria.Api.RateLimiting;
 public static class SignedOutRateLimiting
 {
     public const string PerIpPolicy = "signed-out-per-ip";
+    public const string OnboardingPerIpPolicy = "signed-out-onboarding-per-ip";
 
     private const string UnknownClient = "unknown";
 
@@ -17,6 +18,8 @@ public static class SignedOutRateLimiting
             .Validate(
                 options =>
                     options.PermitsPerIp > 0
+                    && options.PermitsPerIpOnboarding > 0
+                    && options.PermitsPerClaimName > 0
                     && options.PermitsPerToken > 0
                     && options.PermitsPerAddress > 0
                     && options.Window > TimeSpan.Zero,
@@ -26,26 +29,35 @@ public static class SignedOutRateLimiting
 
         services.AddSingleton<InvitationTokenRateLimiter>();
         services.AddSingleton<AddressRateLimiter>();
+        services.AddSingleton<ClaimNameRateLimiter>();
 
         return services.AddRateLimiter(options =>
         {
             options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-            options.AddPolicy(PerIpPolicy, PerIpPartition);
+            options.AddPolicy(
+                PerIpPolicy,
+                context => PerIpPartition(context, LimitsOf(context).PermitsPerIp)
+            );
+            options.AddPolicy(
+                OnboardingPerIpPolicy,
+                context => PerIpPartition(context, LimitsOf(context).PermitsPerIpOnboarding)
+            );
         });
     }
 
-    private static RateLimitPartition<string> PerIpPartition(HttpContext context)
+    private static SignedOutRateLimitOptions LimitsOf(HttpContext context) =>
+        context.RequestServices.GetRequiredService<IOptions<SignedOutRateLimitOptions>>().Value;
+
+    private static RateLimitPartition<string> PerIpPartition(HttpContext context, int permits)
     {
-        var limits = context
-            .RequestServices.GetRequiredService<IOptions<SignedOutRateLimitOptions>>()
-            .Value;
+        var window = LimitsOf(context).Window;
 
         return RateLimitPartition.GetFixedWindowLimiter(
             context.Connection.RemoteIpAddress?.ToString() ?? UnknownClient,
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = limits.PermitsPerIp,
-                Window = limits.Window,
+                PermitLimit = permits,
+                Window = window,
                 QueueLimit = 0,
             }
         );

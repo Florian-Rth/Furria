@@ -35,7 +35,7 @@ public sealed class LookUpInvitation : Endpoint<LookUpInvitationRequest, LookUpI
     {
         Post("auth/invitations/lookup");
         AllowAnonymous();
-        Options(route => route.RequireRateLimiting(SignedOutRateLimiting.PerIpPolicy));
+        Options(route => route.RequireRateLimiting(SignedOutRateLimiting.OnboardingPerIpPolicy));
     }
 
     public override async Task HandleAsync(LookUpInvitationRequest req, CancellationToken ct)

@@ -266,6 +266,14 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
         );
         builder.UseSetting(
+            $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerIpOnboarding)}",
+            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerClaimName)}",
+            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
             $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerToken)}",
             PermitsPerInvitationToken.ToString(CultureInfo.InvariantCulture)
         );

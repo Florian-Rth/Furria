@@ -129,6 +129,82 @@ The seed prints the persona ids and the calendar entry ids (open one with `/?she
 | `SEED_SQL_OUT` | `out/seed-start.sql` |
 | `SEED_PSQL` | unset: write the SQL only |
 
+## The promo stack
+
+The projector reel (`/promo`) shows screenshots of a demo club that lives in its own database, so
+it never touches the shared dev data. `scripts/promo-stack.sh` (repo root) runs it beside the dev
+stack, on the same Postgres and Mailpit:
+
+| Part | Where |
+|---|---|
+| Database | `furria_promo` on `furria-dev-postgres` (migrated by the API on startup) |
+| API | `http://127.0.0.1:5140`, this worktree, log + pid in `server/.dev/promo-api.*` |
+| Media | `~/furria-promo-media`, worker container `furria-promo-media-worker` (image of the same name, built from this worktree by `up` or `worker-build` — it must know audio) |
+| Club app | `http://localhost:3041` (`furria-promo-club-app`, proxies `/api` to :5140) |
+| Website | `http://127.0.0.1:3040` (`furria-promo-website`) |
+
+```bash
+scripts/promo-stack.sh up       # create the database if missing, start worker, API and both apps
+scripts/promo-stack.sh seed     # seed:start + seed:promo, SQL applied — run again before every shoot
+scripts/promo-stack.sh worker-build   # rebuild the promo media worker image after server changes
+scripts/promo-stack.sh status
+scripts/promo-stack.sh down     # stop API, apps and worker; the data stays
+scripts/promo-stack.sh reset    # down + drop furria_promo and its media
+```
+
+The vite configs read the proxy target from `FURRIA_API_PROXY` (default `http://localhost:5100`).
+
+### Seeding the promo club
+
+`src/seed-promo.ts` builds on `seed-start` (run that first) and, like it, goes through the real
+API, finds everything by name and creates only what is missing:
+
+- 60 more members (Elferrat, Männerballett, Tanzgarde, the new Showtanzgruppe, Kindergarde and
+  supporters), 45 of them with an account; their arrival in the app is spread over the last months
+  (the reel's finale lists them in that order)
+- the session record with its motto, two presale places, the roles *Sitzungsplanung*
+  (`events.*`, held by Lena) and *Öffentlichkeitsarbeit* (`news.manage`)
+- six published events of the session (Narrenball 11.11., two Prunksitzungen, Senioren- and
+  Kindersitzung, Weiberfastnacht) with a generated placeholder poster each, 14 acts and a confirmed
+  running order per evening
+- the hall *Großer Saal* of the Festhalle and a numbered table plan (42 Biertische, 408 chairs)
+  for the 1. Prunksitzung, copied to the other hall evenings
+- the *Marschtanz der Tanzgarde* training material: a synthesized 140 BPM march (WAV, uploaded
+  over tus and processed by the worker), 22 named steps in 6 parts, 12 spots with dancers and a
+  choreography; Marschtanz and Showtanz trainings around today with answers (one dancer cancels
+  the next training, so it shows an open spot)
+- three published news posts
+
+```bash
+pnpm --filter @furria/screenshot seed:promo
+```
+
+It prints the ids the shots need (the act, the next training, the events). Its realism SQL
+(arrival times, publishing moments) goes to `out/seed-promo.sql` or through `SEED_PSQL`, as for
+`seed-start`. The redeeming of ~50 invitations needs the API's signed-out rate limit raised
+(`RateLimits__SignedOut__PermitsPerIp`, done by `promo-stack.sh`).
+
+### Shooting the reel's screens
+
+`src/promo-shots.ts` captures the pages the projector reel (`/promo`) shows in its device frames
+and writes them as `apps/club-app/src/features/promo/screens/<name>.jpg` (phone 390×844 at 3×,
+website 1440×900 at 2×, JPEG quality 95 — JPEG on purpose: the PWA precaches PNGs). Shoot after
+`promo-stack.sh seed`, as Lena; it runs in the Playwright image (no Chrome there, hence
+`SHOT_BROWSER_CHANNEL=chromium`):
+
+```bash
+SHOT_BROWSER_CHANNEL=chromium SHOT_EMAIL=lena.brandt@furria.local SHOT_PASSWORD='Furria-Persona-1!' \
+PROMO_ACT=3 PROMO_EVENT=12 PROMO_APP=http://localhost:3041 pnpm promo:shots
+```
+
+| Variable | Meaning |
+|---|---|
+| `PROMO_ACT` / `PROMO_EVENT` | act hub + practice view, running order + table plan (ids printed by `seed:promo`) |
+| `PROMO_APP` / `PROMO_SITE` | club app and website origins (default `:3041` / `:3040`) |
+| `PROMO_ONLY` | comma list of screen names to reshoot, e.g. `website,news` |
+
+A file can also be replaced by hand with one of the same name and size.
+
 ## Prerequisites
 
 `pnpm dev:club-app` on port 3001; for routes behind login also Postgres

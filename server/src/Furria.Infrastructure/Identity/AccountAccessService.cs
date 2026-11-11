@@ -369,7 +369,7 @@ public sealed class AccountAccessService
             new AccountEvent
             {
                 PersonId = invitation.PersonId,
-                Kind = IssuedEventKindOf(invitation.Purpose),
+                Kind = IssuedEventKindOf(invitation),
                 ActorPersonId = invitation.IssuedByPersonId,
                 At = invitation.IssuedAt,
             }
@@ -802,10 +802,13 @@ public sealed class AccountAccessService
         };
 
     [Pure]
-    private static AccountEventKind IssuedEventKindOf(InvitationPurpose purpose) =>
-        purpose == InvitationPurpose.Recovery
-            ? AccountEventKind.RecoveryIssued
-            : AccountEventKind.Invited;
+    private static AccountEventKind IssuedEventKindOf(Invitation invitation) =>
+        invitation switch
+        {
+            { Purpose: InvitationPurpose.Recovery } => AccountEventKind.RecoveryIssued,
+            { Channel: InvitationChannel.ClaimWindow } => AccountEventKind.Claimed,
+            _ => AccountEventKind.Invited,
+        };
 
     [Pure]
     private static Result<RedemptionDetails> RefusalOf(IdentityResult created)

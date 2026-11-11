@@ -71,6 +71,9 @@ public sealed class ForwardedClientAddressTests : IClassFixture<ApiTestFixture>
                 [
                     $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerIp)}"
                 ] = PermitsPerIp.ToString(CultureInfo.InvariantCulture),
+                [
+                    $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerIpOnboarding)}"
+                ] = PermitsPerIp.ToString(CultureInfo.InvariantCulture),
             }
         );
 

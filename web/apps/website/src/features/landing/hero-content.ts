@@ -1,4 +1,4 @@
-import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH } from '@/lib/club';
+import { sessionAt } from '@/lib/club';
 import { formatMemberCount, UNKNOWN_FACT } from '@/lib/public-club/club-facts';
 import type { PublicClub } from '@/lib/public-club/schemas';
 
@@ -7,10 +7,8 @@ export interface HeroStat {
   label: string;
 }
 
-const openingLabel = `${SESSION_OPENING_DAY}.${SESSION_OPENING_MONTH}. ERÖFFNUNG`;
-
-export const buildEyebrowLabel = (sessionLabel: string | undefined): string =>
-  sessionLabel === undefined ? `★ ${openingLabel}` : `★ SESSION ${sessionLabel} · ${openingLabel}`;
+export const buildEyebrowLabel = (sessionLabel: string | undefined, today: Date): string =>
+  `★ SESSION ${sessionLabel ?? sessionAt(today).yearsLabel}`;
 
 const MEMBERS_LABEL = 'Mitglieder';
 const GROUPS_LABEL = 'Garden & Gruppen';

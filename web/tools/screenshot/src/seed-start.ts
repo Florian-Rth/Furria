@@ -1,8 +1,22 @@
-import { spawn } from 'node:child_process';
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import type { ZodType } from 'zod';
-import { invitationTokenOf, mailSentSince } from './seed-mail.ts';
+import type { Session } from './seed-api.ts';
+import {
+  ADMIN_EMAIL,
+  ADMIN_PASSWORD,
+  API_BASE,
+  applySql,
+  fullNameOf,
+  getJson,
+  inviteAndRedeem,
+  log,
+  lookUp,
+  PERSONA_PASSWORD,
+  PSQL_COMMAND,
+  postJson,
+  send,
+  signIn,
+} from './seed-api.ts';
 import type { GroupDetail, PersonSummary } from './seed-schemas.ts';
 import {
   AnnouncementsSchema,
@@ -19,14 +33,10 @@ import {
   CreatedVenueSchema,
   GroupDetailSchema,
   KeyHoldingsSchema,
-  LoginResponseSchema,
-  MailMessageSchema,
-  MailSearchSchema,
   ManagedGroupsSchema,
   OpenBeerPotSchema,
   PersonDetailSchema,
   PersonsSchema,
-  RedemptionSchema,
   RolesSchema,
   VenuesSchema,
 } from './seed-schemas.ts';
@@ -60,11 +70,6 @@ type GroupTone =
 type ClubIcon = 'crown' | 'euro' | 'key' | 'camera' | 'wrench' | 'star' | 'heart' | 'mask' | 'flag';
 type EntryKind = 'plain' | 'training' | 'trip';
 type EntryAudience = 'club' | 'groups';
-
-interface Session {
-  readonly label: string;
-  readonly token: string;
-}
 
 interface MembershipSpec {
   readonly startedOn: IsoDay;
@@ -182,18 +187,7 @@ interface AnnouncementSpec {
   readonly publishedAt: Date;
 }
 
-const trimSlash = (url: string): string => url.replace(/\/$/, '');
-
-const API_BASE = trimSlash(process.env.SEED_API ?? 'http://localhost:5100');
-const MAILPIT_BASE = trimSlash(process.env.SEED_MAILPIT ?? 'http://localhost:8025');
-const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL ?? 'admin@furria.local';
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? 'Furria-Dev-Admin-1!';
-const PERSONA_PASSWORD = process.env.SEED_PASSWORD ?? 'Furria-Persona-1!';
 const SQL_OUT = process.env.SEED_SQL_OUT ?? path.join('out', 'seed-start.sql');
-const PSQL_COMMAND = process.env.SEED_PSQL ?? null;
-const MAIL_WAIT_MS = 45_000;
-const MAIL_POLL_MS = 750;
-const MAIL_SEARCH_LIMIT = 10;
 const SLOT_MINUTES = 5;
 const RUNNING_SINCE_MINUTES = 30;
 const CALENDAR_LOOKBACK_DAYS = 200;
@@ -202,73 +196,6 @@ const INVITATION_LIFETIME_DAYS = 14;
 const REMINDER_DUE_DAYS_AGO = 6;
 const LENA_PHONES = ['0171 4483 902', '0171 4483 920'] as const;
 const GROSSFURRA = { zip: '99706', city: 'Großfurra' } as const;
-
-const log = (line: string): void => {
-  console.log(line);
-};
-
-const fullNameOf = (firstName: string, lastName: string): string => `${firstName} ${lastName}`;
-
-const lookUp = <TValue>(map: ReadonlyMap<string, TValue>, key: string, what: string): TValue => {
-  const value = map.get(key);
-  if (value === undefined) {
-    throw new Error(`no ${what} "${key}"`);
-  }
-  return value;
-};
-
-const request = async (
-  method: string,
-  route: string,
-  session: Session | null,
-  body?: object,
-): Promise<Response> => {
-  const headers: Record<string, string> = {};
-  if (session !== null) {
-    headers.authorization = `Bearer ${session.token}`;
-  }
-  if (body !== undefined) {
-    headers['content-type'] = 'application/json';
-  }
-  const response = await fetch(`${API_BASE}/api/${route}`, {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  if (!response.ok) {
-    throw new Error(
-      `${method} /api/${route} as ${session?.label ?? 'anonymous'} → ${response.status} ${await response.text()}`,
-    );
-  }
-  return response;
-};
-
-const getJson = async <TResult>(
-  route: string,
-  session: Session,
-  schema: ZodType<TResult>,
-): Promise<TResult> => schema.parse(await (await request('GET', route, session)).json());
-
-const postJson = async <TResult>(
-  route: string,
-  session: Session | null,
-  body: object,
-  schema: ZodType<TResult>,
-): Promise<TResult> => schema.parse(await (await request('POST', route, session, body)).json());
-
-const send = async (
-  method: 'POST' | 'PUT',
-  route: string,
-  session: Session,
-  body: object,
-): Promise<void> => {
-  await request(method, route, session, body);
-};
-
-const signIn = async (label: string, email: string, password: string): Promise<Session> => {
-  const login = await postJson('auth/login', null, { email, password }, LoginResponseSchema);
-  return { label, token: login.accessToken };
-};
 
 const personSpecsOf = (moment: Moment): PersonSpec[] => [
   {
@@ -1186,55 +1113,6 @@ const ensureRoleHoldings = async (
   log('role holdings: in place');
 };
 
-const pause = (ms: number): Promise<void> =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-
-const mailpitJson = async <TResult>(route: string, schema: ZodType<TResult>): Promise<TResult> => {
-  const response = await fetch(`${MAILPIT_BASE}/api/v1/${route}`);
-  if (!response.ok) {
-    throw new Error(`Mailpit ${route} → ${response.status}`);
-  }
-  return schema.parse(await response.json());
-};
-
-const invitationTokenFor = async (email: string, sentAfter: Date): Promise<string> => {
-  const deadline = Date.now() + MAIL_WAIT_MS;
-  while (Date.now() < deadline) {
-    const search = await mailpitJson(
-      `search?query=${encodeURIComponent(`to:${email}`)}&limit=${MAIL_SEARCH_LIMIT}`,
-      MailSearchSchema,
-    );
-    const mail = mailSentSince(search.messages, sentAfter);
-    if (mail !== null) {
-      const message = await mailpitJson(`message/${mail.ID}`, MailMessageSchema);
-      const token = invitationTokenOf(message.Text);
-      if (token === null) {
-        throw new Error(`the invitation mail to ${email} carries no link`);
-      }
-      return token;
-    }
-    await pause(MAIL_POLL_MS);
-  }
-  throw new Error(`no invitation mail reached ${email} within ${MAIL_WAIT_MS / 1000} s`);
-};
-
-const inviteAndRedeem = async (admin: Session, personId: number, email: string): Promise<void> => {
-  const sentAfter = new Date();
-  await send('POST', `manage/persons/${personId}/invitations`, admin, {});
-  const token = await invitationTokenFor(email, sentAfter);
-  const redemption = await postJson(
-    'auth/invitations/redeem',
-    null,
-    { token, password: PERSONA_PASSWORD },
-    RedemptionSchema,
-  );
-  if (redemption.outcome !== 'redeemed') {
-    throw new Error(`redeeming the invitation of ${email} ended as ${redemption.outcome}`);
-  }
-};
-
 const ensureAccounts = async (
   admin: Session,
   moment: Moment,
@@ -1470,20 +1348,6 @@ const sabineWithoutMembershipTweak = (
     `DELETE FROM group_membership WHERE person_id = ${lookUp(personIds, 'sabine', 'person')} AND group_id = ${lookUp(groupIds, 'Kindergarde', 'group')};`,
   ],
 });
-
-const applySql = (script: string, command: string): Promise<void> =>
-  new Promise((resolve, reject) => {
-    const psql = spawn('sh', ['-c', command], { stdio: ['pipe', 'inherit', 'inherit'] });
-    psql.on('error', reject);
-    psql.on('close', (code) => {
-      if (code === 0) {
-        resolve();
-      } else {
-        reject(new Error(`psql exited with ${code}`));
-      }
-    });
-    psql.stdin.end(script);
-  });
 
 const announcementsSeenTweak = (
   moment: Moment,

@@ -45,6 +45,7 @@ public enum DomainChange
     Hall = 41,
     TablePlan = 42,
     Seating = 43,
-    CalendarPollVote = 44,
-    CalendarSignUpLine = 45,
+    ClaimWindow = 44,
+    CalendarPollVote = 45,
+    CalendarSignUpLine = 46,
 }

@@ -5,5 +5,5 @@ import { buildEyebrowLabel } from '../hero-content';
 export const useEyebrowLabel = (): string => {
   const data = readySourceData(publicClub.useSource());
 
-  return buildEyebrowLabel(data?.session.label);
+  return buildEyebrowLabel(data?.session.label, new Date());
 };

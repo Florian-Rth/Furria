@@ -46,6 +46,7 @@ English rendering anywhere else, so two translations never drift apart.
 | account / invitation | Account / Einladung | `Account`, — |
 | passkey | Passkey | `account_passkey` (Identity) |
 | access recovery | Zugang wiederherstellen | `InvitationPurpose.Recovery` |
+| claim window | Anmeldefenster | — |
 | adoption / claim-in | Diese Person übernehmen / — | — |
 | club | Verein | — |
 | club hub / group hub / management | Verein / Gruppe / Verein verwalten | `club`, `group-hub`, `manage` |
@@ -531,6 +532,20 @@ Forgetting a password is **not** access recovery — she resets it herself by ma
 (*Passwort vergessen*); a reset ends every session and does not sign her in.
 _UI copy_: Zugang wiederherstellen; *Wiederherstellung gestartet* (the history line)
 _Avoid_: password reset (that is the self-service path), re-invitation
+
+**Claim window**:
+A time-boxed opening in which a person may claim her own account with nothing but her **name and
+birth date** — for a club whose registry holds no email for most of its members (the launch at
+the session opening, 2026-11-14). It is the weakest proof on the platform, so it is never left
+open: an admin opens it with an end time, it closes by itself at that time or earlier by hand, and
+only the admin holds the right to open it. A claim matches **exactly one** person exactly; no
+near match, no choice between several. It reaches only persons who are **eligible** and have
+**no contact email** on record — whoever has one uses **Zugang anfordern** as before. A match
+is an **invitation** on its own channel, with no issuer, redeemed like any other — her login
+email still confirmed by code — and the account's history shows it came through the window, so
+a wrong claim can be spotted, disabled and the real person invited in person (ruled 2026-11-10).
+_UI copy_: Anmeldefenster; *Offen bis*
+_Avoid_: launch mode, registration, self-registration (that is the public ticket account), sign-up
 
 **Adoption** / **adoption candidate**:
 The person editor's answer to a duplicate before it exists: when the club records an email that

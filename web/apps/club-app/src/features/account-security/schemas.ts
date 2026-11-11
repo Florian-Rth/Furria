@@ -1,12 +1,11 @@
 import { z } from 'zod';
-import { PASSWORD_MIN_LENGTH } from '@/lib/password-rule';
 
 export const CONFIRMATION_CODE_LENGTH = 6;
 
 const EMAIL_MESSAGE = 'Bitte gib eine gültige E-Mail-Adresse ein.';
 const CODE_MESSAGE = `Der Code hat ${CONFIRMATION_CODE_LENGTH} Ziffern.`;
 const CURRENT_PASSWORD_MESSAGE = 'Bitte gib dein jetziges Passwort ein.';
-const NEW_PASSWORD_MESSAGE = `Dein neues Passwort braucht mindestens ${PASSWORD_MIN_LENGTH} Zeichen.`;
+const NEW_PASSWORD_MESSAGE = 'Bitte gib ein neues Passwort ein.';
 const PASSWORD_MESSAGE = 'Bitte gib dein Passwort ein.';
 
 export const LoginEmailChangeSchema = z.object({
@@ -34,7 +33,7 @@ export type LoginEmailCodeForm = z.infer<typeof LoginEmailCodeFormSchema>;
 
 export const PasswordFormSchema = z.object({
   currentPassword: z.string().min(1, CURRENT_PASSWORD_MESSAGE),
-  newPassword: z.string().min(PASSWORD_MIN_LENGTH, NEW_PASSWORD_MESSAGE),
+  newPassword: z.string().min(1, NEW_PASSWORD_MESSAGE),
 });
 export type PasswordForm = z.infer<typeof PasswordFormSchema>;
 
