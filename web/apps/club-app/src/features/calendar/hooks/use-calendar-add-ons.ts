@@ -1,6 +1,6 @@
 import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { useState } from 'react';
-import type { CalendarAddOnKind } from '../schemas';
+import type { BorrowedAddOnCardIdentity, CalendarAddOnKind } from '../schemas';
 
 export interface CalendarAddOnRemoval {
   key: string;
@@ -8,10 +8,9 @@ export interface CalendarAddOnRemoval {
   discardedAnswers: number;
 }
 
-export interface AddOnCardIdentity {
-  key: string;
-  kind: CalendarAddOnKind;
-}
+export type AddOnCardIdentity =
+  | { key: string; kind: CalendarAddOnKind }
+  | BorrowedAddOnCardIdentity;
 
 const NO_REMOVAL: CalendarAddOnRemoval = { key: '', kind: 'attendance', discardedAnswers: 0 };
 
@@ -49,7 +48,7 @@ export const useCalendarAddOns = <TCard extends AddOnCardIdentity>({
   const askRemoval = (card: TCard): void => {
     const discardedAnswers = discardedAnswersOf(card);
 
-    if (discardedAnswers === 0) {
+    if (discardedAnswers === 0 || card.kind === 'borrowed') {
       detach(card.key);
       return;
     }

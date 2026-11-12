@@ -8,6 +8,7 @@ import {
 } from './calendar-deadlines';
 import type {
   AudiencePerson,
+  BorrowedAddOnCardIdentity,
   CalendarAddOnCardForm,
   CalendarEntryAddOn,
   CalendarPoll,
@@ -96,7 +97,7 @@ const toCardIssues = (
 };
 
 export const toPollIssues = (
-  cards: readonly CalendarAddOnCardForm[],
+  cards: readonly (CalendarAddOnCardForm | BorrowedAddOnCardIdentity)[],
   start: CalendarDeadlineStart,
 ): CalendarPollIssue[] =>
   cards.flatMap((card, cardIndex) =>

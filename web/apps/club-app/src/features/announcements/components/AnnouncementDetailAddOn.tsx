@@ -9,6 +9,7 @@ import { CalendarDetailPoll } from '@/features/calendar/components/CalendarDetai
 import { CalendarDetailSignUpList } from '@/features/calendar/components/CalendarDetailSignUpList';
 import type { Announcement, AnnouncementAddOn } from '../schemas';
 import { AnnouncementDetailAttendance } from './AnnouncementDetailAttendance';
+import { AnnouncementDetailBorrowedAddOn } from './AnnouncementDetailBorrowedAddOn';
 
 interface AnnouncementDetailAddOnProps {
   addOn: AnnouncementAddOn;
@@ -23,6 +24,10 @@ export const AnnouncementDetailAddOn: FC<AnnouncementDetailAddOnProps> = ({
   answering,
   closesAt,
 }) => {
+  if (addOn.kind === 'borrowed') {
+    return <AnnouncementDetailBorrowedAddOn addOn={addOn} />;
+  }
+
   const mayModerate = announcement.viewerMayEdit;
   const content =
     addOn.kind === 'attendance' ? (

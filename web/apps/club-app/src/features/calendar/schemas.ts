@@ -180,6 +180,11 @@ export const CalendarEntryAddOnSchema = z.discriminatedUnion('kind', [
 ]);
 export type CalendarEntryAddOn = z.infer<typeof CalendarEntryAddOnSchema>;
 
+export interface BorrowedAddOnCardIdentity {
+  key: string;
+  kind: 'borrowed';
+}
+
 export const ParticipatingGroupSchema = z.object({
   groupId: z.number().int(),
   name: z.string(),

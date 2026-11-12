@@ -1,5 +1,5 @@
 import { toDayTime, toInstant } from '@/lib/day';
-import type { CalendarAddOnCardForm } from './schemas';
+import type { BorrowedAddOnCardIdentity, CalendarAddOnCardForm } from './schemas';
 
 export const NO_DEADLINE = '';
 export const NO_START = '';
@@ -85,7 +85,7 @@ export const toDeadlineDayChange = (
 };
 
 const toCardDeadlinePath = (
-  card: CalendarAddOnCardForm,
+  card: CalendarAddOnCardForm | BorrowedAddOnCardIdentity,
   cardIndex: number,
 ): CalendarDeadlinePath | null => {
   switch (card.kind) {
@@ -102,7 +102,9 @@ const toCardDeadlinePath = (
   }
 };
 
-export const toDeadlinePaths = (cards: readonly CalendarAddOnCardForm[]): CalendarDeadlinePath[] =>
+export const toDeadlinePaths = (
+  cards: readonly (CalendarAddOnCardForm | BorrowedAddOnCardIdentity)[],
+): CalendarDeadlinePath[] =>
   cards.flatMap((card, cardIndex) => {
     const path = toCardDeadlinePath(card, cardIndex);
 

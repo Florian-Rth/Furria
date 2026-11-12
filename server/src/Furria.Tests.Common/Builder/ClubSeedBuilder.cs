@@ -29,6 +29,7 @@ public sealed class ClubSeedBuilder
     private readonly List<CalendarPollVoteIntent> _calendarPollVotes = [];
     private readonly List<CalendarSignUpListIntent> _calendarSignUpLists = [];
     private readonly List<CalendarSignUpLineIntent> _calendarSignUpLines = [];
+    private readonly List<AnnouncementLoanIntent> _announcementLoans = [];
     private readonly List<CalendarDayScheduleIntent> _calendarDaySchedules = [];
     private readonly List<CalendarDayScheduleStepIntent> _calendarDayScheduleSteps = [];
     private readonly List<EventIntent> _events = [];
@@ -62,6 +63,8 @@ public sealed class ClubSeedBuilder
     internal IReadOnlyList<CalendarSignUpListIntent> SignUpLists => _calendarSignUpLists;
 
     internal IReadOnlyList<CalendarSignUpLineIntent> SignUpLines => _calendarSignUpLines;
+
+    internal IReadOnlyList<AnnouncementLoanIntent> AnnouncementLoans => _announcementLoans;
 
     internal IReadOnlyList<CalendarDayScheduleIntent> CalendarDaySchedules => _calendarDaySchedules;
 
@@ -235,6 +238,26 @@ public sealed class ClubSeedBuilder
                 position,
                 ClosedByAlias: null,
                 announcementAlias
+            )
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddAnnouncementLoan(
+        string announcementAlias,
+        string calendarEntryAlias,
+        AnnouncementAddOnKind kind,
+        string? addOnAlias,
+        int position
+    )
+    {
+        _announcementLoans.Add(
+            new AnnouncementLoanIntent(
+                announcementAlias,
+                calendarEntryAlias,
+                kind,
+                addOnAlias,
+                position
             )
         );
         return this;
@@ -693,6 +716,14 @@ public sealed class ClubSeedBuilder
         int Position,
         string? ClosedByAlias,
         string? AnnouncementAlias = null
+    );
+
+    internal sealed record AnnouncementLoanIntent(
+        string AnnouncementAlias,
+        string CalendarEntryAlias,
+        AnnouncementAddOnKind Kind,
+        string? AddOnAlias,
+        int Position
     );
 
     internal sealed record CalendarDayScheduleIntent(

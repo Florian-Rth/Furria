@@ -12,7 +12,7 @@ import { toPollIssues } from '@/features/calendar/calendar-polls';
 import type { CalendarSignUpListIssueCode } from '@/features/calendar/calendar-sign-up-lists';
 import { toSignUpListIssues } from '@/features/calendar/calendar-sign-up-lists';
 import { shiftDay } from '@/lib/day';
-import type { AnnouncementAddOnCardForm } from './schemas';
+import type { AnnouncementAddOnCardForm, OwnAnnouncementAddOnCardForm } from './schemas';
 
 const START_OF_DAY = '00:00';
 
@@ -45,7 +45,7 @@ const toAttendanceIssues = (
       : [],
   );
 
-const toHeldDeadline = (card: AnnouncementAddOnCardForm): string | null => {
+const toHeldDeadline = (card: OwnAnnouncementAddOnCardForm): string | null => {
   switch (card.kind) {
     case 'attendance':
       return card.attendance.heldAnswersUntil;
@@ -56,7 +56,7 @@ const toHeldDeadline = (card: AnnouncementAddOnCardForm): string | null => {
   }
 };
 
-const toDeadlineFieldsOf = (card: AnnouncementAddOnCardForm): { day: string; time: string } => {
+const toDeadlineFieldsOf = (card: OwnAnnouncementAddOnCardForm): { day: string; time: string } => {
   switch (card.kind) {
     case 'attendance':
       return { day: card.attendance.answersUntilDay, time: card.attendance.answersUntilTime };
@@ -68,7 +68,7 @@ const toDeadlineFieldsOf = (card: AnnouncementAddOnCardForm): { day: string; tim
 };
 
 const keepsHeldDeadline = (card: AnnouncementAddOnCardForm | undefined): boolean => {
-  if (card === undefined) {
+  if (card === undefined || card.kind === 'borrowed') {
     return false;
   }
 

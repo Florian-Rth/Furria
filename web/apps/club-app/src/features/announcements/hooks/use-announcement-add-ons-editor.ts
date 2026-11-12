@@ -17,13 +17,15 @@ import {
   toChangedAttendanceCards,
   withAnswersUntilDay,
 } from '../announcement-add-ons';
-import type { AnnouncementAddOnCardForm, AnnouncementForm } from '../schemas';
+import { toBorrowedCards } from '../announcement-borrowing';
+import type { AnnouncementAddOnCardForm, AnnouncementForm, BorrowedAddOnForm } from '../schemas';
 
 const QUIET_EDIT = { shouldDirty: true } as const;
 
 export interface AnnouncementAddOnsEditor extends AddOnCardsEditor {
   attachAddOn: (kind: CalendarAddOnKind) => void;
   detachAddOn: (key: string) => void;
+  borrowAddOns: (picked: readonly BorrowedAddOnForm[]) => void;
   answersUntilErrorAt: (index: number) => CalendarFieldError;
   setAnswersUntilDay: (index: number, day: string | null) => void;
   setAnswersUntilTime: (index: number, time: string) => void;
@@ -63,6 +65,9 @@ export const useAnnouncementAddOnsEditor = (
       }
 
       place(toAttachedAnnouncementCards(cards(), announcementKind, nextFreshKey));
+    },
+    borrowAddOns: (picked) => {
+      place(toBorrowedCards(cards(), picked));
     },
     detachAddOn: (key) => {
       form.clearErrors('addOns');

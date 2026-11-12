@@ -81,6 +81,16 @@ internal static class ClubSeedMaterializer
             personIds,
             ct
         );
+        await InsertAnnouncementLoansAsync(
+            dbContext,
+            recorded,
+            new AnnouncementLoanSeedIds(
+                hosts,
+                polls.ToDictionary(poll => poll.Key, poll => poll.Value.Id, StringComparer.Ordinal),
+                signUpLists
+            ),
+            ct
+        );
         var daySchedules = await InsertCalendarDaySchedulesAsync(
             dbContext,
             recorded,
@@ -112,6 +122,36 @@ internal static class ClubSeedMaterializer
             daySchedules.Schedules,
             daySchedules.Steps
         );
+    }
+
+    private static async Task InsertAnnouncementLoansAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        AnnouncementLoanSeedIds ids,
+        CancellationToken ct
+    )
+    {
+        if (recorded.AnnouncementLoans.Count == 0)
+            return;
+
+        dbContext.AnnouncementBorrowedAddOns.AddRange(
+            recorded.AnnouncementLoans.Select(intent => new AnnouncementBorrowedAddOn
+            {
+                AnnouncementId = ids.Hosts.AnnouncementIdOf(intent.AnnouncementAlias)!.Value,
+                CalendarEntryId = ids.Hosts.CalendarEntryIdOf(intent.CalendarEntryAlias)!.Value,
+                Kind = intent.Kind,
+                PollId =
+                    intent.Kind == AnnouncementAddOnKind.Poll
+                        ? SeedAliases.RequireId(ids.PollIds, intent.AddOnAlias!, "Poll")
+                        : null,
+                SignUpListId =
+                    intent.Kind == AnnouncementAddOnKind.SignUpList
+                        ? SeedAliases.RequireId(ids.SignUpListIds, intent.AddOnAlias!, "SignUpList")
+                        : null,
+                Position = intent.Position,
+            })
+        );
+        await dbContext.SaveChangesAsync(ct);
     }
 
     private static async Task InsertClubRecordAsync(
@@ -780,6 +820,12 @@ internal static class ClubSeedMaterializer
 
         return lines.ToDictionary(line => line.Key, line => line.Value.Id, StringComparer.Ordinal);
     }
+
+    private sealed record AnnouncementLoanSeedIds(
+        AddOnHostSeedIds Hosts,
+        IReadOnlyDictionary<string, int> PollIds,
+        IReadOnlyDictionary<string, int> SignUpListIds
+    );
 
     private sealed record CalendarEntrySeedIds(
         IReadOnlyDictionary<string, int> VenueIds,

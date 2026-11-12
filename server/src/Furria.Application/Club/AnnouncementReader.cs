@@ -1,3 +1,7 @@
 namespace Furria.Application.Club;
 
-public sealed record AnnouncementReader(MentionReader Mentions, bool MayPostAnnouncements);
+public sealed record AnnouncementReader(
+    int AccountId,
+    MentionReader Mentions,
+    bool MayPostAnnouncements
+);

@@ -1,7 +1,7 @@
 ---
 rfc: 0007
 title: Aushänge with add-ons, mentions and a push
-status: in progress (phases 1–6 done)
+status: in progress (phases 1–7 done)
 github_issue: 80
 branch: feat/rfc-80-aushaenge
 created: 2026-11-12
@@ -165,11 +165,20 @@ Decisions taken in phase 6:
 
 ### Phase 7 — Taken-over calendar add-ons
 Goal: an Aushang shows and answers a calendar entry's add-ons.
-- [ ] Migration: `announcement_borrowed_add_on` (announcement, kind, add-on id, position) sharing the order with own add-ons
-- [ ] Rules: only club- or groups-audience entries, author must see the entry; entry/add-on gone → row gone
-- [ ] Aushang read carries borrowed add-ons with the entry's results and the reader's right to answer (entry rules); answers go to the entry endpoints
-- [ ] Club app: *Aus Kalendereintrag übernehmen* — pick entry, tick its add-ons; header naming the entry on each card
-- [ ] Integration tests: lending rule, answering through the entry, view-only for non-concerned readers, drop on delete
+- [x] Migration: `announcement_borrowed_add_on` (announcement, kind, add-on id, position) sharing the order with own add-ons
+- [x] Rules: only club- or groups-audience entries, author must see the entry; entry/add-on gone → row gone
+- [x] Aushang read carries borrowed add-ons with the entry's results and the reader's right to answer (entry rules); answers go to the entry endpoints
+- [x] Club app: *Aus Kalendereintrag übernehmen* — pick entry, tick its add-ons; header naming the entry on each card
+- [x] Integration tests: lending rule, answering through the entry, view-only for non-concerned readers, drop on delete
+
+Decisions taken in phase 7:
+- The row keeps the entry and the lent add-on as foreign keys (`calendar_entry_id`, `poll_id` / `sign_up_list_id`, all cascading; a check constraint ties them to `kind`; unique per Aushang). A Zu-/Absage is lent by the entry itself. Deleting the entry, poll or list drops the row; removing the entry's Zu-/Absage or narrowing its audience to chosen people deletes the rows in the entry update.
+- Create/update take a taken-over add-on as `borrowed: { calendarEntryId, addOnId }` in the same ordered `addOns` list (positions shared); only newly taken-over add-ons are checked against the actor's sight of the entry (`CalendarService.GetLendingEntriesAsync`), kept ones are not rechecked.
+- The read carries each taken-over add-on as `borrowed: { addOnId, entry }` (`addOnId` null for a Zu-/Absage) with the whole calendar entry as the calendar reads it for this reader (results, `mayAnswer`, `viewerAnswer`, managers' roll), so the club app reuses the calendar detail parts and answers on the calendar routes. The lending entries are read in one batch per request (`CalendarService.GetLendingEntriesAsync`); only the concern per entry is resolved one by one. A reader who cannot see the entry, or an entry no longer lending, leaves it out silently.
+- Taking over checks the entry without locking it: an entry edit racing a take-over can leave a row on an entry that no longer lends; the read rechecks lending on every request, so it never shows. A take-over losing to a deleted entry, poll or list answers 409.
+- `answerCount`, `viewerAnswer` and `viewerMayAnswer` of the Aushang stay about its own add-ons; taken-over add-ons never count towards the withdraw confirm.
+- The shared calendar add-on helpers accept a `borrowed` card next to their own kinds; removing a taken-over card never asks (no answers are lost).
+- The sheet loads the calendar only once opened and offers entries from today to 365 days ahead that still lend something not yet taken over; ticks stop at the add-on limit; each card names its entry and date and links to it in the calendar.
 
 ### Phase 8 — Aushänge on Start
 Goal: owed Aushang add-ons are asked on Start.

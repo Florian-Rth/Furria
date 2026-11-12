@@ -11,4 +11,6 @@ public sealed record AnnouncementAddOnInput
     public required PollInput? Poll { get; init; }
 
     public required SignUpListInput? SignUpList { get; init; }
+
+    public required BorrowedAddOnInput? Borrowed { get; init; }
 }

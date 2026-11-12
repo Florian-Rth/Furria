@@ -20,6 +20,7 @@ public sealed partial class AnnouncementService
     private readonly RunningBoardSeats _runningBoardSeats;
     private readonly MediaPictures _pictures;
     private readonly AnnouncementMentionTargetsQuery _mentionTargets;
+    private readonly CalendarService _calendarService;
     private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
 
@@ -28,6 +29,7 @@ public sealed partial class AnnouncementService
         RunningBoardSeats runningBoardSeats,
         MediaPictures pictures,
         AnnouncementMentionTargetsQuery mentionTargets,
+        CalendarService calendarService,
         PermissionAuthorizer authorizer,
         TimeProvider timeProvider
     )
@@ -36,6 +38,7 @@ public sealed partial class AnnouncementService
         _runningBoardSeats = runningBoardSeats;
         _pictures = pictures;
         _mentionTargets = mentionTargets;
+        _calendarService = calendarService;
         _authorizer = authorizer;
         _timeProvider = timeProvider;
     }
@@ -94,12 +97,22 @@ public sealed partial class AnnouncementService
         };
         RewriteMentions(announcement, reading);
 
-        if (await ReconcileAddOnsAsync(announcement, command.AddOns, ct) is { } addOnRefusal)
+        if (
+            await ReconcileAddOnsAsync(
+                announcement,
+                new AddOnsWrite(command.AddOns, command.AuthorAccountId),
+                ct
+            ) is
+            { } addOnRefusal
+        )
             return Result<int>.Validation(addOnRefusal);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         _dbContext.Announcements.Add(announcement);
-        await _dbContext.SaveChangesAsync(ct);
+        var saved = await SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<int>.Carrying(saved);
+
         await EnqueuePostedPushesAsync(announcement, ct);
         await transaction.CommitAsync(ct);
 
@@ -126,7 +139,14 @@ public sealed partial class AnnouncementService
         )
             return Result.Forbidden(ForeignAnnouncementMessage);
 
-        if (await ReconcileAddOnsAsync(announcement, command.AddOns, ct) is { } addOnRefusal)
+        if (
+            await ReconcileAddOnsAsync(
+                announcement,
+                new AddOnsWrite(command.AddOns, command.ActorAccountId),
+                ct
+            ) is
+            { } addOnRefusal
+        )
             return Result.Validation(addOnRefusal);
 
         announcement.Title = command.Title;
@@ -275,6 +295,7 @@ public sealed partial class AnnouncementService
             .Include(row => row.Polls)
                 .ThenInclude(poll => poll.Options)
             .Include(row => row.SignUpLists)
+            .Include(row => row.BorrowedAddOns)
             .AsSplitQuery()
             .SingleOrDefaultAsync(row => row.Id == announcementId, ct);
     }

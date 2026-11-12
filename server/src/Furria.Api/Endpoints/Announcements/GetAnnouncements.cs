@@ -52,7 +52,7 @@ public sealed class GetAnnouncements : EndpointWithoutRequest<GetAnnouncementsRe
             ct
         );
         var announcements = await _announcementService.GetAnnouncementsAsync(
-            new AnnouncementReader(mentionReader, mayPost),
+            new AnnouncementReader(accountId.Value, mentionReader, mayPost),
             ct
         );
 
@@ -133,6 +133,8 @@ public sealed record AnnouncementAddOnDto
 
     public required CalendarSignUpListDto? SignUpList { get; init; }
 
+    public required AnnouncementBorrowedAddOnDto? Borrowed { get; init; }
+
     public static AnnouncementAddOnDto From(AnnouncementAddOnDetails addOn) =>
         new()
         {
@@ -142,7 +144,20 @@ public sealed record AnnouncementAddOnDto
                 : null,
             Poll = addOn.Poll is { } poll ? CalendarPollDto.From(poll) : null,
             SignUpList = addOn.SignUpList is { } list ? CalendarSignUpListDto.From(list) : null,
+            Borrowed = addOn.Borrowed is { } borrowed
+                ? AnnouncementBorrowedAddOnDto.From(borrowed)
+                : null,
         };
+}
+
+public sealed record AnnouncementBorrowedAddOnDto
+{
+    public required int? AddOnId { get; init; }
+
+    public required CalendarEntryDto Entry { get; init; }
+
+    public static AnnouncementBorrowedAddOnDto From(BorrowedAddOnDetails borrowed) =>
+        new() { AddOnId = borrowed.AddOnId, Entry = CalendarEntryDto.From(borrowed.Entry) };
 }
 
 public sealed record AnnouncementAttendanceDto

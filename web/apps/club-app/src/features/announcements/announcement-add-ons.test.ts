@@ -64,9 +64,10 @@ const heldAddOns: AnnouncementAddOn[] = [
       notAnswered: null,
       reminder: null,
     },
+    borrowed: null,
   },
-  { kind: 'poll', poll },
-  { kind: 'signUpList', signUpList: list },
+  { kind: 'poll', poll, borrowed: null },
+  { kind: 'signUpList', signUpList: list, borrowed: null },
 ];
 
 const attendanceCard: AnnouncementAddOnCardForm = {
@@ -227,6 +228,18 @@ describe('toAnnouncementPayload', () => {
             kind: 'attendance',
             attendance: { answersUntilDay: day, answersUntilTime: time, heldAnswersUntil: held },
           },
+          {
+            key: 'borrowed-poll-9-4',
+            kind: 'borrowed',
+            borrowed: {
+              lentKind: 'poll',
+              calendarEntryId: 9,
+              addOnId: 4,
+              entryTitle: 'Umzug',
+              entryStartsAt: '2026-11-21T13:00:00.000Z',
+              name: 'Bus?',
+            },
+          },
         ],
       }),
     ).toEqual({
@@ -239,8 +252,22 @@ describe('toAnnouncementPayload', () => {
           attendance: null,
           poll: null,
           signUpList: { signUpListId: 5, title: 'Wer backt?', hint: null, signUpUntil: null },
+          borrowed: null,
         },
-        { kind: 'attendance', attendance: { answersUntil: held }, poll: null, signUpList: null },
+        {
+          kind: 'attendance',
+          attendance: { answersUntil: held },
+          poll: null,
+          signUpList: null,
+          borrowed: null,
+        },
+        {
+          kind: 'poll',
+          attendance: null,
+          poll: null,
+          signUpList: null,
+          borrowed: { calendarEntryId: 9, addOnId: 4 },
+        },
       ],
     });
   });

@@ -455,6 +455,76 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.AnnouncementBorrowedAddOn", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AnnouncementId")
+                        .HasColumnType("integer")
+                        .HasColumnName("announcement_id");
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<int?>("PollId")
+                        .HasColumnType("integer")
+                        .HasColumnName("poll_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<int?>("SignUpListId")
+                        .HasColumnType("integer")
+                        .HasColumnName("sign_up_list_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_announcement_borrowed_add_on");
+
+                    b.HasIndex("CalendarEntryId")
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_calendar_entry_id");
+
+                    b.HasIndex("PollId")
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_poll_id");
+
+                    b.HasIndex("SignUpListId")
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_sign_up_list_id");
+
+                    b.HasIndex("AnnouncementId", "CalendarEntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_announcement_id_calendar_entry")
+                        .HasFilter("kind = 'Attendance'");
+
+                    b.HasIndex("AnnouncementId", "PollId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_announcement_id_poll_id")
+                        .HasFilter("poll_id IS NOT NULL");
+
+                    b.HasIndex("AnnouncementId", "SignUpListId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_announcement_id_sign_up_list_id")
+                        .HasFilter("sign_up_list_id IS NOT NULL");
+
+                    b.ToTable("announcement_borrowed_add_on", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_announcement_borrowed_add_on_kind_matches_target", "(kind = 'Attendance' AND poll_id IS NULL AND sign_up_list_id IS NULL) OR (kind = 'Poll' AND poll_id IS NOT NULL AND sign_up_list_id IS NULL) OR (kind = 'SignUpList' AND sign_up_list_id IS NOT NULL AND poll_id IS NULL)");
+
+                            t.HasCheckConstraint("ck_announcement_borrowed_add_on_position_not_negative", "position >= 0");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Club.AnnouncementMention", b =>
                 {
                     b.Property<int>("Id")
@@ -5892,6 +5962,43 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Author");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.AnnouncementBorrowedAddOn", b =>
+                {
+                    b.HasOne("Furria.Core.Club.Announcement", "Announcement")
+                        .WithMany("BorrowedAddOns")
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_announcement_borrowed_add_on_announcement_announcement_id");
+
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany()
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_announcement_borrowed_add_on_entry_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Club.Poll", "Poll")
+                        .WithMany()
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_announcement_borrowed_add_on_poll_poll_id");
+
+                    b.HasOne("Furria.Core.Club.SignUpList", "SignUpList")
+                        .WithMany()
+                        .HasForeignKey("SignUpListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_announcement_borrowed_add_on_sign_up_list_sign_up_list_id");
+
+                    b.Navigation("Announcement");
+
+                    b.Navigation("CalendarEntry");
+
+                    b.Navigation("Poll");
+
+                    b.Navigation("SignUpList");
+                });
+
             modelBuilder.Entity("Furria.Core.Club.AnnouncementMention", b =>
                 {
                     b.HasOne("Furria.Core.Club.Announcement", "Announcement")
@@ -7516,6 +7623,8 @@ namespace Furria.Infrastructure.Migrations
 
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
                 {
+                    b.Navigation("BorrowedAddOns");
+
                     b.Navigation("Mentions");
 
                     b.Navigation("Polls");

@@ -147,6 +147,30 @@ public sealed class AnnouncementExpectations
                 )
         );
 
+    public Expected ToHaveLoans(
+        params (AnnouncementAddOnKind Kind, int CalendarEntryId, int? AddOnId, int Position)[] loans
+    ) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    loans,
+                    (
+                        await dbContext
+                            .AnnouncementBorrowedAddOns.AsNoTracking()
+                            .Where(loan => loan.AnnouncementId == _announcementId)
+                            .OrderBy(loan => loan.Position)
+                            .Select(loan => new
+                            {
+                                loan.Kind,
+                                loan.CalendarEntryId,
+                                AddOnId = loan.PollId ?? loan.SignUpListId,
+                                loan.Position,
+                            })
+                            .ToListAsync(ct)
+                    ).Select(loan => (loan.Kind, loan.CalendarEntryId, loan.AddOnId, loan.Position))
+                )
+        );
+
     private Task<Announcement> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.Announcements.AsNoTracking().SingleAsync(row => row.Id == _announcementId, ct);
 }

@@ -45,7 +45,7 @@ public sealed class PutAnnouncement : Endpoint<PutAnnouncementRequest>
         );
 
         var result = await _announcementService.UpdateAsync(
-            ToCommand(req, personId.Value, mayPost),
+            ToCommand(req, new AnnouncementActor(personId.Value, accountId.Value, mayPost)),
             ct
         );
 
@@ -60,8 +60,7 @@ public sealed class PutAnnouncement : Endpoint<PutAnnouncementRequest>
 
     private static UpdateAnnouncementCommand ToCommand(
         PutAnnouncementRequest req,
-        int actorPersonId,
-        bool actorMayPostAnnouncements
+        AnnouncementActor actor
     ) =>
         new()
         {
@@ -70,8 +69,9 @@ public sealed class PutAnnouncement : Endpoint<PutAnnouncementRequest>
             Body = req.Body,
             ValidUntil = req.ValidUntil,
             AddOns = [.. req.AddOns.Select(ToInput)],
-            ActorPersonId = actorPersonId,
-            ActorMayPostAnnouncements = actorMayPostAnnouncements,
+            ActorPersonId = actor.PersonId,
+            ActorAccountId = actor.AccountId,
+            ActorMayPostAnnouncements = actor.MayPostAnnouncements,
         };
 
     private static AnnouncementAddOnInput ToInput(PutAnnouncementAddOnDataDto addOn) =>
@@ -83,6 +83,13 @@ public sealed class PutAnnouncement : Endpoint<PutAnnouncementRequest>
                 : null,
             Poll = addOn.Poll is { } poll ? ToInput(poll) : null,
             SignUpList = addOn.SignUpList is { } list ? ToInput(list) : null,
+            Borrowed = addOn.Borrowed is { } borrowed
+                ? new BorrowedAddOnInput
+                {
+                    CalendarEntryId = borrowed.CalendarEntryId,
+                    AddOnId = borrowed.AddOnId,
+                }
+                : null,
         };
 
     private static SignUpListInput ToInput(PutAnnouncementSignUpListDataDto list) =>
@@ -107,6 +114,8 @@ public sealed class PutAnnouncement : Endpoint<PutAnnouncementRequest>
 
     private static PollOptionInput ToInput(PutAnnouncementPollOptionDataDto option) =>
         new() { OptionId = option.OptionId, Label = option.Label };
+
+    private sealed record AnnouncementActor(int PersonId, int AccountId, bool MayPostAnnouncements);
 }
 
 public sealed record PutAnnouncementRequest
@@ -152,7 +161,7 @@ public sealed class PutAnnouncementValidator : Validator<PutAnnouncementRequest>
     private static bool EachAddOnOnce(IReadOnlyList<PutAnnouncementAddOnDataDto> addOns)
     {
         var attendanceCount = addOns.Count(addOn =>
-            addOn?.Kind == AnnouncementAddOnKind.Attendance
+            addOn is { Kind: AnnouncementAddOnKind.Attendance, Borrowed: null }
         );
         var pollIds = addOns.Select(addOn => addOn?.Poll?.PollId).OfType<int>().ToList();
         var signUpListIds = addOns
@@ -175,6 +184,15 @@ public sealed record PutAnnouncementAddOnDataDto
     public required PutAnnouncementPollDataDto? Poll { get; init; }
 
     public required PutAnnouncementSignUpListDataDto? SignUpList { get; init; }
+
+    public required PutAnnouncementBorrowedAddOnDataDto? Borrowed { get; init; }
+}
+
+public sealed record PutAnnouncementBorrowedAddOnDataDto
+{
+    public required int CalendarEntryId { get; init; }
+
+    public required int? AddOnId { get; init; }
 }
 
 public sealed record PutAnnouncementAttendanceDataDto
@@ -219,6 +237,9 @@ public sealed class PutAnnouncementAddOnDataValidator
     : AbstractValidator<PutAnnouncementAddOnDataDto>
 {
     private const string UnknownAddOnMessage = "Diese Funktion gibt es nicht.";
+    private const string UnknownEntryMessage = "Diesen Kalendereintrag gibt es nicht.";
+    private const string BorrowedShapeMessage =
+        "Diese Funktion des Kalendereintrags passt nicht zu ihren Angaben.";
     private const string AttendanceWithoutDataMessage = "Die Zu-/Absage braucht ihre Angaben.";
     private const string AttendanceOutsideAttendanceMessage =
         "Nur eine Zu-/Absage trägt eine Antwortfrist.";
@@ -233,35 +254,49 @@ public sealed class PutAnnouncementAddOnDataValidator
         RuleFor(addOn => addOn.Kind).IsInEnum().WithMessage(UnknownAddOnMessage);
         RuleFor(addOn => addOn.Attendance)
             .NotNull()
-            .When(addOn => addOn.Kind == AnnouncementAddOnKind.Attendance)
+            .When(addOn => addOn.Kind == AnnouncementAddOnKind.Attendance && addOn.Borrowed is null)
             .WithMessage(AttendanceWithoutDataMessage);
         RuleFor(addOn => addOn.Attendance)
             .Null()
-            .When(addOn => addOn.Kind != AnnouncementAddOnKind.Attendance)
+            .When(addOn =>
+                addOn.Kind != AnnouncementAddOnKind.Attendance || addOn.Borrowed is not null
+            )
             .WithMessage(AttendanceOutsideAttendanceMessage);
         RuleFor(addOn => addOn.Poll)
             .NotNull()
-            .When(addOn => addOn.Kind == AnnouncementAddOnKind.Poll)
+            .When(addOn => addOn.Kind == AnnouncementAddOnKind.Poll && addOn.Borrowed is null)
             .WithMessage(PollWithoutQuestionMessage);
         RuleFor(addOn => addOn.Poll)
             .Null()
-            .When(addOn => addOn.Kind != AnnouncementAddOnKind.Poll)
+            .When(addOn => addOn.Kind != AnnouncementAddOnKind.Poll || addOn.Borrowed is not null)
             .WithMessage(PollOutsideAPollMessage);
         RuleFor(addOn => addOn.Poll!)
             .SetValidator(new PutAnnouncementPollDataValidator())
             .When(addOn => addOn.Poll is not null);
         RuleFor(addOn => addOn.SignUpList)
             .NotNull()
-            .When(addOn => addOn.Kind == AnnouncementAddOnKind.SignUpList)
+            .When(addOn => addOn.Kind == AnnouncementAddOnKind.SignUpList && addOn.Borrowed is null)
             .WithMessage(SignUpListWithoutTitleMessage);
         RuleFor(addOn => addOn.SignUpList)
             .Null()
-            .When(addOn => addOn.Kind != AnnouncementAddOnKind.SignUpList)
+            .When(addOn =>
+                addOn.Kind != AnnouncementAddOnKind.SignUpList || addOn.Borrowed is not null
+            )
             .WithMessage(SignUpListOutsideAListMessage);
+        RuleFor(addOn => addOn.Borrowed)
+            .Must(borrowed => borrowed is { CalendarEntryId: > 0 })
+            .WithMessage(UnknownEntryMessage)
+            .Must((addOn, borrowed) => FitsItsKind(addOn.Kind, borrowed?.AddOnId))
+            .WithMessage(BorrowedShapeMessage)
+            .When(addOn => addOn.Borrowed is not null);
         RuleFor(addOn => addOn.SignUpList!)
             .SetValidator(new PutAnnouncementSignUpListDataValidator())
             .When(addOn => addOn.SignUpList is not null);
     }
+
+    [Pure]
+    private static bool FitsItsKind(AnnouncementAddOnKind kind, int? addOnId) =>
+        kind == AnnouncementAddOnKind.Attendance ? addOnId is null : addOnId is > 0;
 }
 
 public sealed class PutAnnouncementSignUpListDataValidator

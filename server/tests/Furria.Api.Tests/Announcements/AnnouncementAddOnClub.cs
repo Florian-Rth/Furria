@@ -13,6 +13,9 @@ internal static class AnnouncementAddOnClub
     internal const string Title = "Sommerfest";
     internal const string SnackQuestion = "Was bringst du mit?";
     internal const string HelperList = "Wer hilft beim Aufbau?";
+    internal const string Parade = "Umzug";
+    internal const string BusQuestion = "Fährst du im Bus mit?";
+    internal const string CakeList = "Wer backt Kuchen?";
 
     internal static readonly DateTimeOffset Now = new(2027, 1, 15, 12, 0, 0, TimeSpan.Zero);
     internal static readonly DateOnly ValidUntil = new(2027, 1, 31);
@@ -33,7 +36,8 @@ internal static class AnnouncementAddOnClub
     internal static Task<SeededContext> BuildAsync(
         ApiTestFixture fixture,
         CancellationToken ct,
-        Action<ClubSeedBuilder>? more = null
+        Action<ClubSeedBuilder>? more = null,
+        Action<GroupSeedBuilder>? groups = null
     ) =>
         fixture.BuildAsync(
             builder =>
@@ -59,6 +63,7 @@ internal static class AnnouncementAddOnClub
                             .AddPerson("rolf", "Rolf", "Leser")
                             .AddAccount("rolf")
                     )
+                    .Groups(groupBuilder => groups?.Invoke(groupBuilder))
                     .Roles(roles =>
                         roles
                             .AddRoleWithHolder(
@@ -106,6 +111,69 @@ internal static class AnnouncementAddOnClub
                         more?.Invoke(club);
                     }),
             ct
+        );
+
+    internal static Task<SeededContext> BuildLendingAsync(
+        ApiTestFixture fixture,
+        CancellationToken ct,
+        bool withLoans
+    ) =>
+        BuildAsync(
+            fixture,
+            ct,
+            club =>
+            {
+                club.AddCalendarEntry(
+                        "umzug",
+                        Parade,
+                        Now.AddDays(5),
+                        ownerGroupAlias: "garde",
+                        asksForResponse: true
+                    )
+                    .AddAttendanceResponse("chris-umzug", "umzug", "chris", AttendanceAnswer.Maybe)
+                    .AddCalendarPoll("bus", "umzug", BusQuestion, ["Ja", "Nein"], position: 1)
+                    .AddCalendarSignUpList("kuchen", "umzug", CakeList, position: 2)
+                    .AddCalendarEntry(
+                        "vorstandsrunde",
+                        "Vorstandsrunde",
+                        Now.AddDays(3),
+                        asksForResponse: true,
+                        audiencePersonAliases: ["ilka", "alice"]
+                    )
+                    .AddCalendarEntry(
+                        "kassenpruefung",
+                        "Kassenprüfung",
+                        Now.AddDays(4),
+                        asksForResponse: true,
+                        audiencePersonAliases: ["ilka"]
+                    );
+                if (withLoans)
+                    club.AddAnnouncementLoan(
+                            "fest",
+                            "umzug",
+                            AnnouncementAddOnKind.Attendance,
+                            addOnAlias: null,
+                            position: 3
+                        )
+                        .AddAnnouncementLoan(
+                            "fest",
+                            "umzug",
+                            AnnouncementAddOnKind.Poll,
+                            "bus",
+                            position: 4
+                        )
+                        .AddAnnouncementLoan(
+                            "fest",
+                            "vorstandsrunde",
+                            AnnouncementAddOnKind.Attendance,
+                            addOnAlias: null,
+                            position: 5
+                        );
+            },
+            groups =>
+                groups
+                    .AddGroup("garde", "Garde")
+                    .AddGroupMembership("chris-garde", "garde", "chris", JoinedIn2017)
         );
 
     internal static async Task<HttpResponseMessage> AtNowAsync(

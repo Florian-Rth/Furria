@@ -543,6 +543,68 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_DropTheTakenOverAttendance_When_TheAttendanceAddOnIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAsync(
+            ctx,
+            ctx.Club.CalendarEntries.IdOf("asking-meeting"),
+            [],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Announcement(ctx.Club.Announcements.IdOf("aushang"))
+            .ToHaveLoans(
+                (
+                    AnnouncementAddOnKind.Poll,
+                    ctx.Club.CalendarEntries.IdOf("poll-meeting"),
+                    ctx.Club.Polls.IdOf("snack"),
+                    1
+                )
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DropEveryTakenOverAddOn_When_TheEntryNarrowsToChosenPeople()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(entryId, Farewell) with
+            {
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.Attendance)],
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [ctx.Identity.People.IdOf("ilka")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Announcement(ctx.Club.Announcements.IdOf("aushang"))
+            .ToHaveLoans(
+                (
+                    AnnouncementAddOnKind.Poll,
+                    ctx.Club.CalendarEntries.IdOf("poll-meeting"),
+                    ctx.Club.Polls.IdOf("snack"),
+                    1
+                )
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_StartWithoutAnswers_When_TheAttendanceAddOnIsAttachedAgain()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1401,6 +1463,21 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 Farewell,
                                 AbendprobeStart.AddDays(5),
                                 asksForResponse: true
+                            )
+                            .AddAnnouncement("aushang", "ilka", "Aushang", "Bitte antworten.")
+                            .AddAnnouncementLoan(
+                                "aushang",
+                                "asking-meeting",
+                                AnnouncementAddOnKind.Attendance,
+                                addOnAlias: null,
+                                position: 0
+                            )
+                            .AddAnnouncementLoan(
+                                "aushang",
+                                "poll-meeting",
+                                AnnouncementAddOnKind.Poll,
+                                "snack",
+                                position: 1
                             )
                             .AddCalendarEntry("poll-meeting", Farewell, AbendprobeStart.AddDays(6))
                             .AddCalendarPoll(

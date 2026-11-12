@@ -307,6 +307,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
             Attendance = new() { AnswersUntil = answersUntil },
             Poll = null,
             SignUpList = null,
+            Borrowed = null,
         };
 
     private static PostAnnouncementAddOnDataDto PollAddOn(string question) =>
@@ -328,6 +329,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 ],
             },
             SignUpList = null,
+            Borrowed = null,
         };
 
     private static PostAnnouncementAddOnDataDto SignUpListAddOn(string title) =>
@@ -343,6 +345,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Hint = null,
                 SignUpUntil = null,
             },
+            Borrowed = null,
         };
 
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>

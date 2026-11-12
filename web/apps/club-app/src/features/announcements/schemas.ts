@@ -14,6 +14,7 @@ import {
 import {
   CalendarAttendanceAnswerSchema,
   CalendarAttendancePersonSchema,
+  CalendarEntrySchema,
   CalendarPollFormSchema,
   CalendarPollSchema,
   CalendarReminderSchema,
@@ -97,12 +98,38 @@ export const AnnouncementAttendanceSchema = z.object({
 });
 export type AnnouncementAttendance = z.infer<typeof AnnouncementAttendanceSchema>;
 
-export const AnnouncementAddOnSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('attendance'), attendance: AnnouncementAttendanceSchema }),
-  z.object({ kind: z.literal('poll'), poll: CalendarPollSchema }),
-  z.object({ kind: z.literal('signUpList'), signUpList: CalendarSignUpListSchema }),
+const OwnAnnouncementAddOnSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('attendance'),
+    attendance: AnnouncementAttendanceSchema,
+    borrowed: z.null(),
+  }),
+  z.object({ kind: z.literal('poll'), poll: CalendarPollSchema, borrowed: z.null() }),
+  z.object({
+    kind: z.literal('signUpList'),
+    signUpList: CalendarSignUpListSchema,
+    borrowed: z.null(),
+  }),
+]);
+
+const BorrowedAnnouncementAddOnSchema = z
+  .object({
+    kind: AnnouncementAddOnKindSchema,
+    borrowed: z.object({ addOnId: z.number().int().nullable(), entry: CalendarEntrySchema }),
+  })
+  .transform(({ kind, borrowed }) => ({
+    kind: 'borrowed' as const,
+    lentKind: kind,
+    addOnId: borrowed.addOnId,
+    entry: borrowed.entry,
+  }));
+
+export const AnnouncementAddOnSchema = z.union([
+  OwnAnnouncementAddOnSchema,
+  BorrowedAnnouncementAddOnSchema,
 ]);
 export type AnnouncementAddOn = z.infer<typeof AnnouncementAddOnSchema>;
+export type BorrowedAnnouncementAddOn = Extract<AnnouncementAddOn, { kind: 'borrowed' }>;
 
 export const AnnouncementSchema = z.object({
   announcementId: z.number().int(),
@@ -138,6 +165,16 @@ export const AnnouncementAttendanceFormSchema = z.object({
 });
 export type AnnouncementAttendanceForm = z.infer<typeof AnnouncementAttendanceFormSchema>;
 
+export const BorrowedAddOnFormSchema = z.object({
+  lentKind: AnnouncementAddOnKindSchema,
+  calendarEntryId: z.number().int(),
+  addOnId: z.number().int().nullable(),
+  entryTitle: z.string(),
+  entryStartsAt: z.iso.datetime({ offset: true }),
+  name: z.string().nullable(),
+});
+export type BorrowedAddOnForm = z.infer<typeof BorrowedAddOnFormSchema>;
+
 export const AnnouncementAddOnCardFormSchema = z.discriminatedUnion('kind', [
   z.object({
     key: z.string(),
@@ -150,8 +187,10 @@ export const AnnouncementAddOnCardFormSchema = z.discriminatedUnion('kind', [
     kind: z.literal('signUpList'),
     signUpList: CalendarSignUpListFormSchema,
   }),
+  z.object({ key: z.string(), kind: z.literal('borrowed'), borrowed: BorrowedAddOnFormSchema }),
 ]);
 export type AnnouncementAddOnCardForm = z.infer<typeof AnnouncementAddOnCardFormSchema>;
+export type OwnAnnouncementAddOnCardForm = Exclude<AnnouncementAddOnCardForm, { kind: 'borrowed' }>;
 
 export const AnnouncementFormSchema = z
   .object({

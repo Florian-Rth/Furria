@@ -4,6 +4,7 @@ using Furria.Api.Endpoints.Announcements;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Text;
+using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -11,6 +12,7 @@ using static Furria.Api.Tests.Announcements.AnnouncementMentionSeeds;
 
 namespace Furria.Api.Tests.Announcements;
 
+[SeedsAliases]
 public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
 {
     private const string Title = "Saalreinigung";
@@ -295,6 +297,83 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
         await ctx.Expected.Announcement(announcementId).ToAskForAnswersAt(0, null).AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_TakeOverTheEntrysAddOnsInTheirPlaces_When_TheAuthorSeesAGroupEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await AnnouncementAddOnClub.BuildLendingAsync(_fixture, ct, withLoans: false);
+        var paradeId = ctx.Club.CalendarEntries.IdOf("umzug");
+        var busId = ctx.Club.Polls.IdOf("bus");
+        var cakeId = ctx.Club.SignUpLists.IdOf("kuchen");
+
+        var response = await CorrectAddOnsAsync(
+            ctx,
+            [
+                Borrowed(AnnouncementAddOnKind.Poll, paradeId, busId),
+                Borrowed(AnnouncementAddOnKind.Attendance, paradeId, null),
+                Borrowed(AnnouncementAddOnKind.SignUpList, paradeId, cakeId),
+            ]
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Announcement(ctx.Club.Announcements.IdOf("fest"))
+            .ToHaveLoans(
+                (AnnouncementAddOnKind.Poll, paradeId, busId, 0),
+                (AnnouncementAddOnKind.Attendance, paradeId, null, 1),
+                (AnnouncementAddOnKind.SignUpList, paradeId, cakeId, 2)
+            )
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("vorstandsrunde")]
+    [InlineData("kassenpruefung")]
+    public async Task Should_RefuseTheLoan_When_TheEntryIsForChosenPeopleOrUnseenByTheAuthor(
+        string entryAlias
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await AnnouncementAddOnClub.BuildLendingAsync(_fixture, ct, withLoans: false);
+
+        var response = await CorrectAddOnsAsync(
+            ctx,
+            [
+                Borrowed(
+                    AnnouncementAddOnKind.Attendance,
+                    ctx.Club.CalendarEntries.IdOf(entryAlias),
+                    null
+                ),
+            ]
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.Announcement(ctx.Club.Announcements.IdOf("fest"))
+            .ToHaveLoans()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheLoan_When_ThePollBelongsToAnotherHost()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await AnnouncementAddOnClub.BuildLendingAsync(_fixture, ct, withLoans: false);
+
+        var response = await CorrectAddOnsAsync(
+            ctx,
+            [
+                Borrowed(
+                    AnnouncementAddOnKind.Poll,
+                    ctx.Club.CalendarEntries.IdOf("umzug"),
+                    ctx.Club.Polls.IdOf("snack")
+                ),
+            ]
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
     private async Task<HttpResponseMessage> CorrectAddOnsAsync(
         SeededContext ctx,
         IReadOnlyList<PutAnnouncementAddOnDataDto> addOns
@@ -322,6 +401,20 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
         return response ?? throw new InvalidOperationException("No response.");
     }
 
+    private static PutAnnouncementAddOnDataDto Borrowed(
+        AnnouncementAddOnKind kind,
+        int calendarEntryId,
+        int? addOnId
+    ) =>
+        new()
+        {
+            Kind = kind,
+            Attendance = null,
+            Poll = null,
+            SignUpList = null,
+            Borrowed = new() { CalendarEntryId = calendarEntryId, AddOnId = addOnId },
+        };
+
     private static PutAnnouncementAddOnDataDto Attendance(DateTimeOffset? answersUntil) =>
         new()
         {
@@ -329,6 +422,7 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
             Attendance = new() { AnswersUntil = answersUntil },
             Poll = null,
             SignUpList = null,
+            Borrowed = null,
         };
 
     private static PutAnnouncementAddOnDataDto KeptSignUpList(int signUpListId) =>
@@ -344,6 +438,7 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
                 Hint = null,
                 SignUpUntil = null,
             },
+            Borrowed = null,
         };
 
     private Task<SeededContext> BuildWithAddOnsAsync(

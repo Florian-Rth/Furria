@@ -56,6 +56,8 @@ public sealed class DeleteCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
             .ToCarryNoAnswerFrom(chrisId)
             .CalendarEntry(ctx.Club.CalendarEntries.IdOf("garde-training"))
             .ToHaveTitle(DanceGuardTraining)
+            .Announcement(ctx.Club.Announcements.IdOf("aushang"))
+            .ToHaveLoans()
             .AssertAsync(ct);
     }
 
@@ -184,6 +186,14 @@ public sealed class DeleteCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                             )
                             .AddVenue("buergerhaus", "Bürgerhaus")
                             .AddEvent("gala", Gala, MeetingStart, "buergerhaus")
+                            .AddAnnouncement("aushang", "ilka", "Aushang", "Bitte antworten.")
+                            .AddAnnouncementLoan(
+                                "aushang",
+                                "club-meeting",
+                                AnnouncementAddOnKind.Attendance,
+                                addOnAlias: null,
+                                position: 0
+                            )
                             .AddAttendanceResponse(
                                 "chris-says-yes",
                                 "club-meeting",

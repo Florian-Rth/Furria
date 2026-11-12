@@ -48,11 +48,15 @@ import type {
   WrittenCalendarEntry,
 } from './schemas';
 
-export const useCalendarQuery = (query: CalendarQuery): UseQueryResult<CalendarResponse, Error> =>
+export const useCalendarQuery = (
+  query: CalendarQuery,
+  enabled = true,
+): UseQueryResult<CalendarResponse, Error> =>
   useQuery({
     queryKey: queryKeys.calendar(query.scope, query.groupId, query.from, query.to),
     queryFn: () => withFreshAccessToken((accessToken) => requestCalendar(query, accessToken)),
     placeholderData: keepPreviousData,
+    enabled,
   });
 
 export const useCalendarEntryQuery = (

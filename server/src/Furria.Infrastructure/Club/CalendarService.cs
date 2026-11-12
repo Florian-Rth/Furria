@@ -428,6 +428,8 @@ public sealed partial class CalendarService
         if (DropsAttendance(entry, addOnKinds))
             await DiscardAnswersAsync(entry.Id, ct);
 
+        await DropLoansAsync(entry.Id, LoanEndOf(entry, addOnKinds, audience.Audience), ct);
+
         CalendarEntryAddOns.Attach(entry, addOnKinds);
         Reconcile(entry, participatingGroupIds, audience);
 
@@ -656,6 +658,16 @@ public sealed partial class CalendarService
         CalendarEntry entry,
         IReadOnlyList<CalendarEntryAddOnKind> addOns
     ) => entry.AsksForResponse && !addOns.Contains(CalendarEntryAddOnKind.Attendance);
+
+    [Pure]
+    private static EntryLoanEnd LoanEndOf(
+        CalendarEntry entry,
+        IReadOnlyList<CalendarEntryAddOnKind> addOns,
+        CalendarEntryAudience audience
+    ) =>
+        !AddOnLending.Lends(audience) ? EntryLoanEnd.Everything
+        : DropsAttendance(entry, addOns) ? EntryLoanEnd.Attendance
+        : EntryLoanEnd.Nothing;
 
     [Pure]
     private static CalendarEntryFacts FactsOf(EntryRow row) =>

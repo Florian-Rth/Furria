@@ -15,12 +15,19 @@ public sealed partial class AnnouncementService
 
     private async Task<string?> ReconcileAddOnsAsync(
         Announcement announcement,
-        IReadOnlyList<AnnouncementAddOnInput> addOns,
+        AddOnsWrite write,
         CancellationToken ct
     )
     {
+        var addOns = write.AddOns;
         if (AddOnShapeRefusalOf(addOns) is { } shapeRefusal)
             return shapeRefusal;
+
+        if (
+            await ReconcileLoansAsync(announcement, addOns, write.ActorAccountId, ct) is
+            { } loanRefusal
+        )
+            return loanRefusal;
 
         var now = _timeProvider.GetUtcNow();
         var hostClosesAt = AnnouncementAddOns.ClosesAt(announcement.ValidUntil);
@@ -123,13 +130,34 @@ public sealed partial class AnnouncementService
         if (!addOns.All(HasItsShape))
             return AddOnShapeMessage;
 
-        return addOns.Count(addOn => addOn.Kind == AnnouncementAddOnKind.Attendance) > 1
+        return
+            addOns.Count(addOn =>
+                addOn is { Kind: AnnouncementAddOnKind.Attendance, Borrowed: null }
+            ) > 1
             ? AttendanceTwiceMessage
             : null;
     }
 
     [Pure]
     private static bool HasItsShape(AnnouncementAddOnInput addOn) =>
+        addOn.Borrowed is { } borrowed ? IsBorrowedShape(addOn, borrowed) : HasItsOwnShape(addOn);
+
+    [Pure]
+    private static bool IsBorrowedShape(
+        AnnouncementAddOnInput addOn,
+        BorrowedAddOnInput borrowed
+    ) =>
+        addOn is { Attendance: null, Poll: null, SignUpList: null }
+        && addOn.Kind switch
+        {
+            AnnouncementAddOnKind.Attendance => borrowed.AddOnId is null,
+            AnnouncementAddOnKind.Poll or AnnouncementAddOnKind.SignUpList => borrowed.AddOnId
+                is not null,
+            _ => false,
+        };
+
+    [Pure]
+    private static bool HasItsOwnShape(AnnouncementAddOnInput addOn) =>
         addOn.Kind switch
         {
             AnnouncementAddOnKind.Attendance => addOn
@@ -212,6 +240,7 @@ public sealed partial class AnnouncementService
             ct
         );
         var concern = await ConcernOfAsync(rows, reader, polls.Count + lists.Count > 0, ct);
+        var loans = await LoansOfAsync(ids, reader.AccountId, ct);
 
         return rows.ToDictionary(
             row => row.AnnouncementId,
@@ -221,7 +250,8 @@ public sealed partial class AnnouncementService
                     new HeldAddOns(
                         polls.GetValueOrDefault(row.AnnouncementId, []),
                         lists.GetValueOrDefault(row.AnnouncementId, []),
-                        [.. answers[row.AnnouncementId]]
+                        [.. answers[row.AnnouncementId]],
+                        [.. loans[row.AnnouncementId]]
                     ),
                     concern.For(ManagedBy(row, reader), reader.Mentions.PersonId),
                     now
@@ -331,13 +361,16 @@ public sealed partial class AnnouncementService
             )
         );
 
+        var holdsOwnAddOns = placed.Count > 0;
+        placed.AddRange(held.Loans.Select(loan => (loan.Position, loan.AddOn)));
+
         return new AnnouncementAddOnsOfReader(
             [.. placed.OrderBy(addOn => addOn.Position).Select(addOn => addOn.AddOn)],
             AnswerCountOf(held),
             held.Answers.FirstOrDefault(answer =>
                 answer.PersonId == concern.ViewerPersonId
             )?.Answer,
-            concern.ViewerIsConcerned && placed.Count > 0,
+            concern.ViewerIsConcerned && holdsOwnAddOns,
             concern.Manages
         );
     }
@@ -430,6 +463,7 @@ public sealed partial class AnnouncementService
             Attendance = attendance,
             Poll = null,
             SignUpList = null,
+            Borrowed = null,
         };
 
     [Pure]
@@ -440,6 +474,7 @@ public sealed partial class AnnouncementService
             Attendance = null,
             Poll = poll,
             SignUpList = null,
+            Borrowed = null,
         };
 
     [Pure]
@@ -450,7 +485,13 @@ public sealed partial class AnnouncementService
             Attendance = null,
             Poll = null,
             SignUpList = list,
+            Borrowed = null,
         };
+
+    private sealed record AddOnsWrite(
+        IReadOnlyList<AnnouncementAddOnInput> AddOns,
+        int ActorAccountId
+    );
 
     private sealed record HeldAddOnIds(
         bool Attendance,
@@ -466,7 +507,8 @@ public sealed partial class AnnouncementService
     private sealed record HeldAddOns(
         IReadOnlyList<PlacedPoll> Polls,
         IReadOnlyList<PlacedSignUpList> SignUpLists,
-        IReadOnlyList<CalendarAttendanceAnswerDetails> Answers
+        IReadOnlyList<CalendarAttendanceAnswerDetails> Answers,
+        IReadOnlyList<PlacedLoan> Loans
     );
 
     private sealed record ReaderConcern(

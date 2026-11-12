@@ -39,4 +39,6 @@ public sealed class Announcement : ITimestamped
     public ICollection<Poll> Polls { get; set; } = [];
 
     public ICollection<SignUpList> SignUpLists { get; set; } = [];
+
+    public ICollection<AnnouncementBorrowedAddOn> BorrowedAddOns { get; set; } = [];
 }

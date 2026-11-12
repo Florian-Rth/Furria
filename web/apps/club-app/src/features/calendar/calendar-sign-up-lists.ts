@@ -7,6 +7,7 @@ import {
   toDeadlineIssueCodes,
 } from './calendar-deadlines';
 import type {
+  BorrowedAddOnCardIdentity,
   CalendarAddOnCardForm,
   CalendarEntryAddOn,
   CalendarSignUpLine,
@@ -64,7 +65,7 @@ const toCardIssues = (
 };
 
 export const toSignUpListIssues = (
-  cards: readonly CalendarAddOnCardForm[],
+  cards: readonly (CalendarAddOnCardForm | BorrowedAddOnCardIdentity)[],
   start: CalendarDeadlineStart,
 ): CalendarSignUpListIssue[] =>
   cards.flatMap((card, cardIndex) =>

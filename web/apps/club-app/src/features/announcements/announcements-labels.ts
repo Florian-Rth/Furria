@@ -1,12 +1,13 @@
 import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import { CALENDAR_ADD_ON_LABELS } from '@/features/calendar/calendar-add-ons';
 import { toCloserName } from '@/features/calendar/calendar-labels';
 import { ANNOUNCEMENTS_PATH } from '@/features/session/app-sections';
 import { toDayNumberLabel, toTimeLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { toAnswerCountOf } from './announcement-add-ons';
-import type { AnnouncementAttendance } from './schemas';
+import type { AnnouncementAttendance, BorrowedAddOnForm } from './schemas';
 
 export const ANNOUNCEMENTS_TITLE = 'Aushänge';
 export const ANNOUNCEMENTS_ORIGIN: KkScreenOrigin = {
@@ -51,6 +52,17 @@ export const ANSWERS_UNTIL_DAY_LABEL = 'Antworten bis';
 export const DEADLINE_TIME_LABEL = 'Uhrzeit';
 export const ANNOUNCEMENT_DEADLINE_EMPTY_LABEL = 'Solange der Aushang hängt';
 export const REMOVE_ATTENDANCE_LABEL = 'Zu-/Absage entfernen';
+export const BORROW_ADD_ONS_LABEL = 'Aus Kalendereintrag übernehmen';
+export const BORROW_SHEET_CLOSE_LABEL = 'Schließen';
+export const BORROW_NOTHING_LABEL = 'Keine kommenden Einträge mit Funktionen';
+export const BORROW_FAILED_LABEL = 'Die Kalendereinträge konnten nicht geladen werden.';
+export const BORROW_LOADING_LABEL = 'Die Kalendereinträge werden geladen';
+export const REMOVE_BORROWED_LABEL = 'Übernahme entfernen';
+
+export const toBorrowConfirmLabel = (count: number): string =>
+  count === 0
+    ? 'Funktionen antippen'
+    : `${count} ${count === 1 ? 'Funktion' : 'Funktionen'} übernehmen`;
 
 export const ANNOUNCEMENT_CREATE_TITLE = 'Aushang hinzufügen';
 export const ANNOUNCEMENT_EDIT_TITLE = 'Aushang ändern';
@@ -125,3 +137,23 @@ export const toWithdrawExplanation = (answerCount: number): string => {
 
   return `${WITHDRAW_EXPLANATION} Dabei gehen ${answers} verloren.`;
 };
+
+export const toEntryMomentLabel = (startsAt: string): string =>
+  `${toDayNumberLabel(startsAt)}, ${toTimeLabel(startsAt)} Uhr`;
+
+export const toLendingEntryLabel = (entry: { title: string; startsAt: string }): string =>
+  `${entry.title}${META_SEPARATOR}${toEntryMomentLabel(entry.startsAt)}`;
+
+export const toBorrowedMeta = (
+  borrowed: Pick<BorrowedAddOnForm, 'name' | 'entryTitle' | 'entryStartsAt'>,
+): string =>
+  [borrowed.name, borrowed.entryTitle, toEntryMomentLabel(borrowed.entryStartsAt)]
+    .filter((part) => part !== null)
+    .join(META_SEPARATOR);
+
+export const toBorrowOptionLabel = (
+  borrowed: Pick<BorrowedAddOnForm, 'lentKind' | 'name'>,
+): string =>
+  borrowed.name === null
+    ? CALENDAR_ADD_ON_LABELS[borrowed.lentKind]
+    : `${CALENDAR_ADD_ON_LABELS[borrowed.lentKind]}: ${borrowed.name}`;

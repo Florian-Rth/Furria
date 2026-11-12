@@ -51,6 +51,32 @@ describe('toAnnouncementAddOnIssues', () => {
       ],
     ],
     [
+      'a list deadline after the last day behind a taken-over add-on',
+      [
+        {
+          key: 'borrowed-attendance-9-entry',
+          kind: 'borrowed',
+          borrowed: {
+            lentKind: 'attendance',
+            calendarEntryId: 9,
+            addOnId: null,
+            entryTitle: 'Umzug',
+            entryStartsAt: '2026-11-21T13:00:00.000Z',
+            name: null,
+          },
+        },
+        signUpList('2026-12-02', '08:00'),
+      ],
+      '2026-11-30',
+      [
+        {
+          addOn: 'signUpList',
+          code: 'deadlineAfterStart',
+          path: ['addOns', 1, 'signUpList', 'signUpUntilTime'],
+        },
+      ],
+    ],
+    [
       'an answer deadline without a time',
       [attendance('2026-11-20', '')],
       null,

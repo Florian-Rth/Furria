@@ -85,6 +85,9 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<AnnouncementMention> AnnouncementMentions => Set<AnnouncementMention>();
 
+    public DbSet<AnnouncementBorrowedAddOn> AnnouncementBorrowedAddOns =>
+        Set<AnnouncementBorrowedAddOn>();
+
     public DbSet<KeyHolding> KeyHoldings => Set<KeyHolding>();
 
     public DbSet<BoardOffice> BoardOffices => Set<BoardOffice>();

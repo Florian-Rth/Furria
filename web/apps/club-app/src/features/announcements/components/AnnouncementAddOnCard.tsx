@@ -7,6 +7,7 @@ import { ANNOUNCEMENT_DEADLINE_EMPTY_LABEL } from '../announcements-labels';
 import type { AnnouncementAddOnsEditor } from '../hooks/use-announcement-add-ons-editor';
 import type { Announcement, AnnouncementAddOnCardForm } from '../schemas';
 import { AnnouncementAttendanceCard } from './AnnouncementAttendanceCard';
+import { AnnouncementBorrowedAddOnCard } from './AnnouncementBorrowedAddOnCard';
 
 interface AnnouncementAddOnCardProps {
   card: AnnouncementAddOnCardForm;
@@ -30,6 +31,8 @@ export const AnnouncementAddOnCard: FC<AnnouncementAddOnCardProps> = ({
   };
 
   switch (card.kind) {
+    case 'borrowed':
+      return <AnnouncementBorrowedAddOnCard borrowed={card.borrowed} onRemove={remove} />;
     case 'attendance':
       return (
         <AnnouncementAttendanceCard

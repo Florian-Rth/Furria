@@ -11,4 +11,6 @@ public sealed record AnnouncementAddOnDetails
     public required PollDetails? Poll { get; init; }
 
     public required SignUpListDetails? SignUpList { get; init; }
+
+    public required BorrowedAddOnDetails? Borrowed { get; init; }
 }

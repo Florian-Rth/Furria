@@ -29,6 +29,7 @@ import type {
 } from '@/features/calendar/schemas';
 import { toInstant } from '@/lib/day';
 import { toAnnouncementDeadlineStart } from './announcement-add-on-issues';
+import { toBorrowedAddOnKey, toBorrowedForm } from './announcement-borrowing';
 import type {
   Announcement,
   AnnouncementAddOn,
@@ -50,11 +51,14 @@ export const ANNOUNCEMENT_DEADLINE_FALLBACK_TIME = '20:00';
 
 export type AnnouncementAttendancePayload = { answersUntil: string | null };
 
+export type BorrowedAddOnPayload = { calendarEntryId: number; addOnId: number | null };
+
 export type AnnouncementAddOnPayload = {
   kind: AnnouncementAddOnKind;
   attendance: AnnouncementAttendancePayload | null;
   poll: CalendarPollPayload | null;
   signUpList: CalendarSignUpListPayload | null;
+  borrowed: BorrowedAddOnPayload | null;
 };
 
 export type AnnouncementPayload = {
@@ -64,7 +68,7 @@ export type AnnouncementPayload = {
   addOns: AnnouncementAddOnPayload[];
 };
 
-const NO_DETAILS = { attendance: null, poll: null, signUpList: null } as const;
+const NO_DETAILS = { attendance: null, poll: null, signUpList: null, borrowed: null } as const;
 
 export const toAnnouncementAddOnKind = (kind: CalendarAddOnKind): AnnouncementAddOnKind | null => {
   const parsed = AnnouncementAddOnKindSchema.safeParse(kind);
@@ -120,6 +124,12 @@ const toAttendanceForm = (answersUntil: string | null): AnnouncementAttendanceFo
 
 export const toAnnouncementAddOnKey = (addOn: AnnouncementAddOn): string => {
   switch (addOn.kind) {
+    case 'borrowed':
+      return toBorrowedAddOnKey({
+        lentKind: addOn.lentKind,
+        calendarEntryId: addOn.entry.calendarEntryId,
+        addOnId: addOn.addOnId,
+      });
     case 'attendance':
       return ATTENDANCE_KEY;
     case 'poll':
@@ -133,6 +143,12 @@ const toAddOnCard = (addOn: AnnouncementAddOn): AnnouncementAddOnCardForm => {
   const key = toAnnouncementAddOnKey(addOn);
 
   switch (addOn.kind) {
+    case 'borrowed':
+      return {
+        key,
+        kind: addOn.kind,
+        borrowed: toBorrowedForm(addOn.entry, addOn.lentKind, addOn.addOnId),
+      };
     case 'attendance':
       return { key, kind: addOn.kind, attendance: toAttendanceForm(addOn.attendance.answersUntil) };
     case 'poll':
@@ -213,20 +229,22 @@ export const withAnswersUntilDay = (
 export const hasNoAnswersUntil = (attendance: AnnouncementAttendanceForm): boolean =>
   attendance.answersUntilDay === NO_DEADLINE;
 
-const toHeldCalendarAddOn = (addOn: AnnouncementAddOn): CalendarEntryAddOn => {
+const toHeldCalendarAddOn = (addOn: AnnouncementAddOn): CalendarEntryAddOn[] => {
   switch (addOn.kind) {
     case 'attendance':
-      return { kind: addOn.kind };
+      return [{ kind: addOn.kind }];
     case 'poll':
-      return { kind: addOn.kind, poll: addOn.poll };
+      return [{ kind: addOn.kind, poll: addOn.poll }];
     case 'signUpList':
-      return { kind: addOn.kind, signUpList: addOn.signUpList };
+      return [{ kind: addOn.kind, signUpList: addOn.signUpList }];
+    case 'borrowed':
+      return [];
   }
 };
 
 export const toHeldCalendarAddOns = (
   announcement: Pick<Announcement, 'addOns'> | null,
-): CalendarEntryAddOn[] | null => announcement?.addOns.map(toHeldCalendarAddOn) ?? null;
+): CalendarEntryAddOn[] | null => announcement?.addOns.flatMap(toHeldCalendarAddOn) ?? null;
 
 export const toHeldAttendance = (
   announcement: Pick<Announcement, 'addOns'> | null,
@@ -252,6 +270,8 @@ export const toDiscardedAnnouncementAnswers = (
       return toDiscardedVoterCount(held, card.poll.pollId);
     case 'signUpList':
       return toDiscardedLineCount(held, card.signUpList.signUpListId);
+    case 'borrowed':
+      return 0;
   }
 };
 
@@ -273,6 +293,15 @@ const toAddOnPayload = (card: AnnouncementAddOnCardForm): AnnouncementAddOnPaylo
       return { ...NO_DETAILS, kind: card.kind, poll: toPollPayload(card.poll) };
     case 'signUpList':
       return { ...NO_DETAILS, kind: card.kind, signUpList: toSignUpListPayload(card.signUpList) };
+    case 'borrowed':
+      return {
+        ...NO_DETAILS,
+        kind: card.borrowed.lentKind,
+        borrowed: {
+          calendarEntryId: card.borrowed.calendarEntryId,
+          addOnId: card.borrowed.addOnId,
+        },
+      };
   }
 };
 

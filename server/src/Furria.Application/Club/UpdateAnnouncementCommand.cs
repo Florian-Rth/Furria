@@ -14,5 +14,7 @@ public sealed record UpdateAnnouncementCommand
 
     public required int ActorPersonId { get; init; }
 
+    public required int ActorAccountId { get; init; }
+
     public required bool ActorMayPostAnnouncements { get; init; }
 }
