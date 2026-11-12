@@ -22,32 +22,45 @@ internal static class SignUpListRecords
         CalendarEntry entry,
         IReadOnlyList<CalendarEntryAddOnInput> addOns,
         DateTimeOffset now
+    ) =>
+        dbContext.ReconcileSignUpLists(
+            new AddOnHolding<SignUpList>(entry.SignUpLists, entry.StartsAt),
+            [.. addOns.Select(addOn => addOn.SignUpList)],
+            now
+        );
+
+    internal static string? ReconcileSignUpLists(
+        this AppDbContext dbContext,
+        AddOnHolding<SignUpList> holding,
+        IReadOnlyList<SignUpListInput?> wantedByPosition,
+        DateTimeOffset now
     )
     {
-        var wanted = WantedListsOf(addOns);
+        var held = holding.Held;
+        var wanted = WantedListsOf(wantedByPosition);
 
-        foreach (var list in entry.SignUpLists)
-            list.ClosedAt ??= AddOnClosing.StampOf(list.SignUpUntil, entry.StartsAt, now);
+        foreach (var list in held)
+            list.ClosedAt ??= AddOnClosing.StampOf(list.SignUpUntil, holding.HostClosesAt, now);
 
-        if (!wanted.All(placed => IsNewOrHeld(entry, placed)))
+        if (!wanted.All(placed => IsNewOrHeld(held, placed)))
             return UnknownSignUpListMessage;
 
-        if (wanted.Any(placed => ChangesAClosedList(entry, placed)))
+        if (wanted.Any(placed => ChangesAClosedList(held, placed)))
             return ClosedSignUpListEditMessage;
 
-        foreach (var dropped in entry.SignUpLists.Where(list => !IsKept(list, wanted)).ToList())
+        foreach (var dropped in held.Where(list => !IsKept(list, wanted)).ToList())
         {
-            entry.SignUpLists.Remove(dropped);
+            held.Remove(dropped);
             dbContext.SignUpLists.Remove(dropped);
         }
 
         foreach (var placed in wanted)
-            Apply(ListFor(entry, placed.List.SignUpListId), placed);
+            Apply(ListFor(held, placed.List.SignUpListId), placed);
 
         return null;
     }
 
-    internal static async Task<
+    internal static Task<
         IReadOnlyDictionary<int, IReadOnlyList<PlacedSignUpList>>
     > SignUpListsOfEntriesAsync(
         this AppDbContext dbContext,
@@ -55,17 +68,53 @@ internal static class SignUpListRecords
         int? viewerPersonId,
         DateTimeOffset now,
         CancellationToken ct
+    ) =>
+        calendarEntryIds.Count == 0
+            ? Task.FromResult(NoSignUpLists)
+            : dbContext.PlacedSignUpListsAsync(
+                dbContext.SignUpLists.Where(list =>
+                    calendarEntryIds.Contains(list.CalendarEntryId!.Value)
+                ),
+                viewerPersonId,
+                now,
+                ct
+            );
+
+    internal static Task<
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedSignUpList>>
+    > SignUpListsOfAnnouncementsAsync(
+        this AppDbContext dbContext,
+        IReadOnlyList<int> announcementIds,
+        int? viewerPersonId,
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        announcementIds.Count == 0
+            ? Task.FromResult(NoSignUpLists)
+            : dbContext.PlacedSignUpListsAsync(
+                dbContext.SignUpLists.Where(list =>
+                    announcementIds.Contains(list.AnnouncementId!.Value)
+                ),
+                viewerPersonId,
+                now,
+                ct
+            );
+
+    private static async Task<
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedSignUpList>>
+    > PlacedSignUpListsAsync(
+        this AppDbContext dbContext,
+        IQueryable<SignUpList> hosted,
+        int? viewerPersonId,
+        DateTimeOffset now,
+        CancellationToken ct
     )
     {
-        if (calendarEntryIds.Count == 0)
-            return NoSignUpLists;
-
-        var lists = await dbContext
-            .SignUpLists.AsNoTracking()
-            .Where(list => calendarEntryIds.Contains(list.CalendarEntryId!.Value))
+        var lists = await hosted
+            .AsNoTracking()
             .Select(list => new SignUpListRow(
                 list.Id,
-                list.CalendarEntryId!.Value,
+                list.CalendarEntryId ?? list.AnnouncementId ?? 0,
                 list.Position,
                 list.Title,
                 list.Hint,
@@ -73,7 +122,8 @@ internal static class SignUpListRecords
                 list.ClosedAt,
                 list.ClosedBy == null ? null : list.ClosedBy.FirstName,
                 list.ClosedBy == null ? null : list.ClosedBy.LastName,
-                list.CalendarEntry!.StartsAt,
+                (DateTimeOffset?)list.CalendarEntry!.StartsAt,
+                list.Announcement!.ValidUntil,
                 list.LastRemindedAt,
                 list.Lines.OrderBy(line => line.CreatedAt)
                     .ThenBy(line => line.Id)
@@ -93,7 +143,7 @@ internal static class SignUpListRecords
             return NoSignUpLists;
 
         return lists
-            .GroupBy(list => list.CalendarEntryId)
+            .GroupBy(list => list.HostId)
             .ToDictionary(
                 group => group.Key,
                 group =>
@@ -125,7 +175,7 @@ internal static class SignUpListRecords
             IsClosed = AddOnClosing.IsClosed(
                 list.ClosedAt,
                 list.SignUpUntil,
-                list.EntryStartsAt,
+                list.HostClosesAt,
                 now
             ),
             Lines = [.. list.Lines.Select(line => ToLineDetails(line, viewerPersonId))],
@@ -145,25 +195,27 @@ internal static class SignUpListRecords
 
     [Pure]
     private static IReadOnlyList<WantedSignUpList> WantedListsOf(
-        IReadOnlyList<CalendarEntryAddOnInput> addOns
+        IReadOnlyList<SignUpListInput?> wantedByPosition
     ) =>
         [
-            .. addOns.SelectMany(
-                (addOn, position) =>
-                    addOn.SignUpList is { } list
+            .. wantedByPosition.SelectMany(
+                (wanted, position) =>
+                    wanted is { } list
                         ? [new WantedSignUpList(position, list)]
                         : Array.Empty<WantedSignUpList>()
             ),
         ];
 
     [Pure]
-    private static bool IsNewOrHeld(CalendarEntry entry, WantedSignUpList placed) =>
-        placed.List.SignUpListId is not { } listId
-        || entry.SignUpLists.Any(list => list.Id == listId);
+    private static bool IsNewOrHeld(ICollection<SignUpList> held, WantedSignUpList placed) =>
+        placed.List.SignUpListId is not { } listId || held.Any(list => list.Id == listId);
 
     [Pure]
-    private static bool ChangesAClosedList(CalendarEntry entry, WantedSignUpList placed) =>
-        entry.SignUpLists.FirstOrDefault(list => list.Id == placed.List.SignUpListId)
+    private static bool ChangesAClosedList(
+        ICollection<SignUpList> lists,
+        WantedSignUpList placed
+    ) =>
+        lists.FirstOrDefault(list => list.Id == placed.List.SignUpListId)
             is { ClosedAt: not null } held
         && (
             held.Title != placed.List.Title.Trim()
@@ -179,13 +231,13 @@ internal static class SignUpListRecords
     private static string? HintOf(string? hint) =>
         string.IsNullOrWhiteSpace(hint) ? null : hint.Trim();
 
-    private static SignUpList ListFor(CalendarEntry entry, int? signUpListId)
+    private static SignUpList ListFor(ICollection<SignUpList> held, int? signUpListId)
     {
         if (signUpListId is { } heldId)
-            return entry.SignUpLists.Single(list => list.Id == heldId);
+            return held.Single(list => list.Id == heldId);
 
         var list = new SignUpList();
-        entry.SignUpLists.Add(list);
+        held.Add(list);
         return list;
     }
 
@@ -201,7 +253,7 @@ internal static class SignUpListRecords
 
     private sealed record SignUpListRow(
         int SignUpListId,
-        int CalendarEntryId,
+        int HostId,
         int Position,
         string Title,
         string? Hint,
@@ -209,10 +261,15 @@ internal static class SignUpListRecords
         DateTimeOffset? ClosedAt,
         string? ClosedByFirstName,
         string? ClosedByLastName,
-        DateTimeOffset EntryStartsAt,
+        DateTimeOffset? EntryStartsAt,
+        DateOnly? AnnouncementValidUntil,
         DateTimeOffset? LastRemindedAt,
         IReadOnlyList<LineRow> Lines
-    );
+    )
+    {
+        public DateTimeOffset? HostClosesAt =>
+            EntryStartsAt ?? AnnouncementAddOns.ClosesAt(AnnouncementValidUntil);
+    }
 
     private sealed record LineRow(
         int LineId,

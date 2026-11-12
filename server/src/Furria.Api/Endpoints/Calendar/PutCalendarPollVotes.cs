@@ -3,6 +3,7 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Club;
+using Furria.Core.Club;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -47,6 +48,7 @@ public sealed class PutCalendarPollVotes : Endpoint<PutCalendarPollVotesRequest>
         new()
         {
             ActorAccountId = actorAccountId,
+            Host = AddOnHostKind.CalendarEntry,
             PollId = req.PollId,
             OptionIds = [.. req.OptionIds],
         };

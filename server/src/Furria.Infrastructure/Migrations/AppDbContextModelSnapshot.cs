@@ -377,6 +377,26 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTimeOffset?>("AnswersUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("answers_until");
+
+                    b.Property<DateTimeOffset?>("AttendanceClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("attendance_closed_at");
+
+                    b.Property<int?>("AttendanceClosedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("attendance_closed_by_person_id");
+
+                    b.Property<DateTimeOffset?>("AttendanceLastRemindedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("attendance_last_reminded_at");
+
+                    b.Property<int?>("AttendancePosition")
+                        .HasColumnType("integer")
+                        .HasColumnName("attendance_position");
+
                     b.Property<int?>("AuthorPersonId")
                         .HasColumnType("integer")
                         .HasColumnName("author_person_id");
@@ -416,13 +436,23 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_announcement");
 
+                    b.HasIndex("AttendanceClosedByPersonId")
+                        .HasDatabaseName("ix_announcement_attendance_closed_by_person_id");
+
                     b.HasIndex("AuthorPersonId")
                         .HasDatabaseName("ix_announcement_author_person_id");
 
                     b.HasIndex("PublishedAt")
                         .HasDatabaseName("ix_announcement_published_at");
 
-                    b.ToTable("announcement", (string)null);
+                    b.ToTable("announcement", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_announcement_attendance_closer", "attendance_closed_by_person_id IS NULL OR attendance_closed_at IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_announcement_attendance_position", "attendance_position IS NULL OR attendance_position >= 0");
+
+                            t.HasCheckConstraint("ck_announcement_attendance_state", "attendance_position IS NOT NULL OR (answers_until IS NULL AND attendance_closed_at IS NULL AND attendance_closed_by_person_id IS NULL AND attendance_last_reminded_at IS NULL)");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Core.Club.AnnouncementMention", b =>
@@ -5845,11 +5875,19 @@ namespace Furria.Infrastructure.Migrations
 
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
                 {
+                    b.HasOne("Furria.Core.Identity.Person", "AttendanceClosedBy")
+                        .WithMany()
+                        .HasForeignKey("AttendanceClosedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_announcement_person_attendance_closed_by_person_id");
+
                     b.HasOne("Furria.Core.Identity.Person", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorPersonId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_announcement_person_author_person_id");
+
+                    b.Navigation("AttendanceClosedBy");
 
                     b.Navigation("Author");
                 });

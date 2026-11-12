@@ -21,6 +21,9 @@ public sealed partial class CalendarService
                 new EntrySight(entry, rights, unseen),
                 ct
             ),
+            AnnouncementAddOnHost => rights.HoldsClubRead
+                ? await AnnouncementAnswerRefusalAsync(sight, ct)
+                : unseen,
             null => unseen,
             _ => throw new UnreachableException(),
         };
@@ -52,6 +55,19 @@ public sealed partial class CalendarService
             ? await AnswerRefusalAsync(sight.ActorAccountId, facts, ties, ct)
             : null;
     }
+
+    private async Task<Result?> AnnouncementAnswerRefusalAsync(
+        AddOnSight sight,
+        CancellationToken ct
+    ) =>
+        sight.Access == AddOnAccess.Answer
+        && !await _dbContext.IsConcernedByAnnouncementsAsync(
+            sight.PersonId,
+            ClubClock.Today(_timeProvider),
+            ct
+        )
+            ? Result.Forbidden(sight.NotYoursMessage)
+            : null;
 
     private enum AddOnAccess
     {

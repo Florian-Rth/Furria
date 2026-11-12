@@ -2,6 +2,7 @@ using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
+using Furria.Core.Club;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -29,7 +30,12 @@ public sealed class CloseCalendarPoll : Endpoint<CloseCalendarPollRequest>
             return;
         }
 
-        var result = await _calendarService.ClosePollAsync(accountId.Value, req.PollId, ct);
+        var result = await _calendarService.ClosePollAsync(
+            accountId.Value,
+            req.PollId,
+            AddOnHostKind.CalendarEntry,
+            ct
+        );
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);

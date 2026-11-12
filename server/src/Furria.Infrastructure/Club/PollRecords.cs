@@ -23,54 +23,99 @@ internal static class PollRecords
     private static readonly IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>> NoPolls =
         new Dictionary<int, IReadOnlyList<PlacedPoll>>();
 
-    internal static async Task<string?> ReconcilePollsAsync(
+    internal static Task<string?> ReconcilePollsAsync(
         this AppDbContext dbContext,
         CalendarEntry entry,
         IReadOnlyList<CalendarEntryAddOnInput> addOns,
         DateTimeOffset now,
         CancellationToken ct
+    ) =>
+        dbContext.ReconcilePollsAsync(
+            new AddOnHolding<Poll>(entry.Polls, entry.StartsAt),
+            [.. addOns.Select(addOn => addOn.Poll)],
+            now,
+            ct
+        );
+
+    internal static async Task<string?> ReconcilePollsAsync(
+        this AppDbContext dbContext,
+        AddOnHolding<Poll> holding,
+        IReadOnlyList<PollInput?> wantedByPosition,
+        DateTimeOffset now,
+        CancellationToken ct
     )
     {
-        var wanted = WantedPollsOf(addOns);
-        var heldVotes = await dbContext.VotesOfAsync(entry, ct);
+        var held = holding.Held;
+        var wanted = WantedPollsOf(wantedByPosition);
+        var heldVotes = await dbContext.VotesOfAsync(held, ct);
 
-        foreach (var poll in entry.Polls)
-            poll.ClosedAt ??= AddOnClosing.StampOf(poll.VotesUntil, entry.StartsAt, now);
+        foreach (var poll in held)
+            poll.ClosedAt ??= AddOnClosing.StampOf(poll.VotesUntil, holding.HostClosesAt, now);
 
-        if (EditRefusalOf(entry.Polls, wanted, heldVotes) is { } refusal)
+        if (EditRefusalOf(held, wanted, heldVotes) is { } refusal)
             return refusal;
 
-        foreach (var dropped in entry.Polls.Where(poll => !IsKept(poll, wanted)).ToList())
+        foreach (var dropped in held.Where(poll => !IsKept(poll, wanted)).ToList())
         {
-            entry.Polls.Remove(dropped);
+            held.Remove(dropped);
             dbContext.Polls.Remove(dropped);
         }
 
         foreach (var placed in wanted)
-            Apply(PollFor(entry, placed.Poll.PollId), placed);
+            Apply(PollFor(held, placed.Poll.PollId), placed);
 
         return null;
     }
 
-    internal static async Task<
-        IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>>
-    > PollsOfEntriesAsync(
+    internal static Task<IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>>> PollsOfEntriesAsync(
         this AppDbContext dbContext,
         IReadOnlyList<int> calendarEntryIds,
         int? viewerPersonId,
         DateTimeOffset now,
         CancellationToken ct
+    ) =>
+        calendarEntryIds.Count == 0
+            ? Task.FromResult(NoPolls)
+            : dbContext.PlacedPollsAsync(
+                dbContext.Polls.Where(poll =>
+                    calendarEntryIds.Contains(poll.CalendarEntryId!.Value)
+                ),
+                viewerPersonId,
+                now,
+                ct
+            );
+
+    internal static Task<
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>>
+    > PollsOfAnnouncementsAsync(
+        this AppDbContext dbContext,
+        IReadOnlyList<int> announcementIds,
+        int? viewerPersonId,
+        DateTimeOffset now,
+        CancellationToken ct
+    ) =>
+        announcementIds.Count == 0
+            ? Task.FromResult(NoPolls)
+            : dbContext.PlacedPollsAsync(
+                dbContext.Polls.Where(poll => announcementIds.Contains(poll.AnnouncementId!.Value)),
+                viewerPersonId,
+                now,
+                ct
+            );
+
+    private static async Task<IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>>> PlacedPollsAsync(
+        this AppDbContext dbContext,
+        IQueryable<Poll> hosted,
+        int? viewerPersonId,
+        DateTimeOffset now,
+        CancellationToken ct
     )
     {
-        if (calendarEntryIds.Count == 0)
-            return NoPolls;
-
-        var polls = await dbContext
-            .Polls.AsNoTracking()
-            .Where(poll => calendarEntryIds.Contains(poll.CalendarEntryId!.Value))
+        var polls = await hosted
+            .AsNoTracking()
             .Select(poll => new PollRow(
                 poll.Id,
-                poll.CalendarEntryId!.Value,
+                poll.CalendarEntryId ?? poll.AnnouncementId ?? 0,
                 poll.Position,
                 poll.Question,
                 poll.AllowsMultipleChoices,
@@ -79,7 +124,8 @@ internal static class PollRecords
                 poll.ClosedAt,
                 poll.ClosedBy == null ? null : poll.ClosedBy.FirstName,
                 poll.ClosedBy == null ? null : poll.ClosedBy.LastName,
-                poll.CalendarEntry!.StartsAt,
+                (DateTimeOffset?)poll.CalendarEntry!.StartsAt,
+                poll.Announcement!.ValidUntil,
                 poll.LastRemindedAt,
                 poll.Options.OrderBy(option => option.Position)
                     .Select(option => new OptionRow(option.Id, option.Label))
@@ -108,7 +154,7 @@ internal static class PollRecords
         var votesByPoll = votes.ToLookup(vote => vote.PollId);
 
         return polls
-            .GroupBy(poll => poll.CalendarEntryId)
+            .GroupBy(poll => poll.HostId)
             .ToDictionary(
                 group => group.Key,
                 group =>
@@ -147,7 +193,7 @@ internal static class PollRecords
             IsClosed = AddOnClosing.IsClosed(
                 poll.ClosedAt,
                 poll.VotesUntil,
-                poll.EntryStartsAt,
+                poll.HostClosesAt,
                 now
             ),
             VoterCount = votes.Select(vote => vote.PersonId).Distinct().Count(),
@@ -191,12 +237,12 @@ internal static class PollRecords
 
     [Pure]
     private static IReadOnlyList<WantedPoll> WantedPollsOf(
-        IReadOnlyList<CalendarEntryAddOnInput> addOns
+        IReadOnlyList<PollInput?> wantedByPosition
     ) =>
         [
-            .. addOns.SelectMany(
-                (addOn, position) =>
-                    addOn.Poll is { } poll
+            .. wantedByPosition.SelectMany(
+                (wanted, position) =>
+                    wanted is { } poll
                         ? [new WantedPoll(position, poll)]
                         : Array.Empty<WantedPoll>()
             ),
@@ -300,13 +346,13 @@ internal static class PollRecords
     private static IEnumerable<int> OptionIdsOf(PollInput poll) =>
         poll.Options.Select(option => option.OptionId).OfType<int>();
 
-    private static Poll PollFor(CalendarEntry entry, int? pollId)
+    private static Poll PollFor(ICollection<Poll> held, int? pollId)
     {
         if (pollId is { } heldId)
-            return entry.Polls.Single(poll => poll.Id == heldId);
+            return held.Single(poll => poll.Id == heldId);
 
         var poll = new Poll();
-        entry.Polls.Add(poll);
+        held.Add(poll);
         return poll;
     }
 
@@ -347,11 +393,11 @@ internal static class PollRecords
 
     private static async Task<IReadOnlyList<HeldVote>> VotesOfAsync(
         this AppDbContext dbContext,
-        CalendarEntry entry,
+        ICollection<Poll> held,
         CancellationToken ct
     )
     {
-        var pollIds = entry.Polls.Select(poll => poll.Id).ToList();
+        var pollIds = held.Select(poll => poll.Id).ToList();
 
         if (pollIds.Count == 0)
             return [];
@@ -369,7 +415,7 @@ internal static class PollRecords
 
     private sealed record PollRow(
         int PollId,
-        int CalendarEntryId,
+        int HostId,
         int Position,
         string Question,
         bool AllowsMultipleChoices,
@@ -378,10 +424,15 @@ internal static class PollRecords
         DateTimeOffset? ClosedAt,
         string? ClosedByFirstName,
         string? ClosedByLastName,
-        DateTimeOffset EntryStartsAt,
+        DateTimeOffset? EntryStartsAt,
+        DateOnly? AnnouncementValidUntil,
         DateTimeOffset? LastRemindedAt,
         IReadOnlyList<OptionRow> Options
-    );
+    )
+    {
+        public DateTimeOffset? HostClosesAt =>
+            EntryStartsAt ?? AnnouncementAddOns.ClosesAt(AnnouncementValidUntil);
+    }
 
     private sealed record OptionRow(int OptionId, string Label);
 

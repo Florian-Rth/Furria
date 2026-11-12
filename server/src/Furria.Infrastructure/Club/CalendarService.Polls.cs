@@ -16,6 +16,8 @@ public sealed partial class CalendarService
     private const string SingleChoiceMessage = "Bei dieser Umfrage ist nur eine Antwort möglich.";
     private const string StartedPollMessage =
         "Der Termin hat begonnen. Die Umfrage kann nicht wieder geöffnet werden.";
+    private const string ExpiredAnnouncementPollMessage =
+        "Der Aushang ist abgelaufen. Die Umfrage kann nicht wieder geöffnet werden.";
 
     public async Task<Result> CastPollVotesAsync(CastPollVotesCommand command, CancellationToken ct)
     {
@@ -23,9 +25,9 @@ public sealed partial class CalendarService
             return Result.Forbidden(NotYourPollMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await LockPollAsync(command.PollId, ct);
+        await LockPollAsync(command.PollId, command.Host, ct);
 
-        var host = await PollHostAsync(command.PollId, ct);
+        var host = await PollHostAsync(command.PollId, command.Host, ct);
         var sight = new AddOnSight(
             command.ActorAccountId,
             personId,
@@ -70,19 +72,24 @@ public sealed partial class CalendarService
         return Result.Success();
     }
 
-    public async Task<Result> ClosePollAsync(int actorAccountId, int pollId, CancellationToken ct)
+    public async Task<Result> ClosePollAsync(
+        int actorAccountId,
+        int pollId,
+        AddOnHostKind hostKind,
+        CancellationToken ct
+    )
     {
         var closerPersonId = await _authorizer.ActivePersonIdAsync(actorAccountId, ct);
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await LockPollAsync(pollId, ct);
+        await LockPollAsync(pollId, hostKind, ct);
 
         var poll = await _dbContext.Polls.SingleOrDefaultAsync(row => row.Id == pollId, ct);
 
-        if (poll is null || await PollHostAsync(pollId, ct) is not { } host)
+        if (poll is null || await PollHostAsync(pollId, hostKind, ct) is not { } host)
             return Result.NotFound(UnknownPollMessage);
 
         if (!await MayManageAsync(actorAccountId, host, ct))
-            return Result.Forbidden(NotOwnedMessage);
+            return Result.Forbidden(NotManagedMessageOf(host));
 
         if (poll.ClosedAt is null)
         {
@@ -102,23 +109,28 @@ public sealed partial class CalendarService
         return Result.Success();
     }
 
-    public async Task<Result> ReopenPollAsync(int actorAccountId, int pollId, CancellationToken ct)
+    public async Task<Result> ReopenPollAsync(
+        int actorAccountId,
+        int pollId,
+        AddOnHostKind hostKind,
+        CancellationToken ct
+    )
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await LockPollAsync(pollId, ct);
+        await LockPollAsync(pollId, hostKind, ct);
 
         var poll = await _dbContext.Polls.SingleOrDefaultAsync(row => row.Id == pollId, ct);
 
-        if (poll is null || await PollHostAsync(pollId, ct) is not { } host)
+        if (poll is null || await PollHostAsync(pollId, hostKind, ct) is not { } host)
             return Result.NotFound(UnknownPollMessage);
 
         if (!await MayManageAsync(actorAccountId, host, ct))
-            return Result.Forbidden(NotOwnedMessage);
+            return Result.Forbidden(NotManagedMessageOf(host));
 
         var now = _timeProvider.GetUtcNow();
 
         if (host.ClosesAt <= now)
-            return Result.Validation(StartedPollMessage);
+            return Result.Validation(ReopenRefusalOf(host));
 
         Reopen(poll, now);
         await _dbContext.SaveChangesAsync(ct);
@@ -126,6 +138,10 @@ public sealed partial class CalendarService
 
         return Result.Success();
     }
+
+    [Pure]
+    private static string ReopenRefusalOf(AddOnHost host) =>
+        host is AnnouncementAddOnHost ? ExpiredAnnouncementPollMessage : StartedPollMessage;
 
     private static void Reopen(Poll poll, DateTimeOffset now)
     {
@@ -153,12 +169,19 @@ public sealed partial class CalendarService
         return !ballot.AllowsMultipleChoices && optionIds.Count > 1 ? SingleChoiceMessage : null;
     }
 
-    private async Task LockPollAsync(int pollId, CancellationToken ct)
+    private async Task LockPollAsync(int pollId, AddOnHostKind hostKind, CancellationToken ct)
     {
-        await _dbContext.Database.ExecuteSqlAsync(
-            $"SELECT 1 FROM calendar_entry entry JOIN poll ON poll.calendar_entry_id = entry.id WHERE poll.id = {pollId} FOR SHARE OF entry",
-            ct
-        );
+        if (hostKind == AddOnHostKind.Announcement)
+            await _dbContext.Database.ExecuteSqlAsync(
+                $"SELECT 1 FROM announcement JOIN poll ON poll.announcement_id = announcement.id WHERE poll.id = {pollId} FOR SHARE OF announcement",
+                ct
+            );
+        else
+            await _dbContext.Database.ExecuteSqlAsync(
+                $"SELECT 1 FROM calendar_entry entry JOIN poll ON poll.calendar_entry_id = entry.id WHERE poll.id = {pollId} FOR SHARE OF entry",
+                ct
+            );
+
         await _dbContext.Database.ExecuteSqlAsync(
             $"SELECT 1 FROM poll WHERE id = {pollId} FOR NO KEY UPDATE",
             ct

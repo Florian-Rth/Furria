@@ -1,3 +1,5 @@
+using Furria.Core.Club;
+
 namespace Furria.Infrastructure.Club;
 
 internal sealed record CalendarEntryAddOnHost(

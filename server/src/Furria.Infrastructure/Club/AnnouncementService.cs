@@ -3,13 +3,14 @@ using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Text;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
 
-public sealed class AnnouncementService
+public sealed partial class AnnouncementService
 {
     private const string UnknownAnnouncementMessage = "Diesen Aushang gibt es nicht mehr.";
     private const string ForeignAnnouncementMessage =
@@ -19,6 +20,7 @@ public sealed class AnnouncementService
     private readonly RunningBoardSeats _runningBoardSeats;
     private readonly MediaPictures _pictures;
     private readonly AnnouncementMentionTargetsQuery _mentionTargets;
+    private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
 
     public AnnouncementService(
@@ -26,6 +28,7 @@ public sealed class AnnouncementService
         RunningBoardSeats runningBoardSeats,
         MediaPictures pictures,
         AnnouncementMentionTargetsQuery mentionTargets,
+        PermissionAuthorizer authorizer,
         TimeProvider timeProvider
     )
     {
@@ -33,6 +36,7 @@ public sealed class AnnouncementService
         _runningBoardSeats = runningBoardSeats;
         _pictures = pictures;
         _mentionTargets = mentionTargets;
+        _authorizer = authorizer;
         _timeProvider = timeProvider;
     }
 
@@ -42,7 +46,7 @@ public sealed class AnnouncementService
     ) => _mentionTargets.OfferedToAsync(reader, ct);
 
     public async Task<IReadOnlyList<AnnouncementSummary>> GetAnnouncementsAsync(
-        MentionReader reader,
+        AnnouncementReader reader,
         CancellationToken ct
     )
     {
@@ -58,11 +62,17 @@ public sealed class AnnouncementService
         var officeNames = await _runningBoardSeats.OfficeNamesAsync(today, ct);
         var mentions = await _mentionTargets.OfAnnouncementsAsync(
             [.. rows.Select(row => row.AnnouncementId)],
-            reader,
+            reader.Mentions,
             ct
         );
+        var addOns = await AddOnsOfAsync(rows, reader, ct);
 
-        return [.. rows.Select(row => ToSummary(row, officeNames, mentions, _pictures))];
+        return
+        [
+            .. rows.Select(row =>
+                ToSummary(row, new SummaryParts(officeNames, mentions, addOns[row.AnnouncementId]))
+            ),
+        ];
     }
 
     public async Task<Result<int>> CreateAsync(
@@ -84,6 +94,9 @@ public sealed class AnnouncementService
         };
         RewriteMentions(announcement, reading);
 
+        if (await ReconcileAddOnsAsync(announcement, command.AddOns, ct) is { } addOnRefusal)
+            return Result<int>.Validation(addOnRefusal);
+
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         _dbContext.Announcements.Add(announcement);
         await _dbContext.SaveChangesAsync(ct);
@@ -99,7 +112,8 @@ public sealed class AnnouncementService
         if (reading.Refusal is { } refusal)
             return Result.Validation(refusal);
 
-        var announcement = await FindWithMentionsAsync(command.AnnouncementId, ct);
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var announcement = await LockedWithPartsAsync(command.AnnouncementId, ct);
         if (announcement is null)
             return Result.NotFound(UnknownAnnouncementMessage);
 
@@ -112,12 +126,20 @@ public sealed class AnnouncementService
         )
             return Result.Forbidden(ForeignAnnouncementMessage);
 
+        if (await ReconcileAddOnsAsync(announcement, command.AddOns, ct) is { } addOnRefusal)
+            return Result.Validation(addOnRefusal);
+
         announcement.Title = command.Title;
         announcement.Body = command.Body;
         announcement.ValidUntil = command.ValidUntil;
         RewriteMentions(announcement, reading);
 
-        return await SaveOrConflictAsync(ct);
+        var saved = await SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return saved;
+
+        await transaction.CommitAsync(ct);
+        return Result.Success();
     }
 
     public async Task<Result> WithdrawAsync(
@@ -162,37 +184,41 @@ public sealed class AnnouncementService
     private static bool MayChange(int? authorPersonId, int actorPersonId, bool actorMayPost) =>
         actorMayPost || authorPersonId == actorPersonId;
 
-    private static AnnouncementSummary ToSummary(
-        AnnouncementRow row,
-        IReadOnlyDictionary<int, string> officeNames,
-        IReadOnlyDictionary<int, AnnouncementMentionTargets> mentions,
-        MediaPictures pictures
-    ) =>
+    private AnnouncementSummary ToSummary(AnnouncementRow row, SummaryParts parts) =>
         new()
         {
             AnnouncementId = row.AnnouncementId,
             Title = row.Title,
             Body = row.Body,
-            Mentions = mentions.GetValueOrDefault(
+            Mentions = parts.Mentions.GetValueOrDefault(
                 row.AnnouncementId,
                 AnnouncementMentionTargets.None
             ),
             PublishedAt = row.PublishedAt,
             ValidUntil = row.ValidUntil,
-            Author = row.Author is { } author
-                ? new AnnouncementAuthorReference
-                {
-                    PersonId = author.PersonId,
-                    FirstName = author.FirstName,
-                    LastName = author.LastName,
-                    Portrait = pictures.PortraitOf(
-                        author.PersonId,
-                        author.PortraitId,
-                        author.PortraitRenderedAt
-                    ),
-                    OfficeName = officeNames.GetValueOrDefault(author.PersonId),
-                }
-                : null,
+            Author = row.Author is { } author ? ToAuthor(author, parts.OfficeNames) : null,
+            AddOns = parts.AddOns.AddOns,
+            AnswerCount = parts.AddOns.AnswerCount,
+            ViewerAnswer = parts.AddOns.ViewerAnswer,
+            ViewerMayAnswer = parts.AddOns.ViewerMayAnswer,
+            ViewerManages = parts.AddOns.ViewerManages,
+        };
+
+    private AnnouncementAuthorReference ToAuthor(
+        AnnouncementAuthorRow author,
+        IReadOnlyDictionary<int, string> officeNames
+    ) =>
+        new()
+        {
+            PersonId = author.PersonId,
+            FirstName = author.FirstName,
+            LastName = author.LastName,
+            Portrait = _pictures.PortraitOf(
+                author.PersonId,
+                author.PortraitId,
+                author.PortraitRenderedAt
+            ),
+            OfficeName = officeNames.GetValueOrDefault(author.PersonId),
         };
 
     private async Task EnqueuePostedPushesAsync(Announcement announcement, CancellationToken ct)
@@ -217,8 +243,11 @@ public sealed class AnnouncementService
     private Task DropUndeliveredPushesAsync(int announcementId, CancellationToken ct)
     {
         var tag = AnnouncementPushMessages.TagOf(announcementId);
+        var reminderTags = AnnouncementPushMessages.ReminderTagPrefixOf(announcementId);
 
-        return _dbContext.OutboxPushes.Where(push => push.Tag == tag).ExecuteDeleteAsync(ct);
+        return _dbContext
+            .OutboxPushes.Where(push => push.Tag == tag || push.Tag.StartsWith(reminderTags))
+            .ExecuteDeleteAsync(ct);
     }
 
     private async Task<Result> SaveOrConflictAsync(CancellationToken ct)
@@ -237,8 +266,22 @@ public sealed class AnnouncementService
     private Task<Announcement?> FindAsync(int announcementId, CancellationToken ct) =>
         _dbContext.Announcements.SingleOrDefaultAsync(row => row.Id == announcementId, ct);
 
-    private Task<Announcement?> FindWithMentionsAsync(int announcementId, CancellationToken ct) =>
-        _dbContext
+    private async Task<Announcement?> LockedWithPartsAsync(int announcementId, CancellationToken ct)
+    {
+        await LockForUpdateAsync(announcementId, ct);
+
+        return await _dbContext
             .Announcements.Include(row => row.Mentions)
+            .Include(row => row.Polls)
+                .ThenInclude(poll => poll.Options)
+            .Include(row => row.SignUpLists)
+            .AsSplitQuery()
             .SingleOrDefaultAsync(row => row.Id == announcementId, ct);
+    }
+
+    private sealed record SummaryParts(
+        IReadOnlyDictionary<int, string> OfficeNames,
+        IReadOnlyDictionary<int, AnnouncementMentionTargets> Mentions,
+        AnnouncementAddOnsOfReader AddOns
+    );
 }

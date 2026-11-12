@@ -73,6 +73,80 @@ public sealed class AnnouncementExpectations
                 )
         );
 
+    public Expected ToHaveAnswers(params (int PersonId, AttendanceAnswer Answer)[] answers) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    answers.Order(),
+                    (
+                        await dbContext
+                            .AttendanceResponses.AsNoTracking()
+                            .Where(row => row.AnnouncementId == _announcementId)
+                            .Select(row => new { row.PersonId, row.Answer })
+                            .ToListAsync(ct)
+                    )
+                        .Select(row => (row.PersonId, row.Answer))
+                        .Order()
+                )
+        );
+
+    public Expected ToAskForAnswersAt(int? position, DateTimeOffset? answersUntil) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var announcement = await SingleAsync(dbContext, ct);
+                Assert.Equal(position, announcement.AttendancePosition);
+                Assert.Equal(answersUntil, announcement.AnswersUntil);
+            }
+        );
+
+    public Expected ToHaveAttendanceClosed(DateTimeOffset? closedAt, int? closedByPersonId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var announcement = await SingleAsync(dbContext, ct);
+                Assert.Equal(closedAt, announcement.AttendanceClosedAt);
+                Assert.Equal(closedByPersonId, announcement.AttendanceClosedByPersonId);
+            }
+        );
+
+    public Expected ToHaveAttendanceRemindedAt(DateTimeOffset? remindedAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    remindedAt,
+                    (await SingleAsync(dbContext, ct)).AttendanceLastRemindedAt
+                )
+        );
+
+    public Expected ToHavePolls(params string[] questions) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    questions,
+                    await dbContext
+                        .Polls.AsNoTracking()
+                        .Where(poll => poll.AnnouncementId == _announcementId)
+                        .OrderBy(poll => poll.Position)
+                        .Select(poll => poll.Question)
+                        .ToListAsync(ct)
+                )
+        );
+
+    public Expected ToHaveSignUpLists(params string[] titles) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    titles,
+                    await dbContext
+                        .SignUpLists.AsNoTracking()
+                        .Where(list => list.AnnouncementId == _announcementId)
+                        .OrderBy(list => list.Position)
+                        .Select(list => list.Title)
+                        .ToListAsync(ct)
+                )
+        );
+
     private Task<Announcement> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.Announcements.AsNoTracking().SingleAsync(row => row.Id == _announcementId, ct);
 }

@@ -1,3 +1,5 @@
+using Furria.Core.Club;
+
 namespace Furria.Infrastructure.Club;
 
 internal abstract record AddOnHost

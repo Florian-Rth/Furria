@@ -2,6 +2,7 @@ using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
+using Furria.Core.Club;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -35,6 +36,7 @@ public sealed class DeleteOwnCalendarSignUpLine : Endpoint<DeleteOwnCalendarSign
         var result = await _calendarService.DeleteOwnSignUpLineAsync(
             accountId.Value,
             req.SignUpListId,
+            AddOnHostKind.CalendarEntry,
             ct
         );
         if (!result.IsSuccess)

@@ -7,6 +7,8 @@ using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.Announcements.AnnouncementMentionSeeds;
+using AnnouncementAddOnKind = Furria.Core.Club.AnnouncementAddOnKind;
+using AttendanceAnswer = Furria.Core.Club.AttendanceAnswer;
 
 namespace Furria.Api.Tests.Announcements;
 
@@ -57,6 +59,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                         Title = Title,
                         Body = Body,
                         ValidUntil = ValidUntilInMarch,
+                        AddOns = [],
                     }
                 );
 
@@ -94,6 +97,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = Title,
                 Body = Body,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
@@ -121,6 +125,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = "",
                 Body = Body,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
@@ -144,6 +149,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = Title,
                 Body = "",
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
@@ -177,6 +183,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                     + $" siehe @[Bericht](news-post:{reportId}), @[Fotos](album:{photosId})"
                     + $" und nochmals @[Alice](person:{aliceId}).",
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
@@ -215,11 +222,128 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = Title,
                 Body = body,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Should_AttachTheAddOnsInTheirOrder_When_ThePosterAddsThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var answersUntil = InsideTheSession.AddDays(3);
+        PostAnnouncementResponse? posted = null;
+
+        var ctx = await BuildBoardAsync(ct);
+        await _fixture.AtInstantAsync(
+            InsideTheSession,
+            async () =>
+            {
+                var client = await ctx.Identity.ClientForAsync("bea", ct);
+                var (response, result) = await client.POSTAsync<
+                    PostAnnouncement,
+                    PostAnnouncementRequest,
+                    PostAnnouncementResponse
+                >(
+                    new()
+                    {
+                        Title = Title,
+                        Body = Body,
+                        ValidUntil = ValidUntilInMarch,
+                        AddOns =
+                        [
+                            PollAddOn("Wer bringt Eimer?"),
+                            AttendanceAddOn(answersUntil),
+                            SignUpListAddOn("Wer putzt was?"),
+                        ],
+                    }
+                );
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                posted = result;
+            }
+        );
+
+        var announcementId = posted?.AnnouncementId ?? 0;
+        await ctx
+            .Expected.Announcement(announcementId)
+            .ToAskForAnswersAt(1, answersUntil)
+            .Announcement(announcementId)
+            .ToHavePolls("Wer bringt Eimer?")
+            .Announcement(announcementId)
+            .ToHaveSignUpLists("Wer putzt was?")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheAnnouncementAsksForAnswersTwice()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildBoardAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("bea", ct);
+
+        var (response, _) = await client.POSTAsync<
+            PostAnnouncement,
+            PostAnnouncementRequest,
+            PostAnnouncementResponse
+        >(
+            new()
+            {
+                Title = Title,
+                Body = Body,
+                ValidUntil = null,
+                AddOns = [AttendanceAddOn(null), AttendanceAddOn(null)],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static PostAnnouncementAddOnDataDto AttendanceAddOn(DateTimeOffset? answersUntil) =>
+        new()
+        {
+            Kind = AnnouncementAddOnKind.Attendance,
+            Attendance = new() { AnswersUntil = answersUntil },
+            Poll = null,
+            SignUpList = null,
+        };
+
+    private static PostAnnouncementAddOnDataDto PollAddOn(string question) =>
+        new()
+        {
+            Kind = AnnouncementAddOnKind.Poll,
+            Attendance = null,
+            Poll = new()
+            {
+                PollId = null,
+                Question = question,
+                AllowsMultipleChoices = false,
+                IsAnonymous = false,
+                VotesUntil = null,
+                Options =
+                [
+                    new() { OptionId = null, Label = "Ich" },
+                    new() { OptionId = null, Label = "Nicht ich" },
+                ],
+            },
+            SignUpList = null,
+        };
+
+    private static PostAnnouncementAddOnDataDto SignUpListAddOn(string title) =>
+        new()
+        {
+            Kind = AnnouncementAddOnKind.SignUpList,
+            Attendance = null,
+            Poll = null,
+            SignUpList = new()
+            {
+                SignUpListId = null,
+                Title = title,
+                Hint = null,
+                SignUpUntil = null,
+            },
+        };
 
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>
         _fixture.BuildAsync(

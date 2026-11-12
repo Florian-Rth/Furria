@@ -2,13 +2,17 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Announcements;
 using Furria.Application.Authorization;
+using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.Announcements.AnnouncementMentionSeeds;
+using AnnouncementAddOnKind = Furria.Core.Club.AnnouncementAddOnKind;
+using AttendanceAnswer = Furria.Core.Club.AttendanceAnswer;
 
 namespace Furria.Api.Tests.Announcements;
 
+[SeedsAliases]
 public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
 {
     private const string Body = "Der Saal bleibt am Freitag geschlossen.";
@@ -245,6 +249,118 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
         Assert.Contains($"person:{aliceId}", announcement.Body, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Should_ShowResultsAndTheShareToEveryReader_When_TheAnnouncementCarriesAddOns()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await AnnouncementAddOnClub.BuildAsync(_fixture, ct);
+
+        var read = await AnnouncementAddOnClub.ReadAtAsync(
+            _fixture,
+            ctx,
+            "chris",
+            AnnouncementAddOnClub.Now,
+            ct
+        );
+
+        var fest = Assert.Single(read.Announcements);
+        Assert.Equal(
+            [
+                AnnouncementAddOnKind.Attendance,
+                AnnouncementAddOnKind.Poll,
+                AnnouncementAddOnKind.SignUpList,
+            ],
+            fest.AddOns.Select(addOn => addOn.Kind)
+        );
+        var attendance = fest.AddOns[0].Attendance;
+        Assert.NotNull(attendance);
+        Assert.Equal((1, 0, 0), (attendance.Yes, attendance.Maybe, attendance.No));
+        Assert.Equal(4, attendance.ConcernedCount);
+        Assert.Equal(["Chris"], attendance.Answers.Select(answer => answer.FirstName));
+        Assert.Null(attendance.NotAnswered);
+        Assert.Null(attendance.Reminder);
+        Assert.False(attendance.IsClosed);
+        Assert.Equal(
+            (1, 4),
+            (fest.AddOns[1].Poll?.VoterCount, fest.AddOns[1].Poll?.ConcernedCount)
+        );
+        Assert.Equal(4, fest.AddOns[2].SignUpList?.ConcernedCount);
+        Assert.Equal(AttendanceAnswer.Yes, fest.ViewerAnswer);
+        Assert.True(fest.ViewerMayAnswer);
+        Assert.False(fest.ViewerMayEdit);
+        Assert.Equal(3, fest.AnswerCount);
+    }
+
+    [Fact]
+    public async Task Should_NameWhoHasNotAnswered_When_TheReaderWroteTheAnnouncement()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await AnnouncementAddOnClub.BuildAsync(_fixture, ct);
+
+        var read = await AnnouncementAddOnClub.ReadAtAsync(
+            _fixture,
+            ctx,
+            "alice",
+            AnnouncementAddOnClub.Now,
+            ct
+        );
+
+        var fest = Assert.Single(read.Announcements);
+        var attendance = fest.AddOns[0].Attendance;
+        Assert.NotNull(attendance);
+        Assert.Equal(
+            ["Alice", "Ilka", "Mara"],
+            attendance.NotAnswered?.Select(person => person.FirstName)
+        );
+        Assert.NotNull(attendance.Reminder);
+        Assert.Equal(
+            ["Alice", "Ilka", "Mara"],
+            fest.AddOns[1].Poll?.NotAnswered?.Select(person => person.FirstName)
+        );
+        Assert.True(fest.ViewerMayEdit);
+    }
+
+    [Theory]
+    [InlineData("paula")]
+    [InlineData("rolf")]
+    public async Task Should_OfferNoAnswering_When_TheReaderHoldsNoRunningUnpausedMembership(
+        string readerAlias
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await AnnouncementAddOnClub.BuildAsync(_fixture, ct);
+
+        var read = await AnnouncementAddOnClub.ReadAtAsync(
+            _fixture,
+            ctx,
+            readerAlias,
+            AnnouncementAddOnClub.Now,
+            ct
+        );
+
+        Assert.False(Assert.Single(read.Announcements).ViewerMayAnswer);
+    }
+
+    [Fact]
+    public async Task Should_ShowEveryAddOnClosed_When_TheLastDayOfTheAnnouncementHasPassed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await AnnouncementAddOnClub.BuildAsync(_fixture, ct);
+
+        var read = await AnnouncementAddOnClub.ReadAtAsync(
+            _fixture,
+            ctx,
+            "chris",
+            AnnouncementAddOnClub.AfterTheLastDay,
+            ct
+        );
+
+        var addOns = Assert.Single(read.Announcements).AddOns;
+        Assert.True(addOns[0].Attendance?.IsClosed);
+        Assert.True(addOns[1].Poll?.IsClosed);
+        Assert.True(addOns[2].SignUpList?.IsClosed);
+    }
+
     private static async Task PostAsync(SeededContext ctx, string body, CancellationToken ct)
     {
         var client = await ctx.Identity.ClientForAsync(Author, ct);
@@ -258,6 +374,7 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
                 Title = "Mit Erwähnungen",
                 Body = body,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

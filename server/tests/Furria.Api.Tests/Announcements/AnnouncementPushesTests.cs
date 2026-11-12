@@ -76,6 +76,7 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
                 Title = "Saalreinigung verschoben",
                 Body = Body,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
@@ -104,6 +105,7 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
                 Title = Title,
                 Body = Body,
                 ValidUntil = validUntil,
+                AddOns = [],
             }
         );
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

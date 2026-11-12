@@ -1,7 +1,7 @@
 ---
 rfc: 0007
 title: Aushänge with add-ons, mentions and a push
-status: in progress (phases 1–4 done)
+status: in progress (phases 1–5 done)
 github_issue: 80
 branch: feat/rfc-80-aushaenge
 created: 2026-11-12
@@ -128,11 +128,21 @@ Decisions taken in phase 4:
 
 ### Phase 5 — Own add-ons on Aushänge (backend)
 Goal: an Aushang carries Zu-/Absage, Umfragen and Eintragslisten through the API.
-- [ ] Create/update accept add-ons in order (Zu-/Absage ≤ 1, polls, lists); removal with answers needs confirmation as on the calendar
-- [ ] Announcement host: concern = running members (paused not), manage = author or `announcements.post`, close = own time / end of *Gültig bis* day / by hand
-- [ ] Answer, vote, sign-up line, close, reopen (poll), remove line, *Erinnern* endpoints for the Aushang host
-- [ ] Read model: results, *x von y*, not-answered for managers, closed state; withdraw reports the answer count
-- [ ] Integration tests for each rule above
+- [x] Create/update accept add-ons in order (Zu-/Absage ≤ 1, polls, lists); removal with answers needs confirmation as on the calendar
+- [x] Announcement host: concern = running members (paused not), manage = author or `announcements.post`, close = own time / end of *Gültig bis* day / by hand
+- [x] Answer, vote, sign-up line, close, reopen (poll), remove line, *Erinnern* endpoints for the Aushang host
+- [x] Read model: results, *x von y*, not-answered for managers, closed state; withdraw reports the answer count
+- [x] Integration tests for each rule above
+
+Decisions taken in phase 5:
+- The Aushang's Zu-/Absage lives on the `announcement` row (`attendance_position`, `answers_until`, `attendance_closed_at` / `_by`, `attendance_last_reminded_at`); answers are `attendance_response` rows hosted by the Aushang. Unlike the calendar it can be closed by hand and has its own *Antworten bis*.
+- Own endpoints under `announcements/…` (`{id}/response`, `{id}/attendance/close`, `{id}/reminders`, `polls/{id}/votes|close|reopen`, `sign-up-lists/{id}/my-line|close`, `sign-up-lines/{id}`), all behind `club.read`. Poll and list actions reuse the calendar service methods with an `AddOnHostKind`; a poll or list of the other host answers 404 on either route.
+- `AnnouncementAddOnKind` (attendance, poll, sign-up list) is its own enum; the read reuses the calendar's poll, sign-up list, answer, person and reminder DTOs so the club app can share the cards.
+- Removal confirmation stays client-side as on the calendar; the read carries `answerCount` (answers + voters + lines) for the withdraw confirm. Dropping the Zu-/Absage deletes its answers; a closed Zu-/Absage keeps its *Antworten bis*.
+- The Aushang reminder writes its pushes straight into the push outbox (tag `announcement-{id}-reminder-{kind}-{addOnId}`, expiring with the add-on, at most 28 days); withdrawing drops them with the posting push.
+- Concern is the running memberships of today without a pause in the current session; role holders who read Aushänge without a membership see the results but cannot answer.
+- An edit stamps closings against the *Gültig bis* the Aushang had before the edit: an add-on closed by an expired Aushang stays closed when the date is extended (closed stays closed; a poll can be reopened).
+- Removing an add-on also drops its undelivered reminder pushes; the `announcement` row has check constraints keeping the Zu-/Absage columns consistent.
 
 ### Phase 6 — Own add-ons on Aushänge (club app)
 Goal: members add and answer add-ons on Aushänge in the app.

@@ -3,6 +3,7 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Club;
+using Furria.Core.Club;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -53,6 +54,7 @@ public sealed class PutOwnCalendarSignUpLine : Endpoint<PutOwnCalendarSignUpLine
         new()
         {
             ActorAccountId = actorAccountId,
+            Host = AddOnHostKind.CalendarEntry,
             SignUpListId = req.SignUpListId,
             Text = req.Text,
         };

@@ -11,9 +11,6 @@ public sealed partial class CalendarService
     private const string NotMeantForYouMessage =
         "Dieser Termin ist nicht für dich gedacht. Antworten können nur die, für die er ist.";
 
-    private static readonly IReadOnlyList<CalendarAttendancePerson> NobodyNamed = [];
-    private static readonly IReadOnlySet<int> NobodyReachable = new HashSet<int>();
-
     private async Task<Result?> AnswerRefusalAsync(
         int actorAccountId,
         CalendarEntryFacts entry,
@@ -72,10 +69,12 @@ public sealed partial class CalendarService
 
         var organises = viewer.Organises;
         var concerned = await ConcernedIdsOfAsync(FactsOf(row), today, ct);
-        var named = organises ? await PeopleNamedAsync(concerned, ct) : NobodyNamed;
+        var named = organises
+            ? await _dbContext.PeopleNamedAsync(concerned, ct)
+            : AddOnConcern.NobodyNamed;
         var reachable = organises
             ? await _dbContext.ReachablePersonIdsAsync(concerned, viewer.PersonId, ct)
-            : NobodyReachable;
+            : AddOnConcern.NobodyReachable;
         var concernedExtras = extras with
         {
             Polls = new Dictionary<int, IReadOnlyList<PlacedPoll>>
@@ -87,10 +86,19 @@ public sealed partial class CalendarService
                         {
                             Details = poll.Details with
                             {
-                                ConcernedCount = ShareTotalOf(concerned, poll.VoterIds),
-                                NotAnswered = organises ? MissingFrom(named, poll.VoterIds) : null,
+                                ConcernedCount = AddOnConcern.ShareTotalOf(
+                                    concerned,
+                                    poll.VoterIds
+                                ),
+                                NotAnswered = organises
+                                    ? AddOnConcern.MissingFrom(named, poll.VoterIds)
+                                    : null,
                                 Reminder = organises
-                                    ? ReminderOf(poll.LastRemindedAt, reachable, poll.VoterIds)
+                                    ? AddOnConcern.ReminderOf(
+                                        poll.LastRemindedAt,
+                                        reachable,
+                                        poll.VoterIds
+                                    )
                                     : null,
                             },
                         }
@@ -107,10 +115,10 @@ public sealed partial class CalendarService
                             Details = WithConcern(list.Details, concerned, named, organises) with
                             {
                                 Reminder = organises
-                                    ? ReminderOf(
+                                    ? AddOnConcern.ReminderOf(
                                         list.LastRemindedAt,
                                         reachable,
-                                        SignedUpIdsOf(list.Details)
+                                        AddOnConcern.SignedUpIdsOf(list.Details)
                                     )
                                     : null,
                             },
@@ -141,9 +149,9 @@ public sealed partial class CalendarService
 
         return new AttendanceRoll(
             answers,
-            organises ? MissingFrom(named, answeredIds) : null,
+            organises ? AddOnConcern.MissingFrom(named, answeredIds) : null,
             organises
-                ? ReminderOf(
+                ? AddOnConcern.ReminderOf(
                     await AttendanceLastRemindedAtAsync(calendarEntryId, ct),
                     reachable,
                     answeredIds
@@ -160,12 +168,12 @@ public sealed partial class CalendarService
         bool organises
     )
     {
-        var signedUpIds = SignedUpIdsOf(list);
+        var signedUpIds = AddOnConcern.SignedUpIdsOf(list);
 
         return list with
         {
-            ConcernedCount = ShareTotalOf(concerned, signedUpIds),
-            NotAnswered = organises ? MissingFrom(named, signedUpIds) : null,
+            ConcernedCount = AddOnConcern.ShareTotalOf(concerned, signedUpIds),
+            NotAnswered = organises ? AddOnConcern.MissingFrom(named, signedUpIds) : null,
         };
     }
 
@@ -178,33 +186,6 @@ public sealed partial class CalendarService
             .Where(entry => entry.Id == calendarEntryId)
             .Select(entry => entry.AttendanceLastRemindedAt)
             .SingleOrDefaultAsync(ct);
-
-    [Pure]
-    private static IReadOnlySet<int> SignedUpIdsOf(SignUpListDetails list) =>
-        list.Lines.Select(line => line.PersonId).ToHashSet();
-
-    [Pure]
-    private static CalendarReminderDetails ReminderOf(
-        DateTimeOffset? lastRemindedAt,
-        IReadOnlySet<int> reachable,
-        IReadOnlySet<int> answeredIds
-    ) =>
-        new()
-        {
-            LastRemindedAt = lastRemindedAt,
-            RemindableFrom = CalendarReminderRules.RemindableFrom(lastRemindedAt),
-            ReachableCount = reachable.Count(personId => !answeredIds.Contains(personId)),
-        };
-
-    [Pure]
-    private static int ShareTotalOf(IReadOnlySet<int> concerned, IReadOnlySet<int> answeredIds) =>
-        concerned.Count + answeredIds.Count(personId => !concerned.Contains(personId));
-
-    [Pure]
-    private static IReadOnlyList<CalendarAttendancePerson> MissingFrom(
-        IReadOnlyList<CalendarAttendancePerson> named,
-        IReadOnlySet<int> answeredIds
-    ) => [.. named.Where(person => !answeredIds.Contains(person.PersonId))];
 
     private sealed record OrganisedOwners(IReadOnlySet<int> GroupIds, bool Club)
     {

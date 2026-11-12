@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Announcements;
 using Furria.Application.Authorization;
+using Furria.Core.Club;
 using Furria.Core.Text;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -16,9 +17,12 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
     private const string Body = "Am Samstag räumen wir gemeinsam den Saal auf.";
     private const string CorrectedTitle = "Saalreinigung fällt aus";
     private const string CorrectedBody = "Der Termin verschiebt sich auf die kommende Woche.";
+    private const string HelperList = "Wer hilft beim Aufbau?";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ValidUntilInMarch = new(2021, 3, 1);
+    private static readonly DateOnly AddOnValidUntil = new(2027, 1, 31);
+    private static readonly DateTimeOffset AddOnNow = new(2027, 1, 15, 12, 0, 0, TimeSpan.Zero);
 
     private static readonly DateTimeOffset PublishedInFebruary = new(
         2021,
@@ -52,6 +56,7 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = CorrectedTitle,
                 Body = CorrectedBody,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
@@ -131,6 +136,7 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = CorrectedTitle,
                 Body = CorrectedBody,
                 ValidUntil = ValidUntilInMarch,
+                AddOns = [],
             }
         );
 
@@ -156,6 +162,7 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = CorrectedTitle,
                 Body = CorrectedBody,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
@@ -178,6 +185,7 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = CorrectedTitle,
                 Body = CorrectedBody,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
@@ -199,6 +207,7 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = CorrectedTitle,
                 Body = CorrectedBody,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
@@ -219,11 +228,172 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = "",
                 Body = CorrectedBody,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Should_DeleteTheAddOnsWithTheirAnswers_When_TheAuthorDropsThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithAddOnsAsync(ct, attendanceClosedAt: null);
+        var announcementId = ctx.Club.Announcements.IdOf("fest");
+
+        var response = await CorrectAddOnsAsync(ctx, []);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Announcement(announcementId)
+            .ToAskForAnswersAt(null, null)
+            .Announcement(announcementId)
+            .ToHaveAnswers()
+            .Poll(ctx.Club.Polls.IdOf("snack"))
+            .ToNotExist()
+            .SignUpList(ctx.Club.SignUpLists.IdOf("helpers"))
+            .ToNotExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheAnswersInTheNewOrder_When_TheAuthorMovesTheAttendance()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithAddOnsAsync(ct, attendanceClosedAt: null);
+        var announcementId = ctx.Club.Announcements.IdOf("fest");
+
+        var response = await CorrectAddOnsAsync(
+            ctx,
+            [KeptSignUpList(ctx.Club.SignUpLists.IdOf("helpers")), Attendance(null)]
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Announcement(announcementId)
+            .ToAskForAnswersAt(1, null)
+            .Announcement(announcementId)
+            .ToHaveAnswers((ctx.Identity.People.IdOf("chris"), AttendanceAnswer.Yes))
+            .Announcement(announcementId)
+            .ToHaveSignUpLists(HelperList)
+            .Poll(ctx.Club.Polls.IdOf("snack"))
+            .ToNotExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseANewDeadline_When_TheAttendanceIsClosed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithAddOnsAsync(ct, attendanceClosedAt: AddOnNow.AddHours(-1));
+        var announcementId = ctx.Club.Announcements.IdOf("fest");
+
+        var response = await CorrectAddOnsAsync(ctx, [Attendance(AddOnNow.AddDays(2))]);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx.Expected.Announcement(announcementId).ToAskForAnswersAt(0, null).AssertAsync(ct);
+    }
+
+    private async Task<HttpResponseMessage> CorrectAddOnsAsync(
+        SeededContext ctx,
+        IReadOnlyList<PutAnnouncementAddOnDataDto> addOns
+    )
+    {
+        HttpResponseMessage? response = null;
+        await _fixture.AtInstantAsync(
+            AddOnNow,
+            async () =>
+            {
+                var client = await ctx.Identity.SignInAgainAsync("alice");
+                response = await client.PUTAsync<PutAnnouncement, PutAnnouncementRequest>(
+                    new()
+                    {
+                        AnnouncementId = ctx.Club.Announcements.IdOf("fest"),
+                        Title = Title,
+                        Body = Body,
+                        ValidUntil = AddOnValidUntil,
+                        AddOns = addOns,
+                    }
+                );
+            }
+        );
+
+        return response ?? throw new InvalidOperationException("No response.");
+    }
+
+    private static PutAnnouncementAddOnDataDto Attendance(DateTimeOffset? answersUntil) =>
+        new()
+        {
+            Kind = AnnouncementAddOnKind.Attendance,
+            Attendance = new() { AnswersUntil = answersUntil },
+            Poll = null,
+            SignUpList = null,
+        };
+
+    private static PutAnnouncementAddOnDataDto KeptSignUpList(int signUpListId) =>
+        new()
+        {
+            Kind = AnnouncementAddOnKind.SignUpList,
+            Attendance = null,
+            Poll = null,
+            SignUpList = new()
+            {
+                SignUpListId = signUpListId,
+                Title = HelperList,
+                Hint = null,
+                SignUpUntil = null,
+            },
+        };
+
+    private Task<SeededContext> BuildWithAddOnsAsync(
+        CancellationToken ct,
+        DateTimeOffset? attendanceClosedAt
+    ) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("alice", "Alice", "Muster")
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                            .AddPerson("chris", "Chris", "Leser")
+                            .AddAccount("chris")
+                            .AddMembership("chris-first", "chris", JoinedIn2017)
+                    )
+                    .Club(club =>
+                        club.AddAnnouncement(
+                                "fest",
+                                "alice",
+                                Title,
+                                Body,
+                                AddOnNow.AddDays(-2),
+                                AddOnValidUntil,
+                                new AnnouncementAttendanceIntent(
+                                    Position: 0,
+                                    ClosedAt: attendanceClosedAt
+                                )
+                            )
+                            .AddAnnouncementResponse(
+                                "chris-fest",
+                                "fest",
+                                "chris",
+                                AttendanceAnswer.Yes
+                            )
+                            .AddAnnouncementPoll(
+                                "snack",
+                                "fest",
+                                "Was bringst du mit?",
+                                ["Kuchen", "Obst"],
+                                position: 1
+                            )
+                            .AddCalendarPollVote("snack", "Kuchen", "chris")
+                            .AddAnnouncementSignUpList("helpers", "fest", HelperList, position: 2)
+                            .AddCalendarSignUpLine("chris-helps", "helpers", "chris", "Bänke")
+                    ),
+            ct
+        );
 
     private static Task<HttpResponseMessage> CorrectBodyAsync(
         HttpClient client,
@@ -237,6 +407,7 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
                 Title = CorrectedTitle,
                 Body = body,
                 ValidUntil = null,
+                AddOns = [],
             }
         );
 

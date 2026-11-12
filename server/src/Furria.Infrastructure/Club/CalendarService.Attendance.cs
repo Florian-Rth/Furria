@@ -55,24 +55,6 @@ public sealed partial class CalendarService
         return ConcernedIdsOf(entry, ties).ToHashSet();
     }
 
-    private Task<List<CalendarAttendancePerson>> PeopleNamedAsync(
-        IReadOnlySet<int> personIds,
-        CancellationToken ct
-    ) =>
-        _dbContext
-            .People.AsNoTracking()
-            .Where(person => personIds.Contains(person.Id))
-            .OrderBy(person => EF.Functions.Collate(person.FirstName, GermanCollation.Name))
-            .ThenBy(person => EF.Functions.Collate(person.LastName, GermanCollation.Name))
-            .ThenBy(person => person.Id)
-            .Select(person => new CalendarAttendancePerson
-            {
-                PersonId = person.Id,
-                FirstName = person.FirstName,
-                LastName = person.LastName,
-            })
-            .ToListAsync(ct);
-
     [Pure]
     private static List<int> ConcernedIdsOf(
         CalendarEntryFacts entry,

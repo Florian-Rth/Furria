@@ -1,9 +1,12 @@
+using System.Diagnostics.Contracts;
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Endpoints.Calendar;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
+using Furria.Core.Club;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Announcements;
@@ -52,10 +55,45 @@ public sealed class PostAnnouncement : Endpoint<PostAnnouncementRequest, PostAnn
             Title = req.Title,
             Body = req.Body,
             ValidUntil = req.ValidUntil,
+            AddOns = [.. req.AddOns.Select(ToInput)],
         };
 
     private static PostAnnouncementResponse ToResponse(int announcementId) =>
         new() { AnnouncementId = announcementId };
+
+    private static AnnouncementAddOnInput ToInput(PostAnnouncementAddOnDataDto addOn) =>
+        new()
+        {
+            Kind = addOn.Kind,
+            Attendance = addOn.Attendance is { } attendance
+                ? new AnnouncementAttendanceInput { AnswersUntil = attendance.AnswersUntil }
+                : null,
+            Poll = addOn.Poll is { } poll ? ToInput(poll) : null,
+            SignUpList = addOn.SignUpList is { } list ? ToInput(list) : null,
+        };
+
+    private static SignUpListInput ToInput(PostAnnouncementSignUpListDataDto list) =>
+        new()
+        {
+            SignUpListId = list.SignUpListId,
+            Title = list.Title,
+            Hint = list.Hint,
+            SignUpUntil = list.SignUpUntil,
+        };
+
+    private static PollInput ToInput(PostAnnouncementPollDataDto poll) =>
+        new()
+        {
+            PollId = poll.PollId,
+            Question = poll.Question,
+            AllowsMultipleChoices = poll.AllowsMultipleChoices,
+            IsAnonymous = poll.IsAnonymous,
+            VotesUntil = poll.VotesUntil,
+            Options = [.. poll.Options.Select(ToInput)],
+        };
+
+    private static PollOptionInput ToInput(PostAnnouncementPollOptionDataDto option) =>
+        new() { OptionId = option.OptionId, Label = option.Label };
 }
 
 public sealed record PostAnnouncementRequest
@@ -65,18 +103,249 @@ public sealed record PostAnnouncementRequest
     public required string Body { get; init; }
 
     public required DateOnly? ValidUntil { get; init; }
+
+    public required IReadOnlyList<PostAnnouncementAddOnDataDto> AddOns { get; init; }
 }
 
 public sealed class PostAnnouncementValidator : Validator<PostAnnouncementRequest>
 {
+    private const string AddOnTwiceMessage =
+        "Ein Aushang trägt höchstens eine Zu-/Absage und jede Funktion nur einmal.";
+    private const string TooManyAddOnsMessage = "Ein Aushang trägt höchstens 30 Funktionen.";
+
     public PostAnnouncementValidator()
     {
         RuleFor(request => request.Title).NotEmpty().MaximumLength(AnnouncementLimits.TitleLength);
         RuleFor(request => request.Body).NotEmpty().MaximumLength(AnnouncementLimits.BodyLength);
+        RuleFor(request => request.AddOns).NotNull();
+        RuleFor(request => request.AddOns.Count)
+            .LessThanOrEqualTo(CalendarLimits.MaxAddOns)
+            .When(request => request.AddOns is not null)
+            .WithMessage(TooManyAddOnsMessage);
+        RuleForEach(request => request.AddOns)
+            .NotNull()
+            .SetValidator(new PostAnnouncementAddOnDataValidator());
+        RuleFor(request => request.AddOns)
+            .Must(EachAddOnOnce)
+            .When(request => request.AddOns is not null)
+            .WithMessage(AddOnTwiceMessage);
+    }
+
+    [Pure]
+    private static bool EachAddOnOnce(IReadOnlyList<PostAnnouncementAddOnDataDto> addOns)
+    {
+        var attendanceCount = addOns.Count(addOn =>
+            addOn?.Kind == AnnouncementAddOnKind.Attendance
+        );
+        var pollIds = addOns.Select(addOn => addOn?.Poll?.PollId).OfType<int>().ToList();
+        var signUpListIds = addOns
+            .Select(addOn => addOn?.SignUpList?.SignUpListId)
+            .OfType<int>()
+            .ToList();
+
+        return attendanceCount <= 1
+            && pollIds.Distinct().Count() == pollIds.Count
+            && signUpListIds.Distinct().Count() == signUpListIds.Count;
     }
 }
 
 public sealed record PostAnnouncementResponse
 {
     public required int AnnouncementId { get; init; }
+}
+
+public sealed record PostAnnouncementAddOnDataDto
+{
+    public required AnnouncementAddOnKind Kind { get; init; }
+
+    public required PostAnnouncementAttendanceDataDto? Attendance { get; init; }
+
+    public required PostAnnouncementPollDataDto? Poll { get; init; }
+
+    public required PostAnnouncementSignUpListDataDto? SignUpList { get; init; }
+}
+
+public sealed record PostAnnouncementAttendanceDataDto
+{
+    public required DateTimeOffset? AnswersUntil { get; init; }
+}
+
+public sealed record PostAnnouncementSignUpListDataDto
+{
+    public required int? SignUpListId { get; init; }
+
+    public required string Title { get; init; }
+
+    public required string? Hint { get; init; }
+
+    public required DateTimeOffset? SignUpUntil { get; init; }
+}
+
+public sealed record PostAnnouncementPollDataDto
+{
+    public required int? PollId { get; init; }
+
+    public required string Question { get; init; }
+
+    public required bool AllowsMultipleChoices { get; init; }
+
+    public required bool IsAnonymous { get; init; }
+
+    public required DateTimeOffset? VotesUntil { get; init; }
+
+    public required IReadOnlyList<PostAnnouncementPollOptionDataDto> Options { get; init; }
+}
+
+public sealed record PostAnnouncementPollOptionDataDto
+{
+    public required int? OptionId { get; init; }
+
+    public required string Label { get; init; }
+}
+
+public sealed class PostAnnouncementAddOnDataValidator
+    : AbstractValidator<PostAnnouncementAddOnDataDto>
+{
+    private const string UnknownAddOnMessage = "Diese Funktion gibt es nicht.";
+    private const string AttendanceWithoutDataMessage = "Die Zu-/Absage braucht ihre Angaben.";
+    private const string AttendanceOutsideAttendanceMessage =
+        "Nur eine Zu-/Absage trägt eine Antwortfrist.";
+    private const string PollWithoutQuestionMessage = "Die Umfrage braucht eine Frage.";
+    private const string PollOutsideAPollMessage = "Nur eine Umfrage trägt Fragen und Antworten.";
+    private const string SignUpListWithoutTitleMessage = "Die Eintragsliste braucht einen Titel.";
+    private const string SignUpListOutsideAListMessage =
+        "Nur eine Eintragsliste trägt Titel und Hinweis.";
+
+    public PostAnnouncementAddOnDataValidator()
+    {
+        RuleFor(addOn => addOn.Kind).IsInEnum().WithMessage(UnknownAddOnMessage);
+        RuleFor(addOn => addOn.Attendance)
+            .NotNull()
+            .When(addOn => addOn.Kind == AnnouncementAddOnKind.Attendance)
+            .WithMessage(AttendanceWithoutDataMessage);
+        RuleFor(addOn => addOn.Attendance)
+            .Null()
+            .When(addOn => addOn.Kind != AnnouncementAddOnKind.Attendance)
+            .WithMessage(AttendanceOutsideAttendanceMessage);
+        RuleFor(addOn => addOn.Poll)
+            .NotNull()
+            .When(addOn => addOn.Kind == AnnouncementAddOnKind.Poll)
+            .WithMessage(PollWithoutQuestionMessage);
+        RuleFor(addOn => addOn.Poll)
+            .Null()
+            .When(addOn => addOn.Kind != AnnouncementAddOnKind.Poll)
+            .WithMessage(PollOutsideAPollMessage);
+        RuleFor(addOn => addOn.Poll!)
+            .SetValidator(new PostAnnouncementPollDataValidator())
+            .When(addOn => addOn.Poll is not null);
+        RuleFor(addOn => addOn.SignUpList)
+            .NotNull()
+            .When(addOn => addOn.Kind == AnnouncementAddOnKind.SignUpList)
+            .WithMessage(SignUpListWithoutTitleMessage);
+        RuleFor(addOn => addOn.SignUpList)
+            .Null()
+            .When(addOn => addOn.Kind != AnnouncementAddOnKind.SignUpList)
+            .WithMessage(SignUpListOutsideAListMessage);
+        RuleFor(addOn => addOn.SignUpList!)
+            .SetValidator(new PostAnnouncementSignUpListDataValidator())
+            .When(addOn => addOn.SignUpList is not null);
+    }
+}
+
+public sealed class PostAnnouncementSignUpListDataValidator
+    : AbstractValidator<PostAnnouncementSignUpListDataDto>
+{
+    private const string UnknownSignUpListMessage = "Diese Eintragsliste gibt es nicht.";
+    private const string TitleMissingMessage = "Die Eintragsliste braucht einen Titel.";
+    private const string TitleTooLongMessage = "Ein Listentitel hat höchstens 120 Zeichen.";
+    private const string HintTooLongMessage = "Ein Hinweis hat höchstens 300 Zeichen.";
+
+    public PostAnnouncementSignUpListDataValidator()
+    {
+        RuleFor(list => list.SignUpListId)
+            .GreaterThan(0)
+            .When(list => list.SignUpListId is not null)
+            .WithMessage(UnknownSignUpListMessage);
+        RuleFor(list => list.Title)
+            .Cascade(CascadeMode.Stop)
+            .Must(title => !string.IsNullOrWhiteSpace(title))
+            .WithMessage(TitleMissingMessage)
+            .Must(title => title.Trim().Length <= CalendarLimits.SignUpListTitleLength)
+            .WithMessage(TitleTooLongMessage);
+        RuleFor(list => list.Hint)
+            .Must(hint => hint is null || hint.Trim().Length <= CalendarLimits.SignUpListHintLength)
+            .WithMessage(HintTooLongMessage);
+    }
+}
+
+public sealed class PostAnnouncementPollDataValidator
+    : AbstractValidator<PostAnnouncementPollDataDto>
+{
+    private const string UnknownPollMessage = "Diese Umfrage gibt es nicht.";
+    private const string UnknownOptionMessage = "Diese Antwort gibt es nicht.";
+    private const string QuestionMissingMessage = "Die Umfrage braucht eine Frage.";
+    private const string QuestionTooLongMessage = "Eine Frage hat höchstens 200 Zeichen.";
+    private const string LabelMissingMessage = "Jede Antwort braucht einen Text.";
+    private const string LabelTooLongMessage = "Eine Antwort hat höchstens 120 Zeichen.";
+    private const string OptionCountMessage = "Eine Umfrage hat 2 bis 20 Antworten.";
+    private const string LabelTwiceMessage = "Jede Antwort kann nur einmal vorkommen.";
+
+    public PostAnnouncementPollDataValidator()
+    {
+        RuleFor(poll => poll.PollId)
+            .GreaterThan(0)
+            .When(poll => poll.PollId is not null)
+            .WithMessage(UnknownPollMessage);
+        RuleFor(poll => poll.Question)
+            .Cascade(CascadeMode.Stop)
+            .Must(question => !string.IsNullOrWhiteSpace(question))
+            .WithMessage(QuestionMissingMessage)
+            .MaximumLength(CalendarLimits.PollQuestionLength)
+            .WithMessage(QuestionTooLongMessage);
+        RuleFor(poll => poll.Options).NotNull();
+        RuleFor(poll => poll.Options.Count)
+            .InclusiveBetween(CalendarLimits.PollMinOptions, CalendarLimits.PollMaxOptions)
+            .When(poll => poll.Options is not null)
+            .WithMessage(OptionCountMessage);
+        RuleForEach(poll => poll.Options)
+            .Cascade(CascadeMode.Stop)
+            .Must(option => option is not null && !string.IsNullOrWhiteSpace(option.Label))
+            .WithMessage(LabelMissingMessage)
+            .Must(option => option.Label.Length <= CalendarLimits.PollOptionLabelLength)
+            .WithMessage(LabelTooLongMessage)
+            .Must(option => option.OptionId is not { } optionId || optionId > 0)
+            .WithMessage(UnknownOptionMessage);
+        RuleFor(poll => poll.Options)
+            .Must(EachLabelOnce)
+            .When(poll => poll.Options is not null && poll.Options.All(HasLabel))
+            .WithMessage(LabelTwiceMessage);
+        RuleFor(poll => poll.Options)
+            .Must(EachOptionOnce)
+            .When(poll => poll.Options is not null && poll.Options.All(HasLabel))
+            .WithMessage(UnknownOptionMessage);
+        RuleFor(poll => poll.Options)
+            .Must(options => options.All(option => option.OptionId is null))
+            .When(poll =>
+                poll.PollId is null && poll.Options is not null && poll.Options.All(HasLabel)
+            )
+            .WithMessage(UnknownOptionMessage);
+    }
+
+    [Pure]
+    private static bool HasLabel(PostAnnouncementPollOptionDataDto? option) =>
+        option?.Label is not null;
+
+    [Pure]
+    private static bool EachLabelOnce(IReadOnlyList<PostAnnouncementPollOptionDataDto> options) =>
+        options
+            .Select(option => option.Label.Trim().ToLowerInvariant())
+            .Distinct(StringComparer.Ordinal)
+            .Count() == options.Count;
+
+    [Pure]
+    private static bool EachOptionOnce(IReadOnlyList<PostAnnouncementPollOptionDataDto> options)
+    {
+        var held = options.Select(option => option.OptionId).OfType<int>().ToList();
+        return held.Distinct().Count() == held.Count;
+    }
 }

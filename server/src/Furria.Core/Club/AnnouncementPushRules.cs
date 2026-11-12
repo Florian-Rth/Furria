@@ -12,6 +12,14 @@ public static class AnnouncementPushRules
         validUntil is not { } lastDay || lastDay >= ClubClock.DayOf(now);
 
     [Pure]
+    public static TimeSpan ReminderTimeToLive(DateTimeOffset? closesAt, DateTimeOffset now) =>
+        closesAt is { } closing
+            ? TimeSpan.FromTicks(
+                Math.Clamp((closing - now).Ticks, ShortestTimeToLive.Ticks, LongestTimeToLive.Ticks)
+            )
+            : LongestTimeToLive;
+
+    [Pure]
     public static TimeSpan TimeToLive(DateOnly? validUntil, DateTimeOffset now) =>
         validUntil is { } lastDay
             ? TimeSpan.FromTicks(

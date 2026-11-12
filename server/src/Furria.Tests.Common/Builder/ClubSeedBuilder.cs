@@ -155,11 +155,87 @@ public sealed class ClubSeedBuilder
         string title,
         string body,
         DateTimeOffset? publishedAt = null,
-        DateOnly? validUntil = null
+        DateOnly? validUntil = null,
+        AnnouncementAttendanceIntent? attendance = null
     )
     {
         _announcements.Add(
-            new AnnouncementIntent(alias, authorPersonAlias, title, body, publishedAt, validUntil)
+            new AnnouncementIntent(
+                alias,
+                authorPersonAlias,
+                title,
+                body,
+                publishedAt,
+                validUntil,
+                attendance
+            )
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddAnnouncementResponse(
+        string alias,
+        string announcementAlias,
+        string personAlias,
+        AttendanceAnswer answer
+    )
+    {
+        _attendanceResponses.Add(
+            new AttendanceResponseIntent(alias, null, personAlias, answer, null, announcementAlias)
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddAnnouncementPoll(
+        string alias,
+        string announcementAlias,
+        string question,
+        IReadOnlyList<string> options,
+        bool isAnonymous = false,
+        DateTimeOffset? votesUntil = null,
+        DateTimeOffset? closedAt = null,
+        int position = DefaultPollPosition
+    )
+    {
+        _calendarPolls.Add(
+            new CalendarPollIntent(
+                alias,
+                null,
+                question,
+                options,
+                AllowsMultipleChoices: false,
+                isAnonymous,
+                votesUntil,
+                closedAt,
+                position,
+                ClosedByAlias: null,
+                announcementAlias
+            )
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddAnnouncementSignUpList(
+        string alias,
+        string announcementAlias,
+        string title,
+        DateTimeOffset? signUpUntil = null,
+        DateTimeOffset? closedAt = null,
+        int position = DefaultSignUpListPosition
+    )
+    {
+        _calendarSignUpLists.Add(
+            new CalendarSignUpListIntent(
+                alias,
+                null,
+                title,
+                Hint: null,
+                signUpUntil,
+                closedAt,
+                position,
+                ClosedByAlias: null,
+                announcementAlias
+            )
         );
         return this;
     }
@@ -519,7 +595,8 @@ public sealed class ClubSeedBuilder
         string Title,
         string Body,
         DateTimeOffset? PublishedAt,
-        DateOnly? ValidUntil
+        DateOnly? ValidUntil,
+        AnnouncementAttendanceIntent? Attendance
     );
 
     internal sealed record KeyHoldingIntent(
@@ -579,15 +656,16 @@ public sealed class ClubSeedBuilder
 
     internal sealed record AttendanceResponseIntent(
         string Alias,
-        string CalendarEntryAlias,
+        string? CalendarEntryAlias,
         string PersonAlias,
         AttendanceAnswer Answer,
-        string? RecordedByAlias
+        string? RecordedByAlias,
+        string? AnnouncementAlias = null
     );
 
     internal sealed record CalendarPollIntent(
         string Alias,
-        string CalendarEntryAlias,
+        string? CalendarEntryAlias,
         string Question,
         IReadOnlyList<string> Options,
         bool AllowsMultipleChoices,
@@ -595,7 +673,8 @@ public sealed class ClubSeedBuilder
         DateTimeOffset? VotesUntil,
         DateTimeOffset? ClosedAt,
         int Position,
-        string? ClosedByAlias
+        string? ClosedByAlias,
+        string? AnnouncementAlias = null
     );
 
     internal sealed record CalendarPollVoteIntent(
@@ -606,13 +685,14 @@ public sealed class ClubSeedBuilder
 
     internal sealed record CalendarSignUpListIntent(
         string Alias,
-        string CalendarEntryAlias,
+        string? CalendarEntryAlias,
         string Title,
         string? Hint,
         DateTimeOffset? SignUpUntil,
         DateTimeOffset? ClosedAt,
         int Position,
-        string? ClosedByAlias
+        string? ClosedByAlias,
+        string? AnnouncementAlias = null
     );
 
     internal sealed record CalendarDayScheduleIntent(
