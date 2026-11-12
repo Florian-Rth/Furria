@@ -294,6 +294,9 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   ],
   announcements: [
     'announcement',
+    'attendanceResponse',
+    'calendarPollVote',
+    'calendarSignUpLine',
     'person',
     'picture',
     'membership',

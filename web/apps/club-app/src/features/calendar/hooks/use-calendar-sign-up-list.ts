@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMeQuery } from '@/features/session/api';
 import { ATTENDANCE_ROLL_LABELS } from '@/lib/calendar-copy';
+import type { AddOnAnswering } from '../add-on-host';
 import { useOwnSignUpLineDeletionMutation, useOwnSignUpLineMutation } from '../api';
 import {
   toLineCountLabel,
@@ -21,7 +22,7 @@ import {
   toSignUpLineRows,
   toViewerLine,
 } from '../calendar-sign-up-lists';
-import type { CalendarEntry, CalendarSignUpList } from '../schemas';
+import type { CalendarSignUpList } from '../schemas';
 import type { CalendarSignUpLineRemovalControl } from './use-calendar-sign-up-line-removal';
 import type { NamesSheetControl } from './use-names-sheet';
 import { useNamesSheet } from './use-names-sheet';
@@ -74,10 +75,9 @@ const toHeldText = (list: CalendarSignUpList): string => toViewerLine(list)?.tex
 export const useCalendarSignUpList = (
   list: CalendarSignUpList,
   mayModerate: boolean,
-  entry: Pick<CalendarEntry, 'calendarEntryId' | 'mayAnswer'>,
+  { host, mayAnswer }: AddOnAnswering,
   removal: CalendarSignUpLineRemovalControl,
 ): CalendarSignUpListControl => {
-  const mayAnswer = entry.mayAnswer;
   const saving = useOwnSignUpLineMutation();
   const deleting = useOwnSignUpLineDeletionMutation();
   const heldText = toHeldText(list);
@@ -149,7 +149,7 @@ export const useCalendarSignUpList = (
     tabs: openTab === null ? [linesTab] : [linesTab, openTab],
     openTab,
     sheet,
-    reminder: toSignUpListReminderSource(entry.calendarEntryId, list),
+    reminder: toSignUpListReminderSource(host, list),
     title: list.title,
     count: toSignUpListCountLabel(list),
     note: toSignUpListNoteLabel(list),
@@ -167,7 +167,11 @@ export const useCalendarSignUpList = (
         return;
       }
 
-      saving.mutate({ signUpListId: list.signUpListId, text: toLineText(draft) });
+      saving.mutate({
+        hostKind: host.kind,
+        signUpListId: list.signUpListId,
+        text: toLineText(draft),
+      });
     },
     edit: () => {
       setIsEditing(true);
@@ -181,7 +185,7 @@ export const useCalendarSignUpList = (
         return;
       }
 
-      deleting.mutate({ signUpListId: list.signUpListId });
+      deleting.mutate({ hostKind: host.kind, signUpListId: list.signUpListId });
     },
   };
 };

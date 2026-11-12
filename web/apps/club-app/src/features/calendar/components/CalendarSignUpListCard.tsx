@@ -5,19 +5,18 @@ import { KkTextArea } from '@furria/ui/KkTextArea';
 import { KkTextField } from '@furria/ui/KkTextField';
 import { KkTimeField } from '@furria/ui/KkTimeField';
 import type { ChangeEvent, FC } from 'react';
+import type { AddOnCardsEditor } from '../add-on-cards-editor';
 import { CALENDAR_ADD_ON_ICONS, CALENDAR_ADD_ON_LABELS } from '../calendar-add-ons';
 import {
   SIGN_UP_LIST_HINT_MAX_LENGTH,
   SIGN_UP_LIST_TITLE_MAX_LENGTH,
 } from '../calendar-sign-up-lists';
-import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import { useCalendarSignUpListCard } from '../hooks/use-calendar-sign-up-list-card';
-import type { CalendarEntry, CalendarSignUpListForm } from '../schemas';
+import type { CalendarEntryAddOn, CalendarSignUpListForm } from '../schemas';
 
 const TITLE_LABEL = 'Titel';
 const HINT_LABEL = 'Hinweis';
 const DEADLINE_DAY_LABEL = 'Eintragen bis';
-const DEADLINE_EMPTY_LABEL = 'Bis zum Beginn';
 const DEADLINE_TIME_LABEL = 'Uhrzeit';
 const HINT_ROWS = 2;
 
@@ -25,8 +24,9 @@ interface CalendarSignUpListCardProps {
   cardKey: string;
   index: number;
   list: CalendarSignUpListForm;
-  control: CalendarEntryEditorControl;
-  entry: CalendarEntry | null;
+  editor: AddOnCardsEditor;
+  held: readonly CalendarEntryAddOn[] | null;
+  deadlineEmptyLabel: string;
   onRemove: () => void;
 }
 
@@ -34,11 +34,12 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
   cardKey,
   index,
   list,
-  control,
-  entry,
+  editor,
+  held,
+  deadlineEmptyLabel,
   onRemove,
 }) => {
-  const card = useCalendarSignUpListCard({ control, cardKey, index, list, entry });
+  const card = useCalendarSignUpListCard({ editor, cardKey, index, list, held });
 
   const changeTitle = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     card.setTitle(event.target.value);
@@ -83,7 +84,7 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
             value={list.signUpUntilDay}
             onChange={card.setSignUpUntilDay}
             allowEmpty
-            emptyLabel={DEADLINE_EMPTY_LABEL}
+            emptyLabel={deadlineEmptyLabel}
             disabled={card.isFrozen}
           />
         }

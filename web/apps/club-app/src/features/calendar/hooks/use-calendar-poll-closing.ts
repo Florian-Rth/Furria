@@ -3,7 +3,7 @@ import { usePollClosingMutation, usePollReopeningMutation } from '../api';
 import { toPollCloseQuestion } from '../calendar-labels';
 import { mayClosePoll, mayReopenPoll } from '../calendar-polls';
 import type { CalendarConfirmCopy } from '../components/CalendarConfirmDialog';
-import type { CalendarPoll } from '../schemas';
+import type { AddOnHostKind, CalendarPoll } from '../schemas';
 
 const CLOSE_COPY: Omit<CalendarConfirmCopy, 'question'> = {
   eyebrow: 'UMFRAGE BEENDEN',
@@ -24,15 +24,17 @@ export interface CalendarPollClosingControl {
 }
 
 interface CalendarPollClosingInput {
+  hostKind: AddOnHostKind;
   poll: CalendarPoll;
   mayClose: boolean;
-  startsAt: string;
+  reopensUntil: string | null;
 }
 
 export const useCalendarPollClosing = ({
+  hostKind,
   poll,
   mayClose,
-  startsAt,
+  reopensUntil,
 }: CalendarPollClosingInput): CalendarPollClosingControl => {
   const closing = usePollClosingMutation();
   const reopening = usePollReopeningMutation();
@@ -43,12 +45,12 @@ export const useCalendarPollClosing = ({
     isClosing: closing.isPending,
     closeCopy: { ...CLOSE_COPY, question: toPollCloseQuestion(poll.question) },
     close: () => {
-      closing.mutate({ pollId: poll.pollId });
+      closing.mutate({ hostKind, pollId: poll.pollId });
     },
-    canReopen: mayReopenPoll({ poll, mayClose, startsAt, nowMs }),
+    canReopen: mayReopenPoll({ poll, mayClose, reopensUntil, nowMs }),
     isReopening: reopening.isPending,
     reopen: () => {
-      reopening.mutate({ pollId: poll.pollId });
+      reopening.mutate({ hostKind, pollId: poll.pollId });
     },
   };
 };

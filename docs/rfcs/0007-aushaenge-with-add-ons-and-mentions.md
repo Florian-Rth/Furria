@@ -1,7 +1,7 @@
 ---
 rfc: 0007
 title: Aushänge with add-ons, mentions and a push
-status: in progress (phases 1–5 done)
+status: in progress (phases 1–6 done)
 github_issue: 80
 branch: feat/rfc-80-aushaenge
 created: 2026-11-12
@@ -146,11 +146,22 @@ Decisions taken in phase 5:
 
 ### Phase 6 — Own add-ons on Aushänge (club app)
 Goal: members add and answer add-ons on Aushänge in the app.
-- [ ] Extract the calendar add-on cards, sheet and detail parts so they take a host (calendar unchanged)
-- [ ] Aushang form: *Funktion hinzufügen* with Zu-/Absage, Umfrage, Eintragsliste and *Antworten bis*
-- [ ] Aushang screen: answer in place, results, managers' not-answered, close / reopen / *Erinnern*
-- [ ] Withdraw confirm names the answers lost
-- [ ] Pure tests for any new logic
+- [x] Extract the calendar add-on cards, sheet and detail parts so they take a host (calendar unchanged)
+- [x] Aushang form: *Funktion hinzufügen* with Zu-/Absage, Umfrage, Eintragsliste and *Antworten bis*
+- [x] Aushang screen: answer in place, results, managers' not-answered, close / reopen / *Erinnern*
+- [x] Withdraw confirm names the answers lost
+- [x] Pure tests for any new logic
+
+Decisions taken in phase 6:
+- The shared parts stay in `features/calendar` under their names; the seam is `AddOnHost` (calendar entry or Aushang) in the zod schemas and `AddOnAnswering` (host + may answer). Poll and sign-up list requests pick `/api/calendar/…` or `/api/announcements/…` by host kind; reminder targets carry the host.
+- Editor cards take an `AddOnCardsEditor` (update, recheck, error lookup, deadline fallback time) instead of the calendar form; each host's editor hook subscribes to its `addOns` errors once. The *Funktion hinzufügen* sheet and the removal dialog take plain props; `useCalendarAddOns` takes offered kinds, attach, detach and the discarded-answer count.
+- Poll reopening takes `reopensUntil` (entry start; end of the *Gültig bis* day; open-ended when the Aushang has none).
+- Aushang deadlines (*Antworten bis*, *Abstimmen bis*, *Eintragen bis*) may not lie after the end of the *Gültig bis* day; an empty deadline reads *Solange der Aushang hängt*; a picked day defaults to 20:00.
+- The Aushang Zu-/Absage answers through its own mutation (no pending-answer sharing with the calendar board); managers can close it by hand from the reading screen.
+- The Aushang list read now also refreshes on `attendanceResponse`, `calendarPollVote` and `calendarSignUpLine` changes, which the server emits for Aushang answers too.
+- The removal dialog eyebrow says *Funktion*, not *Baustein*.
+- A held deadline left unchanged is never flagged as after *Gültig bis* (a closed add-on cannot change it; the server closes at whichever comes first).
+- Poll and list close/reopen also refresh the Aushang read (`announcement` change).
 
 ### Phase 7 — Taken-over calendar add-ons
 Goal: an Aushang shows and answers a calendar entry's add-ons.

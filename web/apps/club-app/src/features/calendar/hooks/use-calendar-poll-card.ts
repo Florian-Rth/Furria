@@ -1,8 +1,7 @@
-import { useFormState } from 'react-hook-form';
+import type { AddOnCardsEditor } from '../add-on-cards-editor';
 import { nextFreshKey } from '../calendar-add-ons';
 import { hasNoDeadline } from '../calendar-deadlines';
 import type { CalendarFieldError } from '../calendar-field-error';
-import { toFieldError } from '../calendar-field-error';
 import {
   toPollCardMetaLabel,
   toPollOptionFieldLabel,
@@ -10,7 +9,6 @@ import {
   toPollRemoveLabel,
   toVotesLabel,
 } from '../calendar-labels';
-import type { PollFieldPath } from '../calendar-polls';
 import {
   isOptionLocked,
   toHeldPoll,
@@ -20,8 +18,7 @@ import {
   withoutOption,
   withVotesUntilDay,
 } from '../calendar-polls';
-import type { CalendarEntry, CalendarPollForm } from '../schemas';
-import type { CalendarEntryEditorControl } from './use-calendar-entry-editor';
+import type { CalendarEntryAddOn, CalendarPollForm } from '../schemas';
 
 export interface CalendarPollOptionRowControl {
   key: string;
@@ -65,31 +62,29 @@ export interface CalendarPollCardControl {
 }
 
 interface CalendarPollCardInput {
-  control: CalendarEntryEditorControl;
+  editor: AddOnCardsEditor;
   cardKey: string;
   index: number;
   poll: CalendarPollForm;
-  entry: CalendarEntry | null;
+  held: readonly CalendarEntryAddOn[] | null;
 }
 
 export const useCalendarPollCard = ({
-  control,
+  editor,
   cardKey,
   index,
   poll,
-  entry,
+  held: heldAddOns,
 }: CalendarPollCardInput): CalendarPollCardControl => {
   const questionPath = `addOns.${index}.poll.question` as const;
   const deadlinePath = `addOns.${index}.poll.votesUntilTime` as const;
   const optionsPath = `addOns.${index}.poll.options` as const;
-  const formState = useFormState({ control: control.form.control, name: `addOns.${index}` });
-  const errorAt = (path: PollFieldPath): CalendarFieldError =>
-    toFieldError(control.form.getFieldState(path, formState).error?.message);
-  const held = toHeldPoll(entry?.addOns ?? null, poll.pollId);
+  const errorAt = editor.addOnErrorAt;
+  const held = toHeldPoll(heldAddOns, poll.pollId);
   const locks = toPollFormLocks(held, poll);
 
   const change = (edit: (current: CalendarPollForm) => CalendarPollForm): void => {
-    control.updatePoll(cardKey, edit);
+    editor.updatePoll(cardKey, edit);
   };
 
   const rows = poll.options.map((option, optionIndex): CalendarPollOptionRowControl => {
@@ -110,11 +105,11 @@ export const useCalendarPollCard = ({
       error: errorAt(labelPath),
       setLabel: (label) => {
         change((current) => withOptionLabel(current, option.key, label));
-        control.recheckPollField(labelPath);
+        editor.recheckPollField(labelPath);
       },
       remove: () => {
         change((current) => withoutOption(current, option.key));
-        control.forgetPollErrors(optionsPath);
+        editor.forgetPollErrors(optionsPath);
       },
     };
   });
@@ -138,7 +133,7 @@ export const useCalendarPollCard = ({
     isAnonymityLocked: locks.isAnonymityLocked,
     setQuestion: (question) => {
       change((current) => ({ ...current, question }));
-      control.recheckPollField(questionPath);
+      editor.recheckPollField(questionPath);
     },
     addOption: () => {
       change((current) => withAddedOption(current, nextFreshKey()));
@@ -150,14 +145,14 @@ export const useCalendarPollCard = ({
       change((current) => ({ ...current, isAnonymous: anonymous }));
     },
     setVotesUntilDay: (day) => {
-      const fallbackTime = control.form.getValues('startTime');
+      const fallbackTime = editor.deadlineFallbackTime();
 
       change((current) => withVotesUntilDay(current, day, fallbackTime));
-      control.recheckPollField(deadlinePath);
+      editor.recheckPollField(deadlinePath);
     },
     setVotesUntilTime: (time) => {
       change((current) => ({ ...current, votesUntilTime: time }));
-      control.recheckPollField(deadlinePath);
+      editor.recheckPollField(deadlinePath);
     },
   };
 };

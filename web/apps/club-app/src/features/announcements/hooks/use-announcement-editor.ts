@@ -9,6 +9,7 @@ import { useRichText } from '@/features/rich-text/hooks/use-rich-text';
 import { mentionTonesOf } from '@/features/rich-text/mention-tones';
 import type { MentionablesSource } from '@/features/rich-text/types';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import { toAnnouncementFormValues, toAnnouncementPayload } from '../announcement-add-ons';
 import {
   ANNOUNCEMENT_BODY_FIELD_ID,
   ANNOUNCEMENT_PICKER_LIST_ID,
@@ -16,7 +17,9 @@ import {
 import { ANNOUNCEMENT_BODY_FIELD_LABEL } from '../announcements-labels';
 import { useCreateAnnouncementMutation, useUpdateAnnouncementMutation } from '../api';
 import type { Announcement, AnnouncementForm } from '../schemas';
-import { AnnouncementFormSchema, toAnnouncementFormValues } from '../schemas';
+import { AnnouncementFormSchema } from '../schemas';
+import type { AnnouncementAddOnsEditor } from './use-announcement-add-ons-editor';
+import { useAnnouncementAddOnsEditor } from './use-announcement-add-ons-editor';
 import { useAnnouncementMentionables } from './use-announcement-mentionables';
 
 const NO_ANNOUNCEMENT = 0;
@@ -36,6 +39,8 @@ export interface AnnouncementBody {
 
 export interface AnnouncementEditorControl {
   form: UseFormReturn<AnnouncementForm>;
+  values: AnnouncementForm;
+  addOns: AnnouncementAddOnsEditor;
   body: AnnouncementBody;
   validUntil: string | null;
   setValidUntil: (value: string | null) => void;
@@ -57,10 +62,13 @@ export const useAnnouncementEditor = ({
   const write = useWriteForm({
     schema: AnnouncementFormSchema,
     defaults: toAnnouncementFormValues(announcement),
-    mutate: (values) =>
-      announcementId === null
-        ? create.mutateAsync(values).then((created) => created.announcementId)
-        : update.mutateAsync(values).then(() => announcementId),
+    mutate: (values) => {
+      const payload = toAnnouncementPayload(values);
+
+      return announcementId === null
+        ? create.mutateAsync(payload).then((created) => created.announcementId)
+        : update.mutateAsync(payload).then(() => announcementId);
+    },
     landing: (id) => ({ to: '/announcements', mark: { kind: LANDING_KIND, id } }),
   });
   const body = useController({ control: write.form.control, name: 'body' });
@@ -76,9 +84,16 @@ export const useAnnouncementEditor = ({
     onChange: body.field.onChange,
   });
   const formatItems = useFormatItems(text, write.isSaving);
+  const addOns = useAnnouncementAddOnsEditor(write.form);
+
+  const setValidUntil = (value: string | null): void => {
+    validUntil.field.onChange(value);
+    addOns.recheckDeadlines();
+  };
 
   return {
     ...write,
+    addOns,
     body: {
       text,
       mentionables,
@@ -87,6 +102,6 @@ export const useAnnouncementEditor = ({
       isEmpty: body.field.value.length === 0,
     },
     validUntil: validUntil.field.value,
-    setValidUntil: validUntil.field.onChange,
+    setValidUntil,
   };
 };

@@ -47,7 +47,11 @@ export const useOwedSignUp = (
       }
 
       board.touch(itemKeyOf({ panel: 'calendar', calendarEntryId: entry.calendarEntryId }));
-      saving.mutate({ signUpListId: list.signUpListId, text: toLineText(draft) });
+      saving.mutate({
+        hostKind: 'calendarEntry',
+        signUpListId: list.signUpListId,
+        text: toLineText(draft),
+      });
     },
   };
 };

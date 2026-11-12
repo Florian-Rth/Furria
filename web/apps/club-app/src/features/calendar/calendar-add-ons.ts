@@ -120,10 +120,10 @@ export const toAttachedCards = (
   return cards.some((card) => card.kind === kind) ? [...cards] : [...cards, { key: kind, kind }];
 };
 
-export const toDetachedCards = (
-  cards: readonly CalendarAddOnCardForm[],
+export const toDetachedCards = <TCard extends { key: string }>(
+  cards: readonly TCard[],
   key: string,
-): CalendarAddOnCardForm[] => cards.filter((card) => card.key !== key);
+): TCard[] => cards.filter((card) => card.key !== key);
 
 export const toChangedPollCards = (
   cards: readonly CalendarAddOnCardForm[],

@@ -91,22 +91,17 @@ export const CalendarReminderSchema = z.object({
 });
 export type CalendarReminder = z.infer<typeof CalendarReminderSchema>;
 
+export const AddOnHostSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('calendarEntry'), calendarEntryId: z.number().int() }),
+  z.object({ kind: z.literal('announcement'), announcementId: z.number().int() }),
+]);
+export type AddOnHost = z.infer<typeof AddOnHostSchema>;
+export type AddOnHostKind = AddOnHost['kind'];
+
 export const CalendarReminderTargetSchema = z.discriminatedUnion('kind', [
-  z.object({
-    calendarEntryId: z.number().int(),
-    kind: z.literal('attendance'),
-    addOnId: z.null(),
-  }),
-  z.object({
-    calendarEntryId: z.number().int(),
-    kind: z.literal('poll'),
-    addOnId: z.number().int(),
-  }),
-  z.object({
-    calendarEntryId: z.number().int(),
-    kind: z.literal('signUpList'),
-    addOnId: z.number().int(),
-  }),
+  z.object({ host: AddOnHostSchema, kind: z.literal('attendance'), addOnId: z.null() }),
+  z.object({ host: AddOnHostSchema, kind: z.literal('poll'), addOnId: z.number().int() }),
+  z.object({ host: AddOnHostSchema, kind: z.literal('signUpList'), addOnId: z.number().int() }),
 ]);
 export type CalendarReminderTarget = z.infer<typeof CalendarReminderTargetSchema>;
 

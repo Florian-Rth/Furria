@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ANNOUNCEMENT_EXPIRED_LABEL, toValidUntilLabel } from '../announcements-labels';
 import type { Announcement } from '../schemas';
+import { AnnouncementAddOns } from './AnnouncementAddOns';
 import { AnnouncementAuthorLine } from './AnnouncementAuthorLine';
 import { AnnouncementText } from './AnnouncementText';
 
@@ -38,6 +39,7 @@ export const AnnouncementReadingBody: FC<AnnouncementReadingBodyProps> = ({
           {expiredChip}
         </Stack>
         <AnnouncementText body={announcement.body} mentions={announcement.mentions} />
+        <AnnouncementAddOns announcement={announcement} />
         <AnnouncementAuthorLine author={announcement.author} publishedAt={announcement.publishedAt}>
           {validUntilLine}
         </AnnouncementAuthorLine>

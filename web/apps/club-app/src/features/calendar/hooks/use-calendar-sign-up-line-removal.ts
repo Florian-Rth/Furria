@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useSignUpLineRemovalMutation } from '../api';
 import { toLineRemovalQuestion } from '../calendar-labels';
+import type { AddOnHostKind } from '../schemas';
 
 export interface CalendarSignUpLineRemoval {
   lineId: number;
@@ -18,7 +19,9 @@ export interface CalendarSignUpLineRemovalControl {
 
 const NO_QUESTION = '';
 
-export const useCalendarSignUpLineRemoval = (): CalendarSignUpLineRemovalControl => {
+export const useCalendarSignUpLineRemoval = (
+  hostKind: AddOnHostKind,
+): CalendarSignUpLineRemovalControl => {
   const removing = useSignUpLineRemovalMutation();
   const [removal, setRemoval] = useState<CalendarSignUpLineRemoval | null>(null);
 
@@ -33,7 +36,7 @@ export const useCalendarSignUpLineRemoval = (): CalendarSignUpLineRemovalControl
       }
 
       setRemoval(null);
-      removing.mutate({ lineId: removal.lineId });
+      removing.mutate({ hostKind, lineId: removal.lineId });
     },
     cancel: () => {
       setRemoval(null);

@@ -28,6 +28,7 @@ import {
 import { useAnnouncementEditor } from '../hooks/use-announcement-editor';
 import { useAnnouncementWithdrawal } from '../hooks/use-announcement-withdrawal';
 import type { Announcement } from '../schemas';
+import { AnnouncementAddOnsSection } from './AnnouncementAddOnsSection';
 import { WithdrawAnnouncementDialog } from './WithdrawAnnouncementDialog';
 
 interface AnnouncementEditorProps {
@@ -110,6 +111,11 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
           helperText={errors.validUntil?.message}
         />
       </KkFormSection>
+      <AnnouncementAddOnsSection
+        cards={control.values.addOns}
+        editor={control.addOns}
+        announcement={announcement}
+      />
       {dangerLine}
       <RichTextMentionLayer text={control.body.text} source={control.body.mentionables} />
       <RichTextLinkSheet text={control.body.text} sheetId={ANNOUNCEMENT_LINK_SHEET_ID} />

@@ -24,7 +24,11 @@ describe('toReminderAvailability', () => {
   it.each<{ source: CalendarReminderSource; expected: ReminderAvailability }>([
     {
       source: {
-        target: { calendarEntryId: 1, kind: 'attendance', addOnId: null },
+        target: {
+          host: { kind: 'calendarEntry', calendarEntryId: 1 },
+          kind: 'attendance',
+          addOnId: null,
+        },
         reminder: null,
         notAnswered: null,
         isClosed: false,
@@ -33,7 +37,7 @@ describe('toReminderAvailability', () => {
     },
     {
       source: {
-        target: { calendarEntryId: 1, kind: 'poll', addOnId: 2 },
+        target: { host: { kind: 'calendarEntry', calendarEntryId: 1 }, kind: 'poll', addOnId: 2 },
         reminder: { lastRemindedAt: null, remindableFrom: null, reachableCount: 1 },
         notAnswered: [],
         isClosed: false,
@@ -42,7 +46,7 @@ describe('toReminderAvailability', () => {
     },
     {
       source: {
-        target: { calendarEntryId: 1, kind: 'poll', addOnId: 2 },
+        target: { host: { kind: 'calendarEntry', calendarEntryId: 1 }, kind: 'poll', addOnId: 2 },
         reminder: { lastRemindedAt: null, remindableFrom: null, reachableCount: 1 },
         notAnswered: [MARA],
         isClosed: true,
@@ -51,7 +55,7 @@ describe('toReminderAvailability', () => {
     },
     {
       source: {
-        target: { calendarEntryId: 1, kind: 'poll', addOnId: 2 },
+        target: { host: { kind: 'calendarEntry', calendarEntryId: 1 }, kind: 'poll', addOnId: 2 },
         reminder: { lastRemindedAt: null, remindableFrom: null, reachableCount: 0 },
         notAnswered: [MARA],
         isClosed: false,
@@ -60,7 +64,11 @@ describe('toReminderAvailability', () => {
     },
     {
       source: {
-        target: { calendarEntryId: 1, kind: 'signUpList', addOnId: 4 },
+        target: {
+          host: { kind: 'calendarEntry', calendarEntryId: 1 },
+          kind: 'signUpList',
+          addOnId: 4,
+        },
         reminder: { lastRemindedAt: null, remindableFrom: null, reachableCount: 1 },
         notAnswered: [MARA],
         isClosed: false,
@@ -69,7 +77,11 @@ describe('toReminderAvailability', () => {
     },
     {
       source: {
-        target: { calendarEntryId: 1, kind: 'attendance', addOnId: null },
+        target: {
+          host: { kind: 'calendarEntry', calendarEntryId: 1 },
+          kind: 'attendance',
+          addOnId: null,
+        },
         reminder: {
           lastRemindedAt: '2027-01-15T08:00:00Z',
           remindableFrom: '2027-01-15T14:00:00Z',
@@ -82,7 +94,11 @@ describe('toReminderAvailability', () => {
     },
     {
       source: {
-        target: { calendarEntryId: 1, kind: 'attendance', addOnId: null },
+        target: {
+          host: { kind: 'calendarEntry', calendarEntryId: 1 },
+          kind: 'attendance',
+          addOnId: null,
+        },
         reminder: {
           lastRemindedAt: '2027-01-15T06:00:00Z',
           remindableFrom: '2027-01-15T12:00:00Z',
@@ -165,25 +181,21 @@ describe('toReminderFailure', () => {
 describe('reminder sources', () => {
   const reminder = { lastRemindedAt: null, remindableFrom: null, reachableCount: 2 };
 
-  it('targets the Zu-/Absage of the entry, or nothing without one', () => {
+  it('targets the Zu-/Absage of its host, or nothing without one', () => {
     expect([
-      toAttendanceReminderSource({ calendarEntryId: 7, attendance: null }),
-      toAttendanceReminderSource({
-        calendarEntryId: 7,
-        attendance: {
-          isClosed: false,
-          yes: 0,
-          maybe: 0,
-          no: 0,
-          answers: null,
-          notAnswered: null,
-          reminder,
-        },
-      }),
+      toAttendanceReminderSource({ kind: 'calendarEntry', calendarEntryId: 7 }, null),
+      toAttendanceReminderSource(
+        { kind: 'announcement', announcementId: 7 },
+        { isClosed: false, notAnswered: null, reminder },
+      ),
     ]).toEqual([
       null,
       {
-        target: { calendarEntryId: 7, kind: 'attendance', addOnId: null },
+        target: {
+          host: { kind: 'announcement', announcementId: 7 },
+          kind: 'attendance',
+          addOnId: null,
+        },
         reminder,
         notAnswered: null,
         isClosed: false,
@@ -192,46 +204,56 @@ describe('reminder sources', () => {
   });
 
   it('targets a poll and a list by their ids', () => {
-    const poll = toPollReminderSource(7, {
-      pollId: 3,
-      question: 'Was bringst du mit?',
-      allowsMultipleChoices: false,
-      isAnonymous: false,
-      votesUntil: null,
-      closedAt: null,
-      closedByFirstName: null,
-      closedByLastName: null,
-      isClosed: true,
-      voterCount: 0,
-      concernedCount: null,
-      notAnswered: null,
-      reminder: null,
-      options: [],
-    });
-    const list = toSignUpListReminderSource(7, {
-      signUpListId: 5,
-      title: 'Wer hilft?',
-      hint: null,
-      signUpUntil: null,
-      closedAt: null,
-      closedByFirstName: null,
-      closedByLastName: null,
-      isClosed: false,
-      lines: [],
-      concernedCount: null,
-      notAnswered: [MARA],
-      reminder,
-    });
+    const poll = toPollReminderSource(
+      { kind: 'calendarEntry', calendarEntryId: 7 },
+      {
+        pollId: 3,
+        question: 'Was bringst du mit?',
+        allowsMultipleChoices: false,
+        isAnonymous: false,
+        votesUntil: null,
+        closedAt: null,
+        closedByFirstName: null,
+        closedByLastName: null,
+        isClosed: true,
+        voterCount: 0,
+        concernedCount: null,
+        notAnswered: null,
+        reminder: null,
+        options: [],
+      },
+    );
+    const list = toSignUpListReminderSource(
+      { kind: 'calendarEntry', calendarEntryId: 7 },
+      {
+        signUpListId: 5,
+        title: 'Wer hilft?',
+        hint: null,
+        signUpUntil: null,
+        closedAt: null,
+        closedByFirstName: null,
+        closedByLastName: null,
+        isClosed: false,
+        lines: [],
+        concernedCount: null,
+        notAnswered: [MARA],
+        reminder,
+      },
+    );
 
     expect([poll, list]).toEqual([
       {
-        target: { calendarEntryId: 7, kind: 'poll', addOnId: 3 },
+        target: { host: { kind: 'calendarEntry', calendarEntryId: 7 }, kind: 'poll', addOnId: 3 },
         reminder: null,
         notAnswered: null,
         isClosed: true,
       },
       {
-        target: { calendarEntryId: 7, kind: 'signUpList', addOnId: 5 },
+        target: {
+          host: { kind: 'calendarEntry', calendarEntryId: 7 },
+          kind: 'signUpList',
+          addOnId: 5,
+        },
         reminder,
         notAnswered: [MARA],
         isClosed: false,

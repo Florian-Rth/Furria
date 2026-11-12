@@ -1,17 +1,24 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { MutationKey, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
+import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import type { Me } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { queryKeys } from '@/lib/query/reads';
+import type { AnnouncementPayload } from './announcement-add-ons';
 import {
+  ANNOUNCEMENT_ANSWER_FAILED_MESSAGE,
+  ANNOUNCEMENT_ATTENDANCE_CLOSE_FAILED_MESSAGE,
   ANNOUNCEMENT_CHANGED_MESSAGE,
   ANNOUNCEMENT_POSTED_MESSAGE,
   ANNOUNCEMENT_WITHDRAWN_MESSAGE,
 } from './announcements-labels';
 import { toNextLastSeenAt } from './last-seen';
 import {
+  requestAnnouncementAnswer,
+  requestAnnouncementAttendanceClosing,
   requestAnnouncementMentionables,
   requestAnnouncements,
   requestCreateAnnouncement,
@@ -20,7 +27,6 @@ import {
   requestWithdrawAnnouncement,
 } from './requests';
 import type {
-  AnnouncementForm,
   AnnouncementMentionables,
   AnnouncementsResponse,
   CreatedAnnouncement,
@@ -67,7 +73,7 @@ export const useAnnouncementMentionablesQuery = (): UseQueryResult<
 export const useCreateAnnouncementMutation = (): UseMutationResult<
   CreatedAnnouncement,
   Error,
-  AnnouncementForm
+  AnnouncementPayload
 > =>
   useApiMutation({
     request: requestCreateAnnouncement,
@@ -77,10 +83,10 @@ export const useCreateAnnouncementMutation = (): UseMutationResult<
 
 export const useUpdateAnnouncementMutation = (
   announcementId: number,
-): UseMutationResult<void, Error, AnnouncementForm> =>
+): UseMutationResult<void, Error, AnnouncementPayload> =>
   useApiMutation({
-    request: (form: AnnouncementForm, accessToken) =>
-      requestUpdateAnnouncement(announcementId, form, accessToken),
+    request: (payload: AnnouncementPayload, accessToken) =>
+      requestUpdateAnnouncement(announcementId, payload, accessToken),
     changes: ['announcement'],
     notice: { success: () => ANNOUNCEMENT_CHANGED_MESSAGE },
   });
@@ -102,4 +108,34 @@ export const useLastSeenAnnouncementMutation = (): UseMutationResult<void, Error
       ),
     ],
     changes: ['announcementSeen'],
+  });
+
+export const announcementAnswerMutationKey = (announcementId: number): MutationKey => [
+  'announcement-answer',
+  announcementId,
+];
+
+export const useAnnouncementAnswerMutation = (
+  announcementId: number,
+): UseMutationResult<void, Error, AttendanceAnswer> =>
+  useApiMutation({
+    key: announcementAnswerMutationKey(announcementId),
+    request: (answer: AttendanceAnswer, accessToken) =>
+      requestAnnouncementAnswer(announcementId, answer, accessToken),
+    changes: ['attendanceResponse'],
+    notice: {
+      success: (answer) => toAttendanceSavedMessage(answer),
+      failure: () => ANNOUNCEMENT_ANSWER_FAILED_MESSAGE,
+    },
+  });
+
+export const useAnnouncementAttendanceClosingMutation = (): UseMutationResult<
+  void,
+  Error,
+  number
+> =>
+  useApiMutation({
+    request: requestAnnouncementAttendanceClosing,
+    changes: ['announcement'],
+    notice: { failure: () => ANNOUNCEMENT_ATTENDANCE_CLOSE_FAILED_MESSAGE },
   });

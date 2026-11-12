@@ -1,6 +1,7 @@
 import type { KkPollBallotMode } from '@furria/ui/KkPollBallot';
 import { useMeQuery } from '@/features/session/api';
 import { ATTENDANCE_ROLL_LABELS } from '@/lib/calendar-copy';
+import type { AddOnAnswering } from '../add-on-host';
 import { usePollVoteMutation } from '../api';
 import { toPollMetaLabel, toPollOutcomeLabel } from '../calendar-labels';
 import type { NamesTab } from '../calendar-names';
@@ -8,7 +9,7 @@ import { toNameLine, toOpenTab, toPersonEntry } from '../calendar-names';
 import { toPollOutcome, toPollResults, toViewerChoice, toVoteSet } from '../calendar-polls';
 import type { CalendarReminderSource } from '../calendar-reminders';
 import { toPollReminderSource } from '../calendar-reminders';
-import type { CalendarEntry, CalendarPoll } from '../schemas';
+import type { CalendarPoll } from '../schemas';
 import type { NamesSheetControl } from './use-names-sheet';
 import { useNamesSheet } from './use-names-sheet';
 
@@ -44,9 +45,8 @@ const toOptionTabId = (optionId: number): string => `option-${optionId}`;
 
 export const useCalendarPoll = (
   poll: CalendarPoll,
-  entry: Pick<CalendarEntry, 'calendarEntryId' | 'mayAnswer'>,
+  { host, mayAnswer }: AddOnAnswering,
 ): CalendarPollControl => {
-  const mayAnswer = entry.mayAnswer;
   const vote = usePollVoteMutation();
   const pendingVote =
     vote.isPending && vote.variables?.pollId === poll.pollId ? vote.variables : null;
@@ -62,6 +62,7 @@ export const useCalendarPoll = (
     }
 
     vote.mutate({
+      hostKind: host.kind,
       pollId: poll.pollId,
       optionIds: toVoteSet(chosenIds, optionId, poll.allowsMultipleChoices),
     });
@@ -104,7 +105,7 @@ export const useCalendarPoll = (
   });
 
   return {
-    reminder: toPollReminderSource(entry.calendarEntryId, poll),
+    reminder: toPollReminderSource(host, poll),
     mode: poll.allowsMultipleChoices ? 'multiple' : 'single',
     question: poll.question,
     meta: toPollMetaLabel(poll),

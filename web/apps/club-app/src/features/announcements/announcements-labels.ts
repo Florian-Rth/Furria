@@ -1,8 +1,12 @@
 import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import { toCloserName } from '@/features/calendar/calendar-labels';
 import { ANNOUNCEMENTS_PATH } from '@/features/session/app-sections';
+import { toDayNumberLabel, toTimeLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';
+import { toAnswerCountOf } from './announcement-add-ons';
+import type { AnnouncementAttendance } from './schemas';
 
 export const ANNOUNCEMENTS_TITLE = 'Aushänge';
 export const ANNOUNCEMENTS_ORIGIN: KkScreenOrigin = {
@@ -41,6 +45,13 @@ export const toValidUntilQuickChoices = (today: Date): KkDateQuickChoice[] => [
   { label: FOUR_WEEKS_LABEL, value: toDayInWeeks(today, 4) },
 ];
 
+export const ADD_ONS_SECTION_TITLE = 'Funktionen';
+export const ADD_ADD_ON_LABEL = 'Funktion hinzufügen';
+export const ANSWERS_UNTIL_DAY_LABEL = 'Antworten bis';
+export const DEADLINE_TIME_LABEL = 'Uhrzeit';
+export const ANNOUNCEMENT_DEADLINE_EMPTY_LABEL = 'Solange der Aushang hängt';
+export const REMOVE_ATTENDANCE_LABEL = 'Zu-/Absage entfernen';
+
 export const ANNOUNCEMENT_CREATE_TITLE = 'Aushang hinzufügen';
 export const ANNOUNCEMENT_EDIT_TITLE = 'Aushang ändern';
 export const ANNOUNCEMENT_ADD_LABEL = 'Hinzufügen';
@@ -51,6 +62,10 @@ export const WITHDRAW_EXPLANATION = 'Abgenommene Aushänge werden endgültig gel
 export const WITHDRAW_CONFIRM_LABEL = 'Aushang abnehmen';
 export const WITHDRAW_CANCEL_LABEL = 'Abbrechen';
 export const WITHDRAW_CLOSE_LABEL = 'Schließen';
+
+export const ANNOUNCEMENT_ANSWER_FAILED_MESSAGE = 'Deine Antwort wurde nicht gespeichert.';
+export const ANNOUNCEMENT_ATTENDANCE_CLOSE_FAILED_MESSAGE =
+  'Die Zu-/Absage wurde nicht geschlossen.';
 
 export const ANNOUNCEMENT_POSTED_MESSAGE = 'Der Aushang hängt.';
 export const ANNOUNCEMENT_CHANGED_MESSAGE = 'Der Aushang ist geändert.';
@@ -71,3 +86,42 @@ export const toWithdrawQuestion = (title: string): string => `„${title}“ abn
 
 export const toWithdrawConsequence = (title: string): string =>
   `„${title}“ lässt sich danach nicht wiederherstellen.`;
+
+const ATTENDANCE_CLOSED_LABEL = 'Geschlossen';
+const META_SEPARATOR = ' · ';
+
+const toAnswersUntilLabel = (answersUntil: string): string =>
+  `Antworten bis ${toDayNumberLabel(answersUntil)}, ${toTimeLabel(answersUntil)} Uhr`;
+
+const toAttendanceDeadlineLabel = (attendance: AnnouncementAttendance): string | null => {
+  if (attendance.isClosed) {
+    const closer = toCloserName(attendance);
+
+    return closer === null ? ATTENDANCE_CLOSED_LABEL : `${ATTENDANCE_CLOSED_LABEL} von ${closer}`;
+  }
+
+  return attendance.answersUntil === null ? null : toAnswersUntilLabel(attendance.answersUntil);
+};
+
+export const toAttendanceMetaLabel = (attendance: AnnouncementAttendance): string => {
+  const answered = toAnswerCountOf(attendance);
+  const share = `${answered} von ${attendance.concernedCount} haben geantwortet`;
+  const deadline = toAttendanceDeadlineLabel(attendance);
+
+  return deadline === null ? share : `${deadline}${META_SEPARATOR}${share}`;
+};
+
+export const CLOSE_ATTENDANCE_LABEL = 'Zu-/Absage schließen';
+
+export const toAttendanceCloseQuestion = (title: string): string =>
+  `Zu-/Absage zu „${title}“ schließen?`;
+
+export const toWithdrawExplanation = (answerCount: number): string => {
+  if (answerCount === 0) {
+    return WITHDRAW_EXPLANATION;
+  }
+
+  const answers = answerCount === 1 ? 'eine Antwort' : `${answerCount} Antworten`;
+
+  return `${WITHDRAW_EXPLANATION} Dabei gehen ${answers} verloren.`;
+};

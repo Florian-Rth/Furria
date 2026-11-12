@@ -1,9 +1,11 @@
 import { useSearch } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
+import { useFormState } from 'react-hook-form';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import type { DayTime } from '@/lib/day';
 import { toIsoDay } from '@/lib/day';
+import type { AddOnCardsEditor } from '../add-on-cards-editor';
 import { useCreateCalendarEntryMutation, useUpdateCalendarEntryMutation } from '../api';
 import {
   nextFreshKey,
@@ -31,8 +33,7 @@ import {
 import type { DayScheduleFieldPath } from '../calendar-day-schedules';
 import { toStepDayPaths } from '../calendar-day-schedules';
 import { toDeadlinePaths } from '../calendar-deadlines';
-import type { PollFieldPath, PollOptionsPath } from '../calendar-polls';
-import type { SignUpListFieldPath } from '../calendar-sign-up-lists';
+import { toFieldError } from '../calendar-field-error';
 import type {
   CalendarAddOnKind,
   CalendarDayScheduleForm,
@@ -52,7 +53,7 @@ interface CalendarEntryEditorInput {
   ownerOptions: readonly CalendarOwnerOption[];
 }
 
-export interface CalendarEntryEditorControl {
+export interface CalendarEntryEditorControl extends AddOnCardsEditor {
   form: UseFormReturn<CalendarEntryForm>;
   values: CalendarEntryForm;
   setDescription: (value: string) => void;
@@ -65,14 +66,6 @@ export interface CalendarEntryEditorControl {
   setAudiencePeople: (personIds: string[]) => void;
   attachAddOn: (kind: CalendarAddOnKind) => void;
   detachAddOn: (key: string) => void;
-  updatePoll: (key: string, change: (poll: CalendarPollForm) => CalendarPollForm) => void;
-  recheckPollField: (path: PollFieldPath) => void;
-  forgetPollErrors: (path: PollOptionsPath) => void;
-  updateSignUpList: (
-    key: string,
-    change: (list: CalendarSignUpListForm) => CalendarSignUpListForm,
-  ) => void;
-  recheckSignUpListField: (path: SignUpListFieldPath) => void;
   updateDaySchedule: (
     key: string,
     change: (schedule: CalendarDayScheduleForm) => CalendarDayScheduleForm,
@@ -119,6 +112,7 @@ export const useCalendarEntryEditor = ({
     landing: ({ calendarEntryId }) => toEntryLanding(calendarEntryId, landedDay.current, draft),
   });
   const { form, values } = write;
+  const addOnsState = useFormState({ control: form.control, name: 'addOns' });
 
   const setOwner = (value: string): void => {
     const audience = toAudienceAfterOwnerChange(form.getValues(), value);
@@ -277,6 +271,8 @@ export const useCalendarEntryEditor = ({
   return {
     form,
     values,
+    addOnErrorAt: (path) => toFieldError(form.getFieldState(path, addOnsState).error?.message),
+    deadlineFallbackTime: () => form.getValues('startTime'),
     setDescription: (value) => {
       form.setValue('description', value, FIELD_EDIT);
     },

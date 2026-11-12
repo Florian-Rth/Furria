@@ -317,15 +317,15 @@ interface PollModeration {
 }
 
 interface PollReopening extends PollModeration {
-  startsAt: string;
+  reopensUntil: string | null;
   nowMs: number;
 }
 
 export const mayClosePoll = ({ poll, mayClose }: PollModeration): boolean =>
   mayClose && !poll.isClosed;
 
-export const mayReopenPoll = ({ poll, mayClose, startsAt, nowMs }: PollReopening): boolean =>
-  mayClose && poll.isClosed && nowMs < Date.parse(startsAt);
+export const mayReopenPoll = ({ poll, mayClose, reopensUntil, nowMs }: PollReopening): boolean =>
+  mayClose && poll.isClosed && (reopensUntil === null || nowMs < Date.parse(reopensUntil));
 
 export const toDiscardedVoterCount = (
   addOns: readonly CalendarEntryAddOn[] | null,

@@ -1,6 +1,7 @@
 import type { KkCalendarLineGroup } from '@furria/ui/KkCalendarAgendaLine';
 import { KkCalendarDetail } from '@furria/ui/KkCalendarDetail';
 import type { FC, ReactNode } from 'react';
+import { toEntryAnswering } from '../add-on-host';
 import { CALENDAR_ADD_ON_ICONS, CALENDAR_ADD_ON_LABELS } from '../calendar-add-ons';
 import type { CalendarAddOnKind, CalendarEntry, CalendarEntryAddOn } from '../schemas';
 import { CalendarDetailAttendance } from './CalendarDetailAttendance';
@@ -22,15 +23,25 @@ export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
   participatingGroups,
   mayModerate,
 }) => {
+  const answering = toEntryAnswering(entry);
   const attendance =
     addOn.kind === 'attendance' ? <CalendarDetailAttendance entry={entry} /> : null;
   const poll =
     addOn.kind === 'poll' ? (
-      <CalendarDetailPoll poll={addOn.poll} entry={entry} mayClose={mayModerate} />
+      <CalendarDetailPoll
+        poll={addOn.poll}
+        answering={answering}
+        mayClose={mayModerate}
+        reopensUntil={entry.startsAt}
+      />
     ) : null;
   const signUpList =
     addOn.kind === 'signUpList' ? (
-      <CalendarDetailSignUpList list={addOn.signUpList} entry={entry} mayModerate={mayModerate} />
+      <CalendarDetailSignUpList
+        list={addOn.signUpList}
+        answering={answering}
+        mayModerate={mayModerate}
+      />
     ) : null;
   const daySchedule =
     addOn.kind === 'daySchedule' ? (

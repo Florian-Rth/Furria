@@ -20,6 +20,10 @@ const board: AnnouncementsResponse = {
       validUntil: null,
       author: null,
       viewerMayEdit: false,
+      addOns: [],
+      answerCount: 0,
+      viewerAnswer: null,
+      viewerMayAnswer: false,
     },
   ],
 };

@@ -5,11 +5,11 @@ import { formatPublishedDay } from '@/lib/announcements';
 import {
   ANNOUNCEMENT_TITLE_FIELD_LABEL,
   toWithdrawConsequence,
+  toWithdrawExplanation,
   toWithdrawQuestion,
   WITHDRAW_CANCEL_LABEL,
   WITHDRAW_CLOSE_LABEL,
   WITHDRAW_CONFIRM_LABEL,
-  WITHDRAW_EXPLANATION,
   WITHDRAW_EYEBROW,
 } from '../announcements-labels';
 import type { AnnouncementWithdrawal } from '../hooks/use-announcement-withdrawal';
@@ -37,21 +37,28 @@ interface WithdrawAnnouncementDialogProps {
 export const WithdrawAnnouncementDialog: FC<WithdrawAnnouncementDialogProps> = ({
   announcement,
   control,
-}) => (
-  <KkConfirmDialog
-    open={control.isOpen}
-    tone="danger"
-    onClose={control.close}
-    onConfirm={control.submit}
-    eyebrow={WITHDRAW_EYEBROW}
-    question={toWithdrawQuestion(announcement.title)}
-    explanation={WITHDRAW_EXPLANATION}
-    facts={toFacts(announcement)}
-    consequence={toWithdrawConsequence(announcement.title)}
-    error={control.rejection ?? undefined}
-    confirmLabel={WITHDRAW_CONFIRM_LABEL}
-    cancelLabel={WITHDRAW_CANCEL_LABEL}
-    closeLabel={WITHDRAW_CLOSE_LABEL}
-    busy={control.isWithdrawing}
-  />
-);
+}) => {
+  const explanation = toWithdrawExplanation(announcement.answerCount);
+  const facts = toFacts(announcement);
+  const question = toWithdrawQuestion(announcement.title);
+  const consequence = toWithdrawConsequence(announcement.title);
+
+  return (
+    <KkConfirmDialog
+      open={control.isOpen}
+      tone="danger"
+      onClose={control.close}
+      onConfirm={control.submit}
+      eyebrow={WITHDRAW_EYEBROW}
+      question={question}
+      explanation={explanation}
+      facts={facts}
+      consequence={consequence}
+      error={control.rejection ?? undefined}
+      confirmLabel={WITHDRAW_CONFIRM_LABEL}
+      cancelLabel={WITHDRAW_CANCEL_LABEL}
+      closeLabel={WITHDRAW_CLOSE_LABEL}
+      busy={control.isWithdrawing}
+    />
+  );
+};

@@ -1,7 +1,7 @@
 import { useSignUpListClosingMutation } from '../api';
 import { toSignUpListCloseQuestion } from '../calendar-labels';
 import type { CalendarConfirmCopy } from '../components/CalendarConfirmDialog';
-import type { CalendarSignUpList } from '../schemas';
+import type { AddOnHostKind, CalendarSignUpList } from '../schemas';
 
 const CLOSE_COPY: Omit<CalendarConfirmCopy, 'question'> = {
   eyebrow: 'LISTE SCHLIESSEN',
@@ -19,6 +19,7 @@ export interface CalendarSignUpListClosingControl {
 }
 
 export const useCalendarSignUpListClosing = (
+  hostKind: AddOnHostKind,
   list: Pick<CalendarSignUpList, 'signUpListId' | 'title' | 'isClosed'>,
   mayModerate: boolean,
 ): CalendarSignUpListClosingControl => {
@@ -29,7 +30,7 @@ export const useCalendarSignUpListClosing = (
     isClosing: closing.isPending,
     copy: { ...CLOSE_COPY, question: toSignUpListCloseQuestion(list.title) },
     close: () => {
-      closing.mutate({ signUpListId: list.signUpListId });
+      closing.mutate({ hostKind, signUpListId: list.signUpListId });
     },
   };
 };

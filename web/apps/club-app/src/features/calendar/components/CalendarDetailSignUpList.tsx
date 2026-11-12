@@ -1,9 +1,10 @@
 import { KkSignUpSheet } from '@furria/ui/KkSignUpSheet';
 import type { FC } from 'react';
+import type { AddOnAnswering } from '../add-on-host';
 import { useCalendarSignUpLineRemoval } from '../hooks/use-calendar-sign-up-line-removal';
 import { useCalendarSignUpList } from '../hooks/use-calendar-sign-up-list';
 import { useCalendarSignUpListClosing } from '../hooks/use-calendar-sign-up-list-closing';
-import type { CalendarEntry, CalendarSignUpList } from '../schemas';
+import type { CalendarSignUpList } from '../schemas';
 import { CalendarCloseAction } from './CalendarCloseAction';
 import { CalendarNamesSheet } from './CalendarNamesSheet';
 import { CalendarNotAnsweredRoll } from './CalendarNotAnsweredRoll';
@@ -16,18 +17,18 @@ const CLOSE_LABEL = 'Liste schließen';
 
 interface CalendarDetailSignUpListProps {
   list: CalendarSignUpList;
-  entry: CalendarEntry;
+  answering: AddOnAnswering;
   mayModerate: boolean;
 }
 
 export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
   list,
-  entry,
+  answering,
   mayModerate,
 }) => {
-  const removal = useCalendarSignUpLineRemoval();
-  const closing = useCalendarSignUpListClosing(list, mayModerate);
-  const control = useCalendarSignUpList(list, mayModerate, entry, removal);
+  const removal = useCalendarSignUpLineRemoval(answering.host.kind);
+  const closing = useCalendarSignUpListClosing(answering.host.kind, list, mayModerate);
+  const control = useCalendarSignUpList(list, mayModerate, answering, removal);
   const entryName = `sign-up-line-${list.signUpListId}`;
   const isRemovalOpen = removal.removal !== null;
 

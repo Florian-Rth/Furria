@@ -1,12 +1,9 @@
-import { useFormState } from 'react-hook-form';
+import type { AddOnCardsEditor } from '../add-on-cards-editor';
 import { hasNoDeadline } from '../calendar-deadlines';
 import type { CalendarFieldError } from '../calendar-field-error';
-import { toFieldError } from '../calendar-field-error';
 import { toSignUpListCardMetaLabel, toSignUpListRemoveLabel } from '../calendar-labels';
-import type { SignUpListFieldPath } from '../calendar-sign-up-lists';
 import { toHeldSignUpList, withSignUpUntilDay } from '../calendar-sign-up-lists';
-import type { CalendarEntry, CalendarSignUpListForm } from '../schemas';
-import type { CalendarEntryEditorControl } from './use-calendar-entry-editor';
+import type { CalendarEntryAddOn, CalendarSignUpListForm } from '../schemas';
 
 export interface CalendarSignUpListFieldNames {
   title: string;
@@ -31,31 +28,29 @@ export interface CalendarSignUpListCardControl {
 }
 
 interface CalendarSignUpListCardInput {
-  control: CalendarEntryEditorControl;
+  editor: AddOnCardsEditor;
   cardKey: string;
   index: number;
   list: CalendarSignUpListForm;
-  entry: CalendarEntry | null;
+  held: readonly CalendarEntryAddOn[] | null;
 }
 
 export const useCalendarSignUpListCard = ({
-  control,
+  editor,
   cardKey,
   index,
   list,
-  entry,
+  held: heldAddOns,
 }: CalendarSignUpListCardInput): CalendarSignUpListCardControl => {
   const titlePath = `addOns.${index}.signUpList.title` as const;
   const hintPath = `addOns.${index}.signUpList.hint` as const;
   const deadlinePath = `addOns.${index}.signUpList.signUpUntilTime` as const;
-  const formState = useFormState({ control: control.form.control, name: `addOns.${index}` });
-  const errorAt = (path: SignUpListFieldPath): CalendarFieldError =>
-    toFieldError(control.form.getFieldState(path, formState).error?.message);
-  const held = toHeldSignUpList(entry?.addOns ?? null, list.signUpListId);
+  const errorAt = editor.addOnErrorAt;
+  const held = toHeldSignUpList(heldAddOns, list.signUpListId);
   const isFrozen = held?.isClosed === true;
 
   const change = (edit: (current: CalendarSignUpListForm) => CalendarSignUpListForm): void => {
-    control.updateSignUpList(cardKey, edit);
+    editor.updateSignUpList(cardKey, edit);
   };
 
   return {
@@ -74,21 +69,21 @@ export const useCalendarSignUpListCard = ({
     isDeadlineTimeLocked: isFrozen || hasNoDeadline(list.signUpUntilDay),
     setTitle: (title) => {
       change((current) => ({ ...current, title }));
-      control.recheckSignUpListField(titlePath);
+      editor.recheckSignUpListField(titlePath);
     },
     setHint: (hint) => {
       change((current) => ({ ...current, hint }));
-      control.recheckSignUpListField(hintPath);
+      editor.recheckSignUpListField(hintPath);
     },
     setSignUpUntilDay: (day) => {
-      const fallbackTime = control.form.getValues('startTime');
+      const fallbackTime = editor.deadlineFallbackTime();
 
       change((current) => withSignUpUntilDay(current, day, fallbackTime));
-      control.recheckSignUpListField(deadlinePath);
+      editor.recheckSignUpListField(deadlinePath);
     },
     setSignUpUntilTime: (time) => {
       change((current) => ({ ...current, signUpUntilTime: time }));
-      control.recheckSignUpListField(deadlinePath);
+      editor.recheckSignUpListField(deadlinePath);
     },
   };
 };

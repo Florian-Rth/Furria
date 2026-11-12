@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import { toHeldAnswerCount } from '../calendar-add-ons';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import type { CalendarAddOnsControl } from '../hooks/use-calendar-add-ons';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
@@ -10,10 +11,12 @@ import { CalendarParticipatingGroupsCard } from './CalendarParticipatingGroupsCa
 import { CalendarPollCard } from './CalendarPollCard';
 import { CalendarSignUpListCard } from './CalendarSignUpListCard';
 
+const DEADLINE_EMPTY_LABEL = 'Bis zum Beginn';
+
 interface CalendarAddOnCardProps {
   card: CalendarAddOnCardForm;
   index: number;
-  addOns: CalendarAddOnsControl;
+  addOns: CalendarAddOnsControl<CalendarAddOnCardForm>;
   control: CalendarEntryEditorControl;
   entry: CalendarEntry | null;
   clubGroups: CalendarParticipantPool;
@@ -32,10 +35,12 @@ export const CalendarAddOnCard: FC<CalendarAddOnCardProps> = ({
   const remove = (): void => {
     addOns.askRemoval(card);
   };
+  const held = entry?.addOns ?? null;
+  const answerCount = toHeldAnswerCount(entry);
 
   switch (card.kind) {
     case 'attendance':
-      return <CalendarAttendanceCard entry={entry} onRemove={remove} />;
+      return <CalendarAttendanceCard answerCount={answerCount} onRemove={remove} />;
     case 'participatingGroups':
       return (
         <CalendarParticipatingGroupsCard
@@ -52,8 +57,9 @@ export const CalendarAddOnCard: FC<CalendarAddOnCardProps> = ({
           cardKey={card.key}
           index={index}
           poll={card.poll}
-          control={control}
-          entry={entry}
+          editor={control}
+          held={held}
+          deadlineEmptyLabel={DEADLINE_EMPTY_LABEL}
           onRemove={remove}
         />
       );
@@ -63,8 +69,9 @@ export const CalendarAddOnCard: FC<CalendarAddOnCardProps> = ({
           cardKey={card.key}
           index={index}
           list={card.signUpList}
-          control={control}
-          entry={entry}
+          editor={control}
+          held={held}
+          deadlineEmptyLabel={DEADLINE_EMPTY_LABEL}
           onRemove={remove}
         />
       );

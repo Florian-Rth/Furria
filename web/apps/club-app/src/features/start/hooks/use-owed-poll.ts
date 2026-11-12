@@ -46,7 +46,7 @@ export const useOwedPoll = (
 
     board.touch(itemKeyOf({ panel: 'calendar', calendarEntryId: entry.calendarEntryId }));
     setSent({ basis: poll, optionIds });
-    vote.mutate({ pollId: poll.pollId, optionIds });
+    vote.mutate({ hostKind: 'calendarEntry', pollId: poll.pollId, optionIds });
   };
 
   return {
