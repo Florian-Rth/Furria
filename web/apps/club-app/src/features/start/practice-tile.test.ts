@@ -18,7 +18,12 @@ const act = (actId: number): MyAct => ({
   nextTraining: null,
 });
 
-const calendar: StartPanel = { kind: 'calendar', shownCount: 0, entries: [] };
+const calendar: StartPanel = {
+  kind: 'calendar',
+  shownCount: 0,
+  entries: [],
+  announcementAddOns: [],
+};
 const gallery: StartPanel = { kind: 'gallery', shownCount: 0, albums: [] };
 
 describe('boardPanelsOf', () => {

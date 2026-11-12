@@ -45,6 +45,12 @@ export const toAttendanceFailureOf = (error: Error | null): AttendanceFailure | 
   return 'unsaved';
 };
 
+export const toAttendanceDims = (error: Error | null): boolean => {
+  const failure = toAttendanceFailureOf(error);
+
+  return failure === null ? false : ATTENDANCE_FAILURE_EFFECTS[failure].dims;
+};
+
 export const resubmitsAfter = (error: Error, isResubmission: boolean): boolean =>
   !isResubmission && toAttendanceFailureOf(error) === 'conflict';
 

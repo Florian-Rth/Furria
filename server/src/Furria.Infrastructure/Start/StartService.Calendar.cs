@@ -26,7 +26,7 @@ public sealed partial class StartService
         AttendanceAnswer? answer,
         Viewer viewer,
         StartEvent? tiedEvent,
-        OpenFunctionsOfEntries functions
+        OpenAddOnsOfHosts addOns
     )
     {
         var facts = row.ToFacts();
@@ -54,8 +54,8 @@ public sealed partial class StartService
             Attendance = row.AsksForResponse
                 ? AttendanceOf(row, answer, viewer.Ties.Concerns(facts), viewer.Moment.Now)
                 : null,
-            OpenPolls = functions.PollsOf(row.CalendarEntryId),
-            OpenSignUpLists = functions.SignUpListsOf(row.CalendarEntryId),
+            OpenPolls = addOns.PollsOf(row.CalendarEntryId),
+            OpenSignUpLists = addOns.SignUpListsOf(row.CalendarEntryId),
             Description = row.Description,
             Event = tiedEvent,
         };
@@ -132,7 +132,7 @@ public sealed partial class StartService
                 )
             )
             .ToList();
-        var functions = await OpenFunctionsOfAsync(viewer, hers, ct);
+        var addOns = await OpenAddOnsOfEntriesAsync(viewer, hers, ct);
 
         return
         [
@@ -142,13 +142,13 @@ public sealed partial class StartService
                     answers.GetValueOrDefault(row.CalendarEntryId),
                     viewer,
                     EventOf(row),
-                    functions
+                    addOns
                 )
             ),
         ];
     }
 
-    private async Task<OpenFunctionsOfEntries> OpenFunctionsOfAsync(
+    private async Task<OpenAddOnsOfHosts> OpenAddOnsOfEntriesAsync(
         Viewer viewer,
         IReadOnlyList<StartEntryRow> rows,
         CancellationToken ct
@@ -156,7 +156,7 @@ public sealed partial class StartService
     {
         var calendarEntryIds = rows.Select(row => row.CalendarEntryId).ToList();
 
-        return new OpenFunctionsOfEntries(
+        return new OpenAddOnsOfHosts(
             await _dbContext.PollsOfEntriesAsync(
                 calendarEntryIds,
                 viewer.PersonId,

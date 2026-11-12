@@ -10,6 +10,7 @@ import type {
 export type StartItemRef =
   | { panel: 'calendar'; calendarEntryId: number }
   | { panel: 'announcements'; announcementId: number }
+  | { panel: 'announcementAddOns'; announcementId: number }
   | { panel: 'mine'; kind: StartMineKind; subjectId: number | null; on: string }
   | { panel: 'groups'; kind: StartGroupMomentKind; groupId: number }
   | { panel: 'toDos'; kind: ToDoKind };
@@ -30,6 +31,9 @@ export const itemKeyOf = (ref: StartItemRef): string => {
   if (ref.panel === 'announcements') {
     return `announcements:${ref.announcementId}`;
   }
+  if (ref.panel === 'announcementAddOns') {
+    return `announcementAddOns:${ref.announcementId}`;
+  }
   if (ref.panel === 'mine') {
     return `mine:${ref.kind}:${ref.subjectId ?? NO_SUBJECT}:${ref.on}`;
   }
@@ -42,7 +46,12 @@ export const itemKeyOf = (ref: StartItemRef): string => {
 
 export const panelItemKeysOf = (panel: StartPanel): string[] => {
   if (panel.kind === 'calendar') {
-    return panel.entries.map((entry) => itemKeyOf({ panel: 'calendar', ...entry }));
+    return [
+      ...panel.entries.map((entry) => itemKeyOf({ panel: 'calendar', ...entry })),
+      ...panel.announcementAddOns.map((announcement) =>
+        itemKeyOf({ panel: 'announcementAddOns', ...announcement }),
+      ),
+    ];
   }
   if (panel.kind === 'announcements') {
     return panel.announcements.map((announcement) =>
@@ -84,10 +93,17 @@ const keepOrder = <TItem>(
 
 const reconcilePanel = (panel: StartPanel, fresh: Start): StartPanel => {
   if (panel.kind === 'calendar') {
+    const freshCalendar = freshPanelOf(fresh, 'calendar');
+
     return {
       ...panel,
-      entries: keepOrder(panel.entries, freshPanelOf(fresh, 'calendar')?.entries ?? [], (entry) =>
+      entries: keepOrder(panel.entries, freshCalendar?.entries ?? [], (entry) =>
         itemKeyOf({ panel: 'calendar', ...entry }),
+      ),
+      announcementAddOns: keepOrder(
+        panel.announcementAddOns,
+        freshCalendar?.announcementAddOns ?? [],
+        (announcement) => itemKeyOf({ panel: 'announcementAddOns', ...announcement }),
       ),
     };
   }

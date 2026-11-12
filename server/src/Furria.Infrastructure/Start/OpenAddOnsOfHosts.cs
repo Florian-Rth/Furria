@@ -5,26 +5,26 @@ using Furria.Infrastructure.Club;
 
 namespace Furria.Infrastructure.Start;
 
-internal sealed record OpenFunctionsOfEntries(
+internal sealed record OpenAddOnsOfHosts(
     IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>> Polls,
     IReadOnlyDictionary<int, IReadOnlyList<PlacedSignUpList>> SignUpLists
 )
 {
     [Pure]
-    public IReadOnlyList<StartPoll> PollsOf(int calendarEntryId) =>
+    public IReadOnlyList<StartPoll> PollsOf(int hostId) =>
         [
             .. Polls
-                .GetValueOrDefault(calendarEntryId, [])
+                .GetValueOrDefault(hostId, [])
                 .Where(placed => !placed.Details.IsClosed)
                 .OrderBy(placed => placed.Position)
                 .Select(ToPoll),
         ];
 
     [Pure]
-    public IReadOnlyList<StartSignUpList> SignUpListsOf(int calendarEntryId) =>
+    public IReadOnlyList<StartSignUpList> SignUpListsOf(int hostId) =>
         [
             .. SignUpLists
-                .GetValueOrDefault(calendarEntryId, [])
+                .GetValueOrDefault(hostId, [])
                 .Where(placed => !placed.Details.IsClosed)
                 .OrderBy(placed => placed.Position)
                 .Select(ToSignUpList),

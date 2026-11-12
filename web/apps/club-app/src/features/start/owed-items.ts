@@ -1,25 +1,57 @@
-import type { StartEntry, StartPoll, StartSignUpList } from './schemas';
+import type { StartAnnouncementAddOns, StartEntry, StartPoll, StartSignUpList } from './schemas';
+import { itemKeyOf } from './start-visit';
+
+export type OwedHost =
+  | { kind: 'calendarEntry'; key: string; entry: StartEntry }
+  | { kind: 'announcement'; key: string; announcement: StartAnnouncementAddOns };
+
+export type AnnouncementOwedHost = Extract<OwedHost, { kind: 'announcement' }>;
 
 export type OwedItem =
-  | { kind: 'attendance'; key: string; isOwed: boolean; entry: StartEntry }
-  | { kind: 'poll'; key: string; isOwed: boolean; entry: StartEntry; poll: StartPoll }
+  | { kind: 'attendance'; key: string; isOwed: boolean; host: OwedHost }
+  | { kind: 'poll'; key: string; isOwed: boolean; host: OwedHost; poll: StartPoll }
   | {
       kind: 'signUpList';
       key: string;
       isOwed: boolean;
-      entry: StartEntry;
+      host: OwedHost;
       list: StartSignUpList;
     };
+
+export interface OwedSources {
+  entries: readonly StartEntry[];
+  announcements: readonly StartAnnouncementAddOns[];
+}
 
 export interface OwedTally {
   owed: number;
   answered: number;
 }
 
+export interface OwedGroup {
+  key: string;
+  host: OwedHost;
+  items: OwedItem[];
+}
+
+const ATTENDANCE_FIRST = -1;
+
+const entryHostOf = (entry: StartEntry): OwedHost => ({
+  kind: 'calendarEntry',
+  key: `entry-${entry.calendarEntryId}`,
+  entry,
+});
+
+const announcementHostOf = (announcement: StartAnnouncementAddOns): OwedHost => ({
+  kind: 'announcement',
+  key: `announcement-${announcement.announcementId}`,
+  announcement,
+});
+
 const isAttendanceOwed = (entry: StartEntry): boolean =>
   entry.attendance?.isOwed === true && entry.attendance.viewerAnswer === null;
 
-const attendanceItemsOf = (entry: StartEntry): OwedItem[] => {
+const entryAttendanceItemsOf = (entry: StartEntry): OwedItem[] => {
   if (entry.attendance === null) {
     return [];
   }
@@ -30,7 +62,14 @@ const attendanceItemsOf = (entry: StartEntry): OwedItem[] => {
     return [];
   }
 
-  return [{ kind: 'attendance', key: `attendance-${entry.calendarEntryId}`, isOwed, entry }];
+  return [
+    {
+      kind: 'attendance',
+      key: `attendance-${entry.calendarEntryId}`,
+      isOwed,
+      host: entryHostOf(entry),
+    },
+  ];
 };
 
 const positionOf = (item: OwedItem): number => {
@@ -40,63 +79,95 @@ const positionOf = (item: OwedItem): number => {
   if (item.kind === 'signUpList') {
     return item.list.position;
   }
+  if (item.host.kind === 'announcement') {
+    return item.host.announcement.attendance?.position ?? ATTENDANCE_FIRST;
+  }
 
-  return -1;
+  return ATTENDANCE_FIRST;
 };
 
-export const toFunctionItems = (entry: StartEntry): OwedItem[] => {
-  const polls = entry.openPolls.map(
+const byPosition = (left: OwedItem, right: OwedItem): number =>
+  positionOf(left) - positionOf(right);
+
+const functionItemsOf = (
+  host: OwedHost,
+  polls: readonly StartPoll[],
+  lists: readonly StartSignUpList[],
+): OwedItem[] => [
+  ...polls.map(
     (poll): OwedItem => ({
       kind: 'poll',
       key: `poll-${poll.pollId}`,
       isOwed: poll.isOwed,
-      entry,
+      host,
       poll,
     }),
-  );
-  const lists = entry.openSignUpLists.map(
+  ),
+  ...lists.map(
     (list): OwedItem => ({
       kind: 'signUpList',
       key: `sign-up-list-${list.signUpListId}`,
       isOwed: list.isOwed,
-      entry,
+      host,
       list,
     }),
-  );
+  ),
+];
 
-  return [...polls, ...lists].sort((left, right) => positionOf(left) - positionOf(right));
+export const toFunctionItems = (entry: StartEntry): OwedItem[] =>
+  functionItemsOf(entryHostOf(entry), entry.openPolls, entry.openSignUpLists).sort(byPosition);
+
+const announcementItemsOf = (announcement: StartAnnouncementAddOns): OwedItem[] => {
+  const host = announcementHostOf(announcement);
+  const attendance: OwedItem[] =
+    announcement.attendance === null
+      ? []
+      : [
+          {
+            kind: 'attendance',
+            key: `announcement-attendance-${announcement.announcementId}`,
+            isOwed: announcement.attendance.isOwed,
+            host,
+          },
+        ];
+
+  return [
+    ...attendance,
+    ...functionItemsOf(host, announcement.openPolls, announcement.openSignUpLists),
+  ].sort(byPosition);
 };
 
-export const toAnswerItems = (entries: readonly StartEntry[]): OwedItem[] =>
-  entries.flatMap((entry) => [...attendanceItemsOf(entry), ...toFunctionItems(entry)]);
+export const toAnswerItems = ({ entries, announcements }: OwedSources): OwedItem[] => [
+  ...entries.flatMap((entry) => [...entryAttendanceItemsOf(entry), ...toFunctionItems(entry)]),
+  ...announcements.flatMap(announcementItemsOf),
+];
 
 export const owesAnything = (entry: StartEntry): boolean =>
-  toAnswerItems([entry]).some((item) => item.isOwed);
+  toAnswerItems({ entries: [entry], announcements: [] }).some((item) => item.isOwed);
 
-export const toOwedKeys = (entries: readonly StartEntry[]): string[] =>
-  toAnswerItems(entries)
+export const toOwedKeys = (sources: OwedSources): string[] =>
+  toAnswerItems(sources)
     .filter((item) => item.isOwed)
     .map((item) => item.key);
 
-export const toOwedTally = (entries: readonly StartEntry[]): OwedTally => {
-  const items = toAnswerItems(entries);
+export const toOwedTally = (sources: OwedSources): OwedTally => {
+  const items = toAnswerItems(sources);
   const owed = items.filter((item) => item.isOwed).length;
 
   return { owed, answered: items.length - owed };
 };
 
-export interface OwedGroup {
-  key: number;
-  entry: StartEntry;
-  items: OwedItem[];
-}
-
 export const toOwedGroups = (items: readonly OwedItem[]): OwedGroup[] => {
-  const entries = [...new Map(items.map((item) => [item.entry.calendarEntryId, item.entry]))];
+  const hosts = [...new Map(items.map((item) => [item.host.key, item.host]))];
 
-  return entries.map(([key, entry]) => ({
+  return hosts.map(([key, host]) => ({
     key,
-    entry,
-    items: items.filter((item) => item.entry.calendarEntryId === key),
+    host,
+    items: items.filter((item) => item.host.key === key),
   }));
 };
+
+export const toHostItemKey = (host: OwedHost): string =>
+  host.kind === 'calendarEntry'
+    ? itemKeyOf({ panel: 'calendar', calendarEntryId: host.entry.calendarEntryId })
+    : itemKeyOf({ panel: 'announcementAddOns', announcementId: host.announcement.announcementId });

@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { owesAnything, toAnswerItems, toOwedGroups, toOwedKeys, toOwedTally } from './owed-items';
-import type { StartEntry } from './schemas';
+import {
+  owesAnything,
+  toAnswerItems,
+  toHostItemKey,
+  toOwedGroups,
+  toOwedKeys,
+  toOwedTally,
+} from './owed-items';
+import type { StartAnnouncementAddOns, StartEntry } from './schemas';
 
 const entry = (calendarEntryId: number, overrides: Partial<StartEntry> = {}): StartEntry => ({
   calendarEntryId,
@@ -63,9 +70,30 @@ const answered = entry(2, {
 });
 const quiet = entry(3, { attendance: { viewerAnswer: null, isOwed: false } });
 
+const announcement = (
+  announcementId: number,
+  overrides: Partial<StartAnnouncementAddOns> = {},
+): StartAnnouncementAddOns => ({
+  announcementId,
+  title: 'Sommerfest',
+  publishedAt: '2026-11-18T09:00:00+01:00',
+  attendance: null,
+  openPolls: [],
+  openSignUpLists: [],
+  ...overrides,
+});
+
+const festival = announcement(1, {
+  attendance: { position: 2, viewerAnswer: null, isOwed: true },
+  openPolls: [poll(31, 0, false)],
+  openSignUpLists: [list(41, 1, true)],
+});
+
+const entriesOnly = { entries: [meeting, answered, quiet], announcements: [] };
+
 describe('toAnswerItems', () => {
   it('puts the attendance first, then the functions in their order', () => {
-    expect(toAnswerItems([meeting, answered, quiet]).map((item) => item.key)).toEqual([
+    expect(toAnswerItems(entriesOnly).map((item) => item.key)).toEqual([
       'attendance-1',
       'poll-12',
       'sign-up-list-21',
@@ -74,21 +102,44 @@ describe('toAnswerItems', () => {
       'sign-up-list-22',
     ]);
   });
+
+  it('puts announcements after the entries, each in the order its author set', () => {
+    expect(
+      toAnswerItems({ entries: [answered], announcements: [festival] }).map((item) => item.key),
+    ).toEqual([
+      'attendance-2',
+      'sign-up-list-22',
+      'poll-31',
+      'sign-up-list-41',
+      'announcement-attendance-1',
+    ]);
+  });
+
+  it('keeps an entry attendance and an announcement attendance of the same id apart', () => {
+    const keys = toAnswerItems({ entries: [meeting], announcements: [festival] }).map(
+      (item) => item.key,
+    );
+
+    expect(new Set(keys).size).toBe(keys.length);
+  });
 });
 
 describe('toOwedKeys', () => {
   it('keeps only what she still owes', () => {
-    expect(toOwedKeys([meeting, answered, quiet])).toEqual([
-      'attendance-1',
-      'poll-12',
-      'sign-up-list-21',
-    ]);
+    expect(toOwedKeys(entriesOnly)).toEqual(['attendance-1', 'poll-12', 'sign-up-list-21']);
   });
 });
 
 describe('toOwedTally', () => {
   it('counts owed and answered items', () => {
-    expect(toOwedTally([meeting, answered, quiet])).toEqual({ owed: 3, answered: 3 });
+    expect(toOwedTally(entriesOnly)).toEqual({ owed: 3, answered: 3 });
+  });
+
+  it('counts the announcement add-ons along with the entries', () => {
+    expect(toOwedTally({ entries: [answered], announcements: [festival] })).toEqual({
+      owed: 2,
+      answered: 3,
+    });
   });
 });
 
@@ -105,12 +156,24 @@ describe('owesAnything', () => {
 });
 
 describe('toOwedGroups', () => {
-  it('puts the items of one entry under one group', () => {
-    const groups = toOwedGroups(toAnswerItems([meeting, answered]));
+  it('puts the items of one entry or announcement under one group', () => {
+    const groups = toOwedGroups(
+      toAnswerItems({ entries: [meeting, answered], announcements: [festival] }),
+    );
 
     expect(groups.map((group) => [group.key, group.items.map((item) => item.key)])).toEqual([
-      [1, ['attendance-1', 'poll-12', 'sign-up-list-21', 'poll-11']],
-      [2, ['attendance-2', 'sign-up-list-22']],
+      ['entry-1', ['attendance-1', 'poll-12', 'sign-up-list-21', 'poll-11']],
+      ['entry-2', ['attendance-2', 'sign-up-list-22']],
+      ['announcement-1', ['poll-31', 'sign-up-list-41', 'announcement-attendance-1']],
     ]);
+  });
+});
+
+describe('toHostItemKey', () => {
+  it.each([
+    [toAnswerItems({ entries: [meeting], announcements: [] })[0], 'calendar:1'],
+    [toAnswerItems({ entries: [], announcements: [festival] })[0], 'announcementAddOns:1'],
+  ])('keys the host of item %# like its Start line', (item, expected) => {
+    expect(item === undefined ? null : toHostItemKey(item.host)).toBe(expected);
   });
 });

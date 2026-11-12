@@ -1,7 +1,7 @@
 ---
 rfc: 0007
 title: Aushänge with add-ons, mentions and a push
-status: in progress (phases 1–7 done)
+status: done (phases 1–8 done)
 github_issue: 80
 branch: feat/rfc-80-aushaenge
 created: 2026-11-12
@@ -182,9 +182,16 @@ Decisions taken in phase 7:
 
 ### Phase 8 — Aushänge on Start
 Goal: owed Aushang add-ons are asked on Start.
-- [ ] Start read: Aushänge with own open add-ons she owes (Zu-/Absage unanswered, poll unvoted, list without her line) join the open answers
-- [ ] Ring and *Deine offenen Antworten* show them under the Aushang title; borrowed add-ons only under their entry
-- [ ] Integration and pure tests
+- [x] Start read: Aushänge with own open add-ons she owes (Zu-/Absage unanswered, poll unvoted, list without her line) join the open answers
+- [x] Ring and *Deine offenen Antworten* show them under the Aushang title; borrowed add-ons only under their entry
+- [x] Integration and pure tests
+
+Decisions taken in phase 8:
+- The Start calendar panel carries `announcementAddOns`: each current Aushang (*Gültig bis* not past) with its own open add-ons, for readers concerned by Aushang add-ons (running, unpaused members with `club.read`). Answered but still open add-ons stay in, so the ring's answered share and the open sheet stay steady after she answers; the Aushang leaves once nothing of it is open.
+- The calendar panel now also appears without any entry, when an Aushang add-on is owed; an owed Aushang add-on lifts the panel to at least the *Work* band (without entries the tile shows just the ring). Concern is read from the viewer's calendar ties (running membership without a pause in the session), no extra query. The calendar and owed sheets open whenever the panel exists.
+- Aushang rows follow the entries in *Deine offenen Antworten*, newest Aushang first; each shows its add-ons in the author's order (Zu-/Absage at its own position), headed by the title and *Aushang · day posted*.
+- Taken-over add-ons never appear under the Aushang on Start: they belong to their entry and show there when the entry is in her Start window.
+- The owed model carries a host (calendar entry or Aushang); keys are host-distinct (`announcement-attendance-{id}`), polls and lists answer on their host's route, the Aushang Zu-/Absage through its own mutation. The frozen visit reconciles Aushang add-ons by `announcementAddOns:{id}`.
 
 ## Risks & alternatives
 - **Renaming add-on classes** touches much of the calendar code; phase 4 keeps behaviour fixed and

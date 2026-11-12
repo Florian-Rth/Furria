@@ -1,7 +1,4 @@
-import {
-  ATTENDANCE_FAILURE_EFFECTS,
-  toAttendanceFailureOf,
-} from '@/features/attendance/attendance-answer';
+import { toAttendanceDims } from '@/features/attendance/attendance-answer';
 import { toAttendanceRoll } from '@/features/calendar/calendar-attendance';
 import { toAttendanceReminderSource } from '@/features/calendar/calendar-reminders';
 import type { CalendarConfirmCopy } from '@/features/calendar/components/CalendarConfirmDialog';
@@ -40,8 +37,7 @@ export const useAnnouncementAttendance = (
   const ownPersonId = useMeQuery().data?.person?.id ?? null;
   const sheet = useNamesSheet();
   const pendingAnswer = answering.isPending ? (answering.variables ?? null) : null;
-  const failure = toAttendanceFailureOf(answering.error);
-  const dimsAnswer = failure === null ? false : ATTENDANCE_FAILURE_EFFECTS[failure].dims;
+  const dimsAnswer = toAttendanceDims(answering.error);
 
   return {
     answer: announcement.viewerMayAnswer

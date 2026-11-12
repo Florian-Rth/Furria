@@ -82,6 +82,7 @@ const calendar = (entries: StartEntry[], shownCount = entries.length): StartPane
   kind: 'calendar',
   shownCount,
   entries,
+  announcementAddOns: [],
 });
 
 const minePanel = (items: StartMine[], shownCount = items.length): StartPanel => ({
@@ -198,6 +199,28 @@ describe('withoutQuiet', () => {
     const result = withoutQuiet(board, quiet({ 'groups:jubilee:6': '2027-01-30' }), NONE);
 
     expect(result.panels.map((panel) => panel.kind)).toEqual(['calendar']);
+  });
+
+  it('keeps a calendar that only holds announcement add-ons', () => {
+    const board = start([
+      {
+        kind: 'calendar',
+        shownCount: 0,
+        entries: [],
+        announcementAddOns: [
+          {
+            announcementId: 5,
+            title: 'Sommerfest',
+            publishedAt: '2027-01-18T09:00:00Z',
+            attendance: { position: 0, viewerAnswer: null, isOwed: true },
+            openPolls: [],
+            openSignUpLists: [],
+          },
+        ],
+      },
+    ]);
+
+    expect(withoutQuiet(board, quiet({}), NONE).panels).toHaveLength(1);
   });
 
   it('leaves calendar lines alone whatever the memory says', () => {

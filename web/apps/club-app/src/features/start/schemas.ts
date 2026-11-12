@@ -93,6 +93,23 @@ export const StartEntrySchema = z.object({
 });
 export type StartEntry = z.infer<typeof StartEntrySchema>;
 
+const StartAnnouncementAttendanceSchema = z.object({
+  position: z.int(),
+  viewerAnswer: AttendanceAnswerSchema.nullable(),
+  isOwed: z.boolean(),
+});
+export type StartAnnouncementAttendance = z.infer<typeof StartAnnouncementAttendanceSchema>;
+
+export const StartAnnouncementAddOnsSchema = z.object({
+  announcementId: z.int(),
+  title: z.string(),
+  publishedAt: z.iso.datetime({ offset: true }),
+  attendance: StartAnnouncementAttendanceSchema.nullable(),
+  openPolls: z.array(StartPollSchema),
+  openSignUpLists: z.array(StartSignUpListSchema),
+});
+export type StartAnnouncementAddOns = z.infer<typeof StartAnnouncementAddOnsSchema>;
+
 const StartPersonSchema = z.object({
   personId: z.int(),
   firstName: z.string(),
@@ -216,7 +233,12 @@ export const START_PANEL_KINDS = [
 const Base = { shownCount: z.int().nonnegative() };
 
 export const StartPanelSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('calendar'), ...Base, entries: z.array(StartEntrySchema) }),
+  z.object({
+    kind: z.literal('calendar'),
+    ...Base,
+    entries: z.array(StartEntrySchema),
+    announcementAddOns: z.array(StartAnnouncementAddOnsSchema),
+  }),
   z.object({
     kind: z.literal('announcements'),
     ...Base,

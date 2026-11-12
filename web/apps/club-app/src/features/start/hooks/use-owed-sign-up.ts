@@ -4,8 +4,9 @@ import {
   SIGN_UP_LINE_TEXT_MAX_LENGTH,
   toLineText,
 } from '@/features/calendar/calendar-sign-up-lists';
-import type { StartEntry, StartSignUpList } from '../schemas';
-import { itemKeyOf } from '../start-visit';
+import type { OwedHost } from '../owed-items';
+import { toHostItemKey } from '../owed-items';
+import type { StartSignUpList } from '../schemas';
 import type { StartBoard } from './use-start-view';
 
 const EMPTY_OWN_LINE_LABEL = 'Eingetragen';
@@ -23,7 +24,7 @@ export interface OwedSignUpView {
 }
 
 export const useOwedSignUp = (
-  entry: StartEntry,
+  host: OwedHost,
   list: StartSignUpList,
   board: StartBoard,
 ): OwedSignUpView => {
@@ -46,9 +47,9 @@ export const useOwedSignUp = (
         return;
       }
 
-      board.touch(itemKeyOf({ panel: 'calendar', calendarEntryId: entry.calendarEntryId }));
+      board.touch(toHostItemKey(host));
       saving.mutate({
-        hostKind: 'calendarEntry',
+        hostKind: host.kind,
         signUpListId: list.signUpListId,
         text: toLineText(draft),
       });

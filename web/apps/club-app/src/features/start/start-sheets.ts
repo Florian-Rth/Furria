@@ -2,6 +2,7 @@ import { toPeekedId } from '@/lib/peek';
 import type {
   Start,
   StartAnnouncement,
+  StartAnnouncementAddOns,
   StartEntry,
   StartGroupMoment,
   StartMine,
@@ -79,6 +80,9 @@ export const parseStartSheet = (sheetId: string | null): StartSheet | null => {
 
 export const entriesOf = (start: Start): StartEntry[] => panelOf(start, 'calendar')?.entries ?? [];
 
+export const announcementAddOnsOf = (start: Start): StartAnnouncementAddOns[] =>
+  panelOf(start, 'calendar')?.announcementAddOns ?? [];
+
 export const announcementsOf = (start: Start): StartAnnouncement[] =>
   panelOf(start, 'announcements')?.announcements ?? [];
 
@@ -95,7 +99,7 @@ const opensOn = (sheet: StartSheet, start: Start): boolean => {
     return entriesOf(start).some((entry) => entry.calendarEntryId === sheet.calendarEntryId);
   }
   if (sheet.kind === 'calendar' || sheet.kind === 'owed') {
-    return entriesOf(start).length > 0;
+    return panelOf(start, 'calendar') !== undefined;
   }
   if (sheet.kind === 'announcements') {
     const announcements = announcementsOf(start);

@@ -6,13 +6,13 @@ import type { OwedGroup } from '../owed-items';
 import { toOwedRowHead } from '../owed-row-head';
 import { OwedItem } from './OwedItem';
 
-interface OwedEntryProps {
+interface OwedHostRowProps {
   group: OwedGroup;
   board: StartBoard;
 }
 
-export const OwedEntry: FC<OwedEntryProps> = ({ group, board }) => {
-  const head = toOwedRowHead(group.entry);
+export const OwedHostRow: FC<OwedHostRowProps> = ({ group, board }) => {
+  const head = toOwedRowHead(group.host);
 
   const items = group.items.map((item) => <OwedItem key={item.key} item={item} board={board} />);
 

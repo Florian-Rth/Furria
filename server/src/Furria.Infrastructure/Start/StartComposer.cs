@@ -49,7 +49,7 @@ public static class StartComposer
             Panels = Ranked([
                 .. new[]
                 {
-                    CalendarPanelOf(calendarRows, moment),
+                    CalendarPanelOf(calendarRows, candidates.AnnouncementAddOns, moment),
                     MinePanelOf(candidates.Mine, moment),
                     AnnouncementsPanelOf(candidates.Announcements),
                     BeerTabPanelOf(candidates.BeerTabs),
@@ -180,10 +180,11 @@ public static class StartComposer
     [Pure]
     private static BandedPanel? CalendarPanelOf(
         IReadOnlyList<StartEntrySummary> rows,
+        IReadOnlyList<StartAnnouncementAddOns> announcementAddOns,
         StartMoment moment
     )
     {
-        if (rows.Count == 0)
+        if (rows.Count == 0 && !announcementAddOns.Any(announcement => announcement.IsOwed))
             return null;
 
         var shownCount = ShownCountOf(CalendarCap, rows.Count);
@@ -202,10 +203,28 @@ public static class StartComposer
                     .. InTimeOrder(rows.Where(row => picked.Contains(row.CalendarEntryId))),
                     .. InTimeOrder(rows.Where(row => !picked.Contains(row.CalendarEntryId))),
                 ],
+                AnnouncementAddOns =
+                [
+                    .. announcementAddOns
+                        .OrderByDescending(announcement => announcement.PublishedAt)
+                        .ThenByDescending(announcement => announcement.AnnouncementId),
+                ],
             },
-            rows.Min(row => BandOf(row, moment))
+            BandOf(rows, announcementAddOns, moment)
         );
     }
+
+    [Pure]
+    private static StartBand BandOf(
+        IReadOnlyList<StartEntrySummary> rows,
+        IReadOnlyList<StartAnnouncementAddOns> announcementAddOns,
+        StartMoment moment
+    ) =>
+        rows.Select(row => BandOf(row, moment))
+            .Concat(
+                announcementAddOns.Any(announcement => announcement.IsOwed) ? [StartBand.Work] : []
+            )
+            .Min();
 
     [Pure]
     private static BandedPanel? MinePanelOf(
@@ -376,6 +395,7 @@ public static class StartComposer
             ShownCount = shownCount,
             Entries = null,
             Announcements = null,
+            AnnouncementAddOns = null,
             Mine = null,
             GroupMoments = null,
             ToDos = null,

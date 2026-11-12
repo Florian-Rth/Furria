@@ -3,7 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useOwedSheet } from '../hooks/use-owed-sheet';
 import type { StartBoard } from '../hooks/use-start-view';
-import { OwedEntry } from './OwedEntry';
+import { OwedHostRow } from './OwedHostRow';
 
 const SHEET_TITLE = 'Deine offenen Antworten';
 const CLOSE_LABEL = 'Schließen';
@@ -16,7 +16,7 @@ export const OwedSheet: FC<OwedSheetProps> = ({ board }) => {
   const sheet = useOwedSheet(board);
 
   const rows = sheet.groups.map((group) => (
-    <OwedEntry key={group.key} group={group} board={board} />
+    <OwedHostRow key={group.key} group={group} board={board} />
   ));
 
   return (

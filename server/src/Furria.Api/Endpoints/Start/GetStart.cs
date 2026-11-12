@@ -75,6 +75,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             ShownCount = panel.ShownCount,
             Entries = panel.Entries?.Select(ToDto).ToList(),
             Announcements = panel.Announcements?.Select(ToDto).ToList(),
+            AnnouncementAddOns = panel.AnnouncementAddOns?.Select(ToDto).ToList(),
             Mine = panel.Mine?.Select(ToDto).ToList(),
             GroupMoments = panel.GroupMoments?.Select(ToDto).ToList(),
             ToDos = panel.ToDos?.Select(ToDto).ToList(),
@@ -214,6 +215,25 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             ViewerText = list.ViewerText,
         };
 
+    private static StartAnnouncementAddOnsDto ToDto(StartAnnouncementAddOns announcement) =>
+        new()
+        {
+            AnnouncementId = announcement.AnnouncementId,
+            Title = announcement.Title,
+            PublishedAt = announcement.PublishedAt,
+            Attendance = announcement.Attendance is { } attendance ? ToDto(attendance) : null,
+            OpenPolls = [.. announcement.OpenPolls.Select(ToDto)],
+            OpenSignUpLists = [.. announcement.OpenSignUpLists.Select(ToDto)],
+        };
+
+    private static StartAnnouncementAttendanceDto ToDto(StartAnnouncementAttendance attendance) =>
+        new()
+        {
+            Position = attendance.Position,
+            ViewerAnswer = attendance.ViewerAnswer,
+            IsOwed = attendance.IsOwed,
+        };
+
     private static StartAnnouncementDto ToDto(StartAnnouncementSummary announcement) =>
         new()
         {
@@ -310,6 +330,8 @@ public sealed record StartPanelDto
     public required IReadOnlyList<StartEntryDto>? Entries { get; init; }
 
     public required IReadOnlyList<StartAnnouncementDto>? Announcements { get; init; }
+
+    public required IReadOnlyList<StartAnnouncementAddOnsDto>? AnnouncementAddOns { get; init; }
 
     public required IReadOnlyList<StartMineDto>? Mine { get; init; }
 
@@ -509,6 +531,30 @@ public sealed record StartSignUpListDto
     public required bool IsOwed { get; init; }
 
     public required string? ViewerText { get; init; }
+}
+
+public sealed record StartAnnouncementAddOnsDto
+{
+    public required int AnnouncementId { get; init; }
+
+    public required string Title { get; init; }
+
+    public required DateTimeOffset PublishedAt { get; init; }
+
+    public required StartAnnouncementAttendanceDto? Attendance { get; init; }
+
+    public required IReadOnlyList<StartPollDto> OpenPolls { get; init; }
+
+    public required IReadOnlyList<StartSignUpListDto> OpenSignUpLists { get; init; }
+}
+
+public sealed record StartAnnouncementAttendanceDto
+{
+    public required int Position { get; init; }
+
+    public required AttendanceAnswer? ViewerAnswer { get; init; }
+
+    public required bool IsOwed { get; init; }
 }
 
 public sealed record StartAnnouncementDto

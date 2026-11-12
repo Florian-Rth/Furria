@@ -50,8 +50,14 @@ const calendar: StartPanel & { kind: 'calendar' } = {
   kind: 'calendar',
   shownCount: 5,
   entries: [1, 2, 3, 4, 5, 6].map(entry),
+  announcementAddOns: [],
 };
-const shortCalendar: StartPanel = { kind: 'calendar', shownCount: 5, entries: [entry(1)] };
+const shortCalendar: StartPanel = {
+  kind: 'calendar',
+  shownCount: 5,
+  entries: [entry(1)],
+  announcementAddOns: [],
+};
 const mineFacts: StartPanel = {
   kind: 'mine',
   shownCount: 3,

@@ -73,6 +73,7 @@ public sealed partial class StartService
             {
                 Entries = await EntryCandidatesAsync(viewer, ct),
                 Announcements = await AnnouncementCandidatesAsync(viewer, ct),
+                AnnouncementAddOns = await AnnouncementAddOnCandidatesAsync(viewer, ct),
                 ToDos = await _toDoService.ForAsync(accountId, ct),
                 Mine = await MineCandidatesAsync(viewer, ct),
                 GroupMoments = await GroupMomentCandidatesAsync(viewer, ct),

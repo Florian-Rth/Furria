@@ -12,6 +12,8 @@ public sealed record StartPanel
 
     public required IReadOnlyList<StartAnnouncementSummary>? Announcements { get; init; }
 
+    public required IReadOnlyList<StartAnnouncementAddOns>? AnnouncementAddOns { get; init; }
+
     public required IReadOnlyList<StartMineSummary>? Mine { get; init; }
 
     public required IReadOnlyList<StartGroupMoment>? GroupMoments { get; init; }

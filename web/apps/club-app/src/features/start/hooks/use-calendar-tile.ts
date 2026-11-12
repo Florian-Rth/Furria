@@ -98,7 +98,10 @@ export const useCalendarTile = (
   const sheet = useKkSheetCommands();
   const { now } = board;
   const split = splitCalendar(panel.entries, panel.shownCount);
-  const tally = toOwedTally(panel.entries);
+  const tally = toOwedTally({
+    entries: panel.entries,
+    announcements: panel.announcementAddOns,
+  });
 
   const opener = (entry: StartEntry) => (): void => {
     sheet.open(toPeekId('entry', entry.calendarEntryId));

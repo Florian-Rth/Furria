@@ -109,6 +109,9 @@ const quietPanelOf = (panel: StartPanel, held: (key: string) => boolean): StartP
   return { ...panel, shownCount: toShownCount(panel.shownCount, panelSizeOf(panel)) };
 };
 
+const holdsAnything = (panel: StartPanel): boolean =>
+  panelSizeOf(panel) > 0 || (panel.kind === 'calendar' && panel.announcementAddOns.length > 0);
+
 export const withoutQuiet = (
   start: Start,
   memory: QuietMemory,
@@ -118,9 +121,7 @@ export const withoutQuiet = (
 
   return {
     ...start,
-    panels: start.panels
-      .map((panel) => quietPanelOf(panel, held))
-      .filter((panel) => panelSizeOf(panel) > 0),
+    panels: start.panels.map((panel) => quietPanelOf(panel, held)).filter(holdsAnything),
   };
 };
 
