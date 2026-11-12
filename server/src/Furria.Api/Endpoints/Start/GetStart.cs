@@ -2,6 +2,7 @@ using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Api.Endpoints.Gallery;
 using Furria.Api.Media;
+using Furria.Api.Mentions;
 using Furria.Application.Management;
 using Furria.Application.Start;
 using Furria.Core.Club;
@@ -219,6 +220,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             AnnouncementId = announcement.AnnouncementId,
             Title = announcement.Title,
             Body = announcement.Body,
+            Mentions = AnnouncementMentionsDto.From(announcement.Mentions),
             PublishedAt = announcement.PublishedAt,
             ValidUntil = announcement.ValidUntil,
             Author = announcement.Author is { } author ? ToDto(author) : null,
@@ -516,6 +518,8 @@ public sealed record StartAnnouncementDto
     public required string Title { get; init; }
 
     public required string Body { get; init; }
+
+    public required AnnouncementMentionsDto Mentions { get; init; }
 
     public required DateTimeOffset PublishedAt { get; init; }
 

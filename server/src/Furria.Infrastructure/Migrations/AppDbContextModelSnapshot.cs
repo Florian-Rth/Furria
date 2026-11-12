@@ -383,8 +383,8 @@ namespace Furria.Infrastructure.Migrations
 
                     b.Property<string>("Body")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)")
                         .HasColumnName("body");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -423,6 +423,44 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_announcement_published_at");
 
                     b.ToTable("announcement", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.AnnouncementMention", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AnnouncementId")
+                        .HasColumnType("integer")
+                        .HasColumnName("announcement_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<int>("TargetId")
+                        .HasColumnType("integer")
+                        .HasColumnName("target_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_announcement_mention");
+
+                    b.HasIndex("AnnouncementId", "Kind", "TargetId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_announcement_mention_announcement_id_kind_target_id");
+
+                    b.ToTable("announcement_mention", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_announcement_mention_kind", "kind IN ('Group', 'Person', 'CalendarEntry', 'Event', 'NewsPost', 'Album')");
+
+                            t.HasCheckConstraint("ck_announcement_mention_target_id_positive", "target_id > 0");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Core.Club.AttendanceResponse", b =>
@@ -5788,6 +5826,18 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Author");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.AnnouncementMention", b =>
+                {
+                    b.HasOne("Furria.Core.Club.Announcement", "Announcement")
+                        .WithMany("Mentions")
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_announcement_mention_announcement_announcement_id");
+
+                    b.Navigation("Announcement");
+                });
+
             modelBuilder.Entity("Furria.Core.Club.AttendanceResponse", b =>
                 {
                     b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
@@ -7375,6 +7425,11 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_account_token_account_user_id");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
+                {
+                    b.Navigation("Mentions");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.CalendarDaySchedule", b =>

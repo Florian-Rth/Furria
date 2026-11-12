@@ -8,6 +8,8 @@ public sealed record ClubHubAnnouncement
 
     public required string Body { get; init; }
 
+    public required AnnouncementMentionTargets Mentions { get; init; }
+
     public required DateTimeOffset PublishedAt { get; init; }
 
     public required DateOnly? ValidUntil { get; init; }

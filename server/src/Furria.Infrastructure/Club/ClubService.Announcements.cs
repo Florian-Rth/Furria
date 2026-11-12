@@ -11,6 +11,7 @@ public sealed partial class ClubService
 
     private async Task<ClubHubAnnouncements> AnnouncementsAsync(
         DateOnly today,
+        MentionReader reader,
         CancellationToken ct
     )
     {
@@ -33,10 +34,18 @@ public sealed partial class ClubService
             return new ClubHubAnnouncements { Newest = [], TotalCount = totalCount };
 
         var officeNames = await _runningBoardSeats.OfficeNamesAsync(today, ct);
+        var mentions = await _mentionTargets.OfAnnouncementsAsync(
+            [.. rows.Select(row => row.AnnouncementId)],
+            reader,
+            ct
+        );
 
         return new ClubHubAnnouncements
         {
-            Newest = [.. rows.Select(row => ToHubAnnouncement(row, officeNames, _pictures))],
+            Newest =
+            [
+                .. rows.Select(row => ToHubAnnouncement(row, officeNames, mentions, _pictures)),
+            ],
             TotalCount = totalCount,
         };
     }
@@ -44,6 +53,7 @@ public sealed partial class ClubService
     private static ClubHubAnnouncement ToHubAnnouncement(
         AnnouncementRow row,
         IReadOnlyDictionary<int, string> officeNames,
+        IReadOnlyDictionary<int, AnnouncementMentionTargets> mentions,
         MediaPictures pictures
     ) =>
         new()
@@ -51,6 +61,10 @@ public sealed partial class ClubService
             AnnouncementId = row.AnnouncementId,
             Title = row.Title,
             Body = row.Body,
+            Mentions = mentions.GetValueOrDefault(
+                row.AnnouncementId,
+                AnnouncementMentionTargets.None
+            ),
             PublishedAt = row.PublishedAt,
             ValidUntil = row.ValidUntil,
             Author = row.Author is { } author

@@ -17,6 +17,7 @@ export const ANNOUNCEMENT_EXPIRED_LABEL = 'abgelaufen';
 export const ADD_ANNOUNCEMENT_PILL_LABEL = 'Aushang';
 export const ADD_ANNOUNCEMENT_ACTION_LABEL = 'Aushang hinzufügen';
 export const WITHDRAW_ANNOUNCEMENT_DANGER_LABEL = 'Aushang abnehmen';
+export const ANNOUNCEMENT_EDIT_ACTION_LABEL = 'Aushang ändern';
 
 export const ANNOUNCEMENT_TITLE_FIELD_LABEL = 'Titel';
 export const ANNOUNCEMENT_BODY_FIELD_LABEL = 'Text';

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MentionTargetsSchema } from '@/features/rich-text/schemas';
 import { PictureSchema } from '@/lib/api/schemas';
 
 export const ANNOUNCEMENT_TITLE_MAX_LENGTH = 120;
@@ -22,6 +23,7 @@ export const AnnouncementSchema = z.object({
   announcementId: z.number().int(),
   title: z.string(),
   body: z.string(),
+  mentions: MentionTargetsSchema,
   publishedAt: z.iso.datetime({ offset: true }),
   validUntil: z.iso.date().nullable(),
   author: AnnouncementAuthorSchema.nullable(),
@@ -33,6 +35,9 @@ export const AnnouncementsResponseSchema = z.object({
   announcements: z.array(AnnouncementSchema),
 });
 export type AnnouncementsResponse = z.infer<typeof AnnouncementsResponseSchema>;
+
+export const AnnouncementMentionablesSchema = z.object({ mentionables: MentionTargetsSchema });
+export type AnnouncementMentionables = z.infer<typeof AnnouncementMentionablesSchema>;
 
 export const CreatedAnnouncementSchema = z.object({ announcementId: z.number().int() });
 export type CreatedAnnouncement = z.infer<typeof CreatedAnnouncementSchema>;

@@ -1,9 +1,11 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Api.Media;
+using Furria.Api.Mentions;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Core.Club;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Club;
@@ -11,10 +13,12 @@ namespace Furria.Api.Endpoints.Club;
 public sealed class GetClubHub : EndpointWithoutRequest<GetClubHubResponse>
 {
     private readonly ClubService _clubService;
+    private readonly PermissionAuthorizer _authorizer;
 
-    public GetClubHub(ClubService clubService)
+    public GetClubHub(ClubService clubService, PermissionAuthorizer authorizer)
     {
         _clubService = clubService;
+        _authorizer = authorizer;
     }
 
     public override void Configure()
@@ -25,7 +29,20 @@ public sealed class GetClubHub : EndpointWithoutRequest<GetClubHubResponse>
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var hub = await _clubService.GetHubAsync(ct);
+        var accountId = User.AccountId();
+        if (accountId is null)
+        {
+            await Send.UnauthorizedAsync(ct);
+            return;
+        }
+
+        var reader = await MentionReaders.OfAsync(
+            _authorizer,
+            accountId.Value,
+            User.PersonId(),
+            ct
+        );
+        var hub = await _clubService.GetHubAsync(reader, ct);
 
         await Send.OkAsync(ToResponse(hub), cancellation: ct);
     }
@@ -72,6 +89,7 @@ public sealed class GetClubHub : EndpointWithoutRequest<GetClubHubResponse>
             AnnouncementId = announcement.AnnouncementId,
             Title = announcement.Title,
             Body = announcement.Body,
+            Mentions = AnnouncementMentionsDto.From(announcement.Mentions),
             PublishedAt = announcement.PublishedAt,
             ValidUntil = announcement.ValidUntil,
             Author = announcement.Author is { } author ? ToDto(author) : null,
@@ -171,6 +189,8 @@ public sealed record ClubAnnouncementDto
     public required string Title { get; init; }
 
     public required string Body { get; init; }
+
+    public required AnnouncementMentionsDto Mentions { get; init; }
 
     public required DateTimeOffset PublishedAt { get; init; }
 

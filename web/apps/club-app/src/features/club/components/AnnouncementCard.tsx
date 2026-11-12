@@ -1,9 +1,9 @@
 import { KkChip } from '@furria/ui/KkChip';
 import { KkHeading } from '@furria/ui/KkHeading';
-import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { AnnouncementAuthorLine } from '@/features/announcements/components/AnnouncementAuthorLine';
+import { AnnouncementText } from '@/features/announcements/components/AnnouncementText';
 import { ANNOUNCEMENT_NEW_LABEL } from '@/lib/announcements';
 import type { ClubAnnouncement } from '../schemas';
 
@@ -26,9 +26,7 @@ export const AnnouncementCard: FC<AnnouncementCardProps> = ({ announcement, isNe
         </KkHeading>
         {newChip}
       </Stack>
-      <KkText variant="body2" measure="lead" sx={{ whiteSpace: 'pre-line' }}>
-        {announcement.body}
-      </KkText>
+      <AnnouncementText body={announcement.body} mentions={announcement.mentions} />
       <AnnouncementAuthorLine author={announcement.author} publishedAt={announcement.publishedAt} />
     </Stack>
   );

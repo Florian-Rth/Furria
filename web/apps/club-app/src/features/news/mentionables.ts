@@ -2,9 +2,8 @@ import { toImageSource } from '@furria/ui/image-source';
 import type { KkMentionSection } from '@furria/ui/KkMentionPicker';
 import type { KkProseMentionTone } from '@furria/ui/KkProseField';
 import { NEWS_MENTION_KINDS } from '@furria/ui/news-mention-kinds';
-import type { RichTextInline } from '@furria/ui/rich-text';
-import { mentionKeyOf, readRichText } from '@furria/ui/rich-text';
 import { mentionChoiceOf } from '@/features/rich-text/mention-choice';
+import { mentionTonesOf } from '@/features/rich-text/mention-tones';
 import { mentionableOf } from '@/features/rich-text/mentionable';
 import type { Mentionable } from '@/features/rich-text/types';
 import { groupInitialsOf, toInitials } from '@/lib/initials';
@@ -37,29 +36,10 @@ export const mentionablesOf = (response: NewsMentionables, groupWord: string): M
   ),
 ];
 
-const mentionKeysIn = (inlines: readonly RichTextInline[]): string[] =>
-  inlines.flatMap((inline) => (inline.kind === 'mention' ? [mentionKeyOf(inline.mention)] : []));
-
-export const mentionKeysOf = (text: string): string[] =>
-  readRichText(text, NEWS_MENTION_KINDS).flatMap((block) =>
-    block.kind === 'list' ? block.items.flatMap(mentionKeysIn) : mentionKeysIn(block.inlines),
-  );
-
-export const mentionTonesOf = (
+export const newsMentionTonesOf = (
   mentionables: readonly Mentionable[],
   text: string,
-): KkProseMentionTone[] => {
-  const known = new Set(mentionables.map((mentionable) => mentionable.id));
-  const stale = [...new Set(mentionKeysOf(text))].filter((key) => !known.has(key));
-  return [
-    ...mentionables.map((mentionable) => ({
-      id: mentionable.id,
-      tone: mentionable.tone,
-      isPublic: true,
-    })),
-    ...stale.map((id) => ({ id, tone: null, isPublic: false })),
-  ];
-};
+): KkProseMentionTone[] => mentionTonesOf(mentionables, text, NEWS_MENTION_KINDS);
 
 export const newsMentionSectionsOf = (
   choices: readonly Mentionable[],

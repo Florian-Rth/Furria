@@ -6,14 +6,17 @@ import { KkMentionFacts } from './internal/ui/KkMentionFacts';
 import { KkMentionGroupFace } from './internal/ui/KkMentionGroupFace';
 import { KkMentionPortrait } from './internal/ui/KkMentionPortrait';
 
-export type KkMentionCardFace = { kind: 'group'; tone: KkGroupTone | null } | { kind: 'person' };
+export type KkMentionCardFace =
+  | { kind: 'group'; tone: KkGroupTone | null }
+  | { kind: 'person' }
+  | { kind: 'plain' };
 
 interface KkMentionCardProps {
   face: KkMentionCardFace;
   name: string;
   line: string;
-  initials: string;
-  picture: KkPictureUrls | null;
+  initials?: string;
+  picture?: KkPictureUrls | null;
   action?: ReactNode;
 }
 
@@ -21,12 +24,19 @@ export const KkMentionCard: FC<KkMentionCardProps> = ({
   face,
   name,
   line,
-  initials,
-  picture,
+  initials = '',
+  picture = null,
   action = null,
 }) => {
   const facts = <KkMentionFacts name={name} line={line} action={action} />;
 
+  if (face.kind === 'plain') {
+    return (
+      <Stack data-kk-mention-card="plain" sx={{ p: 2 }}>
+        {facts}
+      </Stack>
+    );
+  }
   if (face.kind === 'group') {
     return (
       <Stack data-kk-mention-card="group">

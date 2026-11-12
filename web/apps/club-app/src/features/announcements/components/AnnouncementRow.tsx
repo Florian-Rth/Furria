@@ -1,18 +1,24 @@
 import { KkChip } from '@furria/ui/KkChip';
 import { KkHeading } from '@furria/ui/KkHeading';
+import { KkIconButton } from '@furria/ui/KkIconButton';
 import { KkMeta } from '@furria/ui/KkMeta';
 import { KkPanel } from '@furria/ui/KkPanel';
-import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write/landing-target';
 import { ANNOUNCEMENT_NEW_LABEL } from '@/lib/announcements';
-import { ANNOUNCEMENT_EXPIRED_LABEL, toValidUntilLabel } from '../announcements-labels';
+import {
+  ANNOUNCEMENT_EDIT_ACTION_LABEL,
+  ANNOUNCEMENT_EXPIRED_LABEL,
+  toValidUntilLabel,
+} from '../announcements-labels';
 import type { Announcement } from '../schemas';
 import { AnnouncementAuthorLine } from './AnnouncementAuthorLine';
+import { AnnouncementText } from './AnnouncementText';
 
 const LANDING_KIND = 'announcement';
+const EDIT_ROUTE = '/announcements/$announcementId';
 
 interface AnnouncementRowProps {
   announcement: Announcement;
@@ -36,20 +42,22 @@ export const AnnouncementRow: FC<AnnouncementRowProps> = ({
   const validUntilLine =
     validUntilLabel === null ? null : <KkMeta tone="faint">{validUntilLabel}</KkMeta>;
   const landingKey = toLandingKey(LANDING_KIND, announcement.announcementId);
+  const isHighlighted = announcement.viewerMayEdit && highlightedKey === landingKey;
+  const landing = announcement.viewerMayEdit ? landingKey : undefined;
+  const editParams = { announcementId: String(announcement.announcementId) };
+  const editAction = announcement.viewerMayEdit ? (
+    <KkIconButton
+      label={ANNOUNCEMENT_EDIT_ACTION_LABEL}
+      icon="edit"
+      size="small"
+      component={Link}
+      to={EDIT_ROUTE}
+      params={editParams}
+    />
+  ) : null;
 
   return (
-    <KkPanel
-      variant="block"
-      highlight={announcement.viewerMayEdit && highlightedKey === landingKey}
-      landing={announcement.viewerMayEdit ? landingKey : undefined}
-      component={announcement.viewerMayEdit ? Link : undefined}
-      to={announcement.viewerMayEdit ? '/announcements/$announcementId' : undefined}
-      params={
-        announcement.viewerMayEdit
-          ? { announcementId: String(announcement.announcementId) }
-          : undefined
-      }
-    >
+    <KkPanel variant="block" highlight={isHighlighted} landing={landing}>
       <Stack sx={{ gap: 1.5, minWidth: 0 }}>
         <Stack
           direction="row"
@@ -58,14 +66,13 @@ export const AnnouncementRow: FC<AnnouncementRowProps> = ({
           <KkHeading level={4} component="h3">
             {announcement.title}
           </KkHeading>
-          <Stack direction="row" sx={{ gap: 0.75, flexShrink: 0 }}>
+          <Stack direction="row" sx={{ gap: 0.75, flexShrink: 0, alignItems: 'center' }}>
             {newChip}
             {expiredChip}
+            {editAction}
           </Stack>
         </Stack>
-        <KkText variant="body2" measure="lead" sx={{ whiteSpace: 'pre-line' }}>
-          {announcement.body}
-        </KkText>
+        <AnnouncementText body={announcement.body} mentions={announcement.mentions} />
         <AnnouncementAuthorLine author={announcement.author} publishedAt={announcement.publishedAt}>
           {validUntilLine}
         </AnnouncementAuthorLine>

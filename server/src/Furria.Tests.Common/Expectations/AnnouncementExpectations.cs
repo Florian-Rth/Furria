@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Text;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -53,6 +54,23 @@ public sealed class AnnouncementExpectations
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(personId, (await SingleAsync(dbContext, ct)).AuthorPersonId)
+        );
+
+    public Expected ToHaveMentions(params (MentionKind Kind, int TargetId)[] mentions) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    mentions.Order(),
+                    (
+                        await dbContext
+                            .AnnouncementMentions.AsNoTracking()
+                            .Where(row => row.AnnouncementId == _announcementId)
+                            .Select(row => new { row.Kind, row.TargetId })
+                            .ToListAsync(ct)
+                    )
+                        .Select(row => (row.Kind, row.TargetId))
+                        .Order()
+                )
         );
 
     private Task<Announcement> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

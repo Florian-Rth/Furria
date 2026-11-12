@@ -289,6 +289,14 @@ describe('visit hold', () => {
       announcementId: 7,
       title: 'Helfer gesucht',
       body: 'Wer hilft beim Hallenaufbau?',
+      mentions: {
+        persons: [],
+        groups: [],
+        calendarEntries: [],
+        events: [],
+        newsPosts: [],
+        albums: [],
+      },
       publishedAt: '2027-01-18T09:00:00Z',
       validUntil: null,
       author: {

@@ -3,6 +3,7 @@ import { MyActSchema } from '@/features/acts/schemas';
 import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
 import { CalendarEntryAudienceSchema } from '@/features/calendar/schemas';
 import { NewsCategorySchema } from '@/features/news/schemas';
+import { MentionTargetsSchema } from '@/features/rich-text/schemas';
 import { TO_DO_KINDS } from '@/features/to-dos/schemas';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
 import { MediaItemStateSchema, MediaUrlSchema, PictureSchema } from '@/lib/api/schemas';
@@ -105,6 +106,7 @@ export const StartAnnouncementSchema = z.object({
   announcementId: z.int(),
   title: z.string(),
   body: z.string(),
+  mentions: MentionTargetsSchema,
   publishedAt: z.iso.datetime({ offset: true }),
   validUntil: z.iso.date().nullable(),
   author: StartPersonSchema.nullable(),

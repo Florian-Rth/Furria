@@ -5,6 +5,7 @@ using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
+using static Furria.Api.Tests.Announcements.AnnouncementMentionSeeds;
 
 namespace Furria.Api.Tests.Announcements;
 
@@ -172,6 +173,94 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
         var result = await ReadAsync(ctx, "chris", ct);
 
         Assert.Empty(result.Announcements);
+    }
+
+    [Fact]
+    public async Task Should_ResolveOnlyTheMentionsTheReaderMaySee_When_TheTextMentionsEveryKind()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(MentionTargets(_fixture.TimeProvider.GetUtcNow()), ct);
+        await PostAsync(ctx, BodyMentioningEverything(ctx), ct);
+
+        var mentions = Assert.Single((await ReadAsync(ctx, Reader, ct)).Announcements).Mentions;
+
+        Assert.Equal(
+            [ctx.Identity.People.IdOf(Alice)],
+            mentions.Persons.Select(person => person.PersonId)
+        );
+        Assert.Equal(
+            [ctx.Groups.Groups.IdOf(Garde)],
+            mentions.Groups.Select(group => group.GroupId)
+        );
+        Assert.Equal(
+            [ctx.Club.CalendarEntries.IdOf(ClubMeeting)],
+            mentions.CalendarEntries.Select(entry => entry.CalendarEntryId)
+        );
+        Assert.Equal([ctx.Club.Events.IdOf(Session)], mentions.Events.Select(row => row.EventId));
+        Assert.Equal(
+            [ctx.News.Posts.IdOf(Report)],
+            mentions.NewsPosts.Select(post => post.NewsPostId)
+        );
+        Assert.Equal(
+            [ctx.Gallery.Albums.IdOf(Photos)],
+            mentions.Albums.Select(album => album.AlbumId)
+        );
+    }
+
+    [Fact]
+    public async Task Should_ResolveAnEntryForChosenPeople_When_TheReaderIsAmongThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+            {
+                MentionTargets(_fixture.TimeProvider.GetUtcNow())(builder);
+                builder.Identity(identity => identity.AddAccount(Alice));
+            },
+            ct
+        );
+        var entryId = ctx.Club.CalendarEntries.IdOf(ChosenPeopleOnly);
+        await PostAsync(ctx, $"@[Essen](calendar-entry:{entryId})", ct);
+
+        var mentions = Assert.Single((await ReadAsync(ctx, Alice, ct)).Announcements).Mentions;
+
+        Assert.Equal([entryId], mentions.CalendarEntries.Select(entry => entry.CalendarEntryId));
+    }
+
+    [Fact]
+    public async Task Should_DropTheMention_When_ThePersonIsErasedOrTheEntryDeleted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(MentionTargets(_fixture.TimeProvider.GetUtcNow()), ct);
+        var aliceId = ctx.Identity.People.IdOf(Alice);
+        var entryId = ctx.Club.CalendarEntries.IdOf(ClubMeeting);
+        await PostAsync(ctx, $"@[Alice](person:{aliceId}) @[Termin](calendar-entry:{entryId})", ct);
+        await _fixture.DeletePersonDirectlyAsync(aliceId, ct);
+        await _fixture.DeleteCalendarEntryDirectlyAsync(entryId, ct);
+
+        var announcement = Assert.Single((await ReadAsync(ctx, Reader, ct)).Announcements);
+
+        Assert.Empty(announcement.Mentions.Persons);
+        Assert.Empty(announcement.Mentions.CalendarEntries);
+        Assert.Contains($"person:{aliceId}", announcement.Body, StringComparison.Ordinal);
+    }
+
+    private static async Task PostAsync(SeededContext ctx, string body, CancellationToken ct)
+    {
+        var client = await ctx.Identity.ClientForAsync(Author, ct);
+        var (response, _) = await client.POSTAsync<
+            PostAnnouncement,
+            PostAnnouncementRequest,
+            PostAnnouncementResponse
+        >(
+            new()
+            {
+                Title = "Mit Erwähnungen",
+                Body = body,
+                ValidUntil = null,
+            }
+        );
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>

@@ -7,7 +7,7 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 public sealed class AnnouncementConfiguration : IEntityTypeConfiguration<Announcement>
 {
     private const int TitleLength = 120;
-    private const int BodyLength = 4_000;
+    private const int BodyLength = 8_000;
 
     public void Configure(EntityTypeBuilder<Announcement> builder)
     {

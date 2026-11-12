@@ -786,6 +786,20 @@ public sealed class ApiTestFixture : IAsyncLifetime
     public string SignedMediaUrl(int mediaItemId, MediaOwner owner, MediaRendition rendition) =>
         Services.GetRequiredService<MediaUrlSigner>().UrlOf(mediaItemId, owner, rendition);
 
+    public async Task DeleteCalendarEntryDirectlyAsync(
+        int calendarEntryId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"DELETE FROM calendar_entry WHERE id = {calendarEntryId}",
+            ct
+        );
+    }
+
     public async Task DeletePersonDirectlyAsync(int personId, CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();

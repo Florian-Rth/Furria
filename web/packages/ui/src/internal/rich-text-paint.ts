@@ -25,3 +25,13 @@ export const richTextPaint = (theme: Theme): CSSObject => {
     },
   };
 };
+
+export const compactRichTextPaint = (theme: Theme): CSSObject => ({
+  ...richTextPaint(theme),
+  ...theme.typography.body2,
+  lineHeight: 1.55,
+  '& p': { margin: 0, marginBottom: theme.spacing(1), textWrap: 'pretty' },
+  '& h2': { ...theme.typography.h6, margin: 0, marginBlock: theme.spacing(1.5, 0.5) },
+  '& ul': { margin: 0, marginBottom: theme.spacing(1), paddingLeft: theme.spacing(2.5) },
+  '& li': { marginBottom: theme.spacing(0.25) },
+});

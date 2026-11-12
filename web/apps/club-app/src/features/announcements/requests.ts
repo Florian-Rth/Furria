@@ -1,10 +1,27 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
-import type { AnnouncementForm, AnnouncementsResponse, CreatedAnnouncement } from './schemas';
-import { AnnouncementsResponseSchema, CreatedAnnouncementSchema } from './schemas';
+import type {
+  AnnouncementForm,
+  AnnouncementMentionables,
+  AnnouncementsResponse,
+  CreatedAnnouncement,
+} from './schemas';
+import {
+  AnnouncementMentionablesSchema,
+  AnnouncementsResponseSchema,
+  CreatedAnnouncementSchema,
+} from './schemas';
 
 export const requestAnnouncements = (accessToken: string): Promise<AnnouncementsResponse> =>
   apiFetch('/api/announcements', { schema: AnnouncementsResponseSchema, accessToken });
+
+export const requestAnnouncementMentionables = (
+  accessToken: string,
+): Promise<AnnouncementMentionables> =>
+  apiFetch('/api/announcements/mentionables', {
+    schema: AnnouncementMentionablesSchema,
+    accessToken,
+  });
 
 export const requestCreateAnnouncement = (
   form: AnnouncementForm,

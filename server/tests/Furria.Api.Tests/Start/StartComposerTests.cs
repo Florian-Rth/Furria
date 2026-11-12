@@ -1,3 +1,4 @@
+using Furria.Application.Club;
 using Furria.Application.Management;
 using Furria.Application.Start;
 using Furria.Core.Club;
@@ -799,6 +800,7 @@ public sealed class StartComposerTests
             AnnouncementId = announcementId,
             Title = $"Aushang {announcementId}",
             Body = "Text",
+            Mentions = AnnouncementMentionTargets.None,
             PublishedAt = publishedAt,
             ValidUntil = null,
             Author = new StartPerson

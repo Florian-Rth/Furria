@@ -4,7 +4,7 @@ import { KkMentionCard } from '@furria/ui/KkMentionCard';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { MENTION_CARD_LABELS } from '../rich-text-copy';
+import { MEMBER_WORD, MENTION_CARD_LABELS } from '../rich-text-copy';
 import type { MentionedPerson } from '../schemas';
 
 const PERSON_FACE = { kind: 'person' } as const;
@@ -18,6 +18,7 @@ interface RichTextPersonMentionProps {
 export const RichTextPersonMention: FC<RichTextPersonMentionProps> = ({ label, person }) => {
   const name = `${person.firstName} ${person.lastName}`;
   const initials = toInitials(person.firstName, person.lastName);
+  const line = person.officeName ?? MEMBER_WORD;
   const params = { personId: String(person.personId) };
   const action = (
     <KkInlineLink component={Link} to={MEMBER_ROUTE} params={params}>
@@ -30,7 +31,7 @@ export const RichTextPersonMention: FC<RichTextPersonMentionProps> = ({ label, p
       <KkMentionCard
         face={PERSON_FACE}
         name={name}
-        line={person.officeName}
+        line={line}
         initials={initials}
         picture={person.portrait}
         action={action}

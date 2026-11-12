@@ -20,6 +20,7 @@ public sealed partial class StartService
     private readonly MediaPictures _pictures;
     private readonly PublicFace _publicFace;
     private readonly ToDoService _toDoService;
+    private readonly AnnouncementMentionTargetsQuery _mentionTargets;
     private readonly TimeProvider _timeProvider;
 
     public StartService(
@@ -27,6 +28,7 @@ public sealed partial class StartService
         PermissionAuthorizer authorizer,
         RunningBoardSeats runningBoardSeats,
         ToDoService toDoService,
+        AnnouncementMentionTargetsQuery mentionTargets,
         MediaPictures pictures,
         PublicFace publicFace,
         TimeProvider timeProvider
@@ -38,6 +40,7 @@ public sealed partial class StartService
         _pictures = pictures;
         _publicFace = publicFace;
         _toDoService = toDoService;
+        _mentionTargets = mentionTargets;
         _timeProvider = timeProvider;
     }
 

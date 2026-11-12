@@ -1,7 +1,7 @@
 ---
 rfc: 0007
 title: Aushänge with add-ons, mentions and a push
-status: in progress (phase 1 done)
+status: in progress (phases 1–2 done)
 github_issue: 80
 branch: feat/rfc-80-aushaenge
 created: 2026-11-12
@@ -84,12 +84,20 @@ Goal: the news text model and editor are host-neutral; news behaves exactly as b
 
 ### Phase 2 — Aushang text with mentions
 Goal: Aushänge are written and read in the subset with the wider mentions.
-- [ ] Migration: escape existing Aushang bodies into the subset; `announcement_mention` table (kind: person, group, calendar entry, event, news post, album)
-- [ ] Create/update validate the subset and rewrite mention rows; refusals as for news
-- [ ] `GET announcements/mentionables` (search across the six kinds, calendar entries limited to the caller's sight)
-- [ ] Read model carries mentions resolved per reader (interactive or plain)
-- [ ] Club app: Aushang form uses the shared editor; Aushang screen, club-hub panel and Start render the text and open mention targets
-- [ ] Integration tests: mention rows, sight fallback, erased person / deleted entry fallback
+- [x] Migration: escape existing Aushang bodies into the subset; `announcement_mention` table (kind: person, group, calendar entry, event, news post, album)
+- [x] Create/update validate the subset and rewrite mention rows; refusals as for news
+- [x] `GET announcements/mentionables` (search across the six kinds, calendar entries limited to the caller's sight)
+- [x] Read model carries mentions resolved per reader (interactive or plain)
+- [x] Club app: Aushang form uses the shared editor; Aushang screen, club-hub panel and Start render the text and open mention targets
+- [x] Integration tests: mention rows, sight fallback, erased person / deleted entry fallback
+
+Decisions taken in phase 2:
+- `announcement.body` widened to 8000 in the database so the one-time escape can never overflow; the API still caps the stored text at 4000.
+- The escape is frozen as SQL in the migration (also strips NBSP-style indentation, splits Unicode line breaks, escapes mixed rule lines).
+- Mention rows keep every parsed target (no per-kind FK); reads drop what is gone or out of the reader's sight.
+- Mentionables offer calendar entries and events from 14 days back to 365 days ahead; groups not archived, persons affiliated today, published Meldungen, albums not binned.
+- Entry and event mentions open the calendar on that entry (`/calendar?day&entry`), never the edit screen.
+- The Aushang list row is no longer one link (mentions are buttons); editors get an edit button.
 
 ### Phase 3 — Push on posting
 Goal: a new Aushang reaches every reader's phone.

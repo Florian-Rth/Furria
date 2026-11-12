@@ -2,9 +2,11 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Announcements;
 using Furria.Application.Authorization;
+using Furria.Core.Text;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
+using static Furria.Api.Tests.Announcements.AnnouncementMentionSeeds;
 
 namespace Furria.Api.Tests.Announcements;
 
@@ -62,6 +64,56 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
             .Announcement(announcementId)
             .ToHaveValidUntil(null)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RewriteTheMentions_When_TheTextIsCorrected()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+            {
+                MentionTargets(_fixture.TimeProvider.GetUtcNow())(builder);
+                builder.Club(club => club.AddAnnouncement("aushang", Author, Title, Body));
+            },
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync(Author, ct);
+        var announcementId = ctx.Club.Announcements.IdOf("aushang");
+        var aliceId = ctx.Identity.People.IdOf(Alice);
+        var gardeId = ctx.Groups.Groups.IdOf(Garde);
+        var photosId = ctx.Gallery.Albums.IdOf(Photos);
+        await CorrectBodyAsync(
+            client,
+            announcementId,
+            $"@[Alice](person:{aliceId}) und @[Garde](group:{gardeId})"
+        );
+
+        var response = await CorrectBodyAsync(
+            client,
+            announcementId,
+            $"Siehe @[Fotos](album:{photosId})."
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Announcement(announcementId)
+            .ToHaveMentions((MentionKind.Album, photosId))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheOldText_When_TheCorrectionLeavesTheSubset()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildBoardAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var announcementId = ctx.Club.Announcements.IdOf("von-alice");
+
+        var response = await CorrectBodyAsync(client, announcementId, "> Ein Zitat");
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx.Expected.Announcement(announcementId).ToHaveBody(Body).AssertAsync(ct);
     }
 
     [Fact]
@@ -172,6 +224,21 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    private static Task<HttpResponseMessage> CorrectBodyAsync(
+        HttpClient client,
+        int announcementId,
+        string body
+    ) =>
+        client.PUTAsync<PutAnnouncement, PutAnnouncementRequest>(
+            new()
+            {
+                AnnouncementId = announcementId,
+                Title = CorrectedTitle,
+                Body = body,
+                ValidUntil = null,
+            }
+        );
 
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>
         _fixture.BuildAsync(

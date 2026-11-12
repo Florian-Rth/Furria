@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Text;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -17,22 +18,31 @@ public sealed class AnnouncementService
     private readonly AppDbContext _dbContext;
     private readonly RunningBoardSeats _runningBoardSeats;
     private readonly MediaPictures _pictures;
+    private readonly AnnouncementMentionTargetsQuery _mentionTargets;
     private readonly TimeProvider _timeProvider;
 
     public AnnouncementService(
         AppDbContext dbContext,
         RunningBoardSeats runningBoardSeats,
         MediaPictures pictures,
+        AnnouncementMentionTargetsQuery mentionTargets,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _runningBoardSeats = runningBoardSeats;
         _pictures = pictures;
+        _mentionTargets = mentionTargets;
         _timeProvider = timeProvider;
     }
 
+    public Task<AnnouncementMentionTargets> GetMentionablesAsync(
+        MentionReader reader,
+        CancellationToken ct
+    ) => _mentionTargets.OfferedToAsync(reader, ct);
+
     public async Task<IReadOnlyList<AnnouncementSummary>> GetAnnouncementsAsync(
+        MentionReader reader,
         CancellationToken ct
     )
     {
@@ -46,8 +56,13 @@ public sealed class AnnouncementService
             .ToListAsync(ct);
 
         var officeNames = await _runningBoardSeats.OfficeNamesAsync(today, ct);
+        var mentions = await _mentionTargets.OfAnnouncementsAsync(
+            [.. rows.Select(row => row.AnnouncementId)],
+            reader,
+            ct
+        );
 
-        return [.. rows.Select(row => ToSummary(row, officeNames, _pictures))];
+        return [.. rows.Select(row => ToSummary(row, officeNames, mentions, _pictures))];
     }
 
     public async Task<Result<int>> CreateAsync(
@@ -55,6 +70,10 @@ public sealed class AnnouncementService
         CancellationToken ct
     )
     {
+        var reading = AnnouncementText.Read(command.Body);
+        if (reading.Refusal is { } refusal)
+            return Result<int>.Validation(refusal);
+
         var announcement = new Announcement
         {
             AuthorPersonId = command.AuthorPersonId,
@@ -63,6 +82,7 @@ public sealed class AnnouncementService
             PublishedAt = _timeProvider.GetUtcNow(),
             ValidUntil = command.ValidUntil,
         };
+        RewriteMentions(announcement, reading);
 
         _dbContext.Announcements.Add(announcement);
         await _dbContext.SaveChangesAsync(ct);
@@ -72,7 +92,11 @@ public sealed class AnnouncementService
 
     public async Task<Result> UpdateAsync(UpdateAnnouncementCommand command, CancellationToken ct)
     {
-        var announcement = await FindAsync(command.AnnouncementId, ct);
+        var reading = AnnouncementText.Read(command.Body);
+        if (reading.Refusal is { } refusal)
+            return Result.Validation(refusal);
+
+        var announcement = await FindWithMentionsAsync(command.AnnouncementId, ct);
         if (announcement is null)
             return Result.NotFound(UnknownAnnouncementMessage);
 
@@ -88,9 +112,9 @@ public sealed class AnnouncementService
         announcement.Title = command.Title;
         announcement.Body = command.Body;
         announcement.ValidUntil = command.ValidUntil;
-        await _dbContext.SaveChangesAsync(ct);
+        RewriteMentions(announcement, reading);
 
-        return Result.Success();
+        return await SaveOrConflictAsync(ct);
     }
 
     public async Task<Result> WithdrawAsync(
@@ -117,6 +141,17 @@ public sealed class AnnouncementService
         return Result.Success();
     }
 
+    private static void RewriteMentions(Announcement announcement, RichTextReading reading)
+    {
+        announcement.Mentions.Clear();
+        foreach (var mention in reading.Mentions)
+            announcement.Mentions.Add(MentionRowOf(mention));
+    }
+
+    [Pure]
+    private static AnnouncementMention MentionRowOf(Mention mention) =>
+        new() { Kind = mention.Kind, TargetId = mention.TargetId };
+
     [Pure]
     private static bool MayChange(int? authorPersonId, int actorPersonId, bool actorMayPost) =>
         actorMayPost || authorPersonId == actorPersonId;
@@ -124,6 +159,7 @@ public sealed class AnnouncementService
     private static AnnouncementSummary ToSummary(
         AnnouncementRow row,
         IReadOnlyDictionary<int, string> officeNames,
+        IReadOnlyDictionary<int, AnnouncementMentionTargets> mentions,
         MediaPictures pictures
     ) =>
         new()
@@ -131,6 +167,10 @@ public sealed class AnnouncementService
             AnnouncementId = row.AnnouncementId,
             Title = row.Title,
             Body = row.Body,
+            Mentions = mentions.GetValueOrDefault(
+                row.AnnouncementId,
+                AnnouncementMentionTargets.None
+            ),
             PublishedAt = row.PublishedAt,
             ValidUntil = row.ValidUntil,
             Author = row.Author is { } author
@@ -149,6 +189,24 @@ public sealed class AnnouncementService
                 : null,
         };
 
+    private async Task<Result> SaveOrConflictAsync(CancellationToken ct)
+    {
+        try
+        {
+            await _dbContext.SaveChangesAsync(ct);
+            return Result.Success();
+        }
+        catch (DbUpdateException exception) when (LostWriteRace.Caused(exception))
+        {
+            return Result.Conflict(WriteConflictMessages.ChangedMeanwhile);
+        }
+    }
+
     private Task<Announcement?> FindAsync(int announcementId, CancellationToken ct) =>
         _dbContext.Announcements.SingleOrDefaultAsync(row => row.Id == announcementId, ct);
+
+    private Task<Announcement?> FindWithMentionsAsync(int announcementId, CancellationToken ct) =>
+        _dbContext
+            .Announcements.Include(row => row.Mentions)
+            .SingleOrDefaultAsync(row => row.Id == announcementId, ct);
 }

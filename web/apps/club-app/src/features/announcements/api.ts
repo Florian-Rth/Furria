@@ -12,13 +12,19 @@ import {
 } from './announcements-labels';
 import { toNextLastSeenAt } from './last-seen';
 import {
+  requestAnnouncementMentionables,
   requestAnnouncements,
   requestCreateAnnouncement,
   requestLastSeenAnnouncement,
   requestUpdateAnnouncement,
   requestWithdrawAnnouncement,
 } from './requests';
-import type { AnnouncementForm, AnnouncementsResponse, CreatedAnnouncement } from './schemas';
+import type {
+  AnnouncementForm,
+  AnnouncementMentionables,
+  AnnouncementsResponse,
+  CreatedAnnouncement,
+} from './schemas';
 
 export interface LastSeenInput {
   seenUpTo: string | null;
@@ -40,6 +46,15 @@ export const useAnnouncementsQuery = (): UseQueryResult<AnnouncementsResponse, E
   useQuery({
     queryKey: queryKeys.announcements,
     queryFn: () => withFreshAccessToken(requestAnnouncements),
+  });
+
+export const useAnnouncementMentionablesQuery = (): UseQueryResult<
+  AnnouncementMentionables,
+  Error
+> =>
+  useQuery({
+    queryKey: queryKeys.announcementMentionables,
+    queryFn: () => withFreshAccessToken(requestAnnouncementMentionables),
   });
 
 export const useCreateAnnouncementMutation = (): UseMutationResult<

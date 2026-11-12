@@ -1,10 +1,14 @@
 import { KkDateField } from '@furria/ui/KkDateField';
 import { KkFormSection } from '@furria/ui/KkFormSection';
-import { KkTextArea } from '@furria/ui/KkTextArea';
+import { KkRichTextArea } from '@furria/ui/KkRichTextArea';
 import { KkTextField } from '@furria/ui/KkTextField';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
+import { RichTextLinkSheet } from '@/features/rich-text/components/RichTextLinkSheet';
+import { RichTextMentionLayer } from '@/features/rich-text/components/RichTextMentionLayer';
+import { FORMAT_RAIL_LABEL } from '@/features/rich-text/rich-text-copy';
 import { WriteScreen } from '@/features/write/WriteScreen';
+import { ANNOUNCEMENT_LINK_SHEET_ID } from '../announcement-mention-copy';
 import {
   ANNOUNCEMENT_ADD_LABEL,
   ANNOUNCEMENT_BODY_FIELD_LABEL,
@@ -24,12 +28,7 @@ import {
 import { useAnnouncementEditor } from '../hooks/use-announcement-editor';
 import { useAnnouncementWithdrawal } from '../hooks/use-announcement-withdrawal';
 import type { Announcement } from '../schemas';
-import { ANNOUNCEMENT_BODY_MAX_LENGTH } from '../schemas';
 import { WithdrawAnnouncementDialog } from './WithdrawAnnouncementDialog';
-
-const BODY_ROWS = 7;
-
-const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
 interface AnnouncementEditorProps {
   announcement: Announcement | null;
@@ -44,6 +43,8 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
   const title = announcement === null ? ANNOUNCEMENT_CREATE_TITLE : ANNOUNCEMENT_EDIT_TITLE;
   const actionLabel = announcement === null ? ANNOUNCEMENT_ADD_LABEL : ANNOUNCEMENT_SAVE_LABEL;
   const withdrawal = useAnnouncementWithdrawal(announcement);
+  const isBodyInvalid = errors.body !== undefined;
+  const bodyHelper = errors.body?.message;
   const validUntilQuickChoices = toValidUntilQuickChoices(new Date());
 
   const dangerLine =
@@ -83,20 +84,17 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
           error={errors.title !== undefined}
           helperText={errors.title?.message}
         />
-        <KkTextArea
-          name="body"
+        <KkRichTextArea
           label={ANNOUNCEMENT_BODY_FIELD_LABEL}
-          value={control.body}
-          onChange={control.setBody}
-          onBlur={control.touchBody}
-          required
-          rows={BODY_ROWS}
-          maxLength={ANNOUNCEMENT_BODY_MAX_LENGTH}
-          showCount
-          countLabel={toCountLabel}
+          formatLabel={FORMAT_RAIL_LABEL}
+          formatItems={control.body.formatItems}
+          hostRef={control.body.text.hostRef}
           placeholder={ANNOUNCEMENT_BODY_PLACEHOLDER}
-          error={errors.body !== undefined}
-          helperText={errors.body?.message}
+          isEmpty={control.body.isEmpty}
+          mentionTones={control.body.mentionTones}
+          required
+          error={isBodyInvalid}
+          helperText={bodyHelper}
         />
       </KkFormSection>
       <KkFormSection title={ANNOUNCEMENT_RUNTIME_SECTION_TITLE}>
@@ -113,6 +111,8 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
         />
       </KkFormSection>
       {dangerLine}
+      <RichTextMentionLayer text={control.body.text} source={control.body.mentionables} />
+      <RichTextLinkSheet text={control.body.text} sheetId={ANNOUNCEMENT_LINK_SHEET_ID} />
     </WriteScreen>
   );
 };

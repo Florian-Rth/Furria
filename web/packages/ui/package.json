@@ -280,6 +280,7 @@
     "./KkReservedSlot": "./src/KkReservedSlot.tsx",
     "./KkRetryAlert": "./src/KkRetryAlert.tsx",
     "./KkRichText": "./src/KkRichText/KkRichText.tsx",
+    "./KkRichTextArea": "./src/KkRichTextArea.tsx",
     "./KkRoleMark": "./src/KkRoleMark.tsx",
     "./KkRoster": "./src/KkRoster/KkRoster.tsx",
     "./KkRule": "./src/KkRule.tsx",

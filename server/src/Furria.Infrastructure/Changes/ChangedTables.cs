@@ -76,6 +76,7 @@ public static class ChangedTables
         [typeof(KeyHolding)] = [DomainChange.KeyHolding],
         [typeof(ClubRecord)] = [DomainChange.ClubRecord],
         [typeof(Announcement)] = [DomainChange.Announcement],
+        [typeof(AnnouncementMention)] = [DomainChange.Announcement],
         [typeof(MediaItem)] = [DomainChange.Media, DomainChange.Picture],
         [typeof(Album)] = [DomainChange.Media],
         [typeof(UploadLink)] = [DomainChange.Media],

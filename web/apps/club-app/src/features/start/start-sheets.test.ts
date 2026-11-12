@@ -34,6 +34,7 @@ const announcement = (announcementId: number, publishedAt: string): StartAnnounc
   announcementId,
   title: 'Aushang',
   body: 'Text',
+  mentions: { persons: [], groups: [], calendarEntries: [], events: [], newsPosts: [], albums: [] },
   publishedAt,
   validUntil: null,
   author: {

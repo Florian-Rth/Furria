@@ -29,6 +29,7 @@ const announcement = (announcementId: number, title: string): StartAnnouncement 
   announcementId,
   title,
   body: 'Abfahrt am Rathaus.',
+  mentions: { persons: [], groups: [], calendarEntries: [], events: [], newsPosts: [], albums: [] },
   publishedAt: '2027-01-18T08:00:00Z',
   validUntil: null,
   author: {

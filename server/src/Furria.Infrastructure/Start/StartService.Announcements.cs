@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Authorization;
+using Furria.Application.Club;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Infrastructure.Club;
@@ -15,6 +16,7 @@ public sealed partial class StartService
     private static StartAnnouncementSummary ToAnnouncementSummary(
         AnnouncementRow row,
         IReadOnlyDictionary<int, string> officeNames,
+        IReadOnlyDictionary<int, AnnouncementMentionTargets> mentions,
         MediaPictures pictures
     ) =>
         new()
@@ -22,6 +24,10 @@ public sealed partial class StartService
             AnnouncementId = row.AnnouncementId,
             Title = row.Title,
             Body = row.Body,
+            Mentions = mentions.GetValueOrDefault(
+                row.AnnouncementId,
+                AnnouncementMentionTargets.None
+            ),
             PublishedAt = row.PublishedAt,
             ValidUntil = row.ValidUntil,
             Author = row.Author is { } author
@@ -58,9 +64,21 @@ public sealed partial class StartService
             return [];
 
         var officeNames = await _runningBoardSeats.OfficeNamesAsync(viewer.Moment.Today, ct);
+        var mentions = await _mentionTargets.OfAnnouncementsAsync(
+            [.. rows.Select(row => row.AnnouncementId)],
+            MentionReaderOf(viewer),
+            ct
+        );
 
-        return [.. rows.Select(row => ToAnnouncementSummary(row, officeNames, _pictures))];
+        return
+        [
+            .. rows.Select(row => ToAnnouncementSummary(row, officeNames, mentions, _pictures)),
+        ];
     }
+
+    [Pure]
+    private static MentionReader MentionReaderOf(Viewer viewer) =>
+        new(viewer.PersonId, viewer.GrantedKeys.Contains(FurriaPermissions.CalendarManageClub));
 
     private IQueryable<Announcement> UnseenAnnouncements(Viewer viewer)
     {

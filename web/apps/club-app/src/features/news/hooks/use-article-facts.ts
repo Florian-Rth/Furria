@@ -9,7 +9,7 @@ import {
   BYLINE_AUTHOR,
   BYLINE_DRAFT,
 } from '../editor-copy';
-import { mentionTonesOf } from '../mentionables';
+import { newsMentionTonesOf } from '../mentionables';
 import { CHANGED_MARK, MISSING_MARK, PUBLIC_NEWS_PATH } from '../news-copy';
 import { longDateOf } from '../news-dates';
 import type { PartMark } from '../part-marks';
@@ -86,6 +86,6 @@ export const useArticleFacts = (
     bannerState: bannerStateOf(editor.version.picture, isCropping),
     isTeaserEmpty: editor.version.teaser.length === 0,
     isTextEmpty: editor.version.text.length === 0,
-    mentionTones: mentionTonesOf(mentionables, editor.version.text),
+    mentionTones: newsMentionTonesOf(mentionables, editor.version.text),
   };
 };

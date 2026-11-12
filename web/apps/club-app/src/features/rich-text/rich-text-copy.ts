@@ -27,4 +27,13 @@ export const MENTION_DONE = 'Fertig';
 export const MENTION_CARD_LABELS = {
   groupCta: 'Zur Gruppe →',
   personCta: 'Zur Person →',
+  entryCta: 'Zum Termin →',
+  newsPostCta: 'Zur Meldung →',
+  albumCta: 'Zum Album →',
 } as const;
+
+export const MEMBER_WORD = 'Mitglied';
+export const GROUP_WORD = 'Gruppe';
+export const ALBUM_WORD = 'Album';
+export const CANCELLED_WORD = 'abgesagt';
+export const NEWS_POST_LINE = 'Meldung vom';

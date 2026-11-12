@@ -21,4 +21,6 @@ public sealed class Announcement : ITimestamped
     public DateTimeOffset UpdatedAt { get; set; }
 
     public Person? Author { get; set; }
+
+    public ICollection<AnnouncementMention> Mentions { get; set; } = [];
 }

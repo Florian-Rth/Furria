@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Api.Media;
+using Furria.Api.Mentions;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Infrastructure.Authorization;
@@ -37,7 +38,13 @@ public sealed class GetAnnouncements : EndpointWithoutRequest<GetAnnouncementsRe
             return;
         }
 
-        var announcements = await _announcementService.GetAnnouncementsAsync(ct);
+        var reader = await MentionReaders.OfAsync(
+            _authorizer,
+            accountId.Value,
+            User.PersonId(),
+            ct
+        );
+        var announcements = await _announcementService.GetAnnouncementsAsync(reader, ct);
         var mayPost = await _authorizer.IsGrantedAsync(
             accountId.Value,
             FurriaPermissions.AnnouncementsPost,
@@ -72,6 +79,7 @@ public sealed class GetAnnouncements : EndpointWithoutRequest<GetAnnouncementsRe
             AnnouncementId = announcement.AnnouncementId,
             Title = announcement.Title,
             Body = announcement.Body,
+            Mentions = AnnouncementMentionsDto.From(announcement.Mentions),
             PublishedAt = announcement.PublishedAt,
             ValidUntil = announcement.ValidUntil,
             Author = announcement.Author is { } author ? ToDto(author) : null,
@@ -103,6 +111,8 @@ public sealed record AnnouncementDto
     public required string Title { get; init; }
 
     public required string Body { get; init; }
+
+    public required AnnouncementMentionsDto Mentions { get; init; }
 
     public required DateTimeOffset PublishedAt { get; init; }
 

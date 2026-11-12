@@ -2,9 +2,11 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Announcements;
 using Furria.Application.Authorization;
+using Furria.Core.Text;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
+using static Furria.Api.Tests.Announcements.AnnouncementMentionSeeds;
 
 namespace Furria.Api.Tests.Announcements;
 
@@ -146,6 +148,77 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RecordEveryKindOfMention_When_TheTextMentionsThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(MentionTargets(_fixture.TimeProvider.GetUtcNow()), ct);
+        var client = await ctx.Identity.ClientForAsync(Author, ct);
+        var aliceId = ctx.Identity.People.IdOf(Alice);
+        var gardeId = ctx.Groups.Groups.IdOf(Garde);
+        var entryId = ctx.Club.CalendarEntries.IdOf(ClubMeeting);
+        var eventId = ctx.Club.Events.IdOf(Session);
+        var reportId = ctx.News.Posts.IdOf(Report);
+        var photosId = ctx.Gallery.Albums.IdOf(Photos);
+
+        var (response, result) = await client.POSTAsync<
+            PostAnnouncement,
+            PostAnnouncementRequest,
+            PostAnnouncementResponse
+        >(
+            new()
+            {
+                Title = Title,
+                Body =
+                    $"@[Alice](person:{aliceId}) und @[Garde](group:{gardeId})"
+                    + $" zum @[Treffen](calendar-entry:{entryId}) und zur @[Sitzung](event:{eventId}),"
+                    + $" siehe @[Bericht](news-post:{reportId}), @[Fotos](album:{photosId})"
+                    + $" und nochmals @[Alice](person:{aliceId}).",
+                ValidUntil = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Announcement(result.AnnouncementId)
+            .ToHaveMentions(
+                (MentionKind.Person, aliceId),
+                (MentionKind.Group, gardeId),
+                (MentionKind.CalendarEntry, entryId),
+                (MentionKind.Event, eventId),
+                (MentionKind.NewsPost, reportId),
+                (MentionKind.Album, photosId)
+            )
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("### Zu tief")]
+    [InlineData("Ein *kursives* Wort")]
+    [InlineData("@[Nirgends](venue:1)")]
+    [InlineData("[Link](ftp://saal.de)")]
+    public async Task Should_RefuseTheText_When_ItLeavesTheSubset(string body)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildBoardAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("bea", ct);
+
+        var (response, _) = await client.POSTAsync<
+            PostAnnouncement,
+            PostAnnouncementRequest,
+            PostAnnouncementResponse
+        >(
+            new()
+            {
+                Title = Title,
+                Body = body,
+                ValidUntil = null,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>
