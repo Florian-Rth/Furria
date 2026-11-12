@@ -20,7 +20,7 @@ export type PostAddress = Pick<NewsPost, 'slug'>;
 export const newsHeading = 'AKTUELLES';
 
 export const newsDescription =
-  'Was bei uns passiert: Neues von der Bühne, aus dem Wagenbau und den Gruppen — dazu Termine, Erfolge und alles, was die Session sonst noch bringt.';
+  'Neues aus allen fünf Jahreszeiten: aus den Garden und Tanzgruppen, dem Elferrat und vom Bau des Bühnenbilds. Halb Großfurra weiß es schon — für die andere Hälfte schreiben wir es hier auf.';
 
 export const moreNewsLabel = 'WEITERE MELDUNGEN';
 
