@@ -348,7 +348,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
         await db.SaveChangesAsync(ct);
     }
 
-    public Task CalendarPushesDrainedAsync(CancellationToken ct = default) =>
+    public Task PushesDrainedAsync(CancellationToken ct = default) =>
         Polling.UntilAsync(
             async token =>
             {
@@ -361,7 +361,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
                     : db;
             },
             OutboxDrainTimeout,
-            "The calendar push outbox still holds pushes",
+            "The push outboxes still hold pushes",
             ct
         );
 

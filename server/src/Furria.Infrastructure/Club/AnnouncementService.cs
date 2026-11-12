@@ -84,8 +84,11 @@ public sealed class AnnouncementService
         };
         RewriteMentions(announcement, reading);
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         _dbContext.Announcements.Add(announcement);
         await _dbContext.SaveChangesAsync(ct);
+        await EnqueuePostedPushesAsync(announcement, ct);
+        await transaction.CommitAsync(ct);
 
         return Result<int>.Success(announcement.Id);
     }
@@ -135,8 +138,11 @@ public sealed class AnnouncementService
         )
             return Result.Forbidden(ForeignAnnouncementMessage);
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         _dbContext.Announcements.Remove(announcement);
         await _dbContext.SaveChangesAsync(ct);
+        await DropUndeliveredPushesAsync(announcement.Id, ct);
+        await transaction.CommitAsync(ct);
 
         return Result.Success();
     }
@@ -188,6 +194,32 @@ public sealed class AnnouncementService
                 }
                 : null,
         };
+
+    private async Task EnqueuePostedPushesAsync(Announcement announcement, CancellationToken ct)
+    {
+        if (!AnnouncementPushRules.IsStillValid(announcement.ValidUntil, announcement.PublishedAt))
+            return;
+
+        var readerAccountIds = await _dbContext.PushableReaderAccountIdsAsync(
+            announcement.AuthorPersonId,
+            ClubClock.DayOf(announcement.PublishedAt),
+            ct
+        );
+
+        _dbContext.OutboxPushes.AddRange(
+            readerAccountIds.Select(accountId =>
+                AnnouncementPushMessages.For(announcement, accountId)
+            )
+        );
+        await _dbContext.SaveChangesAsync(ct);
+    }
+
+    private Task DropUndeliveredPushesAsync(int announcementId, CancellationToken ct)
+    {
+        var tag = AnnouncementPushMessages.TagOf(announcementId);
+
+        return _dbContext.OutboxPushes.Where(push => push.Tag == tag).ExecuteDeleteAsync(ct);
+    }
 
     private async Task<Result> SaveOrConflictAsync(CancellationToken ct)
     {

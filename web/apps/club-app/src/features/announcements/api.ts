@@ -48,6 +48,13 @@ export const useAnnouncementsQuery = (): UseQueryResult<AnnouncementsResponse, E
     queryFn: () => withFreshAccessToken(requestAnnouncements),
   });
 
+export const useFreshAnnouncementsQuery = (): UseQueryResult<AnnouncementsResponse, Error> =>
+  useQuery({
+    queryKey: queryKeys.announcements,
+    queryFn: () => withFreshAccessToken(requestAnnouncements),
+    refetchOnMount: 'always',
+  });
+
 export const useAnnouncementMentionablesQuery = (): UseQueryResult<
   AnnouncementMentionables,
   Error

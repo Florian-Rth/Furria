@@ -44,7 +44,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var response = await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         var pushes = PushesAt(_fixture, devices.Mara);
         Assert.Equal([$"Erinnerung: {ClubMeeting}"], [.. pushes.Select(TitleOf)]);
         Assert.Equal([$"/calendar/{entryId}"], [.. pushes.Select(UrlOf)]);
@@ -73,7 +73,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.EndsWith(
             $"Bitte stimm ab: {SnackQuestion}",
             BodyOf(Assert.Single(PushesAt(_fixture, devices.Chris)))
@@ -99,7 +99,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.EndsWith(
             $"Bitte trag dich ein: {HelperList}",
             BodyOf(Assert.Single(PushesAt(_fixture, devices.Mara)))
@@ -247,7 +247,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var response = await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Single(PushesAt(_fixture, devices.Fred));
         Assert.Empty(PushesAt(_fixture, devices.Chris));
         Assert.Empty(PushesAt(_fixture, devices.Mara));
@@ -267,7 +267,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
 
         await StageReminderAsync(ctx.Club.CalendarEntries.IdOf("meeting"), pollId, ct);
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Empty(PushesAt(_fixture, devices.Chris));
         Assert.Empty(PushesAt(_fixture, devices.Mara));
     }
@@ -289,7 +289,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Equal(
             $"calendar-entry-{entryId}-reminder-poll-{pollId}",
             TagOf(Assert.Single(PushesAt(_fixture, devices.Chris)))

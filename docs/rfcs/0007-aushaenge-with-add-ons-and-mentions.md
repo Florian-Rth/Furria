@@ -1,7 +1,7 @@
 ---
 rfc: 0007
 title: Aushänge with add-ons, mentions and a push
-status: in progress (phases 1–2 done)
+status: in progress (phases 1–3 done)
 github_issue: 80
 branch: feat/rfc-80-aushaenge
 created: 2026-11-12
@@ -101,9 +101,15 @@ Decisions taken in phase 2:
 
 ### Phase 3 — Push on posting
 Goal: a new Aushang reaches every reader's phone.
-- [ ] Outbox push on create to every `club.read` account except the author (title, tag, URL)
-- [ ] No push on update
-- [ ] Integration tests: recipients, author excluded, update silent
+- [x] Outbox push on create to every `club.read` account except the author (title, tag, URL)
+- [x] No push on update
+- [x] Integration tests: recipients, author excluded, update silent
+
+Decisions taken in phase 3:
+- The push lands on a new reading screen `/announcements/{id}` (text, mentions, edit action for editors); the editor moved to `/announcements/{id}/edit`.
+- Pushes are written straight into the push outbox in the posting transaction (no staged expansion): recipients are pushable accounts of running members plus `club.read` role/board holders, author excluded.
+- An Aushang posted with *Gültig bis* already past pushes nobody; the push lives until the end of the *Gültig bis* day (1 h – 28 days, open-ended 28 days).
+- Withdrawing an Aushang drops its undelivered pushes.
 
 ### Phase 4 — One host per add-on
 Goal: the add-on tables accept an Aushang as host; calendar behaviour unchanged (ADR-0040).

@@ -8,15 +8,19 @@ import { AnnouncementScreen } from '@/features/announcements/components/Announce
 import { RequireScreenPermission } from '@/features/session/components/RequireScreenPermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
-const AnnouncementRoute: FC = () => (
-  <RequireScreenPermission
-    permissionKey={PERMISSION_KEYS.clubRead}
-    title={ANNOUNCEMENTS_TITLE}
-    origin={ANNOUNCEMENTS_ORIGIN}
-  >
-    <AnnouncementScreen />
-  </RequireScreenPermission>
-);
+const AnnouncementRoute: FC = () => {
+  const { announcementId } = Route.useParams();
+
+  return (
+    <RequireScreenPermission
+      permissionKey={PERMISSION_KEYS.clubRead}
+      title={ANNOUNCEMENTS_TITLE}
+      origin={ANNOUNCEMENTS_ORIGIN}
+    >
+      <AnnouncementScreen announcementId={announcementId} />
+    </RequireScreenPermission>
+  );
+};
 
 export const Route = createFileRoute('/_app/announcements_/$announcementId')({
   component: AnnouncementRoute,

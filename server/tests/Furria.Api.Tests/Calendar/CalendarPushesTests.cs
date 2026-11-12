@@ -45,7 +45,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         var pushes = PushesAt(_fixture, devices.Chris);
         Assert.Equal([$"/calendar/{entryId}"], [.. pushes.Select(UrlOf)]);
         Assert.Equal([ClubMeeting], [.. pushes.Select(TitleOf)]);
@@ -64,7 +64,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
 
         await CreateAsync(ctx, ClubEntry(), ct);
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Empty(PushesAt(_fixture, devices.Chris));
     }
 
@@ -87,7 +87,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Empty(PushesAt(_fixture, devices.Chris));
     }
 
@@ -108,7 +108,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Equal([$"/calendar/{entryId}"], [.. PushesAt(_fixture, devices.Fred).Select(UrlOf)]);
         Assert.Empty(PushesAt(_fixture, devices.Chris));
     }
@@ -131,7 +131,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Single(PushesAt(_fixture, devices.Fred));
     }
 
@@ -168,7 +168,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Equal([$"/calendar/{entryId}"], [.. PushesAt(_fixture, devices.Fred).Select(UrlOf)]);
         Assert.Empty(PushesAt(_fixture, devices.Chris));
     }
@@ -198,7 +198,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Equal(
             [$"/calendar/{entryId}"],
             [.. PushesAt(_fixture, devices.Chris).Select(UrlOf)]
@@ -226,7 +226,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Empty(PushesAt(_fixture, devices.Chris));
         Assert.Empty(PushesAt(_fixture, devices.Mara));
     }
@@ -246,7 +246,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
         >(new() { CalendarEntryId = entryId });
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Equal(
             ["/calendar?day=2027-01-20"],
             [.. PushesAt(_fixture, devices.Chris).Select(UrlOf)]
@@ -270,7 +270,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
         >(new() { CalendarEntryId = ctx.Club.CalendarEntries.IdOf("farewell") });
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Single(PushesAt(_fixture, devices.Chris));
         Assert.Empty(PushesAt(_fixture, devices.Mara));
     }
@@ -297,7 +297,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        await _fixture.CalendarPushesDrainedAsync(ct);
+        await _fixture.PushesDrainedAsync(ct);
         Assert.Single(PushesAt(_fixture, devices.Chris));
         Assert.Empty(PushesAt(_fixture, devices.Mara));
     }

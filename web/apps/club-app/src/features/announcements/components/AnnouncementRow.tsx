@@ -8,6 +8,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write/landing-target';
 import { ANNOUNCEMENT_NEW_LABEL } from '@/lib/announcements';
+import { ANNOUNCEMENT_EDIT_ROUTE } from '../announcement-routes';
 import {
   ANNOUNCEMENT_EDIT_ACTION_LABEL,
   ANNOUNCEMENT_EXPIRED_LABEL,
@@ -18,7 +19,6 @@ import { AnnouncementAuthorLine } from './AnnouncementAuthorLine';
 import { AnnouncementText } from './AnnouncementText';
 
 const LANDING_KIND = 'announcement';
-const EDIT_ROUTE = '/announcements/$announcementId';
 
 interface AnnouncementRowProps {
   announcement: Announcement;
@@ -51,7 +51,7 @@ export const AnnouncementRow: FC<AnnouncementRowProps> = ({
       icon="edit"
       size="small"
       component={Link}
-      to={EDIT_ROUTE}
+      to={ANNOUNCEMENT_EDIT_ROUTE}
       params={editParams}
     />
   ) : null;
