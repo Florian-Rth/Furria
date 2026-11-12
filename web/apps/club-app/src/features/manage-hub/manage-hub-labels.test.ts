@@ -14,6 +14,7 @@ const EMPTY_HUB: ManageHub = {
   keys: null,
   accounts: null,
   applications: null,
+  groupMatcher: null,
 };
 
 const hubWith = (panels: Partial<ManageHub>): ManageHub => ({ ...EMPTY_HUB, ...panels });
@@ -94,6 +95,7 @@ describe('toManageRows', () => {
     },
     { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 3, holderCount: 2 } }) },
     { hub: hubWith({ applications: { undecidedCount: 0, minorCount: 0 } }) },
+    { hub: hubWith({ groupMatcher: { statementCount: 7 } }) },
   ])('flags nothing on a settled row', ({ hub }) => {
     expect(onlyRow(hub).status).toBeUndefined();
   });
@@ -106,6 +108,7 @@ describe('toManageRows', () => {
     { hub: hubWith({ sessions: { entryCount: 0, hasCurrentEntry: false } }) },
     { hub: hubWith({ venues: { venueCount: 0, archivedCount: 0 } }) },
     { hub: hubWith({ keys: { issuedCount: 0, holdingCount: 0, holderCount: 0 } }) },
+    { hub: hubWith({ groupMatcher: { statementCount: 0 } }) },
   ])('marks an empty register as empty, with no summary and a neutral status', ({ hub }) => {
     const row = onlyRow(hub);
 

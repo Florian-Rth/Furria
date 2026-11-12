@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { GroupMatcher } from '@/lib/seed/group-matcher';
+import type { GroupMatcher } from '@/features/group-matcher/types';
 import type { MatcherProgress } from './matcher-progress';
 import { SKIPPED_ANSWER } from './matcher-progress';
 import { selectMatcherStepView } from './matcher-step-view';
@@ -7,18 +7,17 @@ import { selectMatcherStepView } from './matcher-step-view';
 const matcher: GroupMatcher = {
   groups: [
     {
-      id: 'alpha',
+      id: 1,
       name: 'ALPHA',
-      ageRange: { from: 6, to: null },
       isRecruiting: true,
-      tagline: 'Ergebniszeile',
+      description: 'Ergebniszeile',
     },
   ],
   questions: ['stage', 'build', 'ritual'].map((id) => ({
     id,
     role: 'weighted',
     prompt: id,
-    positions: [{ groupId: 'alpha', stance: 'yes', importance: 1 }],
+    positions: [{ groupId: 1, stance: 'yes', importance: 1 }],
   })),
 };
 

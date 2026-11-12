@@ -97,4 +97,5 @@ Started now; they have lead times the code does not.
 - Domain and DNS; SMTP provider with SPF, DKIM and DMARC.
 - Impressum, Datenschutz (now covering the app, accounts and applications), Satzung.
 - Real content: the season's events with dates and prices, club story and chronicle, hero photo,
-  Jeck-Check questions — **without real questions the Jeck-Check is absent at launch.**
+  Jeck-Check answers — the questions are the club's pool (RFC 0006); the Jeck-Check shows on
+  `/join` once at least two groups have answered every approved statement, absent until then.

@@ -32,6 +32,9 @@ public static class AppDbContextExtensions
                 WriteConflictMessages.RunningBeerListEnrollment,
             ["ix_hall_venue_id_name"] = WriteConflictMessages.DuplicateHall,
             ["pk_table_plan"] = WriteConflictMessages.TablePlanExists,
+            ["pk_group_matcher_stance"] = WriteConflictMessages.ChangedMeanwhile,
+            ["pk_group_admission_age"] = WriteConflictMessages.ChangedMeanwhile,
+            ["uq_group_matcher_statement_sort_order"] = WriteConflictMessages.ChangedMeanwhile,
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static async Task<Result> SaveOrConflictAsync(

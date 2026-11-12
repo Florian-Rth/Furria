@@ -7,6 +7,7 @@ using Furria.Infrastructure.Changes;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Gallery;
+using Furria.Infrastructure.GroupMatcher;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Halls;
 using Furria.Infrastructure.Identity;
@@ -100,6 +101,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<MembershipService>();
         services.AddScoped<FeeReductionService>();
         services.AddScoped<GroupService>();
+        services.AddScoped<GroupMatcherService>();
+        services.AddScoped<StatementPoolService>();
         services.AddScoped<GroupKindService>();
         services.AddScoped<UsualTrainingService>();
         services.AddScoped<RoleService>();

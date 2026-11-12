@@ -2,9 +2,10 @@ import { KkLead } from '@furria/ui/KkLead';
 import { KkSection } from '@furria/ui/KkSection';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
+import { useHasGroupMatcher } from '@/features/group-matcher/hooks/use-has-group-matcher';
 import {
   buildJoinStepNumeral,
-  JOIN_STEPS,
+  buildJoinSteps,
   joinStepsIntro,
   joinStepsKicker,
   joinStepsTitle,
@@ -12,16 +13,21 @@ import {
 import { JoinStepRow } from './internal/layout/JoinStepRow';
 import { JoinStepCard } from './internal/ui/JoinStepCard';
 
-export const JoinSteps: FC = () => (
-  <KkSection>
-    <KkSection.Header kicker={joinStepsKicker} title={joinStepsTitle} />
-    <KkLead>{joinStepsIntro}</KkLead>
-    <JoinStepRow>
-      {JOIN_STEPS.map((step, index) => (
-        <Grid key={step.title} size={{ xs: 12, sm: 6, md: 'grow' }}>
-          <JoinStepCard numeral={buildJoinStepNumeral(index)} step={step} />
-        </Grid>
-      ))}
-    </JoinStepRow>
-  </KkSection>
-);
+export const JoinSteps: FC = () => {
+  const hasGroupMatcher = useHasGroupMatcher();
+  const joinSteps = buildJoinSteps(hasGroupMatcher);
+
+  return (
+    <KkSection>
+      <KkSection.Header kicker={joinStepsKicker} title={joinStepsTitle} />
+      <KkLead>{joinStepsIntro}</KkLead>
+      <JoinStepRow>
+        {joinSteps.map((step, index) => (
+          <Grid key={step.title} size={{ xs: 12, sm: 6, md: 'grow' }}>
+            <JoinStepCard numeral={buildJoinStepNumeral(index)} step={step} />
+          </Grid>
+        ))}
+      </JoinStepRow>
+    </KkSection>
+  );
+};

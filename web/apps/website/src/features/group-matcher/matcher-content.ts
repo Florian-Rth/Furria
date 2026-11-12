@@ -1,12 +1,50 @@
-import type { Importance, Stance } from '@/lib/seed/group-matcher';
 import type { MatchAgreement, MatchReason } from './match-reasons';
+import type { AdmissionAgeBand, Importance, Stance } from './schemas';
 
 export const matcherSectionId = 'group-matcher';
 export const matcherKicker = 'JECK-CHECK';
 export const matcherTitle = 'WO PASSE ICH HIN?';
 
-export const matcherIntro =
-  'Elf Fragen, keine Anmeldung, kein Name, keine E-Mail-Adresse. Am Ende steht eine Rangliste: welche Gruppe zu dir passt — und vor allem, warum. Was dir nichts sagt, überspringst du; das kostet Genauigkeit, aber keine Punkte. Die Fragen sind derzeit Platzhalter und frei erfunden.';
+const CARNIVAL_QUESTION_COUNT = 11;
+
+const questionCountWords: Record<number, string> = {
+  2: 'Zwei',
+  3: 'Drei',
+  4: 'Vier',
+  5: 'Fünf',
+  6: 'Sechs',
+  7: 'Sieben',
+  8: 'Acht',
+  9: 'Neun',
+  10: 'Zehn',
+  11: 'Elf',
+};
+
+const matcherIntroBody =
+  'Keine Anmeldung, kein Name, keine E-Mail-Adresse. Am Ende siehst du, welche Gruppe zu dir passt und warum. Was dir nichts sagt, überspringst du einfach: Das macht das Ergebnis ungenauer, aber nicht schlechter.';
+
+const buildQuestionCountLead = (questionCount: number): string => {
+  const countWord = questionCountWords[questionCount] ?? String(questionCount);
+
+  return questionCount === CARNIVAL_QUESTION_COUNT
+    ? `${countWord} Fragen — weniger wären im Karneval unpassend.`
+    : `${countWord} Fragen.`;
+};
+
+export const buildMatcherIntro = (questionCount: number | null): string =>
+  questionCount === null
+    ? matcherIntroBody
+    : `${buildQuestionCountLead(questionCount)} ${matcherIntroBody}`;
+
+export const matcherAgeQuestionPrompt = 'Wie alt bist du?';
+
+export const admissionAgeBandLabels: Record<AdmissionAgeBand, string> = {
+  underTwelve: 'unter 12',
+  twelveToThirteen: '12 bis 13',
+  fourteenToFifteen: '14 bis 15',
+  sixteenToSeventeen: '16 bis 17',
+  eighteenPlus: '18 oder älter',
+};
 
 export interface MatcherStanceChoice {
   value: Stance;

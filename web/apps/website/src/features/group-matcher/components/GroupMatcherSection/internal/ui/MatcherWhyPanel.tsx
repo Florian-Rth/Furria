@@ -16,6 +16,12 @@ interface MatcherWhyPanelProps {
 
 export const MatcherWhyPanel: FC<MatcherWhyPanelProps> = ({ match }) => {
   const whyLabel = buildWhyLabel(match.group.name);
+  const description =
+    match.group.description === '' ? null : (
+      <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+        {match.group.description}
+      </Typography>
+    );
 
   return (
     <Accordion
@@ -34,9 +40,7 @@ export const MatcherWhyPanel: FC<MatcherWhyPanelProps> = ({ match }) => {
       </AccordionSummary>
       <AccordionDetails>
         <Stack sx={{ gap: 2 }}>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {match.group.tagline}
-          </Typography>
+          {description}
           <Typography variant="body2">{match.badge.note}</Typography>
           <MatcherWhyList reasons={match.reasons} groupName={match.group.name} />
         </Stack>

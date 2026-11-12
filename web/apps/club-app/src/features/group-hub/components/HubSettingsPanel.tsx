@@ -12,6 +12,7 @@ import {
   NO_GROUP_KIND_LABEL,
 } from '@/features/group-kinds/group-kinds-labels';
 import type { RunningGroupKind } from '@/features/group-kinds/schemas';
+import { GroupMatcherHubRow } from '@/features/group-matcher/components/GroupMatcherHubRow';
 import type { GroupTone } from '@/features/groups/group-identity';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { useRecruitingSwitch } from '../hooks/use-recruiting-switch';
@@ -73,6 +74,11 @@ export const HubSettingsPanel: FC<HubSettingsPanelProps> = ({
     </KkPanel>
   ) : null;
 
+  const groupMatcher =
+    hub.groupMatcher === null ? null : (
+      <GroupMatcherHubRow groupId={hub.groupId} status={hub.groupMatcher} />
+    );
+
   const administration = administers ? (
     <>
       <KkPanel>
@@ -91,6 +97,7 @@ export const HubSettingsPanel: FC<HubSettingsPanelProps> = ({
     <KkPanelSection title={GROUP_SECTION_TITLES.settings} groupTone={tone} action={action}>
       <Stack sx={{ gap: 1.5, minWidth: 0 }}>
         {facts}
+        {groupMatcher}
         {administration}
       </Stack>
     </KkPanelSection>

@@ -64,6 +64,11 @@ export const ManageApplicationsPanelSchema = z.object({
 });
 export type ManageApplicationsPanel = z.infer<typeof ManageApplicationsPanelSchema>;
 
+export const ManageGroupMatcherPanelSchema = z.object({
+  statementCount: z.number().int(),
+});
+export type ManageGroupMatcherPanel = z.infer<typeof ManageGroupMatcherPanelSchema>;
+
 export const ManageHubSchema = z.object({
   persons: ManagePersonsPanelSchema.nullable(),
   groups: ManageGroupsPanelSchema.nullable(),
@@ -75,5 +80,6 @@ export const ManageHubSchema = z.object({
   keys: ManageKeysPanelSchema.nullable(),
   accounts: ManageAccountsPanelSchema.nullable(),
   applications: ManageApplicationsPanelSchema.nullable(),
+  groupMatcher: ManageGroupMatcherPanelSchema.nullable(),
 });
 export type ManageHub = z.infer<typeof ManageHubSchema>;

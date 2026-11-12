@@ -48,4 +48,5 @@ public enum DomainChange
     ClaimWindow = 44,
     CalendarPollVote = 45,
     CalendarSignUpLine = 46,
+    GroupMatcher = 47,
 }

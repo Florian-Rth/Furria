@@ -78,8 +78,8 @@ const toDos: StartPanel = {
   kind: 'toDos',
   shownCount: 2,
   toDos: [
-    { kind: 'neverInvited', count: 4 },
-    { kind: 'reminderDue', count: 2 },
+    { kind: 'neverInvited', count: 4, group: null },
+    { kind: 'reminderDue', count: 2, group: null },
   ],
 };
 
@@ -88,11 +88,11 @@ const fiveToDos: StartPanel = {
   kind: 'toDos',
   shownCount: 5,
   toDos: [
-    { kind: 'neverInvited', count: 4 },
-    { kind: 'reminderDue', count: 2 },
-    { kind: 'inPersonOnly', count: 1 },
-    { kind: 'birthDateUnknown', count: 3 },
-    { kind: 'clubRecordGap', count: 2 },
+    { kind: 'neverInvited', count: 4, group: null },
+    { kind: 'reminderDue', count: 2, group: null },
+    { kind: 'inPersonOnly', count: 1, group: null },
+    { kind: 'birthDateUnknown', count: 3, group: null },
+    { kind: 'clubRecordGap', count: 2, group: null },
   ],
 };
 

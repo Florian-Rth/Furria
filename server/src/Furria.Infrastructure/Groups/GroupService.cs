@@ -214,26 +214,7 @@ public sealed class GroupService
 
     public async Task<IReadOnlyList<PublicGroupSummary>> GetPublicGroupsAsync(
         CancellationToken ct
-    ) =>
-        await _publicFace
-            .Groups.OrderBy(group => EF.Functions.Collate(group.Name, GermanCollation.Name))
-            .ThenBy(group => group.Id)
-            .Select(group => new PublicGroupSummary
-            {
-                GroupId = group.Id,
-                Name = group.Name,
-                Description = group.Description,
-                IsRecruiting = group.IsRecruiting,
-                GroupKindName = group.GroupKind!.Name,
-                FoundedYear = group.FoundedYear,
-                Tone = group.Tone,
-                Picture = PublicPictures.Of(
-                    PublicPictureKind.GroupPicture,
-                    group.PictureId,
-                    group.Picture == null ? null : group.Picture.RenderedAt
-                ),
-            })
-            .ToListAsync(ct);
+    ) => await PublicGroupProjection.InNameOrder(_publicFace.Groups).ToListAsync(ct);
 
     public async Task<IReadOnlyList<MyGroupSummary>> GetMyGroupsAsync(
         int personId,

@@ -27,6 +27,15 @@ public sealed class Expected
 
     public GroupKindExpectations GroupKind(int groupKindId) => new(this, groupKindId);
 
+    public MatcherStatementExpectations MatcherStatement(int statementId) => new(this, statementId);
+
+    public MatcherStatementSetExpectations MatcherStatements() => new(this);
+
+    public StanceExpectations Stance(int groupId, int statementId) =>
+        new(this, groupId, statementId);
+
+    public AdmissionAgeSetExpectations AdmissionAgesOf(int groupId) => new(this, groupId);
+
     public GroupKindSetExpectations GroupKinds() => new(this);
 
     public UsualTrainingTimeSetExpectations UsualTrainingTimesOf(int groupId) => new(this, groupId);

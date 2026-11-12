@@ -22,6 +22,7 @@ public static class ToDoKeys
         [ToDoKind.KeyToTakeBack] = [FurriaPermissions.KeyHoldingsManage],
         [ToDoKind.ClubRecordGap] = [FurriaPermissions.ClubManage],
         [ToDoKind.ApplicationWaiting] = [FurriaPermissions.MembershipApplicationsDecide],
+        [ToDoKind.GroupMatcherStatementsOpen] = [],
     }.ToFrozenDictionary();
 
     [Pure]

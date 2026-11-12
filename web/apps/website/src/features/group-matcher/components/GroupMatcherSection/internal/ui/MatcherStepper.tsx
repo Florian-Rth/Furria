@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import type { GroupMatcher } from '@/lib/seed/group-matcher';
+import type { GroupMatcher } from '@/features/group-matcher/types';
 import { useMatcherProgress } from '../logic/use-matcher-progress';
 import { MatcherProgress } from './MatcherProgress';
 import { MatcherQuestionStep } from './MatcherQuestionStep';

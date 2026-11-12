@@ -7,6 +7,7 @@ import {
   CalendarOpenFunctionSchema,
 } from '@/features/calendar/schemas';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail/schemas';
+import { GroupMatcherStatusSchema } from '@/features/group-matcher/schemas';
 import { AppSearchSchema } from '@/features/session/schemas';
 import { PersonRefSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
 import { CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
@@ -74,6 +75,7 @@ export const GroupHubSchema = z.object({
   viewerSince: z.iso.date().nullable(),
   pastMembers: z.array(GroupDetailMemberSchema),
   pastAdmins: z.array(GroupDetailAdminSchema),
+  groupMatcher: GroupMatcherStatusSchema.nullable(),
 });
 export type GroupHub = z.infer<typeof GroupHubSchema>;
 

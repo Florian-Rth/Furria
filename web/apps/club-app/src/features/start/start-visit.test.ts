@@ -63,7 +63,7 @@ const announcements = (items: StartAnnouncement[]): StartPanel => ({
 const toDos = (count: number): StartPanel => ({
   kind: 'toDos',
   shownCount: 1,
-  toDos: [{ kind: 'neverInvited', count }],
+  toDos: [{ kind: 'neverInvited', count, group: null }],
 });
 
 const visit = (frozen: Start, dimmed: string[] = []): StartVisit => ({

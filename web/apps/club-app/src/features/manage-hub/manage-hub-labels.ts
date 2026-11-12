@@ -1,4 +1,5 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
+import { STATEMENT_LIMIT } from '@/features/manage-group-matcher/schemas';
 import type { ManageBankId, ManagePanelDefinition, ManagePanelId } from './manage-hub-panels';
 import { MANAGE_BANKS, MANAGE_PANELS } from './manage-hub-panels';
 import type { ManageAccountsPanel, ManageHub, ManagePersonsPanel } from './schemas';
@@ -202,6 +203,14 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
       : {
           isEmpty: hub.keys.issuedCount === 0,
           summaryParts: toKeyParts(hub.keys.holdingCount, hub.keys.holderCount),
+          attention: null,
+        },
+  groupMatcher: ({ hub }) =>
+    hub.groupMatcher === null
+      ? null
+      : {
+          isEmpty: hub.groupMatcher.statementCount === 0,
+          summaryParts: [`${hub.groupMatcher.statementCount} / ${STATEMENT_LIMIT} Aussagen`],
           attention: null,
         },
 };

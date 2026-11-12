@@ -2,6 +2,7 @@ using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
+using Furria.Core.GroupMatcher;
 using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
@@ -45,6 +46,12 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<GroupMembership> GroupMemberships => Set<GroupMembership>();
 
     public DbSet<GroupAdmin> GroupAdmins => Set<GroupAdmin>();
+
+    public DbSet<MatcherStatement> MatcherStatements => Set<MatcherStatement>();
+
+    public DbSet<Stance> Stances => Set<Stance>();
+
+    public DbSet<GroupAdmissionAge> GroupAdmissionAges => Set<GroupAdmissionAge>();
 
     public DbSet<UsualTrainingTime> UsualTrainingTimes => Set<UsualTrainingTime>();
 

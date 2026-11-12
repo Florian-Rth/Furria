@@ -1899,6 +1899,108 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.GroupMatcher.GroupAdmissionAge", b =>
+                {
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("Band")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("band");
+
+                    b.HasKey("GroupId", "Band")
+                        .HasName("pk_group_admission_age");
+
+                    b.ToTable("group_admission_age", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_group_admission_age_band", "band IN ('UnderTwelve', 'TwelveToThirteen', 'FourteenToFifteen', 'SixteenToSeventeen', 'EighteenPlus')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.GroupMatcher.MatcherStatement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("RewordedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reworded_at");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("character varying(160)")
+                        .HasColumnName("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_group_matcher_statement");
+
+                    b.ToTable("group_matcher_statement", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_group_matcher_statement_sort_order", "sort_order BETWEEN 1 AND 10");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.GroupMatcher.Stance", b =>
+                {
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.Property<int>("StatementId")
+                        .HasColumnType("integer")
+                        .HasColumnName("statement_id");
+
+                    b.Property<int>("Importance")
+                        .HasColumnType("integer")
+                        .HasColumnName("importance");
+
+                    b.Property<string>("Position")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("position");
+
+                    b.Property<DateTimeOffset>("TakenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("taken_at");
+
+                    b.HasKey("GroupId", "StatementId")
+                        .HasName("pk_group_matcher_stance");
+
+                    b.HasIndex("StatementId")
+                        .HasDatabaseName("ix_group_matcher_stance_statement_id");
+
+                    b.ToTable("group_matcher_stance", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_group_matcher_stance_importance", "importance BETWEEN 1 AND 3");
+
+                            t.HasCheckConstraint("ck_group_matcher_stance_position", "position IN ('Yes', 'Neutral', 'No')");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>
                 {
                     b.Property<int>("Id")
@@ -1931,6 +2033,10 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<int?>("GroupKindId")
                         .HasColumnType("integer")
                         .HasColumnName("group_kind_id");
+
+                    b.Property<DateTimeOffset?>("GroupMatcherJoinedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("group_matcher_joined_at");
 
                     b.Property<string>("Icon")
                         .HasMaxLength(32)
@@ -6088,6 +6194,39 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("CreatedBy");
                 });
 
+            modelBuilder.Entity("Furria.Core.GroupMatcher.GroupAdmissionAge", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_admission_age_group_group_id");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("Furria.Core.GroupMatcher.Stance", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_matcher_stance_group_group_id");
+
+                    b.HasOne("Furria.Core.GroupMatcher.MatcherStatement", "Statement")
+                        .WithMany("Stances")
+                        .HasForeignKey("StatementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_group_matcher_stance_group_matcher_statement_statement_id");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Statement");
+                });
+
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>
                 {
                     b.HasOne("Furria.Core.Groups.GroupKind", "GroupKind")
@@ -7293,6 +7432,11 @@ namespace Furria.Infrastructure.Migrations
             modelBuilder.Entity("Furria.Core.Gallery.UploadLink", b =>
                 {
                     b.Navigation("InboxItems");
+                });
+
+            modelBuilder.Entity("Furria.Core.GroupMatcher.MatcherStatement", b =>
+                {
+                    b.Navigation("Stances");
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>

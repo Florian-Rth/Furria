@@ -1,24 +1,23 @@
+import type { MatcherAnswers, Stance } from './schemas';
+import { StanceSchema } from './schemas';
 import type {
   FilterQuestion,
   GroupMatcher,
+  MatcherGroup,
   MatcherQuestion,
-  Stance,
   WeightedQuestion,
-} from '@/lib/seed/group-matcher';
-import { StanceSchema } from '@/lib/seed/group-matcher';
-import type { Group } from '@/lib/seed/groups';
-import type { MatcherAnswers } from './schemas';
+} from './types';
 
 export const FULL_AGREEMENT = 2;
 
 export interface GroupMatch {
-  group: Group;
+  group: MatcherGroup;
   score: number;
   percentage: number;
 }
 
 export interface GroupExclusion {
-  group: Group;
+  group: MatcherGroup;
   questionId: string;
   questionPrompt: string;
   answerLabel: string;
@@ -59,7 +58,7 @@ export const filterQuestions = (questions: MatcherQuestion[]): FilterQuestion[] 
   questions.flatMap((question) => (question.role === 'filter' ? [question] : []));
 
 const findExclusion = (
-  group: Group,
+  group: MatcherGroup,
   questions: FilterQuestion[],
   answers: MatcherAnswers,
 ): GroupExclusion | null => {
@@ -85,7 +84,7 @@ const findExclusion = (
 };
 
 const countPoints = (
-  group: Group,
+  group: MatcherGroup,
   questions: WeightedQuestion[],
   answers: MatcherAnswers,
 ): GroupPoints =>

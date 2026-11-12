@@ -3,6 +3,7 @@ using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Changes;
 using Furria.Application.Changes;
+using Furria.Application.GroupMatcher;
 using Furria.Application.Identity;
 using Furria.Application.Management;
 using Furria.Application.Operations;
@@ -12,6 +13,7 @@ using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
+using Furria.Core.GroupMatcher;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
@@ -37,7 +39,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(StartGroupMomentKind)] = "jubilee",
         [typeof(ToDoKind)] =
             "neverInvited reminderDue inPersonOnly birthDateUnknown keyToTakeBack "
-            + "clubRecordGap applicationWaiting",
+            + "clubRecordGap applicationWaiting groupMatcherStatementsOpen",
         [typeof(ClubIcon)] =
             "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
             + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom scepter "
@@ -111,8 +113,12 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "clubRecord announcement announcementSeen media newsPost websitePicture act "
             + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
             + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
-            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine",
+            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher",
         [typeof(ChangeLineKind)] = "ready changes ping",
+        [typeof(StancePosition)] = "yes neutral no",
+        [typeof(AdmissionAgeBand)] =
+            "underTwelve twelveToThirteen fourteenToFifteen sixteenToSeventeen eighteenPlus",
+        [typeof(GroupStatementState)] = "answered open new changed",
     };
 
     private readonly ApiTestFixture _fixture;

@@ -1,23 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import type { MatcherQuestion } from '@/lib/seed/group-matcher';
-import type { Group } from '@/lib/seed/groups';
+import type { MatcherGroup, MatcherQuestion } from '@/features/group-matcher/types';
 import type { MatchReason } from './match-reasons';
 import { buildMatchReasons } from './match-reasons';
 import type { MatcherAnswers } from './schemas';
 
-const group: Group = {
-  id: 'alpha',
+const group: MatcherGroup = {
+  id: 1,
   name: 'ALPHA',
-  ageRange: { from: 6, to: null },
   isRecruiting: true,
-  tagline: 'Ergebniszeile',
+  description: 'Ergebniszeile',
 };
 
 const stageQuestion: MatcherQuestion = {
   id: 'stage',
   role: 'weighted',
   prompt: 'Ich will auf die Bühne.',
-  positions: [{ groupId: 'alpha', stance: 'yes', importance: 1 }],
+  positions: [{ groupId: 1, stance: 'yes', importance: 1 }],
 };
 
 const questions: MatcherQuestion[] = [
@@ -26,23 +24,23 @@ const questions: MatcherQuestion[] = [
     role: 'filter',
     prompt: 'Wie alt bist du?',
     options: [
-      { id: 'young', label: 'unter 12' },
-      { id: 'old', label: '12 oder älter' },
+      { id: 'underTwelve', label: 'unter 12' },
+      { id: 'twelveToThirteen', label: '12 oder älter' },
     ],
-    positions: [{ groupId: 'alpha', accepts: ['young', 'old'] }],
+    positions: [{ groupId: 1, accepts: ['underTwelve', 'twelveToThirteen'] }],
   },
   stageQuestion,
   {
     id: 'build',
     role: 'weighted',
     prompt: 'Ich packe beim Aufbau mit an.',
-    positions: [{ groupId: 'alpha', stance: 'no', importance: 2 }],
+    positions: [{ groupId: 1, stance: 'no', importance: 2 }],
   },
   {
     id: 'ritual',
     role: 'weighted',
     prompt: 'Orden gehören dazu.',
-    positions: [{ groupId: 'beta', stance: 'yes', importance: 3 }],
+    positions: [{ groupId: 2, stance: 'yes', importance: 3 }],
   },
 ];
 
@@ -51,7 +49,12 @@ const reasonsFor = (answers: MatcherAnswers): MatchReason[] =>
 
 describe('buildMatchReasons', () => {
   it('derives one reason per answered thesis the group holds a stance on, strongest first', () => {
-    const reasons = reasonsFor({ stage: 'yes', build: 'no', ritual: 'yes', 'age-band': 'old' });
+    const reasons = reasonsFor({
+      stage: 'yes',
+      build: 'no',
+      ritual: 'yes',
+      'age-band': 'twelveToThirteen',
+    });
 
     expect(reasons.map((reason) => reason.questionId)).toEqual(['build', 'stage']);
   });

@@ -51,6 +51,7 @@ import { Route as AppManageRolesRouteImport } from './routes/_app/manage.roles'
 import { Route as AppManagePersonsRouteImport } from './routes/_app/manage.persons'
 import { Route as AppManageKeysRouteImport } from './routes/_app/manage.keys'
 import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups'
+import { Route as AppManageGroupMatcherRouteImport } from './routes/_app/manage.group-matcher'
 import { Route as AppManageClubRecordRouteImport } from './routes/_app/manage.club-record'
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
 import { Route as AppManageApplicationsRouteImport } from './routes/_app/manage.applications'
@@ -75,6 +76,7 @@ import { Route as AppAnnouncementsAnnouncementIdRouteImport } from './routes/_ap
 import { Route as AppActsActIdRouteImport } from './routes/_app/acts_.$actId'
 import { Route as AppPersonalProfileRouteImport } from './routes/_app/_personal.profile'
 import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
+import { Route as AppManageGroupMatcherIndexRouteImport } from './routes/_app/manage.group-matcher.index'
 import { Route as AppBeerListManageIndexRouteImport } from './routes/_app/beer-list_.manage.index'
 import { Route as AppManageVenuesNewRouteImport } from './routes/_app/manage.venues_.new'
 import { Route as AppManageVenuesVenueIdRouteImport } from './routes/_app/manage.venues_.$venueId'
@@ -92,6 +94,7 @@ import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.boar
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
 import { Route as AppLabWelcomeCaseRouteImport } from './routes/_app/lab_.welcome.$case'
+import { Route as AppGroupsGroupIdGroupMatcherRouteImport } from './routes/_app/groups_.$groupId_.group-matcher'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
 import { Route as AppGroupsGroupIdActsRouteImport } from './routes/_app/groups_.$groupId_.acts'
@@ -127,6 +130,7 @@ import { Route as AppManagePersonsPersonIdAccessRecoveryRouteImport } from './ro
 import { Route as AppManageKeysHoldingsKeyHoldingIdRouteImport } from './routes/_app/manage.keys_.holdings.$keyHoldingId'
 import { Route as AppManageGroupsKindsNewRouteImport } from './routes/_app/manage.groups_.kinds.new'
 import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId'
+import { Route as AppManageGroupMatcherStatementsStatementIdRouteImport } from './routes/_app/manage.group-matcher.statements.$statementId'
 import { Route as AppManageBoardBoardOfficeIdEditRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.edit'
 import { Route as AppManageApplicationsMembershipApplicationIdAdmissionRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId_.admission'
 import { Route as AppGroupsGroupIdUsualTrainingTimesNewRouteImport } from './routes/_app/groups_.$groupId_.usual-training-times.new'
@@ -367,6 +371,11 @@ const AppManageGroupsRoute = AppManageGroupsRouteImport.update({
   path: '/manage/groups',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManageGroupMatcherRoute = AppManageGroupMatcherRouteImport.update({
+  id: '/manage/group-matcher',
+  path: '/manage/group-matcher',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManageClubRecordRoute = AppManageClubRecordRouteImport.update({
   id: '/manage/club-record',
   path: '/manage/club-record',
@@ -489,6 +498,12 @@ const AppAffiliatedMembersRoute = AppAffiliatedMembersRouteImport.update({
   path: '/members',
   getParentRoute: () => AppAffiliatedRoute,
 } as any)
+const AppManageGroupMatcherIndexRoute =
+  AppManageGroupMatcherIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AppManageGroupMatcherRoute,
+  } as any)
 const AppBeerListManageIndexRoute = AppBeerListManageIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -581,6 +596,12 @@ const AppLabWelcomeCaseRoute = AppLabWelcomeCaseRouteImport.update({
   path: '/lab/welcome/$case',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGroupsGroupIdGroupMatcherRoute =
+  AppGroupsGroupIdGroupMatcherRouteImport.update({
+    id: '/groups_/$groupId_/group-matcher',
+    path: '/groups/$groupId/group-matcher',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppGroupsGroupIdEditRoute = AppGroupsGroupIdEditRouteImport.update({
   id: '/groups_/$groupId_/edit',
   path: '/groups/$groupId/edit',
@@ -773,6 +794,12 @@ const AppManageGroupsKindsGroupKindIdRoute =
     id: '/manage/groups_/kinds/$groupKindId',
     path: '/manage/groups/kinds/$groupKindId',
     getParentRoute: () => AppRoute,
+  } as any)
+const AppManageGroupMatcherStatementsStatementIdRoute =
+  AppManageGroupMatcherStatementsStatementIdRouteImport.update({
+    id: '/statements/$statementId',
+    path: '/statements/$statementId',
+    getParentRoute: () => AppManageGroupMatcherRoute,
   } as any)
 const AppManageBoardBoardOfficeIdEditRoute =
   AppManageBoardBoardOfficeIdEditRouteImport.update({
@@ -1013,6 +1040,7 @@ export interface FileRoutesByFullPath {
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
+  '/manage/group-matcher': typeof AppManageGroupMatcherRouteWithChildren
   '/manage/groups': typeof AppManageGroupsRoute
   '/manage/keys': typeof AppManageKeysRoute
   '/manage/persons': typeof AppManagePersonsRoute
@@ -1056,6 +1084,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
+  '/groups/$groupId/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1073,6 +1102,7 @@ export interface FileRoutesByFullPath {
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
   '/beer-list/manage/': typeof AppBeerListManageIndexRoute
+  '/manage/group-matcher/': typeof AppManageGroupMatcherIndexRoute
   '/profile/contact/edit': typeof AppPersonalProfileContactEditRoute
   '/profile/security/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
   '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
@@ -1090,6 +1120,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/usual-training-times/new': typeof AppGroupsGroupIdUsualTrainingTimesNewRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
+  '/manage/group-matcher/statements/$statementId': typeof AppManageGroupMatcherStatementsStatementIdRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
@@ -1203,6 +1234,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
+  '/groups/$groupId/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1220,6 +1252,7 @@ export interface FileRoutesByTo {
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
   '/beer-list/manage': typeof AppBeerListManageIndexRoute
+  '/manage/group-matcher': typeof AppManageGroupMatcherIndexRoute
   '/profile/contact/edit': typeof AppPersonalProfileContactEditRoute
   '/profile/security/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
   '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
@@ -1237,6 +1270,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/usual-training-times/new': typeof AppGroupsGroupIdUsualTrainingTimesNewRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
+  '/manage/group-matcher/statements/$statementId': typeof AppManageGroupMatcherStatementsStatementIdRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
@@ -1313,6 +1347,7 @@ export interface FileRoutesById {
   '/_app/manage/applications': typeof AppManageApplicationsRoute
   '/_app/manage/board': typeof AppManageBoardRoute
   '/_app/manage/club-record': typeof AppManageClubRecordRoute
+  '/_app/manage/group-matcher': typeof AppManageGroupMatcherRouteWithChildren
   '/_app/manage/groups': typeof AppManageGroupsRoute
   '/_app/manage/keys': typeof AppManageKeysRoute
   '/_app/manage/persons': typeof AppManagePersonsRoute
@@ -1356,6 +1391,7 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/acts': typeof AppGroupsGroupIdActsRoute
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
+  '/_app/groups_/$groupId_/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
   '/_app/lab_/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1373,6 +1409,7 @@ export interface FileRoutesById {
   '/_app/manage/venues_/$venueId': typeof AppManageVenuesVenueIdRoute
   '/_app/manage/venues_/new': typeof AppManageVenuesNewRoute
   '/_app/beer-list_/manage/': typeof AppBeerListManageIndexRoute
+  '/_app/manage/group-matcher/': typeof AppManageGroupMatcherIndexRoute
   '/_app/_personal/profile_/contact/edit': typeof AppPersonalProfileContactEditRoute
   '/_app/_personal/profile_/security_/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
   '/_app/_personal/profile_/security_/password': typeof AppPersonalProfileSecurityPasswordRoute
@@ -1390,6 +1427,7 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/usual-training-times/new': typeof AppGroupsGroupIdUsualTrainingTimesNewRoute
   '/_app/manage/applications_/$membershipApplicationId_/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/_app/manage/board_/$boardOfficeId_/edit': typeof AppManageBoardBoardOfficeIdEditRoute
+  '/_app/manage/group-matcher/statements/$statementId': typeof AppManageGroupMatcherStatementsStatementIdRoute
   '/_app/manage/groups_/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/_app/manage/groups_/kinds/new': typeof AppManageGroupsKindsNewRoute
   '/_app/manage/keys_/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
@@ -1464,6 +1502,7 @@ export interface FileRouteTypes {
     | '/manage/applications'
     | '/manage/board'
     | '/manage/club-record'
+    | '/manage/group-matcher'
     | '/manage/groups'
     | '/manage/keys'
     | '/manage/persons'
@@ -1507,6 +1546,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/acts'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
+    | '/groups/$groupId/group-matcher'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1524,6 +1564,7 @@ export interface FileRouteTypes {
     | '/manage/venues/$venueId'
     | '/manage/venues/new'
     | '/beer-list/manage/'
+    | '/manage/group-matcher/'
     | '/profile/contact/edit'
     | '/profile/security/login-email'
     | '/profile/security/password'
@@ -1541,6 +1582,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/usual-training-times/new'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
+    | '/manage/group-matcher/statements/$statementId'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
     | '/manage/keys/holdings/$keyHoldingId'
@@ -1654,6 +1696,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/acts'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
+    | '/groups/$groupId/group-matcher'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1671,6 +1714,7 @@ export interface FileRouteTypes {
     | '/manage/venues/$venueId'
     | '/manage/venues/new'
     | '/beer-list/manage'
+    | '/manage/group-matcher'
     | '/profile/contact/edit'
     | '/profile/security/login-email'
     | '/profile/security/password'
@@ -1688,6 +1732,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/usual-training-times/new'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
+    | '/manage/group-matcher/statements/$statementId'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
     | '/manage/keys/holdings/$keyHoldingId'
@@ -1763,6 +1808,7 @@ export interface FileRouteTypes {
     | '/_app/manage/applications'
     | '/_app/manage/board'
     | '/_app/manage/club-record'
+    | '/_app/manage/group-matcher'
     | '/_app/manage/groups'
     | '/_app/manage/keys'
     | '/_app/manage/persons'
@@ -1806,6 +1852,7 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/acts'
     | '/_app/groups_/$groupId_/administration'
     | '/_app/groups_/$groupId_/edit'
+    | '/_app/groups_/$groupId_/group-matcher'
     | '/_app/lab_/welcome/$case'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/$boardOfficeId'
@@ -1823,6 +1870,7 @@ export interface FileRouteTypes {
     | '/_app/manage/venues_/$venueId'
     | '/_app/manage/venues_/new'
     | '/_app/beer-list_/manage/'
+    | '/_app/manage/group-matcher/'
     | '/_app/_personal/profile_/contact/edit'
     | '/_app/_personal/profile_/security_/login-email'
     | '/_app/_personal/profile_/security_/password'
@@ -1840,6 +1888,7 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/usual-training-times/new'
     | '/_app/manage/applications_/$membershipApplicationId_/admission'
     | '/_app/manage/board_/$boardOfficeId_/edit'
+    | '/_app/manage/group-matcher/statements/$statementId'
     | '/_app/manage/groups_/kinds/$groupKindId'
     | '/_app/manage/groups_/kinds/new'
     | '/_app/manage/keys_/holdings/$keyHoldingId'
@@ -2176,6 +2225,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageGroupsRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/group-matcher': {
+      id: '/_app/manage/group-matcher'
+      path: '/manage/group-matcher'
+      fullPath: '/manage/group-matcher'
+      preLoaderRoute: typeof AppManageGroupMatcherRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/club-record': {
       id: '/_app/manage/club-record'
       path: '/manage/club-record'
@@ -2344,6 +2400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAffiliatedMembersRouteImport
       parentRoute: typeof AppAffiliatedRoute
     }
+    '/_app/manage/group-matcher/': {
+      id: '/_app/manage/group-matcher/'
+      path: '/'
+      fullPath: '/manage/group-matcher/'
+      preLoaderRoute: typeof AppManageGroupMatcherIndexRouteImport
+      parentRoute: typeof AppManageGroupMatcherRoute
+    }
     '/_app/beer-list_/manage/': {
       id: '/_app/beer-list_/manage/'
       path: '/'
@@ -2461,6 +2524,13 @@ declare module '@tanstack/react-router' {
       path: '/lab/welcome/$case'
       fullPath: '/lab/welcome/$case'
       preLoaderRoute: typeof AppLabWelcomeCaseRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/groups_/$groupId_/group-matcher': {
+      id: '/_app/groups_/$groupId_/group-matcher'
+      path: '/groups/$groupId/group-matcher'
+      fullPath: '/groups/$groupId/group-matcher'
+      preLoaderRoute: typeof AppGroupsGroupIdGroupMatcherRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/groups_/$groupId_/edit': {
@@ -2707,6 +2777,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/manage/groups/kinds/$groupKindId'
       preLoaderRoute: typeof AppManageGroupsKindsGroupKindIdRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/manage/group-matcher/statements/$statementId': {
+      id: '/_app/manage/group-matcher/statements/$statementId'
+      path: '/statements/$statementId'
+      fullPath: '/manage/group-matcher/statements/$statementId'
+      preLoaderRoute: typeof AppManageGroupMatcherStatementsStatementIdRouteImport
+      parentRoute: typeof AppManageGroupMatcherRoute
     }
     '/_app/manage/board_/$boardOfficeId_/edit': {
       id: '/_app/manage/board_/$boardOfficeId_/edit'
@@ -3005,6 +3082,22 @@ const AppBeerListManageRouteChildren: AppBeerListManageRouteChildren = {
 const AppBeerListManageRouteWithChildren =
   AppBeerListManageRoute._addFileChildren(AppBeerListManageRouteChildren)
 
+interface AppManageGroupMatcherRouteChildren {
+  AppManageGroupMatcherIndexRoute: typeof AppManageGroupMatcherIndexRoute
+  AppManageGroupMatcherStatementsStatementIdRoute: typeof AppManageGroupMatcherStatementsStatementIdRoute
+}
+
+const AppManageGroupMatcherRouteChildren: AppManageGroupMatcherRouteChildren = {
+  AppManageGroupMatcherIndexRoute: AppManageGroupMatcherIndexRoute,
+  AppManageGroupMatcherStatementsStatementIdRoute:
+    AppManageGroupMatcherStatementsStatementIdRoute,
+}
+
+const AppManageGroupMatcherRouteWithChildren =
+  AppManageGroupMatcherRoute._addFileChildren(
+    AppManageGroupMatcherRouteChildren,
+  )
+
 interface AppActsActIdDetailsRouteChildren {
   AppActsActIdDetailsSettingsRoute: typeof AppActsActIdDetailsSettingsRoute
   AppActsActIdDetailsIndexRoute: typeof AppActsActIdDetailsIndexRoute
@@ -3061,6 +3154,7 @@ interface AppRouteChildren {
   AppManageApplicationsRoute: typeof AppManageApplicationsRoute
   AppManageBoardRoute: typeof AppManageBoardRoute
   AppManageClubRecordRoute: typeof AppManageClubRecordRoute
+  AppManageGroupMatcherRoute: typeof AppManageGroupMatcherRouteWithChildren
   AppManageGroupsRoute: typeof AppManageGroupsRoute
   AppManageKeysRoute: typeof AppManageKeysRoute
   AppManagePersonsRoute: typeof AppManagePersonsRoute
@@ -3094,6 +3188,7 @@ interface AppRouteChildren {
   AppGroupsGroupIdActsRoute: typeof AppGroupsGroupIdActsRoute
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
   AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
+  AppGroupsGroupIdGroupMatcherRoute: typeof AppGroupsGroupIdGroupMatcherRoute
   AppLabWelcomeCaseRoute: typeof AppLabWelcomeCaseRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardBoardOfficeIdRoute: typeof AppManageBoardBoardOfficeIdRoute
@@ -3180,6 +3275,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageApplicationsRoute: AppManageApplicationsRoute,
   AppManageBoardRoute: AppManageBoardRoute,
   AppManageClubRecordRoute: AppManageClubRecordRoute,
+  AppManageGroupMatcherRoute: AppManageGroupMatcherRouteWithChildren,
   AppManageGroupsRoute: AppManageGroupsRoute,
   AppManageKeysRoute: AppManageKeysRoute,
   AppManagePersonsRoute: AppManagePersonsRoute,
@@ -3213,6 +3309,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdActsRoute: AppGroupsGroupIdActsRoute,
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
   AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
+  AppGroupsGroupIdGroupMatcherRoute: AppGroupsGroupIdGroupMatcherRoute,
   AppLabWelcomeCaseRoute: AppLabWelcomeCaseRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,
