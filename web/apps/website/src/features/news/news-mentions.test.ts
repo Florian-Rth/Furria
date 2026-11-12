@@ -1,4 +1,4 @@
-import type { NewsMention } from '@furria/ui/news-text';
+import type { TextMention } from '@furria/ui/rich-text';
 import { describe, expect, it } from 'vitest';
 import type { NewsArticle } from '@/lib/public-news/schemas';
 import { collectMentionCards, groupInitialsOf, mentionCardOf } from './news-mentions';
@@ -24,11 +24,15 @@ const article: NewsArticle = {
 describe('mentionCardOf', () => {
   const cards = collectMentionCards(article);
 
-  it.each<[NewsMention, string | null]>([
+  it.each<[TextMention, string | null]>([
     [{ kind: 'group', id: 3, label: 'Elferrat' }, 'group'],
     [{ kind: 'person', id: 3, label: 'Anna' }, 'person'],
     [{ kind: 'group', id: 9, label: 'Archiviert' }, null],
     [{ kind: 'person', id: 9, label: 'Gelöscht' }, null],
+    [{ kind: 'event', id: 3, label: 'Sitzung' }, null],
+    [{ kind: 'calendar-entry', id: 3, label: 'Probe' }, null],
+    [{ kind: 'news-post', id: 3, label: 'Meldung' }, null],
+    [{ kind: 'album', id: 3, label: 'Bilder' }, null],
   ])('finds the card of %o as %s', (mention, kind) => {
     expect(mentionCardOf(mention, cards)?.kind ?? null).toBe(kind);
   });

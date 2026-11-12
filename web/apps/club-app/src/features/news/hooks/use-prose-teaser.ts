@@ -1,7 +1,7 @@
 import { useKkTextMeasure } from '@furria/ui/use-kk-text-measure';
 import { useEffect, useEffectEvent, useState } from 'react';
-import type { NewsTeaserEditor } from '../news-text-editor';
-import { createNewsTeaserEditor } from '../news-text-editor';
+import type { NewsTeaserEditor } from '../news-teaser-editor';
+import { createNewsTeaserEditor } from '../news-teaser-editor';
 import type { TextMeasure } from '../teaser-cuts';
 
 export interface ProseTeaser {

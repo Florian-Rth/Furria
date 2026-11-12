@@ -2,6 +2,7 @@ import type { KkHoldConfirm } from '@furria/ui/KkHoldButton';
 import type { KkPressLineTone, KkPressToggleOption, KkReadinessSlot } from '@furria/ui/KkPressBar';
 import type { KkRegisterMarkState } from '@furria/ui/KkRegisterMark';
 import { useIsMobile } from '@furria/ui/use-is-mobile';
+import type { RichTextField } from '@/features/rich-text/hooks/use-rich-text';
 import { MANAGING_LOGIN_NAME } from '@/features/session/hooks/use-signer-name';
 import { publishConfirmOf } from '@/lib/publish-copy';
 import {
@@ -45,7 +46,6 @@ import {
 import { pressKindOf, pressMomentOf } from '../press-kind';
 import type { NewsRequirement, NewsStage } from '../types';
 import type { NewsEditor } from './use-news-editor';
-import type { ProseText } from './use-prose-text';
 
 export interface PressFootAction {
   id: string;
@@ -127,7 +127,7 @@ const missingLineOf = (missing: readonly NewsRequirement[]): string => {
     : `${LINE_MISSING}: ${head} +${rest.length}`;
 };
 
-export const usePressFoot = (editor: NewsEditor, text: ProseText): PressFoot => {
+export const usePressFoot = (editor: NewsEditor, text: RichTextField): PressFoot => {
   const isCompact = useIsMobile();
   const { foreignSave, press, post } = editor;
   const isBusy = press.isBusy;

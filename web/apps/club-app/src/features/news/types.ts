@@ -1,6 +1,4 @@
-import type { KkGroupTone } from '@furria/ui/group-tone';
 import type { KkCrop } from '@furria/ui/image-crop';
-import type { KkImageSource } from '@furria/ui/image-source';
 import type { NewsAlbumTie, NewsCategory, NewsEventTie, PublishedNewsPost } from './schemas';
 import { NewsCategorySchema } from './schemas';
 
@@ -38,20 +36,6 @@ export interface NewsVersion extends NewsFields {
 }
 
 export type NewsPublication = Omit<PublishedNewsPost, 'revision'>;
-
-export type NewsMentionKind = 'group' | 'person';
-
-export interface NewsMentionable {
-  kind: NewsMentionKind;
-  id: string;
-  targetId: number;
-  name: string;
-  line: string;
-  tone: KkGroupTone | null;
-  initials: string;
-  image: KkImageSource | null;
-  isPublic: boolean;
-}
 
 export interface NewsSaver {
   name: string | null;

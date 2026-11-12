@@ -8,6 +8,7 @@ using Furria.Application.Identity;
 using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Core.Media;
+using Furria.Core.Text;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.WebAuthn;
@@ -1596,7 +1597,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     [InlineData(StrayHolding.AttendanceResponse)]
     [InlineData(StrayHolding.Announcement)]
     [InlineData(StrayHolding.NewsPost)]
-    [InlineData(StrayHolding.NewsMention)]
+    [InlineData(StrayHolding.Mention)]
     public async Task Should_RefuseAsTaken_When_TheStrayPersonHoldsClubData(StrayHolding holding)
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1637,7 +1638,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
         AttendanceResponse,
         Announcement,
         NewsPost,
-        NewsMention,
+        Mention,
     }
 
     private static void Hold(
@@ -1725,7 +1726,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
                     news.AddNewsPost("stray-post", "Entwurf", authorAlias: "stray")
                 );
                 break;
-            case StrayHolding.NewsMention:
+            case StrayHolding.Mention:
                 builder.News(news =>
                     news.AddNewsPost(
                         "stray-mention",

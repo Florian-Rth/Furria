@@ -1,4 +1,4 @@
-import type { NewsMention } from '@furria/ui/news-text';
+import type { TextMention } from '@furria/ui/rich-text';
 import type {
   NewsArticle,
   NewsMentionedGroup,
@@ -19,17 +19,28 @@ export const collectMentionCards = (article: NewsArticle): NewsMentionCards => (
   persons: new Map(article.mentionedPersons.map((person) => [person.personId, person])),
 });
 
+const groupCardOf = (id: number, cards: NewsMentionCards): NewsMentionCard | null => {
+  const group = cards.groups.get(id);
+  return group === undefined ? null : { kind: 'group', group };
+};
+
+const personCardOf = (id: number, cards: NewsMentionCards): NewsMentionCard | null => {
+  const person = cards.persons.get(id);
+  return person === undefined ? null : { kind: 'person', person };
+};
+
 export const mentionCardOf = (
-  mention: NewsMention,
+  mention: TextMention,
   cards: NewsMentionCards,
 ): NewsMentionCard | null => {
-  if (mention.kind === 'group') {
-    const group = cards.groups.get(mention.id);
-    return group === undefined ? null : { kind: 'group', group };
+  switch (mention.kind) {
+    case 'group':
+      return groupCardOf(mention.id, cards);
+    case 'person':
+      return personCardOf(mention.id, cards);
+    default:
+      return null;
   }
-
-  const person = cards.persons.get(mention.id);
-  return person === undefined ? null : { kind: 'person', person };
 };
 
 const NAME_WORDS = /[\p{L}\p{N}]+/gu;

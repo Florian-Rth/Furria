@@ -1,7 +1,7 @@
 ---
 rfc: 0007
 title: Aushänge with add-ons, mentions and a push
-status: draft
+status: in progress (phase 1 done)
 github_issue: 80
 branch: feat/rfc-80-aushaenge
 created: 2026-11-12
@@ -77,10 +77,10 @@ Each phase leaves the system intact and fits a ~120k-token session.
 
 ### Phase 1 — Shared text kit
 Goal: the news text model and editor are host-neutral; news behaves exactly as before.
-- [ ] Backend: split `NewsText` / `NewsInline` / mention parsing into a shared text model whose mention target kinds are given by the host; news passes group + person
-- [ ] Club app: move `news-text-editor` + mentionables plumbing into a shared text kit with a per-host mentionables source; news uses it unchanged
-- [ ] Shared renderer for the subset in the club app (used by news reading, ready for Aushänge)
-- [ ] Existing news tests green; pure tests for the per-host target kinds
+- [x] Backend: split `NewsText` / `NewsInline` / mention parsing into a shared text model whose mention target kinds are given by the host; news passes group + person
+- [x] Club app: move `news-text-editor` + mentionables plumbing into a shared text kit with a per-host mentionables source; news uses it unchanged
+- [x] Shared renderer for the subset in the club app (used by news reading, ready for Aushänge)
+- [x] Existing news tests green; pure tests for the per-host target kinds
 
 ### Phase 2 — Aushang text with mentions
 Goal: Aushänge are written and read in the subset with the wider mentions.

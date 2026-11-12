@@ -3,17 +3,18 @@ import { KkFormatRail } from '@furria/ui/KkFormatRail';
 import { KkHoldButton } from '@furria/ui/KkHoldButton';
 import { KkPressBar } from '@furria/ui/KkPressBar';
 import type { FC } from 'react';
+import { useFormatItems } from '@/features/rich-text/hooks/use-format-items';
+import type { RichTextField } from '@/features/rich-text/hooks/use-rich-text';
+import { FORMAT_RAIL_LABEL } from '@/features/rich-text/rich-text-copy';
 import { PUBLISH_HOLD_HINT } from '@/lib/publish-copy';
-import { RAIL_LABEL, READINESS_LABEL } from '../../editor-copy';
-import { useFormatItems } from '../../hooks/use-format-items';
+import { READINESS_LABEL } from '../../editor-copy';
 import type { NewsEditor } from '../../hooks/use-news-editor';
 import { usePressFoot } from '../../hooks/use-press-foot';
-import type { ProseText } from '../../hooks/use-prose-text';
 import { MORE_ACTIONS, VERSION_TOGGLE_LABEL } from '../../press-copy';
 
 interface NewsPressFootProps {
   editor: NewsEditor;
-  text: ProseText;
+  text: RichTextField;
 }
 
 export const NewsPressFoot: FC<NewsPressFootProps> = ({ editor, text }) => {
@@ -21,7 +22,7 @@ export const NewsPressFoot: FC<NewsPressFootProps> = ({ editor, text }) => {
   const formatItems = useFormatItems(text, editor.isReadOnly);
 
   if (foot.isRailOnly) {
-    return <KkFormatRail label={RAIL_LABEL} items={formatItems} orientation="horizontal" />;
+    return <KkFormatRail label={FORMAT_RAIL_LABEL} items={formatItems} orientation="horizontal" />;
   }
 
   const readiness =

@@ -2,7 +2,6 @@ export const READ_NEWS_TITLE = 'Aktuelles';
 export const READ_NEWS_PANEL_TITLE = 'Aktuelles';
 export const ALL_NEWS_LABEL = 'Alle Meldungen';
 export const READ_MORE_LABEL = 'Ganze Meldung lesen →';
-export const NEW_TAB_NOTE = 'öffnet in neuem Tab';
 export const ARTICLE_FALLBACK_TITLE = 'Meldung';
 export const WRITE_NEWS_LABEL = 'Schreiben';
 export const EDIT_POST_LABEL = 'Bearbeiten';
@@ -25,8 +24,4 @@ export const TIE_LABELS = {
   eventCta: 'Zum Termin →',
   album: 'BILDER DAZU',
   albumCta: 'Zum Album →',
-} as const;
-export const MENTION_LABELS = {
-  groupCta: 'Zur Gruppe →',
-  personCta: 'Zur Person →',
 } as const;

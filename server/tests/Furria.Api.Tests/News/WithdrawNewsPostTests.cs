@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.News;
 using Furria.Core.News;
+using Furria.Core.Text;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -58,7 +59,7 @@ public sealed class WithdrawNewsPostTests : IClassFixture<ApiTestFixture>
             .NewsPost(editedId)
             .ToHaveNoPendingChanges()
             .NewsPost(editedId)
-            .ToMention(new NewsMention(NewsMentionKind.Group, gardeId))
+            .ToMention(new Mention(MentionKind.Group, gardeId))
             .AssertAsync(ct);
     }
 

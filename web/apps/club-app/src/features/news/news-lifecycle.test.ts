@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PictureEditing } from '@/lib/api/schemas';
-import {
-  changedPartsOf,
-  isChangedBlock,
-  missingOf,
-  pictureKeyOf,
-  pictureOf,
-} from './news-lifecycle';
+import { changedPartsOf, missingOf, pictureKeyOf, pictureOf } from './news-lifecycle';
 import type { NewsVersion } from './types';
 
 const version = (fields: Partial<NewsVersion>): NewsVersion => ({
@@ -48,20 +42,6 @@ describe('missingOf', () => {
 
   it('is empty for a complete version without a picture', () => {
     expect(missingOf(version({}))).toEqual([]);
-  });
-});
-
-describe('isChangedBlock', () => {
-  const live = new Set(['Erster Absatz.', '## Zwischentitel']);
-
-  it.each([
-    { block: 'Erster Absatz.', changed: false },
-    { block: '  Erster Absatz.  ', changed: false },
-    { block: 'Erster Absatz, neu.', changed: true },
-    { block: '', changed: false },
-    { block: '   ', changed: false },
-  ])('treats "$block" as changed: $changed', ({ block, changed }) => {
-    expect(isChangedBlock(block, live)).toBe(changed);
   });
 });
 

@@ -1,5 +1,6 @@
 import type { KkBannerState } from '@furria/ui/banner-desk-types';
 import type { KkProseMentionTone } from '@furria/ui/KkProseField';
+import type { Mentionable } from '@/features/rich-text/types';
 import { WEBSITE_HOST } from '@/lib/publish-copy';
 import {
   ADDRESS_FIXED,
@@ -13,7 +14,7 @@ import { CHANGED_MARK, MISSING_MARK, PUBLIC_NEWS_PATH } from '../news-copy';
 import { longDateOf } from '../news-dates';
 import type { PartMark } from '../part-marks';
 import { partMarkOf } from '../part-marks';
-import type { NewsMentionable, NewsPicture, NewsVersionPart } from '../types';
+import type { NewsPicture, NewsVersionPart } from '../types';
 import type { NewsEditor } from './use-news-editor';
 
 export interface PartMarkView {
@@ -56,7 +57,7 @@ const bannerStateOf = (picture: NewsPicture | null, isCropping: boolean): KkBann
 
 export const useArticleFacts = (
   editor: NewsEditor,
-  mentionables: readonly NewsMentionable[],
+  mentionables: readonly Mentionable[],
   isCropping: boolean,
 ): ArticleFacts => {
   const markOf = (part: NewsVersionPart): PartMark =>

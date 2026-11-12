@@ -6,6 +6,7 @@ using Furria.Application.News;
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.News;
+using Furria.Core.Text;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Public;
@@ -79,11 +80,11 @@ public sealed partial class NewsService
             Picture = article.Picture,
             PictureCaption = article.PictureCaption,
             MentionedGroups = await MentionedGroupsAsync(
-                TargetsOf(mentions, NewsMentionKind.Group),
+                TargetsOf(mentions, MentionKind.Group),
                 ct
             ),
             MentionedPersons = await MentionedPersonsAsync(
-                TargetsOf(mentions, NewsMentionKind.Person),
+                TargetsOf(mentions, MentionKind.Person),
                 ct
             ),
             Event = article.EventId is { } eventId ? await ShownEventAsync(eventId, ct) : null,
