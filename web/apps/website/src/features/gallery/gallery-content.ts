@@ -19,7 +19,7 @@ export const galleryEyebrow = 'BILDER AUS DER SESSION';
 export const galleryHeading = 'GALERIE';
 
 export const galleryDescription =
-  'Pro Anlass rund ein Dutzend Bilder, mit Absicht ausgesucht: der Saal, die Straße und alles dazwischen — nicht alles, was jemand fotografiert hat.';
+  'Die Abende in Bildern — für alle, die dabei waren, und für die, die es sich jetzt anders überlegen.';
 
 export const currentSessionHeading = 'DIESE SESSION';
 
