@@ -1097,12 +1097,15 @@ audience into the owner, participant (that is one person's attendance response),
 **visibility** (retired 2026-11-10 — say **audience**), confusing participating groups with the
 audience, a public calendar entry
 
-**Add-on** (calendar entry, `CalendarEntryAddOn`):
-A piece whoever schedules a **calendar entry** attaches to it so the entry does more than state a
+**Add-on** (`CalendarEntryAddOn`):
+A piece whoever schedules a **calendar entry** — or posts an **announcement** — attaches to it so the entry does more than state a
 date — the members build what they need themselves instead of the calendar growing new kinds
 (ruled 2026-11-10, calendar grilling). The **attendance response** is one add-on and keeps its
 fixed meaning (yes / maybe / no), because Start, the cast's trainings, open spots and answers
-recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further add-ons:
+recorded on behalf all rely on it; it is never rebuilt from a **poll**. An add-on has exactly one
+**host** — a calendar entry or an announcement — which decides who it concerns, who manages it and
+when it closes ([ADR-0040](docs/adr/0040-an-add-on-has-one-host-and-may-be-shown-elsewhere.md)).
+Further add-ons:
 - **Poll** — a question with answers the scheduler sets, single or multiple choice. Nothing in the
   app reads meaning into its answers. Whoever may answer the entry may vote and change her vote until the
   poll **closes** — when the entry starts, at an earlier closing time, or when closed by hand.
@@ -1111,13 +1114,14 @@ recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further 
   the entry, before the entry starts, opens it again. Once closed it can no longer be changed, and
   its question is fixed as soon as anyone voted. Votes carry names unless the poll is **anonymous**, then only counts are shown, to its scheduler
   too. Nobody adds her own answer; answers may be added later, and changed or removed only while
-  nobody chose them. An entry may hold several polls; a poll is never owed and never asked on
-  Start.
+  nobody chose them. An entry may hold several polls. An open poll she has not voted in is owed
+  and asked on Start (ruled 2026-11-11, RFC 0005 phase 14).
 - **Sign-up list** — a list everyone who may answer the entry may add to: one short line per person,
   always named, its text optional, which only she may change or delete afterwards (e.g. who
   brings what to the summer party). Whoever may edit the entry may remove a line, never rewrite it. It has a title and an
-  optional hint, closes and stays closed like a poll (but is never reopened), an entry may hold several, and it is never asked on Start. It
-  has no prepared slots.
+  optional hint, closes and stays closed like a poll (but is never reopened), and an entry may hold several. An
+  open list she holds no line on is owed and asked on Start (ruled 2026-11-11). It has no prepared
+  slots.
 - **Day schedule** — the plan of a long day: steps of a time and a short text, an optional title,
   always shown sorted by time. A step belongs to a day of the entry (counted from its start day),
   so moving the entry moves its schedule with it; a day only appears once the entry spans several.
@@ -1125,7 +1129,7 @@ recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further 
   called *Ablauf* — that is the evening's running order.
 _UI copy_: Funktion, Funktion hinzufügen; Zu-/Absage, Umfrage, Eintragsliste, Mitwirkende Gruppen,
 Tagesablauf; Anonym,
-Abstimmen bis, Eintragen bis
+Abstimmen bis, Eintragen bis, Antworten bis; Aus Kalendereintrag übernehmen
 _Avoid_: Baustein; feature, function, module, widget as code names; building attendance from a poll
 
 **Usual training time** (`UsualTrainingTime`):
@@ -1324,13 +1328,14 @@ _UI copy_: Meldung
 _Avoid_: **fee** (German *Beitrag* means both a post and the membership fee — in this domain it
 is only ever the fee), article, post
 
-**Mention** (news post):
+**Mention** (news post, announcement):
 A name in a **news post**'s text that points at a **group** shown publicly or a person holding a
 seat in a **public board office** — only those can be mentioned. While that stays true, the
 website opens a small card in place: the group's picture and description, or her **portrait** and
 office. When it ends — she leaves the board, the group is hidden, she is erased — the mention
 falls back to the name as written, plain text; erasure never rewrites authored text (ruled
-2026-10-09, L7b shaping).
+2026-10-09, L7b shaping). An **announcement**'s text mentions more, since only members read it — see
+**Announcement** (ruled 2026-11-12).
 _UI copy_: Erwähnung
 _Avoid_: tag, link (for a mention)
 
@@ -1410,17 +1415,37 @@ announcements, so an announcement has exactly one scope today and a group has no
 group anything inside the app. Posting is a permission the club grants to whichever roles it
 counts as board; reading one is not.
 
-It carries a **title**, a **body**, its **author**, its date and an optional **valid until** — and
-nothing else (settled 2026-09-19). Reactions, a news category, pinning and a **read receipt**
+It carries a **title**, a **body**, its **author**, its date, an optional **valid until** and its
+**add-ons** (settled 2026-09-19; add-ons and mentions added 2026-11-12). Its body is written like a
+**news post**'s text — the same subset, the same editor — and may hold **mentions** of any person
+or group a member can look up, a **calendar entry**, an **event**, a published **news post** or an
+**album**; a mention whose target is gone or out of the reader's sight reads as plain text, and
+being mentioned pushes nobody. Posting one pushes every member who can read Aushänge except its
+author, once; editing never pushes. Withdrawing deletes it with its own add-ons and their answers.
+
+Its add-ons are of two sorts, in one order its author sets:
+- **Own add-ons** — a **Zu-/Absage** (to the announcement itself), **polls** and **sign-up lists**;
+  never a day schedule or participating groups, which need a date. They concern every running club
+  member (paused ones not) and are owed on Start like a calendar entry's. Whoever may change the
+  announcement manages them and may remind (*Erinnern*). Each closes at its own closing time, at
+  the end of the *valid until* day, or by hand — whichever comes first; with none of them it stays
+  open until closed or withdrawn.
+- **Taken-over add-ons** — a calendar entry's add-ons shown on the announcement, the very same
+  ones: an answer given there is an answer on the entry, and the entry decides who may answer, who
+  manages it and when it closes. Only an entry every member can see (audience club or groups) can
+  lend its add-ons; when the entry or the add-on goes, it silently leaves the announcement. On
+  Start it is listed once, under its entry. Taking one over pushes nobody.
+
+Reactions, a news category, pinning and a **read receipt**
 ("read by 87") were each weighed and rejected: a notice board that scores its notices is a feed,
 and the club has no rule that asks anyone to prove they read one. Whether an announcement is *new
 to you* is answered by a single last-seen moment on the account, never by tracking each
 announcement against each reader. Opening the new Aushänge — on Start or on the board — moves that
 moment to the newest announcement shown, never backwards and never past now; Start lists an
 announcement as new for at most 60 days and never one she wrote herself (ruled 2026-10-02, L2).
-_UI copy_: Aushang; Titel, Text, Autor, Gültig bis
+_UI copy_: Aushang; Titel, Text, Autor, Gültig bis; Neuer Aushang; Erwähnung
 _Avoid_: notice (that is the shell's live-evening layer), news post (that is public website news),
-message, chat, bulletin board, category, attachment, read receipt
+message, chat, bulletin board, category, attachment, read receipt, copying an entry's add-ons
 
 ### Photos and videos
 
