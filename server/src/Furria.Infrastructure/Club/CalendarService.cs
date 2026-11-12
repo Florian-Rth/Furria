@@ -320,10 +320,7 @@ public sealed partial class CalendarService
         )
             return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
 
-        if (
-            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns, addOnClock) is
-            { } listRefusal
-        )
+        if (_dbContext.ReconcileSignUpLists(entry, command.AddOns, addOnClock) is { } listRefusal)
             return Result<CalendarEntryWriteResult>.Validation(listRefusal);
 
         if (
@@ -415,10 +412,7 @@ public sealed partial class CalendarService
         )
             return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
 
-        if (
-            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns, addOnClock) is
-            { } listRefusal
-        )
+        if (_dbContext.ReconcileSignUpLists(entry, command.AddOns, addOnClock) is { } listRefusal)
             return Result<CalendarEntryWriteResult>.Validation(listRefusal);
 
         if (
@@ -559,7 +553,7 @@ public sealed partial class CalendarService
         if (!entry.AsksForResponse)
             return Result.Validation(NoResponseWantedMessage);
 
-        return CalendarAddOnClosing.IsAttendanceClosed(
+        return AddOnClosing.IsAttendanceClosed(
             entry.StartsAt,
             entry.EndsAt,
             _timeProvider.GetUtcNow()
@@ -830,7 +824,7 @@ public sealed partial class CalendarService
     ) =>
         new()
         {
-            IsClosed = CalendarAddOnClosing.IsAttendanceClosed(row.StartsAt, row.EndsAt, now),
+            IsClosed = AddOnClosing.IsAttendanceClosed(row.StartsAt, row.EndsAt, now),
             Yes = row.AttendanceCounts.Yes,
             Maybe = row.AttendanceCounts.Maybe,
             No = row.AttendanceCounts.No,
@@ -1104,10 +1098,11 @@ public sealed partial class CalendarService
         return await _dbContext
             .AttendanceResponses.AsNoTracking()
             .Where(response =>
-                response.PersonId == personId && calendarEntryIds.Contains(response.CalendarEntryId)
+                response.PersonId == personId
+                && calendarEntryIds.Contains(response.CalendarEntryId!.Value)
             )
             .ToDictionaryAsync(
-                response => response.CalendarEntryId,
+                response => response.CalendarEntryId!.Value,
                 response => response.Answer,
                 ct
             );

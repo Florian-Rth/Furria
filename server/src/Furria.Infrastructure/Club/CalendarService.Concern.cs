@@ -153,8 +153,8 @@ public sealed partial class CalendarService
     }
 
     [Pure]
-    private static CalendarSignUpListDetails WithConcern(
-        CalendarSignUpListDetails list,
+    private static SignUpListDetails WithConcern(
+        SignUpListDetails list,
         IReadOnlySet<int> concerned,
         IReadOnlyList<CalendarAttendancePerson> named,
         bool organises
@@ -180,7 +180,7 @@ public sealed partial class CalendarService
             .SingleOrDefaultAsync(ct);
 
     [Pure]
-    private static IReadOnlySet<int> SignedUpIdsOf(CalendarSignUpListDetails list) =>
+    private static IReadOnlySet<int> SignedUpIdsOf(SignUpListDetails list) =>
         list.Lines.Select(line => line.PersonId).ToHashSet();
 
     [Pure]

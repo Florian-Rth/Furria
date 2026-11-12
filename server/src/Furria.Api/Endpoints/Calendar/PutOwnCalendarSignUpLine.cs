@@ -46,7 +46,7 @@ public sealed class PutOwnCalendarSignUpLine : Endpoint<PutOwnCalendarSignUpLine
         await Send.NoContentAsync(ct);
     }
 
-    private static WriteOwnCalendarSignUpLineCommand ToCommand(
+    private static WriteOwnSignUpLineCommand ToCommand(
         PutOwnCalendarSignUpLineRequest req,
         int actorAccountId
     ) =>

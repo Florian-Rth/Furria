@@ -2,21 +2,21 @@ using Furria.Core.Identity;
 
 namespace Furria.Core.Club;
 
-public sealed class CalendarPollVote : ITimestamped
+public sealed class SignUpLine : ITimestamped
 {
     public int Id { get; set; }
 
-    public int PollId { get; set; }
-
-    public int PollOptionId { get; set; }
+    public int SignUpListId { get; set; }
 
     public int PersonId { get; set; }
+
+    public string? Text { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
 
-    public CalendarPollOption? PollOption { get; set; }
+    public SignUpList? SignUpList { get; set; }
 
     public Person? Person { get; set; }
 }

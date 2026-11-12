@@ -2,42 +2,45 @@ using System.Diagnostics.Contracts;
 
 namespace Furria.Core.Club;
 
-public static class CalendarAddOnClosing
+public static class AddOnClosing
 {
     [Pure]
-    public static DateTimeOffset ClosesAt(DateTimeOffset? deadline, DateTimeOffset entryStartsAt) =>
-        deadline is { } deadlineAt && deadlineAt < entryStartsAt ? deadlineAt : entryStartsAt;
+    public static DateTimeOffset? ClosesAt(
+        DateTimeOffset? deadline,
+        DateTimeOffset? hostClosesAt
+    ) =>
+        (deadline, hostClosesAt) switch
+        {
+            ({ } own, { } host) => own < host ? own : host,
+            ({ } own, null) => own,
+            _ => hostClosesAt,
+        };
 
     [Pure]
     public static bool IsClosed(
         DateTimeOffset? closedAt,
         DateTimeOffset? deadline,
-        DateTimeOffset entryStartsAt,
+        DateTimeOffset? hostClosesAt,
         DateTimeOffset now
-    ) => closedAt is not null || now >= ClosesAt(deadline, entryStartsAt);
+    ) => closedAt is not null || StampOf(deadline, hostClosesAt, now) is not null;
 
     [Pure]
     public static DateTimeOffset? StampOf(
         DateTimeOffset? deadline,
-        DateTimeOffset entryStartsAt,
+        DateTimeOffset? hostClosesAt,
         DateTimeOffset now
-    )
-    {
-        var closesAt = ClosesAt(deadline, entryStartsAt);
-
-        return now >= closesAt ? closesAt : null;
-    }
+    ) => ClosesAt(deadline, hostClosesAt) is { } closesAt && now >= closesAt ? closesAt : null;
 
     [Pure]
-    public static CalendarAddOnClose CloseOf(
+    public static AddOnClose CloseOf(
         DateTimeOffset? deadline,
-        DateTimeOffset entryStartsAt,
+        DateTimeOffset? hostClosesAt,
         DateTimeOffset now,
         int? closerPersonId
     ) =>
-        StampOf(deadline, entryStartsAt, now) is { } closedAt
-            ? new CalendarAddOnClose(closedAt, null)
-            : new CalendarAddOnClose(now, closerPersonId);
+        StampOf(deadline, hostClosesAt, now) is { } closedAt
+            ? new AddOnClose(closedAt, null)
+            : new AddOnClose(now, closerPersonId);
 
     [Pure]
     public static DateTimeOffset EntryEndOf(DateTimeOffset startsAt, DateTimeOffset? endsAt) =>

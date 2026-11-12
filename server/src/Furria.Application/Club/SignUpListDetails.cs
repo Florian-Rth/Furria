@@ -1,6 +1,6 @@
 namespace Furria.Application.Club;
 
-public sealed record CalendarSignUpListDetails
+public sealed record SignUpListDetails
 {
     public required int SignUpListId { get; init; }
 
@@ -22,5 +22,5 @@ public sealed record CalendarSignUpListDetails
 
     public CalendarReminderDetails? Reminder { get; init; }
 
-    public required IReadOnlyList<CalendarSignUpLineDetails> Lines { get; init; }
+    public required IReadOnlyList<SignUpLineDetails> Lines { get; init; }
 }

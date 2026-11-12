@@ -37,7 +37,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("cakes");
+        var listId = ctx.Club.SignUpLists.IdOf("cakes");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -50,7 +50,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines(
                 (ctx.Identity.People.IdOf("chris"), "Käsekuchen"),
                 (ctx.Identity.People.IdOf("ilka"), "Brezeln"),
@@ -64,7 +64,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("cakes");
+        var listId = ctx.Club.SignUpLists.IdOf("cakes");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -77,7 +77,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines(
                 (ctx.Identity.People.IdOf("chris"), "Apfelkuchen"),
                 (ctx.Identity.People.IdOf("ilka"), "Brezeln")
@@ -90,7 +90,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("cakes");
+        var listId = ctx.Club.SignUpLists.IdOf("cakes");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -103,7 +103,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines(
                 (ctx.Identity.People.IdOf("chris"), null),
                 (ctx.Identity.People.IdOf("ilka"), "Brezeln")
@@ -119,7 +119,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf(listAlias);
+        var listId = ctx.Club.SignUpLists.IdOf(listAlias);
 
         await _fixture.AtInstantAsync(
             Now,
@@ -132,7 +132,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines([
                 .. listAlias == "closed"
                     ? [(ctx.Identity.People.IdOf("dana"), (string?)null)]
@@ -146,7 +146,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("secret");
+        var listId = ctx.Club.SignUpLists.IdOf("secret");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -158,7 +158,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
             }
         );
 
-        await ctx.Expected.CalendarSignUpList(listId).ToHaveLines().AssertAsync(ct);
+        await ctx.Expected.SignUpList(listId).ToHaveLines().AssertAsync(ct);
     }
 
     [Fact]
@@ -166,7 +166,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("secret");
+        var listId = ctx.Club.SignUpLists.IdOf("secret");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -179,7 +179,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Blumen"))
             .AssertAsync(ct);
     }
@@ -189,7 +189,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("cakes");
+        var listId = ctx.Club.SignUpLists.IdOf("cakes");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -208,7 +208,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines(
                 (ctx.Identity.People.IdOf("chris"), "Käsekuchen"),
                 (ctx.Identity.People.IdOf("ilka"), "Brezeln"),
@@ -222,7 +222,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("garde-helpers");
+        var listId = ctx.Club.SignUpLists.IdOf("garde-helpers");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -234,7 +234,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
             }
         );
 
-        await ctx.Expected.CalendarSignUpList(listId).ToHaveLines().AssertAsync(ct);
+        await ctx.Expected.SignUpList(listId).ToHaveLines().AssertAsync(ct);
     }
 
     [Fact]
@@ -242,7 +242,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("garde-helpers");
+        var listId = ctx.Club.SignUpLists.IdOf("garde-helpers");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -255,7 +255,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines((ctx.Identity.People.IdOf("elli"), "Aufbau"))
             .AssertAsync(ct);
     }
@@ -265,7 +265,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("board-helpers");
+        var listId = ctx.Club.SignUpLists.IdOf("board-helpers");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -278,7 +278,7 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines((ctx.Identity.People.IdOf("ilka"), "Kaffee"))
             .AssertAsync(ct);
     }

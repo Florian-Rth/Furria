@@ -237,10 +237,11 @@ public sealed partial class StartService
         return await _dbContext
             .AttendanceResponses.AsNoTracking()
             .Where(response =>
-                response.PersonId == personId && calendarEntryIds.Contains(response.CalendarEntryId)
+                response.PersonId == personId
+                && calendarEntryIds.Contains(response.CalendarEntryId!.Value)
             )
             .ToDictionaryAsync(
-                response => response.CalendarEntryId,
+                response => response.CalendarEntryId!.Value,
                 response => (AttendanceAnswer?)response.Answer,
                 ct
             );

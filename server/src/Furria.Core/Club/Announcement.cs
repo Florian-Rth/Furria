@@ -23,4 +23,8 @@ public sealed class Announcement : ITimestamped
     public Person? Author { get; set; }
 
     public ICollection<AnnouncementMention> Mentions { get; set; } = [];
+
+    public ICollection<Poll> Polls { get; set; } = [];
+
+    public ICollection<SignUpList> SignUpLists { get; set; } = [];
 }

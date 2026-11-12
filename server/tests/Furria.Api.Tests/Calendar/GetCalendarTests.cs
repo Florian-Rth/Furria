@@ -547,17 +547,17 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 var meeting = result.Entries.Single(entry => entry.Title == ClubMeeting);
                 Assert.Equal(
                     [
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("food"), true),
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("drinks"), false),
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("secret"), true),
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("food"), true),
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("drinks"), false),
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("secret"), true),
                         (
                             CalendarEntryAddOnKind.SignUpList,
-                            ctx.Club.CalendarSignUpLists.IdOf("bring"),
+                            ctx.Club.SignUpLists.IdOf("bring"),
                             true
                         ),
                         (
                             CalendarEntryAddOnKind.SignUpList,
-                            ctx.Club.CalendarSignUpLists.IdOf("setup"),
+                            ctx.Club.SignUpLists.IdOf("setup"),
                             false
                         ),
                     ],

@@ -30,7 +30,7 @@ public static class CalendarPushRules
     ) =>
         reason == CalendarPushReason.AsksForResponse
             ? startsAt > now
-            : CalendarAddOnClosing.EntryEndOf(startsAt, endsAt) > now;
+            : AddOnClosing.EntryEndOf(startsAt, endsAt) > now;
 
     [Pure]
     public static bool IsReminderDue(DateTimeOffset closesAt, DateTimeOffset now) => closesAt > now;

@@ -37,7 +37,7 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("cakes");
+        var listId = ctx.Club.SignUpLists.IdOf("cakes");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -50,7 +50,7 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines((ctx.Identity.People.IdOf("ilka"), "Brezeln"))
             .AssertAsync(ct);
     }
@@ -60,7 +60,7 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("garde-helpers");
+        var listId = ctx.Club.SignUpLists.IdOf("garde-helpers");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -72,7 +72,7 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
             }
         );
 
-        await ctx.Expected.CalendarSignUpList(listId).ToHaveLines().AssertAsync(ct);
+        await ctx.Expected.SignUpList(listId).ToHaveLines().AssertAsync(ct);
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("closed");
+        var listId = ctx.Club.SignUpLists.IdOf("closed");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -93,7 +93,7 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines((ctx.Identity.People.IdOf("dana"), null))
             .AssertAsync(ct);
     }

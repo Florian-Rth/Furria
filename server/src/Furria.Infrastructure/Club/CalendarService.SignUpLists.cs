@@ -15,7 +15,7 @@ public sealed partial class CalendarService
     private const string UnknownSignUpLineMessage = "Diesen Eintrag gibt es nicht.";
 
     public async Task<Result> WriteOwnSignUpLineAsync(
-        WriteOwnCalendarSignUpLineCommand command,
+        WriteOwnSignUpLineCommand command,
         CancellationToken ct
     )
     {
@@ -36,19 +36,15 @@ public sealed partial class CalendarService
         )
             return refusal;
 
-        var line = await _dbContext.CalendarSignUpLines.SingleOrDefaultAsync(
+        var line = await _dbContext.SignUpLines.SingleOrDefaultAsync(
             row => row.SignUpListId == command.SignUpListId && row.PersonId == personId,
             ct
         );
 
         if (line is null)
         {
-            line = new CalendarSignUpLine
-            {
-                SignUpListId = command.SignUpListId,
-                PersonId = personId,
-            };
-            _dbContext.CalendarSignUpLines.Add(line);
+            line = new SignUpLine { SignUpListId = command.SignUpListId, PersonId = personId };
+            _dbContext.SignUpLines.Add(line);
         }
 
         line.Text = LineTextOf(command.Text);
@@ -82,7 +78,7 @@ public sealed partial class CalendarService
             return refusal;
 
         await _dbContext
-            .CalendarSignUpLines.Where(line =>
+            .SignUpLines.Where(line =>
                 line.SignUpListId == signUpListId && line.PersonId == personId
             )
             .ExecuteDeleteAsync(ct);
@@ -99,25 +95,17 @@ public sealed partial class CalendarService
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await _dbContext.Database.ExecuteSqlAsync(
-            $"SELECT 1 FROM calendar_entry entry JOIN calendar_sign_up_list list ON list.calendar_entry_id = entry.id JOIN calendar_sign_up_line line ON line.sign_up_list_id = list.id WHERE line.id = {lineId} FOR SHARE OF entry",
+            $"SELECT 1 FROM calendar_entry entry JOIN sign_up_list list ON list.calendar_entry_id = entry.id JOIN sign_up_line line ON line.sign_up_list_id = list.id WHERE line.id = {lineId} FOR SHARE OF entry",
             ct
         );
 
-        var owner = await _dbContext
-            .CalendarSignUpLines.AsNoTracking()
-            .Where(line => line.Id == lineId)
-            .Select(line => new SignUpOwnerRow(line.SignUpList!.CalendarEntry!.OwnerGroupId))
-            .SingleOrDefaultAsync(ct);
-
-        if (owner is null)
+        if (await SignUpLineHostAsync(lineId, ct) is not { } host)
             return Result.NotFound(UnknownSignUpLineMessage);
 
-        if (!await MayOwnAsync(actorAccountId, owner.OwnerGroupId, ct))
+        if (!await MayManageAsync(actorAccountId, host, ct))
             return Result.Forbidden(NotOwnedMessage);
 
-        await _dbContext
-            .CalendarSignUpLines.Where(line => line.Id == lineId)
-            .ExecuteDeleteAsync(ct);
+        await _dbContext.SignUpLines.Where(line => line.Id == lineId).ExecuteDeleteAsync(ct);
 
         await transaction.CommitAsync(ct);
         return Result.Success();
@@ -133,32 +121,27 @@ public sealed partial class CalendarService
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await LockSignUpListAsync(signUpListId, ct);
 
-        var held = await _dbContext
-            .CalendarSignUpLists.Where(list => list.Id == signUpListId)
-            .Select(list => new
-            {
-                List = list,
-                list.CalendarEntry!.OwnerGroupId,
-                list.CalendarEntry.StartsAt,
-            })
-            .SingleOrDefaultAsync(ct);
+        var list = await _dbContext.SignUpLists.SingleOrDefaultAsync(
+            row => row.Id == signUpListId,
+            ct
+        );
 
-        if (held is null)
+        if (list is null || await SignUpListHostAsync(signUpListId, ct) is not { } host)
             return Result.NotFound(UnknownSignUpListMessage);
 
-        if (!await MayOwnAsync(actorAccountId, held.OwnerGroupId, ct))
+        if (!await MayManageAsync(actorAccountId, host, ct))
             return Result.Forbidden(NotOwnedMessage);
 
-        if (held.List.ClosedAt is null)
+        if (list.ClosedAt is null)
         {
-            var closing = CalendarAddOnClosing.CloseOf(
-                held.List.SignUpUntil,
-                held.StartsAt,
+            var closing = AddOnClosing.CloseOf(
+                list.SignUpUntil,
+                host.ClosesAt,
                 _timeProvider.GetUtcNow(),
                 closerPersonId
             );
-            held.List.ClosedAt = closing.ClosedAt;
-            held.List.ClosedByPersonId = closing.ClosedByPersonId;
+            list.ClosedAt = closing.ClosedAt;
+            list.ClosedByPersonId = closing.ClosedByPersonId;
         }
 
         await _dbContext.SaveChangesAsync(ct);
@@ -181,12 +164,11 @@ public sealed partial class CalendarService
     {
         await LockSignUpListAsync(signUpListId, ct);
 
+        var host = await SignUpListHostAsync(signUpListId, ct);
         var sight = new AddOnSight(
             actorAccountId,
             personId,
-            _dbContext
-                .CalendarSignUpLists.Where(list => list.Id == signUpListId)
-                .Select(list => list.CalendarEntry!),
+            host,
             UnknownSignUpListMessage,
             NotYourSignUpListMessage,
             access
@@ -195,20 +177,19 @@ public sealed partial class CalendarService
         if (await AddOnSightRefusalAsync(sight, ct) is { } unseen)
             return unseen;
 
+        if (host is null)
+            return Result.NotFound(UnknownSignUpListMessage);
+
         var closing = await _dbContext
-            .CalendarSignUpLists.AsNoTracking()
+            .SignUpLists.AsNoTracking()
             .Where(list => list.Id == signUpListId)
-            .Select(list => new SignUpClosingRow(
-                list.ClosedAt,
-                list.SignUpUntil,
-                list.CalendarEntry!.StartsAt
-            ))
+            .Select(list => new SignUpClosingRow(list.ClosedAt, list.SignUpUntil))
             .SingleAsync(ct);
 
-        return CalendarAddOnClosing.IsClosed(
+        return AddOnClosing.IsClosed(
             closing.ClosedAt,
             closing.SignUpUntil,
-            closing.EntryStartsAt,
+            host.ClosesAt,
             _timeProvider.GetUtcNow()
         )
             ? Result.Validation(ClosedSignUpListMessage)
@@ -218,20 +199,14 @@ public sealed partial class CalendarService
     private async Task LockSignUpListAsync(int signUpListId, CancellationToken ct)
     {
         await _dbContext.Database.ExecuteSqlAsync(
-            $"SELECT 1 FROM calendar_entry entry JOIN calendar_sign_up_list list ON list.calendar_entry_id = entry.id WHERE list.id = {signUpListId} FOR SHARE OF entry",
+            $"SELECT 1 FROM calendar_entry entry JOIN sign_up_list list ON list.calendar_entry_id = entry.id WHERE list.id = {signUpListId} FOR SHARE OF entry",
             ct
         );
         await _dbContext.Database.ExecuteSqlAsync(
-            $"SELECT 1 FROM calendar_sign_up_list WHERE id = {signUpListId} FOR NO KEY UPDATE",
+            $"SELECT 1 FROM sign_up_list WHERE id = {signUpListId} FOR NO KEY UPDATE",
             ct
         );
     }
 
-    private sealed record SignUpOwnerRow(int? OwnerGroupId);
-
-    private sealed record SignUpClosingRow(
-        DateTimeOffset? ClosedAt,
-        DateTimeOffset? SignUpUntil,
-        DateTimeOffset EntryStartsAt
-    );
+    private sealed record SignUpClosingRow(DateTimeOffset? ClosedAt, DateTimeOffset? SignUpUntil);
 }

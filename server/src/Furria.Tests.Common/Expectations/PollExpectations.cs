@@ -5,12 +5,12 @@ using Xunit;
 
 namespace Furria.Tests.Common.Expectations;
 
-public sealed class CalendarPollExpectations
+public sealed class PollExpectations
 {
     private readonly Expected _expected;
     private readonly int _pollId;
 
-    internal CalendarPollExpectations(Expected expected, int pollId)
+    internal PollExpectations(Expected expected, int pollId)
     {
         _expected = expected;
         _pollId = pollId;
@@ -20,10 +20,8 @@ public sealed class CalendarPollExpectations
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.False(
-                    await dbContext
-                        .CalendarPolls.AsNoTracking()
-                        .AnyAsync(row => row.Id == _pollId, ct),
-                    $"Expected no CalendarPoll with id {_pollId}."
+                    await dbContext.Polls.AsNoTracking().AnyAsync(row => row.Id == _pollId, ct),
+                    $"Expected no Poll with id {_pollId}."
                 )
         );
 
@@ -33,7 +31,7 @@ public sealed class CalendarPollExpectations
                 Assert.Equal(
                     labels,
                     await dbContext
-                        .CalendarPollOptions.AsNoTracking()
+                        .PollOptions.AsNoTracking()
                         .Where(option => option.PollId == _pollId)
                         .OrderBy(option => option.Position)
                         .Select(option => option.Label)
@@ -48,7 +46,7 @@ public sealed class CalendarPollExpectations
                     labels.Order(StringComparer.Ordinal),
                     (
                         await dbContext
-                            .CalendarPollVotes.AsNoTracking()
+                            .PollVotes.AsNoTracking()
                             .Where(vote => vote.PollId == _pollId && vote.PersonId == personId)
                             .Select(vote => vote.PollOption!.Label)
                             .ToListAsync(ct)
@@ -61,7 +59,7 @@ public sealed class CalendarPollExpectations
             async (dbContext, ct) =>
                 Assert.Equal(
                     count,
-                    await dbContext.CalendarPollVotes.CountAsync(vote => vote.PollId == _pollId, ct)
+                    await dbContext.PollVotes.CountAsync(vote => vote.PollId == _pollId, ct)
                 )
         );
 
@@ -109,6 +107,6 @@ public sealed class CalendarPollExpectations
                 Assert.Equal(question, (await SingleAsync(dbContext, ct)).Question)
         );
 
-    private Task<CalendarPoll> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
-        dbContext.CalendarPolls.AsNoTracking().SingleAsync(row => row.Id == _pollId, ct);
+    private Task<Poll> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
+        dbContext.Polls.AsNoTracking().SingleAsync(row => row.Id == _pollId, ct);
 }

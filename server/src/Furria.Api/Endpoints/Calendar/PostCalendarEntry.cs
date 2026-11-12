@@ -98,7 +98,7 @@ public sealed class PostCalendarEntry
             Text = step.Text,
         };
 
-    private static CalendarSignUpListInput ToInput(PostCalendarEntrySignUpListDataDto list) =>
+    private static SignUpListInput ToInput(PostCalendarEntrySignUpListDataDto list) =>
         new()
         {
             SignUpListId = list.SignUpListId,
@@ -107,7 +107,7 @@ public sealed class PostCalendarEntry
             SignUpUntil = list.SignUpUntil,
         };
 
-    private static CalendarPollInput ToInput(PostCalendarEntryPollDataDto poll) =>
+    private static PollInput ToInput(PostCalendarEntryPollDataDto poll) =>
         new()
         {
             PollId = poll.PollId,
@@ -118,7 +118,7 @@ public sealed class PostCalendarEntry
             Options = [.. poll.Options.Select(ToInput)],
         };
 
-    private static CalendarPollOptionInput ToInput(PostCalendarEntryPollOptionDataDto option) =>
+    private static PollOptionInput ToInput(PostCalendarEntryPollOptionDataDto option) =>
         new() { OptionId = option.OptionId, Label = option.Label };
 
     private static PostCalendarEntryResponse ToResponse(CalendarEntryWriteResult written) =>

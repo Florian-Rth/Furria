@@ -98,7 +98,7 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
             Text = step.Text,
         };
 
-    private static CalendarSignUpListInput ToInput(PutCalendarEntrySignUpListDataDto list) =>
+    private static SignUpListInput ToInput(PutCalendarEntrySignUpListDataDto list) =>
         new()
         {
             SignUpListId = list.SignUpListId,
@@ -107,7 +107,7 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
             SignUpUntil = list.SignUpUntil,
         };
 
-    private static CalendarPollInput ToInput(PutCalendarEntryPollDataDto poll) =>
+    private static PollInput ToInput(PutCalendarEntryPollDataDto poll) =>
         new()
         {
             PollId = poll.PollId,
@@ -118,7 +118,7 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
             Options = [.. poll.Options.Select(ToInput)],
         };
 
-    private static CalendarPollOptionInput ToInput(PutCalendarEntryPollOptionDataDto option) =>
+    private static PollOptionInput ToInput(PutCalendarEntryPollOptionDataDto option) =>
         new() { OptionId = option.OptionId, Label = option.Label };
 
     private static PutCalendarEntryResponse ToResponse(CalendarEntryWriteResult written) =>

@@ -83,7 +83,7 @@ public sealed class CalendarEntryExpectations
                     polls,
                     (
                         await dbContext
-                            .CalendarPolls.AsNoTracking()
+                            .Polls.AsNoTracking()
                             .Where(poll => poll.CalendarEntryId == _calendarEntryId)
                             .OrderBy(poll => poll.Position)
                             .Select(poll => new
@@ -111,7 +111,7 @@ public sealed class CalendarEntryExpectations
                     lists,
                     (
                         await dbContext
-                            .CalendarSignUpLists.AsNoTracking()
+                            .SignUpLists.AsNoTracking()
                             .Where(list => list.CalendarEntryId == _calendarEntryId)
                             .OrderBy(list => list.Position)
                             .Select(list => new

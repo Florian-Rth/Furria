@@ -5,12 +5,12 @@ using Xunit;
 
 namespace Furria.Tests.Common.Expectations;
 
-public sealed class CalendarSignUpListExpectations
+public sealed class SignUpListExpectations
 {
     private readonly Expected _expected;
     private readonly int _signUpListId;
 
-    internal CalendarSignUpListExpectations(Expected expected, int signUpListId)
+    internal SignUpListExpectations(Expected expected, int signUpListId)
     {
         _expected = expected;
         _signUpListId = signUpListId;
@@ -21,9 +21,9 @@ public sealed class CalendarSignUpListExpectations
             async (dbContext, ct) =>
                 Assert.False(
                     await dbContext
-                        .CalendarSignUpLists.AsNoTracking()
+                        .SignUpLists.AsNoTracking()
                         .AnyAsync(row => row.Id == _signUpListId, ct),
-                    $"Expected no CalendarSignUpList with id {_signUpListId}."
+                    $"Expected no SignUpList with id {_signUpListId}."
                 )
         );
 
@@ -34,7 +34,7 @@ public sealed class CalendarSignUpListExpectations
                     lines,
                     (
                         await dbContext
-                            .CalendarSignUpLines.AsNoTracking()
+                            .SignUpLines.AsNoTracking()
                             .Where(line => line.SignUpListId == _signUpListId)
                             .OrderBy(line => line.CreatedAt)
                             .ThenBy(line => line.Id)
@@ -79,8 +79,6 @@ public sealed class CalendarSignUpListExpectations
             }
         );
 
-    private Task<CalendarSignUpList> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
-        dbContext
-            .CalendarSignUpLists.AsNoTracking()
-            .SingleAsync(row => row.Id == _signUpListId, ct);
+    private Task<SignUpList> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
+        dbContext.SignUpLists.AsNoTracking().SingleAsync(row => row.Id == _signUpListId, ct);
 }

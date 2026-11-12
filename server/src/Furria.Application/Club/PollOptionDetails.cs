@@ -1,6 +1,6 @@
 namespace Furria.Application.Club;
 
-public sealed record CalendarPollOptionDetails
+public sealed record PollOptionDetails
 {
     public required int OptionId { get; init; }
 
@@ -10,5 +10,5 @@ public sealed record CalendarPollOptionDetails
 
     public required bool ViewerChose { get; init; }
 
-    public required IReadOnlyList<CalendarPollVoter> Voters { get; init; }
+    public required IReadOnlyList<PollVoter> Voters { get; init; }
 }

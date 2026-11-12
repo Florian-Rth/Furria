@@ -1,6 +1,6 @@
 namespace Furria.Application.Club;
 
-public sealed record CastCalendarPollVotesCommand
+public sealed record CastPollVotesCommand
 {
     public required int ActorAccountId { get; init; }
 

@@ -1,6 +1,6 @@
 namespace Furria.Application.Club;
 
-public sealed record CalendarPollOptionInput
+public sealed record PollOptionInput
 {
     public required int? OptionId { get; init; }
 

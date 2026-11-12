@@ -1,7 +1,7 @@
 ---
 rfc: 0007
 title: Aushänge with add-ons, mentions and a push
-status: in progress (phases 1–3 done)
+status: in progress (phases 1–4 done)
 github_issue: 80
 branch: feat/rfc-80-aushaenge
 created: 2026-11-12
@@ -113,10 +113,18 @@ Decisions taken in phase 3:
 
 ### Phase 4 — One host per add-on
 Goal: the add-on tables accept an Aushang as host; calendar behaviour unchanged (ADR-0040).
-- [ ] Rename `CalendarPoll*`, `CalendarSignUp*` to host-neutral classes; tables keep data
-- [ ] Migration: nullable `announcement_id` on poll, sign-up list and attendance response; `calendar_entry_id` nullable; check constraint exactly one; cascades
-- [ ] Host abstraction in the services: concern, manage, close time, reminder audience resolved per host (calendar implementation only)
-- [ ] All calendar add-on tests green
+- [x] Rename `CalendarPoll*`, `CalendarSignUp*` to host-neutral classes; tables keep data
+- [x] Migration: nullable `announcement_id` on poll, sign-up list and attendance response; `calendar_entry_id` nullable; check constraint exactly one; cascades
+- [x] Host abstraction in the services: concern, manage, close time, reminder audience resolved per host (calendar implementation only)
+- [x] All calendar add-on tests green
+
+Decisions taken in phase 4:
+- Tables renamed too (`poll`, `poll_option`, `poll_vote`, `sign_up_list`, `sign_up_line`) with their sequences, keys, constraints and indexes, by a hand-written rename migration; data kept (migration test).
+- Endpoints, requests, DTOs and the `calendarPollVote` / `calendarSignUpLine` change names keep their calendar names: they are the calendar's API and wire contract.
+- `AddOnClosing` takes the host's closing time, which may be open (an Aushang without *Gültig bis*); the calendar host closes at the entry start.
+- The host seam is `AddOnHost` with `CalendarEntryAddOnHost`; manage, sight/answer, closing and reminder audience switch on it. The add-on row locks still lock only the calendar entry — phase 5 adds the announcement lock (two statements; `FOR SHARE` can't apply to an outer join's nullable side).
+- Dropped polls and lists are deleted explicitly: with an optional host key, removing them from the entry would only null the key.
+- Phase 5 follow-ups: `attendance_response_change` stays calendar-only, and `ChangedTables` maps poll/list changes to the calendar change.
 
 ### Phase 5 — Own add-ons on Aushänge (backend)
 Goal: an Aushang carries Zu-/Absage, Umfragen and Eintragslisten through the API.

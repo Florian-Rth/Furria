@@ -44,7 +44,7 @@ internal sealed record OpenFunctionsOfEntries(
         };
 
     [Pure]
-    private static StartPollOption ToOption(CalendarPollOptionDetails option) =>
+    private static StartPollOption ToOption(PollOptionDetails option) =>
         new()
         {
             OptionId = option.OptionId,

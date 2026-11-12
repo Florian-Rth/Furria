@@ -4,23 +4,24 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Furria.Infrastructure.Persistence.Configurations;
 
-public sealed class CalendarSignUpListConfiguration : IEntityTypeConfiguration<CalendarSignUpList>
+public sealed class SignUpListConfiguration : IEntityTypeConfiguration<SignUpList>
 {
     private const int TitleLength = 120;
     private const int HintLength = 300;
 
-    public void Configure(EntityTypeBuilder<CalendarSignUpList> builder)
+    public void Configure(EntityTypeBuilder<SignUpList> builder)
     {
         builder.ToTable(
-            "calendar_sign_up_list",
+            "sign_up_list",
             table =>
             {
-                table.HasCheckConstraint("ck_calendar_sign_up_list_position", "position >= 0");
-                table.HasCheckConstraint("ck_calendar_sign_up_list_title", "btrim(title) <> ''");
+                table.HasCheckConstraint("ck_sign_up_list_position", "position >= 0");
+                table.HasCheckConstraint("ck_sign_up_list_title", "btrim(title) <> ''");
                 table.HasCheckConstraint(
-                    "ck_calendar_sign_up_list_hint",
+                    "ck_sign_up_list_hint",
                     "hint IS NULL OR btrim(hint) <> ''"
                 );
+                table.HasCheckConstraint("ck_sign_up_list_one_host", AddOnHostConstraint.OneHost);
             }
         );
         builder.HasKey(list => list.Id);
@@ -32,22 +33,33 @@ public sealed class CalendarSignUpListConfiguration : IEntityTypeConfiguration<C
             .HasOne(list => list.CalendarEntry)
             .WithMany(entry => entry.SignUpLists)
             .HasForeignKey(list => list.CalendarEntryId)
-            .HasConstraintName("fk_calendar_sign_up_list_calendar_entry_calendar_entry_id")
+            .HasConstraintName("fk_sign_up_list_calendar_entry_calendar_entry_id")
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
             .HasIndex(list => list.CalendarEntryId)
-            .HasDatabaseName("ix_calendar_sign_up_list_calendar_entry_id");
+            .HasDatabaseName("ix_sign_up_list_calendar_entry_id");
+
+        builder
+            .HasOne(list => list.Announcement)
+            .WithMany(announcement => announcement.SignUpLists)
+            .HasForeignKey(list => list.AnnouncementId)
+            .HasConstraintName("fk_sign_up_list_announcement_announcement_id")
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasIndex(list => list.AnnouncementId)
+            .HasDatabaseName("ix_sign_up_list_announcement_id");
 
         builder
             .HasOne(list => list.ClosedBy)
             .WithMany()
             .HasForeignKey(list => list.ClosedByPersonId)
-            .HasConstraintName("fk_calendar_sign_up_list_person_closed_by_person_id")
+            .HasConstraintName("fk_sign_up_list_person_closed_by_person_id")
             .OnDelete(DeleteBehavior.SetNull);
         builder
             .HasIndex(list => list.ClosedByPersonId)
-            .HasDatabaseName("ix_calendar_sign_up_list_closed_by_person_id");
+            .HasDatabaseName("ix_sign_up_list_closed_by_person_id");
 
         builder.Property(list => list.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(list => list.UpdatedAt).HasDefaultValueSql("now()");

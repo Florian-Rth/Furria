@@ -22,13 +22,13 @@ public sealed class TestClub
 
     public AliasRegistry<int> Events { get; }
 
-    public AliasRegistry<int> CalendarPolls { get; }
+    public AliasRegistry<int> Polls { get; }
 
-    public AliasRegistry<int> CalendarPollOptions { get; }
+    public AliasRegistry<int> PollOptions { get; }
 
-    public AliasRegistry<int> CalendarSignUpLists { get; }
+    public AliasRegistry<int> SignUpLists { get; }
 
-    public AliasRegistry<int> CalendarSignUpLines { get; }
+    public AliasRegistry<int> SignUpLines { get; }
 
     public AliasRegistry<int> CalendarDaySchedules { get; }
 
@@ -52,19 +52,10 @@ public sealed class TestClub
             seeded.AttendanceResponseIds
         );
         Events = new AliasRegistry<int>("Event", seeded.EventIds);
-        CalendarPolls = new AliasRegistry<int>("CalendarPoll", seeded.CalendarPollIds);
-        CalendarPollOptions = new AliasRegistry<int>(
-            "CalendarPollOption",
-            seeded.CalendarPollOptionIds
-        );
-        CalendarSignUpLists = new AliasRegistry<int>(
-            "CalendarSignUpList",
-            seeded.CalendarSignUpListIds
-        );
-        CalendarSignUpLines = new AliasRegistry<int>(
-            "CalendarSignUpLine",
-            seeded.CalendarSignUpLineIds
-        );
+        Polls = new AliasRegistry<int>("Poll", seeded.CalendarPollIds);
+        PollOptions = new AliasRegistry<int>("PollOption", seeded.CalendarPollOptionIds);
+        SignUpLists = new AliasRegistry<int>("SignUpList", seeded.CalendarSignUpListIds);
+        SignUpLines = new AliasRegistry<int>("SignUpLine", seeded.CalendarSignUpLineIds);
         CalendarDaySchedules = new AliasRegistry<int>(
             "CalendarDaySchedule",
             seeded.CalendarDayScheduleIds

@@ -18,10 +18,16 @@ public sealed class AttendanceResponseConfiguration : IEntityTypeConfiguration<A
         builder.ToTable(
             "attendance_response",
             table =>
+            {
                 table.HasCheckConstraint(
                     "ck_attendance_response_answer",
                     $"answer IN ({KnownAnswers})"
-                )
+                );
+                table.HasCheckConstraint(
+                    "ck_attendance_response_one_host",
+                    AddOnHostConstraint.OneHost
+                );
+            }
         );
         builder.HasKey(response => response.Id);
 
@@ -59,6 +65,18 @@ public sealed class AttendanceResponseConfiguration : IEntityTypeConfiguration<A
         builder
             .HasIndex(response => new { response.CalendarEntryId, response.PersonId })
             .HasDatabaseName("ix_attendance_response_calendar_entry_id_person_id")
+            .IsUnique();
+
+        builder
+            .HasOne(response => response.Announcement)
+            .WithMany()
+            .HasForeignKey(response => response.AnnouncementId)
+            .HasConstraintName("fk_attendance_response_announcement_announcement_id")
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasIndex(response => new { response.AnnouncementId, response.PersonId })
+            .HasDatabaseName("ix_attendance_response_announcement_id_person_id")
             .IsUnique();
 
         builder.Property(response => response.CreatedAt).HasDefaultValueSql("now()");

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
 
-internal static class CalendarPollRecords
+internal static class PollRecords
 {
     private const string UnknownPollMessage = "Diese Umfrage gibt es nicht.";
     private const string UnknownOptionMessage = "Diese Antwort gibt es nicht.";
@@ -35,13 +35,16 @@ internal static class CalendarPollRecords
         var heldVotes = await dbContext.VotesOfAsync(entry, ct);
 
         foreach (var poll in entry.Polls)
-            poll.ClosedAt ??= CalendarAddOnClosing.StampOf(poll.VotesUntil, entry.StartsAt, now);
+            poll.ClosedAt ??= AddOnClosing.StampOf(poll.VotesUntil, entry.StartsAt, now);
 
         if (EditRefusalOf(entry.Polls, wanted, heldVotes) is { } refusal)
             return refusal;
 
         foreach (var dropped in entry.Polls.Where(poll => !IsKept(poll, wanted)).ToList())
+        {
             entry.Polls.Remove(dropped);
+            dbContext.Polls.Remove(dropped);
+        }
 
         foreach (var placed in wanted)
             Apply(PollFor(entry, placed.Poll.PollId), placed);
@@ -63,11 +66,11 @@ internal static class CalendarPollRecords
             return NoPolls;
 
         var polls = await dbContext
-            .CalendarPolls.AsNoTracking()
-            .Where(poll => calendarEntryIds.Contains(poll.CalendarEntryId))
+            .Polls.AsNoTracking()
+            .Where(poll => calendarEntryIds.Contains(poll.CalendarEntryId!.Value))
             .Select(poll => new PollRow(
                 poll.Id,
-                poll.CalendarEntryId,
+                poll.CalendarEntryId!.Value,
                 poll.Position,
                 poll.Question,
                 poll.AllowsMultipleChoices,
@@ -89,7 +92,7 @@ internal static class CalendarPollRecords
 
         var pollIds = polls.Select(poll => poll.PollId).ToList();
         var votes = await dbContext
-            .CalendarPollVotes.AsNoTracking()
+            .PollVotes.AsNoTracking()
             .Where(vote => pollIds.Contains(vote.PollId))
             .OrderBy(vote => EF.Functions.Collate(vote.Person!.FirstName, GermanCollation.Name))
             .ThenBy(vote => EF.Functions.Collate(vote.Person!.LastName, GermanCollation.Name))
@@ -126,7 +129,7 @@ internal static class CalendarPollRecords
         votes.Select(vote => vote.PersonId).ToHashSet();
 
     [Pure]
-    private static CalendarPollDetails ToDetails(
+    private static PollDetails ToDetails(
         PollRow poll,
         IReadOnlyList<VoterRow> votes,
         int? viewerPersonId,
@@ -141,7 +144,7 @@ internal static class CalendarPollRecords
             VotesUntil = poll.VotesUntil,
             ClosedAt = poll.ClosedAt,
             ClosedBy = CalendarClosers.Of(poll.ClosedByFirstName, poll.ClosedByLastName),
-            IsClosed = CalendarAddOnClosing.IsClosed(
+            IsClosed = AddOnClosing.IsClosed(
                 poll.ClosedAt,
                 poll.VotesUntil,
                 poll.EntryStartsAt,
@@ -162,7 +165,7 @@ internal static class CalendarPollRecords
         };
 
     [Pure]
-    private static CalendarPollOptionDetails ToOptionDetails(
+    private static PollOptionDetails ToOptionDetails(
         OptionRow option,
         IReadOnlyList<VoterRow> votes,
         bool isAnonymous,
@@ -178,7 +181,7 @@ internal static class CalendarPollRecords
         };
 
     [Pure]
-    private static CalendarPollVoter ToVoter(VoterRow vote) =>
+    private static PollVoter ToVoter(VoterRow vote) =>
         new()
         {
             PersonId = vote.PersonId,
@@ -200,12 +203,12 @@ internal static class CalendarPollRecords
         ];
 
     [Pure]
-    private static bool IsKept(CalendarPoll held, IReadOnlyList<WantedPoll> wanted) =>
+    private static bool IsKept(Poll held, IReadOnlyList<WantedPoll> wanted) =>
         wanted.Any(placed => placed.Poll.PollId == held.Id);
 
     [Pure]
     private static string? EditRefusalOf(
-        ICollection<CalendarPoll> held,
+        ICollection<Poll> held,
         IReadOnlyList<WantedPoll> wanted,
         IReadOnlyList<HeldVote> heldVotes
     )
@@ -237,11 +240,7 @@ internal static class CalendarPollRecords
     }
 
     [Pure]
-    private static string? EditRefusalOf(
-        CalendarPoll held,
-        CalendarPollInput wanted,
-        IReadOnlyList<HeldVote> votes
-    )
+    private static string? EditRefusalOf(Poll held, PollInput wanted, IReadOnlyList<HeldVote> votes)
     {
         if (held.ClosedAt is not null && !IsUnchanged(held, wanted))
             return ClosedPollEditMessage;
@@ -273,7 +272,7 @@ internal static class CalendarPollRecords
     }
 
     [Pure]
-    private static bool IsUnchanged(CalendarPoll held, CalendarPollInput wanted) =>
+    private static bool IsUnchanged(Poll held, PollInput wanted) =>
         held.Question == wanted.Question.Trim()
         && held.AllowsMultipleChoices == wanted.AllowsMultipleChoices
         && held.IsAnonymous == wanted.IsAnonymous
@@ -286,7 +285,7 @@ internal static class CalendarPollRecords
 
     [Pure]
     private static bool IsVotedAndTouched(
-        CalendarPollOption option,
+        PollOption option,
         IReadOnlyDictionary<int, string> wantedLabels,
         IReadOnlyList<HeldVote> votes
     ) =>
@@ -298,20 +297,20 @@ internal static class CalendarPollRecords
         votes.GroupBy(vote => vote.PersonId).Any(person => person.Count() > 1);
 
     [Pure]
-    private static IEnumerable<int> OptionIdsOf(CalendarPollInput poll) =>
+    private static IEnumerable<int> OptionIdsOf(PollInput poll) =>
         poll.Options.Select(option => option.OptionId).OfType<int>();
 
-    private static CalendarPoll PollFor(CalendarEntry entry, int? pollId)
+    private static Poll PollFor(CalendarEntry entry, int? pollId)
     {
         if (pollId is { } heldId)
             return entry.Polls.Single(poll => poll.Id == heldId);
 
-        var poll = new CalendarPoll();
+        var poll = new Poll();
         entry.Polls.Add(poll);
         return poll;
     }
 
-    private static void Apply(CalendarPoll poll, WantedPoll placed)
+    private static void Apply(Poll poll, WantedPoll placed)
     {
         var wanted = placed.Poll;
 
@@ -330,21 +329,17 @@ internal static class CalendarPollRecords
             ApplyOption(OptionFor(poll, option.OptionId), option, position);
     }
 
-    private static CalendarPollOption OptionFor(CalendarPoll poll, int? optionId)
+    private static PollOption OptionFor(Poll poll, int? optionId)
     {
         if (optionId is { } heldId)
             return poll.Options.Single(option => option.Id == heldId);
 
-        var option = new CalendarPollOption();
+        var option = new PollOption();
         poll.Options.Add(option);
         return option;
     }
 
-    private static void ApplyOption(
-        CalendarPollOption option,
-        CalendarPollOptionInput wanted,
-        int position
-    )
+    private static void ApplyOption(PollOption option, PollOptionInput wanted, int position)
     {
         option.Position = position;
         option.Label = wanted.Label.Trim();
@@ -362,13 +357,13 @@ internal static class CalendarPollRecords
             return [];
 
         return await dbContext
-            .CalendarPollVotes.AsNoTracking()
+            .PollVotes.AsNoTracking()
             .Where(vote => pollIds.Contains(vote.PollId))
             .Select(vote => new HeldVote(vote.PollId, vote.PollOptionId, vote.PersonId))
             .ToListAsync(ct);
     }
 
-    private sealed record WantedPoll(int Position, CalendarPollInput Poll);
+    private sealed record WantedPoll(int Position, PollInput Poll);
 
     private sealed record HeldVote(int PollId, int OptionId, int PersonId);
 
@@ -401,7 +396,7 @@ internal static class CalendarPollRecords
 
 internal sealed record PlacedPoll(
     int Position,
-    CalendarPollDetails Details,
+    PollDetails Details,
     IReadOnlySet<int> VoterIds,
     DateTimeOffset? LastRemindedAt
 );

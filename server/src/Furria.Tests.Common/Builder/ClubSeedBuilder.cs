@@ -55,13 +55,13 @@ public sealed class ClubSeedBuilder
 
     internal IReadOnlyList<AttendanceResponseIntent> AttendanceResponses => _attendanceResponses;
 
-    internal IReadOnlyList<CalendarPollIntent> CalendarPolls => _calendarPolls;
+    internal IReadOnlyList<CalendarPollIntent> Polls => _calendarPolls;
 
-    internal IReadOnlyList<CalendarPollVoteIntent> CalendarPollVotes => _calendarPollVotes;
+    internal IReadOnlyList<CalendarPollVoteIntent> PollVotes => _calendarPollVotes;
 
-    internal IReadOnlyList<CalendarSignUpListIntent> CalendarSignUpLists => _calendarSignUpLists;
+    internal IReadOnlyList<CalendarSignUpListIntent> SignUpLists => _calendarSignUpLists;
 
-    internal IReadOnlyList<CalendarSignUpLineIntent> CalendarSignUpLines => _calendarSignUpLines;
+    internal IReadOnlyList<CalendarSignUpLineIntent> SignUpLines => _calendarSignUpLines;
 
     internal IReadOnlyList<CalendarDayScheduleIntent> CalendarDaySchedules => _calendarDaySchedules;
 

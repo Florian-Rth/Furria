@@ -105,11 +105,12 @@ public sealed class ActTrainingReader
         return await _dbContext
             .AttendanceResponses.AsNoTracking()
             .Where(response =>
-                entryIds.Contains(response.CalendarEntryId) && castIds.Contains(response.PersonId)
+                entryIds.Contains(response.CalendarEntryId!.Value)
+                && castIds.Contains(response.PersonId)
             )
             .OrderBy(response => response.PersonId)
             .Select(response => new ResponseRow(
-                response.CalendarEntryId,
+                response.CalendarEntryId!.Value,
                 response.PersonId,
                 response.Answer,
                 response.IsRecordedOnBehalf,

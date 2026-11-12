@@ -1,6 +1,6 @@
 namespace Furria.Application.Club;
 
-public sealed record WriteOwnCalendarSignUpLineCommand
+public sealed record WriteOwnSignUpLineCommand
 {
     public required int ActorAccountId { get; init; }
 

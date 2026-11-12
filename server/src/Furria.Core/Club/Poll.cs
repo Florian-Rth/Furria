@@ -2,19 +2,23 @@ using Furria.Core.Identity;
 
 namespace Furria.Core.Club;
 
-public sealed class CalendarSignUpList : ITimestamped
+public sealed class Poll : ITimestamped
 {
     public int Id { get; set; }
 
-    public int CalendarEntryId { get; set; }
+    public int? CalendarEntryId { get; set; }
+
+    public int? AnnouncementId { get; set; }
 
     public int Position { get; set; }
 
-    public string Title { get; set; } = "";
+    public string Question { get; set; } = "";
 
-    public string? Hint { get; set; }
+    public bool AllowsMultipleChoices { get; set; }
 
-    public DateTimeOffset? SignUpUntil { get; set; }
+    public bool IsAnonymous { get; set; }
+
+    public DateTimeOffset? VotesUntil { get; set; }
 
     public DateTimeOffset? ClosedAt { get; set; }
 
@@ -28,7 +32,9 @@ public sealed class CalendarSignUpList : ITimestamped
 
     public CalendarEntry? CalendarEntry { get; set; }
 
+    public Announcement? Announcement { get; set; }
+
     public Person? ClosedBy { get; set; }
 
-    public ICollection<CalendarSignUpLine> Lines { get; set; } = [];
+    public ICollection<PollOption> Options { get; set; } = [];
 }

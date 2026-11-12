@@ -62,7 +62,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         var devices = await DevicesAsync(ctx, ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         var response = await RemindAtAsync(
             Now,
@@ -88,7 +88,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         var devices = await DevicesAsync(ctx, ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("helpers");
+        var listId = ctx.Club.SignUpLists.IdOf("helpers");
 
         var response = await RemindAtAsync(
             Now,
@@ -136,7 +136,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         await DevicesAsync(ctx, ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
         var response = await RemindAtAsync(
@@ -169,7 +169,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         await DevicesAsync(ctx, ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var pollId = ctx.Club.CalendarPolls.IdOf("closed-poll");
+        var pollId = ctx.Club.Polls.IdOf("closed-poll");
 
         var response = await RemindAtAsync(
             Now,
@@ -191,7 +191,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         await DevicesAsync(ctx, ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("full-list");
+        var listId = ctx.Club.SignUpLists.IdOf("full-list");
 
         var response = await RemindAtAsync(
             Now,
@@ -230,10 +230,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var organiser = await DetailAsync(ctx, "ilka", entryId, ct);
 
         Assert.Equal(1, organiser.Attendance?.Reminder?.ReachableCount);
-        Assert.Equal(
-            1,
-            PollOf(organiser, ctx.Club.CalendarPolls.IdOf("snack")).Reminder?.ReachableCount
-        );
+        Assert.Equal(1, PollOf(organiser, ctx.Club.Polls.IdOf("snack")).Reminder?.ReachableCount);
     }
 
     [Fact]
@@ -263,7 +260,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
         var devices = await DevicesAsync(ctx, ct);
-        var pollId = pollAlias is null ? int.MaxValue : ctx.Club.CalendarPolls.IdOf(pollAlias);
+        var pollId = pollAlias is null ? int.MaxValue : ctx.Club.Polls.IdOf(pollAlias);
 
         await StageReminderAsync(ctx.Club.CalendarEntries.IdOf("meeting"), pollId, ct);
 
@@ -279,7 +276,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         var devices = await DevicesAsync(ctx, ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await RemindAtAsync(
             Now,
@@ -314,7 +311,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
         var otherEntryId = ctx.Club.CalendarEntries.IdOf("other");
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         var response = await RemindAtAsync(
             Now,
@@ -354,7 +351,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         var organiser = await DetailAsync(ctx, "ilka", entryId, ct);
         var poll = Assert.Single(
             organiser.AddOns,
-            addOn => addOn.Poll?.PollId == ctx.Club.CalendarPolls.IdOf("snack")
+            addOn => addOn.Poll?.PollId == ctx.Club.Polls.IdOf("snack")
         );
 
         Assert.NotNull(poll.Poll?.Reminder);

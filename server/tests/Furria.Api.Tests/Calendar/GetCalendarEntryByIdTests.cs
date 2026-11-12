@@ -703,11 +703,11 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal(
                     [
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("food"), true),
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("secret"), false),
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("food"), true),
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("secret"), false),
                         (
                             CalendarEntryAddOnKind.SignUpList,
-                            ctx.Club.CalendarSignUpLists.IdOf("bring"),
+                            ctx.Club.SignUpLists.IdOf("bring"),
                             true
                         ),
                     ],

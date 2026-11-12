@@ -1,6 +1,6 @@
 namespace Furria.Application.Club;
 
-public sealed record CalendarSignUpListInput
+public sealed record SignUpListInput
 {
     public required int? SignUpListId { get; init; }
 

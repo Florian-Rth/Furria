@@ -40,7 +40,7 @@ public sealed class PutCalendarPollVotes : Endpoint<PutCalendarPollVotesRequest>
         await Send.NoContentAsync(ct);
     }
 
-    private static CastCalendarPollVotesCommand ToCommand(
+    private static CastPollVotesCommand ToCommand(
         PutCalendarPollVotesRequest req,
         int actorAccountId
     ) =>

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
 
-internal static class CalendarSignUpListRecords
+internal static class SignUpListRecords
 {
     private const string UnknownSignUpListMessage = "Diese Eintragsliste gibt es nicht.";
     private const string ClosedSignUpListEditMessage =
@@ -18,6 +18,7 @@ internal static class CalendarSignUpListRecords
     > NoSignUpLists = new Dictionary<int, IReadOnlyList<PlacedSignUpList>>();
 
     internal static string? ReconcileSignUpLists(
+        this AppDbContext dbContext,
         CalendarEntry entry,
         IReadOnlyList<CalendarEntryAddOnInput> addOns,
         DateTimeOffset now
@@ -26,7 +27,7 @@ internal static class CalendarSignUpListRecords
         var wanted = WantedListsOf(addOns);
 
         foreach (var list in entry.SignUpLists)
-            list.ClosedAt ??= CalendarAddOnClosing.StampOf(list.SignUpUntil, entry.StartsAt, now);
+            list.ClosedAt ??= AddOnClosing.StampOf(list.SignUpUntil, entry.StartsAt, now);
 
         if (!wanted.All(placed => IsNewOrHeld(entry, placed)))
             return UnknownSignUpListMessage;
@@ -35,7 +36,10 @@ internal static class CalendarSignUpListRecords
             return ClosedSignUpListEditMessage;
 
         foreach (var dropped in entry.SignUpLists.Where(list => !IsKept(list, wanted)).ToList())
+        {
             entry.SignUpLists.Remove(dropped);
+            dbContext.SignUpLists.Remove(dropped);
+        }
 
         foreach (var placed in wanted)
             Apply(ListFor(entry, placed.List.SignUpListId), placed);
@@ -57,11 +61,11 @@ internal static class CalendarSignUpListRecords
             return NoSignUpLists;
 
         var lists = await dbContext
-            .CalendarSignUpLists.AsNoTracking()
-            .Where(list => calendarEntryIds.Contains(list.CalendarEntryId))
+            .SignUpLists.AsNoTracking()
+            .Where(list => calendarEntryIds.Contains(list.CalendarEntryId!.Value))
             .Select(list => new SignUpListRow(
                 list.Id,
-                list.CalendarEntryId,
+                list.CalendarEntryId!.Value,
                 list.Position,
                 list.Title,
                 list.Hint,
@@ -105,7 +109,7 @@ internal static class CalendarSignUpListRecords
     }
 
     [Pure]
-    private static CalendarSignUpListDetails ToDetails(
+    private static SignUpListDetails ToDetails(
         SignUpListRow list,
         int? viewerPersonId,
         DateTimeOffset now
@@ -118,7 +122,7 @@ internal static class CalendarSignUpListRecords
             SignUpUntil = list.SignUpUntil,
             ClosedAt = list.ClosedAt,
             ClosedBy = CalendarClosers.Of(list.ClosedByFirstName, list.ClosedByLastName),
-            IsClosed = CalendarAddOnClosing.IsClosed(
+            IsClosed = AddOnClosing.IsClosed(
                 list.ClosedAt,
                 list.SignUpUntil,
                 list.EntryStartsAt,
@@ -128,7 +132,7 @@ internal static class CalendarSignUpListRecords
         };
 
     [Pure]
-    private static CalendarSignUpLineDetails ToLineDetails(LineRow line, int? viewerPersonId) =>
+    private static SignUpLineDetails ToLineDetails(LineRow line, int? viewerPersonId) =>
         new()
         {
             LineId = line.LineId,
@@ -168,24 +172,24 @@ internal static class CalendarSignUpListRecords
         );
 
     [Pure]
-    private static bool IsKept(CalendarSignUpList held, IReadOnlyList<WantedSignUpList> wanted) =>
+    private static bool IsKept(SignUpList held, IReadOnlyList<WantedSignUpList> wanted) =>
         wanted.Any(placed => placed.List.SignUpListId == held.Id);
 
     [Pure]
     private static string? HintOf(string? hint) =>
         string.IsNullOrWhiteSpace(hint) ? null : hint.Trim();
 
-    private static CalendarSignUpList ListFor(CalendarEntry entry, int? signUpListId)
+    private static SignUpList ListFor(CalendarEntry entry, int? signUpListId)
     {
         if (signUpListId is { } heldId)
             return entry.SignUpLists.Single(list => list.Id == heldId);
 
-        var list = new CalendarSignUpList();
+        var list = new SignUpList();
         entry.SignUpLists.Add(list);
         return list;
     }
 
-    private static void Apply(CalendarSignUpList list, WantedSignUpList placed)
+    private static void Apply(SignUpList list, WantedSignUpList placed)
     {
         list.Position = placed.Position;
         list.Title = placed.List.Title.Trim();
@@ -193,7 +197,7 @@ internal static class CalendarSignUpListRecords
         list.SignUpUntil = placed.List.SignUpUntil;
     }
 
-    private sealed record WantedSignUpList(int Position, CalendarSignUpListInput List);
+    private sealed record WantedSignUpList(int Position, SignUpListInput List);
 
     private sealed record SignUpListRow(
         int SignUpListId,
@@ -221,6 +225,6 @@ internal static class CalendarSignUpListRecords
 
 internal sealed record PlacedSignUpList(
     int Position,
-    CalendarSignUpListDetails Details,
+    SignUpListDetails Details,
     DateTimeOffset? LastRemindedAt
 );

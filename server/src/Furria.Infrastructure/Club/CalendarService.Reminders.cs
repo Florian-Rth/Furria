@@ -41,7 +41,7 @@ public sealed partial class CalendarService
         if (!CalendarReminderRules.MayRemind(target.LastRemindedAt, now))
             return Result.Conflict(RemindedRecentlyMessage);
 
-        var open = await OpenPeopleOfAsync(entry.Id, target, actorPersonId, ct);
+        var open = await OpenPeopleOfAsync(HostOfEntry(entry), target, actorPersonId, ct);
         if (open.Count == 0)
             return Result.Validation(NobodyOpenMessage);
 
@@ -76,7 +76,8 @@ public sealed partial class CalendarService
                     CalendarEntryAddOnKind.Attendance,
                     entry.Id,
                     null,
-                    new ReminderClosing(null, null, entry.StartsAt, entry.EndsAt),
+                    null,
+                    AddOnClosing.EntryEndOf(entry.StartsAt, entry.EndsAt),
                     entry.AttendanceLastRemindedAt
                 )
             )
@@ -90,7 +91,8 @@ public sealed partial class CalendarService
                     CalendarEntryAddOnKind.Poll,
                     poll.Id,
                     poll.Question,
-                    new ReminderClosing(poll.ClosedAt, poll.VotesUntil, entry.StartsAt, null),
+                    poll.ClosedAt,
+                    AddOnClosing.ClosesAt(poll.VotesUntil, HostOfEntry(entry).ClosesAt),
                     poll.LastRemindedAt
                 )
             )
@@ -107,7 +109,8 @@ public sealed partial class CalendarService
                     CalendarEntryAddOnKind.SignUpList,
                     list.Id,
                     list.Title,
-                    new ReminderClosing(list.ClosedAt, list.SignUpUntil, entry.StartsAt, null),
+                    list.ClosedAt,
+                    AddOnClosing.ClosesAt(list.SignUpUntil, HostOfEntry(entry).ClosesAt),
                     list.LastRemindedAt
                 )
             )
@@ -134,28 +137,23 @@ public sealed partial class CalendarService
     }
 
     private async Task<IReadOnlySet<int>> OpenPeopleOfAsync(
-        int calendarEntryId,
+        AddOnHost host,
         ReminderTarget target,
         int? actorPersonId,
         CancellationToken ct
     )
     {
-        var facts = await _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(row => row.Id == calendarEntryId)
-            .Select(EntryFactsRows.Projection)
-            .SingleAsync(ct);
-        var concerned = await ConcernedIdsOfAsync(
-            facts.ToFacts(),
-            ClubClock.Today(_timeProvider),
-            ct
-        );
+        var concerned = await ConcernedIdsOfAsync(host, ct);
         var answered = await _dbContext.ReminderAnsweredIdsAsync(target.Kind, target.AddOnId, ct);
 
         return concerned
             .Where(personId => personId != actorPersonId && !answered.Contains(personId))
             .ToHashSet();
     }
+
+    [Pure]
+    private static CalendarEntryAddOnHost HostOfEntry(CalendarEntry entry) =>
+        new(entry.Id, entry.OwnerGroupId, entry.StartsAt);
 
     private void EnqueueReminder(
         CalendarEntry entry,
@@ -172,39 +170,16 @@ public sealed partial class CalendarService
         _dbContext.OutboxCalendarPushes.Add(push);
     }
 
-    private sealed record ReminderClosing(
-        DateTimeOffset? ClosedAt,
-        DateTimeOffset? Deadline,
-        DateTimeOffset EntryStartsAt,
-        DateTimeOffset? EntryEndsAt
-    );
-
     private sealed record ReminderTarget(
         CalendarEntryAddOnKind Kind,
         int AddOnId,
         string? Subject,
-        ReminderClosing Closing,
+        DateTimeOffset? ClosedAt,
+        DateTimeOffset? ClosesAt,
         DateTimeOffset? LastRemindedAt
     )
     {
-        public DateTimeOffset ClosesAt =>
-            Kind == CalendarEntryAddOnKind.Attendance
-                ? CalendarAddOnClosing.EntryEndOf(Closing.EntryStartsAt, Closing.EntryEndsAt)
-                : CalendarAddOnClosing.ClosesAt(Closing.Deadline, Closing.EntryStartsAt);
-
         [Pure]
-        public bool IsClosedAt(DateTimeOffset now) =>
-            Kind == CalendarEntryAddOnKind.Attendance
-                ? CalendarAddOnClosing.IsAttendanceClosed(
-                    Closing.EntryStartsAt,
-                    Closing.EntryEndsAt,
-                    now
-                )
-                : CalendarAddOnClosing.IsClosed(
-                    Closing.ClosedAt,
-                    Closing.Deadline,
-                    Closing.EntryStartsAt,
-                    now
-                );
+        public bool IsClosedAt(DateTimeOffset now) => ClosedAt is not null || ClosesAt <= now;
     }
 }

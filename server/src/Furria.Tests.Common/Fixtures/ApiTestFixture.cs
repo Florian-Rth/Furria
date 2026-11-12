@@ -504,6 +504,36 @@ public sealed class ApiTestFixture : IAsyncLifetime
         );
     }
 
+    public async Task RehostAddOnsDirectlyAsync(
+        AddOnTable table,
+        int calendarEntryId,
+        AddOnHostColumns host,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            RehostingOf(table, calendarEntryId, host.CalendarEntryId, host.AnnouncementId),
+            ct
+        );
+    }
+
+    public async Task DeleteAnnouncementDirectlyAsync(
+        int announcementId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"DELETE FROM announcement WHERE id = {announcementId}",
+            ct
+        );
+    }
+
     public async Task RewriteCalendarEntryKindDirectlyAsync(
         int calendarEntryId,
         string kind,
@@ -1186,4 +1216,20 @@ public sealed class ApiTestFixture : IAsyncLifetime
         else
             _infrastructure.ReturnHost(_host);
     }
+
+    private static FormattableString RehostingOf(
+        AddOnTable table,
+        int calendarEntryId,
+        int? newCalendarEntryId,
+        int? announcementId
+    ) =>
+        table switch
+        {
+            AddOnTable.Poll =>
+                $"UPDATE poll SET calendar_entry_id = {newCalendarEntryId}, announcement_id = {announcementId} WHERE calendar_entry_id = {calendarEntryId}",
+            AddOnTable.SignUpList =>
+                $"UPDATE sign_up_list SET calendar_entry_id = {newCalendarEntryId}, announcement_id = {announcementId} WHERE calendar_entry_id = {calendarEntryId}",
+            _ =>
+                $"UPDATE attendance_response SET calendar_entry_id = {newCalendarEntryId}, announcement_id = {announcementId} WHERE calendar_entry_id = {calendarEntryId}",
+        };
 }

@@ -42,7 +42,7 @@ public sealed class DeleteCalendarSignUpLineByIdTests : IClassFixture<ApiTestFix
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf(listAlias);
+        var listId = ctx.Club.SignUpLists.IdOf(listAlias);
 
         await _fixture.AtInstantAsync(
             Now,
@@ -55,7 +55,7 @@ public sealed class DeleteCalendarSignUpLineByIdTests : IClassFixture<ApiTestFix
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines([
                 .. listAlias == "cakes"
                     ? [(ctx.Identity.People.IdOf("ilka"), (string?)"Brezeln")]
@@ -69,7 +69,7 @@ public sealed class DeleteCalendarSignUpLineByIdTests : IClassFixture<ApiTestFix
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("cakes");
+        var listId = ctx.Club.SignUpLists.IdOf("cakes");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -82,7 +82,7 @@ public sealed class DeleteCalendarSignUpLineByIdTests : IClassFixture<ApiTestFix
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveLines(
                 (ctx.Identity.People.IdOf("chris"), "Käsekuchen"),
                 (ctx.Identity.People.IdOf("ilka"), "Brezeln")
@@ -105,7 +105,7 @@ public sealed class DeleteCalendarSignUpLineByIdTests : IClassFixture<ApiTestFix
         >(
             new DeleteCalendarSignUpLineByIdRequest
             {
-                LineId = ctx.Club.CalendarSignUpLines.IdOf(lineAlias),
+                LineId = ctx.Club.SignUpLines.IdOf(lineAlias),
             }
         );
     }

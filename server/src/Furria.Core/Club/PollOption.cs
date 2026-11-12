@@ -1,6 +1,6 @@
 namespace Furria.Core.Club;
 
-public sealed class CalendarPollOption : ITimestamped
+public sealed class PollOption : ITimestamped
 {
     public int Id { get; set; }
 
@@ -14,7 +14,7 @@ public sealed class CalendarPollOption : ITimestamped
 
     public DateTimeOffset UpdatedAt { get; set; }
 
-    public CalendarPoll? Poll { get; set; }
+    public Poll? Poll { get; set; }
 
-    public ICollection<CalendarPollVote> Votes { get; set; } = [];
+    public ICollection<PollVote> Votes { get; set; } = [];
 }
