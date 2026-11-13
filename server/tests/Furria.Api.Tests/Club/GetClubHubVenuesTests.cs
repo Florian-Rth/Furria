@@ -53,7 +53,7 @@ public sealed class GetClubHubVenuesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListEveryVenueBySortOrderThenGermanName_When_TheHubIsRead()
+    public async Task Should_ListKeyedVenuesBySortOrderThenGermanName_When_TheHubIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -67,7 +67,9 @@ public sealed class GetClubHubVenuesTests : IClassFixture<ApiTestFixture>
                         club.AddVenue("lager", "Requisitenlager", 1)
                             .AddVenue("halle", "Turnhalle", 2)
                             .AddVenue("magazin", "Ölmagazin", 2)
-                            .AddKeyHolding("bea-halle", "halle", "bea", HeldSince2024),
+                            .AddKeyHolding("bea-lager", "lager", "bea", HeldSince2024)
+                            .AddKeyHolding("bea-halle", "halle", "bea", HeldSince2024)
+                            .AddKeyHolding("bea-magazin", "magazin", "bea", HeldSince2024),
                     ct
                 );
 
@@ -80,7 +82,7 @@ public sealed class GetClubHubVenuesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CarryAnEmptyHolderList_When_NobodyHoldsAKeyToThatVenue()
+    public async Task Should_LeaveOutAVenue_When_NobodyHoldsAKeyToItToday()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -93,14 +95,21 @@ public sealed class GetClubHubVenuesTests : IClassFixture<ApiTestFixture>
                     club =>
                         club.AddVenue("schuppen", "Gerätschuppen", 1)
                             .AddVenue("werkstatt", "Fahrzeugwerkstatt", 2)
-                            .AddKeyHolding("bea-werkstatt", "werkstatt", "bea", HeldSince2024),
+                            .AddVenue("garage", "Wagengarage", 3)
+                            .AddKeyHolding("bea-werkstatt", "werkstatt", "bea", HeldSince2024)
+                            .AddKeyHolding(
+                                "bea-garage",
+                                "garage",
+                                "bea",
+                                HeldSince2024,
+                                EndedYesterday
+                            ),
                     ct
                 );
 
                 var result = await ReadAsync(ctx, ct);
 
-                Assert.Empty(VenueNamed(result, "Gerätschuppen").Holders);
-                Assert.Single(VenueNamed(result, "Fahrzeugwerkstatt").Holders);
+                Assert.Equal(["Fahrzeugwerkstatt"], result.Venues.Select(venue => venue.Name));
             }
         );
     }
@@ -295,6 +304,7 @@ public sealed class GetClubHubVenuesTests : IClassFixture<ApiTestFixture>
                     club =>
                         club.AddVenue("halle", "Turnhalle", 1)
                             .AddVenue("altes-lager", "Altes Lager", 2, archivedOn: ArchivedIn2021)
+                            .AddKeyHolding("bea-halle", "halle", "bea", HeldSince2024)
                             .AddKeyHolding("bea-lager", "altes-lager", "bea", HeldSince2024),
                     ct
                 );

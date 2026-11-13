@@ -2,8 +2,9 @@ import { apiStatusOf } from '@furria/api-client';
 import { toDayNumberLabel, toLocalIsoDay, toTimeLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
 import type {
+  AddOnHost,
+  CalendarAttendance,
   CalendarAttendancePerson,
-  CalendarEntry,
   CalendarPoll,
   CalendarReminder,
   CalendarReminderTarget,
@@ -83,32 +84,33 @@ export const toReminderFailure = (error: Error): ReminderFailure =>
   apiStatusOf(error) === CONFLICT_STATUS ? 'recentlyReminded' : 'failed';
 
 export const toAttendanceReminderSource = (
-  entry: Pick<CalendarEntry, 'calendarEntryId' | 'attendance'>,
+  host: AddOnHost,
+  attendance: Pick<CalendarAttendance, 'reminder' | 'notAnswered' | 'isClosed'> | null,
 ): CalendarReminderSource | null =>
-  entry.attendance === null
+  attendance === null
     ? null
     : {
-        target: { calendarEntryId: entry.calendarEntryId, kind: 'attendance', addOnId: null },
-        reminder: entry.attendance.reminder,
-        notAnswered: entry.attendance.notAnswered,
-        isClosed: entry.attendance.isClosed,
+        target: { host, kind: 'attendance', addOnId: null },
+        reminder: attendance.reminder,
+        notAnswered: attendance.notAnswered,
+        isClosed: attendance.isClosed,
       };
 
 export const toPollReminderSource = (
-  calendarEntryId: number,
+  host: AddOnHost,
   poll: CalendarPoll,
 ): CalendarReminderSource => ({
-  target: { calendarEntryId, kind: 'poll', addOnId: poll.pollId },
+  target: { host, kind: 'poll', addOnId: poll.pollId },
   reminder: poll.reminder,
   notAnswered: poll.notAnswered,
   isClosed: poll.isClosed,
 });
 
 export const toSignUpListReminderSource = (
-  calendarEntryId: number,
+  host: AddOnHost,
   list: CalendarSignUpList,
 ): CalendarReminderSource => ({
-  target: { calendarEntryId, kind: 'signUpList', addOnId: list.signUpListId },
+  target: { host, kind: 'signUpList', addOnId: list.signUpListId },
   reminder: list.reminder,
   notAnswered: list.notAnswered,
   isClosed: list.isClosed,

@@ -4,23 +4,24 @@ import { KkHeadlineField } from '@furria/ui/KkHeadlineField';
 import { KkProofSheet } from '@furria/ui/KkProofSheet';
 import { KkProseField } from '@furria/ui/KkProseField';
 import type { FC } from 'react';
+import { useFormatItems } from '@/features/rich-text/hooks/use-format-items';
+import type { RichTextField } from '@/features/rich-text/hooks/use-rich-text';
+import { FORMAT_RAIL_LABEL } from '@/features/rich-text/rich-text-copy';
+import type { Mentionable } from '@/features/rich-text/types';
 import { NEWS_TITLE } from '@/features/session/app-sections';
 import {
-  RAIL_LABEL,
   TEASER_PLACEHOLDER,
   TEXT_PLACEHOLDER,
   TITLE_FIELD_LABEL,
   TITLE_PLACEHOLDER,
 } from '../../editor-copy';
 import { useArticleFacts } from '../../hooks/use-article-facts';
-import { useFormatItems } from '../../hooks/use-format-items';
 import type { NewsEditor } from '../../hooks/use-news-editor';
 import type { NewsPictureDesk as PictureDesk } from '../../hooks/use-news-picture';
 import type { NewsTies } from '../../hooks/use-news-ties';
 import type { ProseTeaser } from '../../hooks/use-prose-teaser';
-import type { ProseText } from '../../hooks/use-prose-text';
 import { CHANGED_MARK } from '../../news-copy';
-import type { NewsCategory, NewsMentionable } from '../../types';
+import type { NewsCategory } from '../../types';
 import { NewsWithdrawStamp } from '../press/NewsWithdrawStamp';
 import { NewsCategoryKicker } from './NewsCategoryKicker';
 import { NewsPictureDesk } from './NewsPictureDesk';
@@ -28,11 +29,11 @@ import { NewsTieSlots } from './NewsTieSlots';
 
 interface NewsArticleProps {
   editor: NewsEditor;
-  text: ProseText;
+  text: RichTextField;
   teaser: ProseTeaser;
   picture: PictureDesk;
   ties: NewsTies;
-  mentionables: readonly NewsMentionable[];
+  mentionables: readonly Mentionable[];
 }
 
 export const NewsArticle: FC<NewsArticleProps> = ({
@@ -67,7 +68,7 @@ export const NewsArticle: FC<NewsArticleProps> = ({
   return (
     <KkProofSheet label={NEWS_TITLE}>
       <KkProofSheet.Rail>
-        <KkFormatRail label={RAIL_LABEL} items={formatItems} />
+        <KkFormatRail label={FORMAT_RAIL_LABEL} items={formatItems} />
       </KkProofSheet.Rail>
       <NewsWithdrawStamp fireKey={editor.withdrawKey} />
       <KkProofSheet.Part mark={facts.category.mark}>

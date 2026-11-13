@@ -4,10 +4,10 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { KkGroupTone } from './internal/group-tone';
 import { groupToneInkScheme } from './internal/group-tone';
-import { newsTextPaint } from './internal/news-text-paint';
 import { proofMarginRuleOf } from './internal/proof-margin-rule';
+import { richTextPaint } from './internal/rich-text-paint';
 import { applyScheme } from './internal/scheme-paint';
-import { NEWS_MENTION_KEY_ATTRIBUTE } from './news-text/news-mention-key';
+import { MENTION_KEY_ATTRIBUTE } from './rich-text/mention-key';
 
 export type KkProseVariant = 'lead' | 'body';
 
@@ -82,7 +82,7 @@ const mentionStyles = (theme: Theme, tones: readonly KkProseMentionTone[]): CSSO
   const palette = (theme.vars ?? theme).palette;
   const perMention = Object.fromEntries(
     tones.map((mention) => [
-      `& [${NEWS_MENTION_KEY_ATTRIBUTE}="${mention.id}"]`,
+      `& [${MENTION_KEY_ATTRIBUTE}="${mention.id}"]`,
       mention.isPublic
         ? mention.tone === null
           ? {}
@@ -95,7 +95,7 @@ const mentionStyles = (theme: Theme, tones: readonly KkProseMentionTone[]): CSSO
     ]),
   );
   return {
-    [`& [${NEWS_MENTION_KEY_ATTRIBUTE}]`]: {
+    [`& [${MENTION_KEY_ATTRIBUTE}]`]: {
       fontWeight: 700,
       paddingInline: '0.2em',
       borderRadius: theme.spacing(0.5),
@@ -103,7 +103,7 @@ const mentionStyles = (theme: Theme, tones: readonly KkProseMentionTone[]): CSSO
       boxDecorationBreak: 'clone',
       cursor: 'pointer',
     },
-    [`& .ProseMirror-selectednode[${NEWS_MENTION_KEY_ATTRIBUTE}]`]: {
+    [`& .ProseMirror-selectednode[${MENTION_KEY_ATTRIBUTE}]`]: {
       outline: `2px solid ${palette.primary.main}`,
       outlineOffset: 1,
     },
@@ -114,7 +114,7 @@ const mentionStyles = (theme: Theme, tones: readonly KkProseMentionTone[]): CSSO
 const bodyStyles = (theme: Theme, tones: readonly KkProseMentionTone[]): CSSObject => {
   const palette = (theme.vars ?? theme).palette;
   return {
-    ...newsTextPaint(theme),
+    ...richTextPaint(theme),
     '& [data-kk-changed]': {
       position: 'relative',
       '&::before': proofMarginRuleOf(theme, palette.primary.main),

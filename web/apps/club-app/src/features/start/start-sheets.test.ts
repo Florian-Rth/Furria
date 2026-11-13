@@ -34,8 +34,10 @@ const announcement = (announcementId: number, publishedAt: string): StartAnnounc
   announcementId,
   title: 'Aushang',
   body: 'Text',
+  mentions: { persons: [], groups: [], calendarEntries: [], events: [], newsPosts: [], albums: [] },
   publishedAt,
   validUntil: null,
+  isNew: true,
   author: {
     personId: 1,
     firstName: 'Karin',
@@ -68,7 +70,7 @@ const start = (panels: StartPanel[]): Start => ({
 });
 
 const board = start([
-  { kind: 'calendar', shownCount: 1, entries: [entry(811)] },
+  { kind: 'calendar', shownCount: 1, entries: [entry(811)], announcementAddOns: [] },
   {
     kind: 'announcements',
     shownCount: 1,
@@ -114,6 +116,28 @@ describe('isStrayStartSheet', () => {
 
   it('keeps the practice sheet, which loads its acts apart from Start', () => {
     expect(isStrayStartSheet('start-practice', start([]))).toBe(false);
+  });
+
+  it('keeps the owed answers sheet while only announcement add-ons are owed', () => {
+    const owedAnnouncement = start([
+      {
+        kind: 'calendar',
+        shownCount: 0,
+        entries: [],
+        announcementAddOns: [
+          {
+            announcementId: 5,
+            title: 'Sommerfest',
+            publishedAt: '2027-01-18T09:00:00Z',
+            attendance: { position: 0, viewerAnswer: null, isOwed: true },
+            openPolls: [],
+            openSignUpLists: [],
+          },
+        ],
+      },
+    ]);
+
+    expect(isStrayStartSheet('start-owed', owedAnnouncement)).toBe(false);
   });
 
   it('drops the owed answers sheet once the calendar is gone', () => {

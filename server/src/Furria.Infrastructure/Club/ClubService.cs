@@ -14,6 +14,7 @@ public sealed partial class ClubService
     private readonly RunningBoardSeats _runningBoardSeats;
     private readonly MediaPictures _pictures;
     private readonly PublicFace _publicFace;
+    private readonly AnnouncementMentionTargetsQuery _mentionTargets;
     private readonly TimeProvider _timeProvider;
 
     public ClubService(
@@ -21,6 +22,7 @@ public sealed partial class ClubService
         RunningBoardSeats runningBoardSeats,
         MediaPictures pictures,
         PublicFace publicFace,
+        AnnouncementMentionTargetsQuery mentionTargets,
         TimeProvider timeProvider
     )
     {
@@ -28,10 +30,11 @@ public sealed partial class ClubService
         _runningBoardSeats = runningBoardSeats;
         _pictures = pictures;
         _publicFace = publicFace;
+        _mentionTargets = mentionTargets;
         _timeProvider = timeProvider;
     }
 
-    public async Task<ClubHubDetails> GetHubAsync(CancellationToken ct)
+    public async Task<ClubHubDetails> GetHubAsync(MentionReader reader, CancellationToken ct)
     {
         var now = _timeProvider.GetUtcNow();
         var today = ClubClock.Today(_timeProvider);
@@ -41,7 +44,7 @@ public sealed partial class ClubService
         {
             Session = await SessionAsync(startYear, ct),
             Stats = await StatsAsync(today, ct),
-            Announcements = await AnnouncementsAsync(today, ct),
+            Announcements = await AnnouncementsAsync(today, reader, ct),
             Calendar = await CalendarAsync(now, ct),
             Board = await BoardAsync(today, ct),
             Venues = await VenuesAsync(today, ct),

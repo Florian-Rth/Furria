@@ -3,6 +3,7 @@ import { MyActSchema } from '@/features/acts/schemas';
 import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
 import { CalendarEntryAudienceSchema } from '@/features/calendar/schemas';
 import { NewsCategorySchema } from '@/features/news/schemas';
+import { MentionTargetsSchema } from '@/features/rich-text/schemas';
 import { TO_DO_KINDS } from '@/features/to-dos/schemas';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
 import { MediaItemStateSchema, MediaUrlSchema, PictureSchema } from '@/lib/api/schemas';
@@ -92,6 +93,23 @@ export const StartEntrySchema = z.object({
 });
 export type StartEntry = z.infer<typeof StartEntrySchema>;
 
+const StartAnnouncementAttendanceSchema = z.object({
+  position: z.int(),
+  viewerAnswer: AttendanceAnswerSchema.nullable(),
+  isOwed: z.boolean(),
+});
+export type StartAnnouncementAttendance = z.infer<typeof StartAnnouncementAttendanceSchema>;
+
+export const StartAnnouncementAddOnsSchema = z.object({
+  announcementId: z.int(),
+  title: z.string(),
+  publishedAt: z.iso.datetime({ offset: true }),
+  attendance: StartAnnouncementAttendanceSchema.nullable(),
+  openPolls: z.array(StartPollSchema),
+  openSignUpLists: z.array(StartSignUpListSchema),
+});
+export type StartAnnouncementAddOns = z.infer<typeof StartAnnouncementAddOnsSchema>;
+
 const StartPersonSchema = z.object({
   personId: z.int(),
   firstName: z.string(),
@@ -105,8 +123,10 @@ export const StartAnnouncementSchema = z.object({
   announcementId: z.int(),
   title: z.string(),
   body: z.string(),
+  mentions: MentionTargetsSchema,
   publishedAt: z.iso.datetime({ offset: true }),
   validUntil: z.iso.date().nullable(),
+  isNew: z.boolean(),
   author: StartPersonSchema.nullable(),
 });
 export type StartAnnouncement = z.infer<typeof StartAnnouncementSchema>;
@@ -214,7 +234,12 @@ export const START_PANEL_KINDS = [
 const Base = { shownCount: z.int().nonnegative() };
 
 export const StartPanelSchema = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('calendar'), ...Base, entries: z.array(StartEntrySchema) }),
+  z.object({
+    kind: z.literal('calendar'),
+    ...Base,
+    entries: z.array(StartEntrySchema),
+    announcementAddOns: z.array(StartAnnouncementAddOnsSchema),
+  }),
   z.object({
     kind: z.literal('announcements'),
     ...Base,

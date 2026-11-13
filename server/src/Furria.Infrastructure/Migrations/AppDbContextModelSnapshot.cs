@@ -377,14 +377,34 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTimeOffset?>("AnswersUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("answers_until");
+
+                    b.Property<DateTimeOffset?>("AttendanceClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("attendance_closed_at");
+
+                    b.Property<int?>("AttendanceClosedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("attendance_closed_by_person_id");
+
+                    b.Property<DateTimeOffset?>("AttendanceLastRemindedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("attendance_last_reminded_at");
+
+                    b.Property<int?>("AttendancePosition")
+                        .HasColumnType("integer")
+                        .HasColumnName("attendance_position");
+
                     b.Property<int?>("AuthorPersonId")
                         .HasColumnType("integer")
                         .HasColumnName("author_person_id");
 
                     b.Property<string>("Body")
                         .IsRequired()
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)")
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)")
                         .HasColumnName("body");
 
                     b.Property<DateTimeOffset>("CreatedAt")
@@ -416,13 +436,131 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_announcement");
 
+                    b.HasIndex("AttendanceClosedByPersonId")
+                        .HasDatabaseName("ix_announcement_attendance_closed_by_person_id");
+
                     b.HasIndex("AuthorPersonId")
                         .HasDatabaseName("ix_announcement_author_person_id");
 
                     b.HasIndex("PublishedAt")
                         .HasDatabaseName("ix_announcement_published_at");
 
-                    b.ToTable("announcement", (string)null);
+                    b.ToTable("announcement", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_announcement_attendance_closer", "attendance_closed_by_person_id IS NULL OR attendance_closed_at IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_announcement_attendance_position", "attendance_position IS NULL OR attendance_position >= 0");
+
+                            t.HasCheckConstraint("ck_announcement_attendance_state", "attendance_position IS NOT NULL OR (answers_until IS NULL AND attendance_closed_at IS NULL AND attendance_closed_by_person_id IS NULL AND attendance_last_reminded_at IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.AnnouncementBorrowedAddOn", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AnnouncementId")
+                        .HasColumnType("integer")
+                        .HasColumnName("announcement_id");
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<int?>("PollId")
+                        .HasColumnType("integer")
+                        .HasColumnName("poll_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<int?>("SignUpListId")
+                        .HasColumnType("integer")
+                        .HasColumnName("sign_up_list_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_announcement_borrowed_add_on");
+
+                    b.HasIndex("CalendarEntryId")
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_calendar_entry_id");
+
+                    b.HasIndex("PollId")
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_poll_id");
+
+                    b.HasIndex("SignUpListId")
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_sign_up_list_id");
+
+                    b.HasIndex("AnnouncementId", "CalendarEntryId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_announcement_id_calendar_entry")
+                        .HasFilter("kind = 'Attendance'");
+
+                    b.HasIndex("AnnouncementId", "PollId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_announcement_id_poll_id")
+                        .HasFilter("poll_id IS NOT NULL");
+
+                    b.HasIndex("AnnouncementId", "SignUpListId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_announcement_borrowed_add_on_announcement_id_sign_up_list_id")
+                        .HasFilter("sign_up_list_id IS NOT NULL");
+
+                    b.ToTable("announcement_borrowed_add_on", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_announcement_borrowed_add_on_kind_matches_target", "(kind = 'Attendance' AND poll_id IS NULL AND sign_up_list_id IS NULL) OR (kind = 'Poll' AND poll_id IS NOT NULL AND sign_up_list_id IS NULL) OR (kind = 'SignUpList' AND sign_up_list_id IS NOT NULL AND poll_id IS NULL)");
+
+                            t.HasCheckConstraint("ck_announcement_borrowed_add_on_position_not_negative", "position >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.AnnouncementMention", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AnnouncementId")
+                        .HasColumnType("integer")
+                        .HasColumnName("announcement_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<int>("TargetId")
+                        .HasColumnType("integer")
+                        .HasColumnName("target_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_announcement_mention");
+
+                    b.HasIndex("AnnouncementId", "Kind", "TargetId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_announcement_mention_announcement_id_kind_target_id");
+
+                    b.ToTable("announcement_mention", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_announcement_mention_kind", "kind IN ('Group', 'Person', 'CalendarEntry', 'Event', 'NewsPost', 'Album')");
+
+                            t.HasCheckConstraint("ck_announcement_mention_target_id_positive", "target_id > 0");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Core.Club.AttendanceResponse", b =>
@@ -434,13 +572,17 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int?>("AnnouncementId")
+                        .HasColumnType("integer")
+                        .HasColumnName("announcement_id");
+
                     b.Property<string>("Answer")
                         .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)")
                         .HasColumnName("answer");
 
-                    b.Property<int>("CalendarEntryId")
+                    b.Property<int?>("CalendarEntryId")
                         .HasColumnType("integer")
                         .HasColumnName("calendar_entry_id");
 
@@ -479,6 +621,10 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("RecordedByPersonId")
                         .HasDatabaseName("ix_attendance_response_recorded_by_person_id");
 
+                    b.HasIndex("AnnouncementId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_attendance_response_announcement_id_person_id");
+
                     b.HasIndex("CalendarEntryId", "PersonId")
                         .IsUnique()
                         .HasDatabaseName("ix_attendance_response_calendar_entry_id_person_id");
@@ -486,6 +632,8 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("attendance_response", null, t =>
                         {
                             t.HasCheckConstraint("ck_attendance_response_answer", "answer IN ('Yes', 'No', 'Maybe')");
+
+                            t.HasCheckConstraint("ck_attendance_response_one_host", "num_nonnulls(calendar_entry_id, announcement_id) = 1");
                         });
                 });
 
@@ -998,309 +1146,6 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("calendar_entry_group", (string)null);
                 });
 
-            modelBuilder.Entity("Furria.Core.Club.CalendarPoll", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("AllowsMultipleChoices")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("allows_multiple_choices");
-
-                    b.Property<int>("CalendarEntryId")
-                        .HasColumnType("integer")
-                        .HasColumnName("calendar_entry_id");
-
-                    b.Property<DateTimeOffset?>("ClosedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("closed_at");
-
-                    b.Property<int?>("ClosedByPersonId")
-                        .HasColumnType("integer")
-                        .HasColumnName("closed_by_person_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<bool>("IsAnonymous")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false)
-                        .HasColumnName("is_anonymous");
-
-                    b.Property<DateTimeOffset?>("LastRemindedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_reminded_at");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("integer")
-                        .HasColumnName("position");
-
-                    b.Property<string>("Question")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("question");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<DateTimeOffset?>("VotesUntil")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("votes_until");
-
-                    b.HasKey("Id")
-                        .HasName("pk_calendar_poll");
-
-                    b.HasIndex("CalendarEntryId")
-                        .HasDatabaseName("ix_calendar_poll_calendar_entry_id");
-
-                    b.HasIndex("ClosedByPersonId")
-                        .HasDatabaseName("ix_calendar_poll_closed_by_person_id");
-
-                    b.ToTable("calendar_poll", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_calendar_poll_position", "position >= 0");
-
-                            t.HasCheckConstraint("ck_calendar_poll_question", "btrim(question) <> ''");
-                        });
-                });
-
-            modelBuilder.Entity("Furria.Core.Club.CalendarPollOption", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<string>("Label")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("label");
-
-                    b.Property<int>("PollId")
-                        .HasColumnType("integer")
-                        .HasColumnName("poll_id");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("integer")
-                        .HasColumnName("position");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.HasKey("Id")
-                        .HasName("pk_calendar_poll_option");
-
-                    b.HasAlternateKey("PollId", "Id")
-                        .HasName("ak_calendar_poll_option_poll_id_id");
-
-                    b.ToTable("calendar_poll_option", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_calendar_poll_option_label", "btrim(label) <> ''");
-
-                            t.HasCheckConstraint("ck_calendar_poll_option_position", "position >= 0");
-                        });
-                });
-
-            modelBuilder.Entity("Furria.Core.Club.CalendarPollVote", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<int>("PersonId")
-                        .HasColumnType("integer")
-                        .HasColumnName("person_id");
-
-                    b.Property<int>("PollId")
-                        .HasColumnType("integer")
-                        .HasColumnName("poll_id");
-
-                    b.Property<int>("PollOptionId")
-                        .HasColumnType("integer")
-                        .HasColumnName("poll_option_id");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.HasKey("Id")
-                        .HasName("pk_calendar_poll_vote");
-
-                    b.HasIndex("PersonId")
-                        .HasDatabaseName("ix_calendar_poll_vote_person_id");
-
-                    b.HasIndex("PollId", "PersonId")
-                        .HasDatabaseName("ix_calendar_poll_vote_poll_id_person_id");
-
-                    b.HasIndex("PollId", "PollOptionId", "PersonId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_calendar_poll_vote_poll_id_poll_option_id_person_id");
-
-                    b.ToTable("calendar_poll_vote", (string)null);
-                });
-
-            modelBuilder.Entity("Furria.Core.Club.CalendarSignUpLine", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<int>("PersonId")
-                        .HasColumnType("integer")
-                        .HasColumnName("person_id");
-
-                    b.Property<int>("SignUpListId")
-                        .HasColumnType("integer")
-                        .HasColumnName("sign_up_list_id");
-
-                    b.Property<string>("Text")
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("text");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.HasKey("Id")
-                        .HasName("pk_calendar_sign_up_line");
-
-                    b.HasIndex("PersonId")
-                        .HasDatabaseName("ix_calendar_sign_up_line_person_id");
-
-                    b.HasIndex("SignUpListId", "PersonId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_calendar_sign_up_line_sign_up_list_id_person_id");
-
-                    b.ToTable("calendar_sign_up_line", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_calendar_sign_up_line_text", "text IS NULL OR btrim(text) <> ''");
-                        });
-                });
-
-            modelBuilder.Entity("Furria.Core.Club.CalendarSignUpList", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CalendarEntryId")
-                        .HasColumnType("integer")
-                        .HasColumnName("calendar_entry_id");
-
-                    b.Property<DateTimeOffset?>("ClosedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("closed_at");
-
-                    b.Property<int?>("ClosedByPersonId")
-                        .HasColumnType("integer")
-                        .HasColumnName("closed_by_person_id");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<string>("Hint")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
-                        .HasColumnName("hint");
-
-                    b.Property<DateTimeOffset?>("LastRemindedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("last_reminded_at");
-
-                    b.Property<int>("Position")
-                        .HasColumnType("integer")
-                        .HasColumnName("position");
-
-                    b.Property<DateTimeOffset?>("SignUpUntil")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("sign_up_until");
-
-                    b.Property<string>("Title")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)")
-                        .HasColumnName("title");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.HasKey("Id")
-                        .HasName("pk_calendar_sign_up_list");
-
-                    b.HasIndex("CalendarEntryId")
-                        .HasDatabaseName("ix_calendar_sign_up_list_calendar_entry_id");
-
-                    b.HasIndex("ClosedByPersonId")
-                        .HasDatabaseName("ix_calendar_sign_up_list_closed_by_person_id");
-
-                    b.ToTable("calendar_sign_up_list", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_calendar_sign_up_list_hint", "hint IS NULL OR btrim(hint) <> ''");
-
-                            t.HasCheckConstraint("ck_calendar_sign_up_list_position", "position >= 0");
-
-                            t.HasCheckConstraint("ck_calendar_sign_up_list_title", "btrim(title) <> ''");
-                        });
-                });
-
             modelBuilder.Entity("Furria.Core.Club.ClubRecord", b =>
                 {
                     b.Property<int>("Id")
@@ -1459,6 +1304,193 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.Poll", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AllowsMultipleChoices")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("allows_multiple_choices");
+
+                    b.Property<int?>("AnnouncementId")
+                        .HasColumnType("integer")
+                        .HasColumnName("announcement_id");
+
+                    b.Property<int?>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<int?>("ClosedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("closed_by_person_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<bool>("IsAnonymous")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_anonymous");
+
+                    b.Property<DateTimeOffset?>("LastRemindedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_reminded_at");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("question");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("VotesUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("votes_until");
+
+                    b.HasKey("Id")
+                        .HasName("pk_poll");
+
+                    b.HasIndex("AnnouncementId")
+                        .HasDatabaseName("ix_poll_announcement_id");
+
+                    b.HasIndex("CalendarEntryId")
+                        .HasDatabaseName("ix_poll_calendar_entry_id");
+
+                    b.HasIndex("ClosedByPersonId")
+                        .HasDatabaseName("ix_poll_closed_by_person_id");
+
+                    b.ToTable("poll", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_poll_one_host", "num_nonnulls(calendar_entry_id, announcement_id) = 1");
+
+                            t.HasCheckConstraint("ck_poll_position", "position >= 0");
+
+                            t.HasCheckConstraint("ck_poll_question", "btrim(question) <> ''");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.PollOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("label");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("integer")
+                        .HasColumnName("poll_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_poll_option");
+
+                    b.HasAlternateKey("PollId", "Id")
+                        .HasName("ak_poll_option_poll_id_id");
+
+                    b.ToTable("poll_option", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_poll_option_label", "btrim(label) <> ''");
+
+                            t.HasCheckConstraint("ck_poll_option_position", "position >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.PollVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("integer")
+                        .HasColumnName("poll_id");
+
+                    b.Property<int>("PollOptionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("poll_option_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_poll_vote");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_poll_vote_person_id");
+
+                    b.HasIndex("PollId", "PersonId")
+                        .HasDatabaseName("ix_poll_vote_poll_id_person_id");
+
+                    b.HasIndex("PollId", "PollOptionId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_poll_vote_poll_id_poll_option_id_person_id");
+
+                    b.ToTable("poll_vote", (string)null);
+                });
+
             modelBuilder.Entity("Furria.Core.Club.Session", b =>
                 {
                     b.Property<int>("Id")
@@ -1516,6 +1548,140 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("session", null, t =>
                         {
                             t.HasCheckConstraint("ck_session_number", "number IS NULL OR number > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.SignUpLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<int>("SignUpListId")
+                        .HasColumnType("integer")
+                        .HasColumnName("sign_up_list_id");
+
+                    b.Property<string>("Text")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sign_up_line");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_sign_up_line_person_id");
+
+                    b.HasIndex("SignUpListId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_sign_up_line_sign_up_list_id_person_id");
+
+                    b.ToTable("sign_up_line", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_sign_up_line_text", "text IS NULL OR btrim(text) <> ''");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.SignUpList", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AnnouncementId")
+                        .HasColumnType("integer")
+                        .HasColumnName("announcement_id");
+
+                    b.Property<int?>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<int?>("ClosedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("closed_by_person_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Hint")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("hint");
+
+                    b.Property<DateTimeOffset?>("LastRemindedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_reminded_at");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<DateTimeOffset?>("SignUpUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sign_up_until");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_sign_up_list");
+
+                    b.HasIndex("AnnouncementId")
+                        .HasDatabaseName("ix_sign_up_list_announcement_id");
+
+                    b.HasIndex("CalendarEntryId")
+                        .HasDatabaseName("ix_sign_up_list_calendar_entry_id");
+
+                    b.HasIndex("ClosedByPersonId")
+                        .HasDatabaseName("ix_sign_up_list_closed_by_person_id");
+
+                    b.ToTable("sign_up_list", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_sign_up_list_hint", "hint IS NULL OR btrim(hint) <> ''");
+
+                            t.HasCheckConstraint("ck_sign_up_list_one_host", "num_nonnulls(calendar_entry_id, announcement_id) = 1");
+
+                            t.HasCheckConstraint("ck_sign_up_list_position", "position >= 0");
+
+                            t.HasCheckConstraint("ck_sign_up_list_title", "btrim(title) <> ''");
                         });
                 });
 
@@ -5779,22 +5945,84 @@ namespace Furria.Infrastructure.Migrations
 
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
                 {
+                    b.HasOne("Furria.Core.Identity.Person", "AttendanceClosedBy")
+                        .WithMany()
+                        .HasForeignKey("AttendanceClosedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_announcement_person_attendance_closed_by_person_id");
+
                     b.HasOne("Furria.Core.Identity.Person", "Author")
                         .WithMany()
                         .HasForeignKey("AuthorPersonId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_announcement_person_author_person_id");
 
+                    b.Navigation("AttendanceClosedBy");
+
                     b.Navigation("Author");
                 });
 
-            modelBuilder.Entity("Furria.Core.Club.AttendanceResponse", b =>
+            modelBuilder.Entity("Furria.Core.Club.AnnouncementBorrowedAddOn", b =>
                 {
+                    b.HasOne("Furria.Core.Club.Announcement", "Announcement")
+                        .WithMany("BorrowedAddOns")
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_announcement_borrowed_add_on_announcement_announcement_id");
+
                     b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
                         .WithMany()
                         .HasForeignKey("CalendarEntryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
+                        .HasConstraintName("fk_announcement_borrowed_add_on_entry_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Club.Poll", "Poll")
+                        .WithMany()
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_announcement_borrowed_add_on_poll_poll_id");
+
+                    b.HasOne("Furria.Core.Club.SignUpList", "SignUpList")
+                        .WithMany()
+                        .HasForeignKey("SignUpListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_announcement_borrowed_add_on_sign_up_list_sign_up_list_id");
+
+                    b.Navigation("Announcement");
+
+                    b.Navigation("CalendarEntry");
+
+                    b.Navigation("Poll");
+
+                    b.Navigation("SignUpList");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.AnnouncementMention", b =>
+                {
+                    b.HasOne("Furria.Core.Club.Announcement", "Announcement")
+                        .WithMany("Mentions")
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_announcement_mention_announcement_announcement_id");
+
+                    b.Navigation("Announcement");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.AttendanceResponse", b =>
+                {
+                    b.HasOne("Furria.Core.Club.Announcement", "Announcement")
+                        .WithMany()
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_attendance_response_announcement_announcement_id");
+
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany()
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_attendance_response_calendar_entry_calendar_entry_id");
 
                     b.HasOne("Furria.Core.Identity.Person", "Person")
@@ -5809,6 +6037,8 @@ namespace Furria.Infrastructure.Migrations
                         .HasForeignKey("RecordedByPersonId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_attendance_response_person_recorded_by_person_id");
+
+                    b.Navigation("Announcement");
 
                     b.Navigation("CalendarEntry");
 
@@ -5984,101 +6214,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("Furria.Core.Club.CalendarPoll", b =>
-                {
-                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
-                        .WithMany("Polls")
-                        .HasForeignKey("CalendarEntryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_calendar_poll_calendar_entry_calendar_entry_id");
-
-                    b.HasOne("Furria.Core.Identity.Person", "ClosedBy")
-                        .WithMany()
-                        .HasForeignKey("ClosedByPersonId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_calendar_poll_person_closed_by_person_id");
-
-                    b.Navigation("CalendarEntry");
-
-                    b.Navigation("ClosedBy");
-                });
-
-            modelBuilder.Entity("Furria.Core.Club.CalendarPollOption", b =>
-                {
-                    b.HasOne("Furria.Core.Club.CalendarPoll", "Poll")
-                        .WithMany("Options")
-                        .HasForeignKey("PollId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_calendar_poll_option_calendar_poll_poll_id");
-
-                    b.Navigation("Poll");
-                });
-
-            modelBuilder.Entity("Furria.Core.Club.CalendarPollVote", b =>
-                {
-                    b.HasOne("Furria.Core.Identity.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_calendar_poll_vote_person_person_id");
-
-                    b.HasOne("Furria.Core.Club.CalendarPollOption", "PollOption")
-                        .WithMany("Votes")
-                        .HasForeignKey("PollId", "PollOptionId")
-                        .HasPrincipalKey("PollId", "Id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_calendar_poll_vote_calendar_poll_option_poll_id_poll_option_id");
-
-                    b.Navigation("Person");
-
-                    b.Navigation("PollOption");
-                });
-
-            modelBuilder.Entity("Furria.Core.Club.CalendarSignUpLine", b =>
-                {
-                    b.HasOne("Furria.Core.Identity.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_calendar_sign_up_line_person_person_id");
-
-                    b.HasOne("Furria.Core.Club.CalendarSignUpList", "SignUpList")
-                        .WithMany("Lines")
-                        .HasForeignKey("SignUpListId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_calendar_sign_up_line_calendar_sign_up_list_sign_up_list_id");
-
-                    b.Navigation("Person");
-
-                    b.Navigation("SignUpList");
-                });
-
-            modelBuilder.Entity("Furria.Core.Club.CalendarSignUpList", b =>
-                {
-                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
-                        .WithMany("SignUpLists")
-                        .HasForeignKey("CalendarEntryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_calendar_sign_up_list_calendar_entry_calendar_entry_id");
-
-                    b.HasOne("Furria.Core.Identity.Person", "ClosedBy")
-                        .WithMany()
-                        .HasForeignKey("ClosedByPersonId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_calendar_sign_up_list_person_closed_by_person_id");
-
-                    b.Navigation("CalendarEntry");
-
-                    b.Navigation("ClosedBy");
-                });
-
             modelBuilder.Entity("Furria.Core.Club.KeyHolding", b =>
                 {
                     b.HasOne("Furria.Core.Identity.Person", "Person")
@@ -6100,6 +6235,67 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Venue");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.Poll", b =>
+                {
+                    b.HasOne("Furria.Core.Club.Announcement", "Announcement")
+                        .WithMany("Polls")
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_poll_announcement_announcement_id");
+
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany("Polls")
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_poll_calendar_entry_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "ClosedBy")
+                        .WithMany()
+                        .HasForeignKey("ClosedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_poll_person_closed_by_person_id");
+
+                    b.Navigation("Announcement");
+
+                    b.Navigation("CalendarEntry");
+
+                    b.Navigation("ClosedBy");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.PollOption", b =>
+                {
+                    b.HasOne("Furria.Core.Club.Poll", "Poll")
+                        .WithMany("Options")
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_poll_option_poll_poll_id");
+
+                    b.Navigation("Poll");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.PollVote", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_poll_vote_person_person_id");
+
+                    b.HasOne("Furria.Core.Club.PollOption", "PollOption")
+                        .WithMany("Votes")
+                        .HasForeignKey("PollId", "PollOptionId")
+                        .HasPrincipalKey("PollId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_poll_vote_poll_option_poll_id_poll_option_id");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("PollOption");
+                });
+
             modelBuilder.Entity("Furria.Core.Club.Session", b =>
                 {
                     b.HasOne("Furria.Core.Media.MediaItem", "Logo")
@@ -6109,6 +6305,54 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_session_media_item_logo_id");
 
                     b.Navigation("Logo");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.SignUpLine", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_sign_up_line_person_person_id");
+
+                    b.HasOne("Furria.Core.Club.SignUpList", "SignUpList")
+                        .WithMany("Lines")
+                        .HasForeignKey("SignUpListId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_sign_up_line_sign_up_list_sign_up_list_id");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("SignUpList");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.SignUpList", b =>
+                {
+                    b.HasOne("Furria.Core.Club.Announcement", "Announcement")
+                        .WithMany("SignUpLists")
+                        .HasForeignKey("AnnouncementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_sign_up_list_announcement_announcement_id");
+
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany("SignUpLists")
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_sign_up_list_calendar_entry_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "ClosedBy")
+                        .WithMany()
+                        .HasForeignKey("ClosedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_sign_up_list_person_closed_by_person_id");
+
+                    b.Navigation("Announcement");
+
+                    b.Navigation("CalendarEntry");
+
+                    b.Navigation("ClosedBy");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.VenueOpeningSlot", b =>
@@ -7377,6 +7621,17 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_account_token_account_user_id");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
+                {
+                    b.Navigation("BorrowedAddOns");
+
+                    b.Navigation("Mentions");
+
+                    b.Navigation("Polls");
+
+                    b.Navigation("SignUpLists");
+                });
+
             modelBuilder.Entity("Furria.Core.Club.CalendarDaySchedule", b =>
                 {
                     b.Navigation("Steps");
@@ -7399,17 +7654,17 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("SignUpLists");
                 });
 
-            modelBuilder.Entity("Furria.Core.Club.CalendarPoll", b =>
+            modelBuilder.Entity("Furria.Core.Club.Poll", b =>
                 {
                     b.Navigation("Options");
                 });
 
-            modelBuilder.Entity("Furria.Core.Club.CalendarPollOption", b =>
+            modelBuilder.Entity("Furria.Core.Club.PollOption", b =>
                 {
                     b.Navigation("Votes");
                 });
 
-            modelBuilder.Entity("Furria.Core.Club.CalendarSignUpList", b =>
+            modelBuilder.Entity("Furria.Core.Club.SignUpList", b =>
                 {
                     b.Navigation("Lines");
                 });

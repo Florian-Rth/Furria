@@ -7,6 +7,7 @@ import {
   toAttendanceChoiceLabel,
   toOnBehalfLabel,
 } from '@/lib/calendar-copy';
+import { toEntryHost } from '../add-on-host';
 import type { AttendanceRoll, AttendanceRollCopy } from '../calendar-attendance';
 import { toAttendanceRoll } from '../calendar-attendance';
 import type { CalendarReminderSource } from '../calendar-reminders';
@@ -30,7 +31,7 @@ export interface CalendarDetailAttendanceControl {
   sheet: NamesSheetControl;
 }
 
-const ROLL_COPY: AttendanceRollCopy = {
+export const ATTENDANCE_ROLL_COPY: AttendanceRollCopy = {
   labels: ATTENDANCE_ROLL_LABELS,
   onBehalf: toOnBehalfLabel,
 };
@@ -53,8 +54,10 @@ export const useCalendarDetailAttendance = (
         }
       : null,
     roll:
-      entry.attendance === null ? null : toAttendanceRoll(entry.attendance, ownPersonId, ROLL_COPY),
-    reminder: toAttendanceReminderSource(entry),
+      entry.attendance === null
+        ? null
+        : toAttendanceRoll(entry.attendance, ownPersonId, ATTENDANCE_ROLL_COPY),
+    reminder: toAttendanceReminderSource(toEntryHost(entry), entry.attendance),
     sheet,
   };
 };

@@ -1,17 +1,20 @@
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { KkPanelAction } from '@furria/ui/panel-action';
+import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { isAnnouncementExpired, isAnnouncementNew } from '@/lib/announcements';
 import { toIsoDay } from '@/lib/day';
+import { toAnnouncementShelves } from '../announcement-bulletin';
 import {
   ADD_ANNOUNCEMENT_ACTION_LABEL,
   ADD_ANNOUNCEMENT_PILL_LABEL,
   ANNOUNCEMENTS_SECTION_TITLE,
+  EXPIRED_ANNOUNCEMENTS_SECTION_TITLE,
 } from '../announcements-labels';
 import type { Announcement } from '../schemas';
-import { AnnouncementRow } from './AnnouncementRow';
+import { AnnouncementListBulletin } from './AnnouncementListBulletin';
+import { AnnouncementSheet } from './AnnouncementSheet';
 import { AnnouncementsEmpty } from './AnnouncementsEmpty';
 
 interface AnnouncementsListProps {
@@ -37,29 +40,47 @@ export const AnnouncementsList: FC<AnnouncementsListProps> = ({
       }
     : undefined;
 
-  if (announcements.length === 0) {
-    return (
-      <KkPanelSection title={ANNOUNCEMENTS_SECTION_TITLE} action={action}>
-        <AnnouncementsEmpty />
-      </KkPanelSection>
-    );
-  }
+  const shelves = toAnnouncementShelves(announcements, toIsoDay(new Date()));
 
-  const today = toIsoDay(new Date());
-
-  const rows = announcements.map((announcement) => (
-    <AnnouncementRow
+  const currentBulletins = shelves.current.map((announcement) => (
+    <AnnouncementListBulletin
       key={announcement.announcementId}
       announcement={announcement}
-      isNew={isAnnouncementNew(announcement.publishedAt, lastSeenAt)}
-      isExpired={isAnnouncementExpired(announcement.validUntil, today)}
+      lastSeenAt={lastSeenAt}
+      isExpired={false}
+      highlightedKey={highlightedKey}
+    />
+  ));
+  const expiredBulletins = shelves.expired.map((announcement) => (
+    <AnnouncementListBulletin
+      key={announcement.announcementId}
+      announcement={announcement}
+      lastSeenAt={lastSeenAt}
+      isExpired
       highlightedKey={highlightedKey}
     />
   ));
 
+  const current =
+    currentBulletins.length === 0 ? (
+      <AnnouncementsEmpty />
+    ) : (
+      <Stack sx={{ gap: 1, minWidth: 0 }}>{currentBulletins}</Stack>
+    );
+  const expired =
+    expiredBulletins.length === 0 ? null : (
+      <KkPanelSection title={EXPIRED_ANNOUNCEMENTS_SECTION_TITLE}>
+        <Stack sx={{ gap: 1, minWidth: 0 }}>{expiredBulletins}</Stack>
+      </KkPanelSection>
+    );
+
   return (
-    <KkPanelSection title={ANNOUNCEMENTS_SECTION_TITLE} action={action}>
-      <KkPanelStack>{rows}</KkPanelStack>
-    </KkPanelSection>
+    <KkPanelStack>
+      <KkPanelSection title={ANNOUNCEMENTS_SECTION_TITLE} action={action}>
+        {current}
+      </KkPanelSection>
+      {expired}
+      <AnnouncementSheet announcements={announcements} />
+    </KkPanelStack>
   );
 };

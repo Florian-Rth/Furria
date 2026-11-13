@@ -38,7 +38,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -51,9 +51,9 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToHaveVotesOf(ctx.Identity.People.IdOf("chris"), "Obst")
-            .CalendarPoll(pollId)
+            .Poll(pollId)
             .ToHaveVoteCount(1)
             .AssertAsync(ct);
     }
@@ -63,7 +63,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("days");
+        var pollId = ctx.Club.Polls.IdOf("days");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -82,7 +82,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToHaveVotesOf(ctx.Identity.People.IdOf("dana"), "Montag", "Mittwoch")
             .AssertAsync(ct);
     }
@@ -92,7 +92,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -104,7 +104,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarPoll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
+        await ctx.Expected.Poll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -131,7 +131,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToHaveVotesOf(ctx.Identity.People.IdOf("dana"))
             .AssertAsync(ct);
     }
@@ -144,7 +144,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf(pollAlias);
+        var pollId = ctx.Club.Polls.IdOf(pollAlias);
 
         await _fixture.AtInstantAsync(
             Now,
@@ -156,7 +156,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarPoll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
+        await ctx.Expected.Poll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
     }
 
     [Fact]
@@ -164,7 +164,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -182,7 +182,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("secret");
+        var pollId = ctx.Club.Polls.IdOf("secret");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -194,7 +194,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarPoll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
+        await ctx.Expected.Poll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("secret");
+        var pollId = ctx.Club.Polls.IdOf("secret");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -215,7 +215,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToHaveVotesOf(ctx.Identity.People.IdOf("chris"), "Ja")
             .AssertAsync(ct);
     }
@@ -225,7 +225,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("garde-snack");
+        var pollId = ctx.Club.Polls.IdOf("garde-snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -237,7 +237,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarPoll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
+        await ctx.Expected.Poll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
     }
 
     [Fact]
@@ -245,7 +245,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("garde-snack");
+        var pollId = ctx.Club.Polls.IdOf("garde-snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -258,7 +258,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToHaveVotesOf(ctx.Identity.People.IdOf("elli"), "Ja")
             .AssertAsync(ct);
     }
@@ -268,7 +268,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("board-snack");
+        var pollId = ctx.Club.Polls.IdOf("board-snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -281,7 +281,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToHaveVotesOf(ctx.Identity.People.IdOf("ilka"), "Ja")
             .AssertAsync(ct);
     }
@@ -300,7 +300,7 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
             new PutCalendarPollVotesRequest
             {
                 PollId = pollId,
-                OptionIds = [.. optionAliases.Select(ctx.Club.CalendarPollOptions.IdOf)],
+                OptionIds = [.. optionAliases.Select(ctx.Club.PollOptions.IdOf)],
             }
         );
     }

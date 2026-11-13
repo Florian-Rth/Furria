@@ -1,5 +1,5 @@
-import { KkNewsMention } from '@furria/ui/KkNewsMention';
-import { KkNewsMentionCard } from '@furria/ui/KkNewsMentionCard';
+import { KkMention } from '@furria/ui/KkMention';
+import { KkMentionCard } from '@furria/ui/KkMentionCard';
 import type { FC } from 'react';
 import { personInitialsOf, personNameOf } from '@/features/news/news-mentions';
 import type { NewsMentionedPerson } from '@/lib/public-news/schemas';
@@ -16,14 +16,14 @@ export const NewsPersonMention: FC<NewsPersonMentionProps> = ({ label, person })
   const initials = personInitialsOf(person);
 
   return (
-    <KkNewsMention label={label} tone={null}>
-      <KkNewsMentionCard
+    <KkMention label={label} tone={null}>
+      <KkMentionCard
         face={PERSON_FACE}
         name={name}
         line={person.officeName}
         initials={initials}
         picture={person.portrait}
       />
-    </KkNewsMention>
+    </KkMention>
   );
 };

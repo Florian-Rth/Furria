@@ -1,10 +1,6 @@
 import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { useState } from 'react';
-import { toDiscardedAnswerCount, toOfferedAddOns } from '../calendar-add-ons';
-import type { CalendarAddOnCardForm, CalendarAddOnKind, CalendarEntry } from '../schemas';
-import type { CalendarEntryEditorControl } from './use-calendar-entry-editor';
-
-export const ADD_ON_SHEET_ID = 'calendar-add-on';
+import type { BorrowedAddOnCardIdentity, CalendarAddOnKind } from '../schemas';
 
 export interface CalendarAddOnRemoval {
   key: string;
@@ -12,34 +8,48 @@ export interface CalendarAddOnRemoval {
   discardedAnswers: number;
 }
 
+export type AddOnCardIdentity =
+  | { key: string; kind: CalendarAddOnKind }
+  | BorrowedAddOnCardIdentity;
+
 const NO_REMOVAL: CalendarAddOnRemoval = { key: '', kind: 'attendance', discardedAnswers: 0 };
 
-export interface CalendarAddOnsControl {
-  attached: readonly CalendarAddOnCardForm[];
+export interface CalendarAddOnsInput<TCard extends AddOnCardIdentity> {
+  sheetId: string;
+  offered: readonly CalendarAddOnKind[];
+  attach: (kind: CalendarAddOnKind) => void;
+  detach: (key: string) => void;
+  discardedAnswersOf: (card: TCard) => number;
+}
+
+export interface CalendarAddOnsControl<TCard extends AddOnCardIdentity> {
+  sheetId: string;
   offered: readonly CalendarAddOnKind[];
   openSheet: () => void;
   attach: (kind: CalendarAddOnKind) => void;
-  askRemoval: (card: CalendarAddOnCardForm) => void;
+  askRemoval: (card: TCard) => void;
   removal: CalendarAddOnRemoval;
   isRemovalOpen: boolean;
   confirmRemoval: () => void;
   cancelRemoval: () => void;
 }
 
-export const useCalendarAddOns = (
-  control: CalendarEntryEditorControl,
-  entry: CalendarEntry | null,
-): CalendarAddOnsControl => {
+export const useCalendarAddOns = <TCard extends AddOnCardIdentity>({
+  sheetId,
+  offered,
+  attach,
+  detach,
+  discardedAnswersOf,
+}: CalendarAddOnsInput<TCard>): CalendarAddOnsControl<TCard> => {
   const sheets = useKkSheetCommands();
   const [removal, setRemoval] = useState<CalendarAddOnRemoval>(NO_REMOVAL);
   const [isRemovalOpen, setRemovalOpen] = useState(false);
-  const attached = control.values.addOns;
 
-  const askRemoval = (card: CalendarAddOnCardForm): void => {
-    const discardedAnswers = toDiscardedAnswerCount(card, entry);
+  const askRemoval = (card: TCard): void => {
+    const discardedAnswers = discardedAnswersOf(card);
 
-    if (discardedAnswers === 0) {
-      control.detachAddOn(card.key);
+    if (discardedAnswers === 0 || card.kind === 'borrowed') {
+      detach(card.key);
       return;
     }
 
@@ -48,20 +58,20 @@ export const useCalendarAddOns = (
   };
 
   return {
-    attached,
-    offered: toOfferedAddOns(attached),
+    sheetId,
+    offered,
     openSheet: () => {
-      sheets.open(ADD_ON_SHEET_ID);
+      sheets.open(sheetId);
     },
     attach: (kind) => {
-      control.attachAddOn(kind);
+      attach(kind);
       sheets.close();
     },
     askRemoval,
     removal,
     isRemovalOpen,
     confirmRemoval: () => {
-      control.detachAddOn(removal.key);
+      detach(removal.key);
       setRemovalOpen(false);
     },
     cancelRemoval: () => {

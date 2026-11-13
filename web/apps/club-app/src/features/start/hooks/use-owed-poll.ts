@@ -2,8 +2,9 @@ import type { KkPollBallotMode } from '@furria/ui/KkPollBallot';
 import { useState } from 'react';
 import { usePollVoteMutation } from '@/features/calendar/api';
 import { toVoteSet } from '@/features/calendar/calendar-polls';
-import type { StartEntry, StartPoll } from '../schemas';
-import { itemKeyOf } from '../start-visit';
+import type { OwedHost } from '../owed-items';
+import { toHostItemKey } from '../owed-items';
+import type { StartPoll } from '../schemas';
 import type { StartBoard } from './use-start-view';
 
 const ANONYMOUS_LABEL = 'Anonym';
@@ -26,11 +27,7 @@ export interface OwedPollView {
 const chosenIdsOf = (poll: StartPoll): number[] =>
   poll.options.filter((option) => option.viewerChose).map((option) => option.optionId);
 
-export const useOwedPoll = (
-  entry: StartEntry,
-  poll: StartPoll,
-  board: StartBoard,
-): OwedPollView => {
+export const useOwedPoll = (host: OwedHost, poll: StartPoll, board: StartBoard): OwedPollView => {
   const vote = usePollVoteMutation();
   const [sent, setSent] = useState<{ basis: StartPoll; optionIds: number[] } | null>(null);
   const awaitsFresh = sent !== null && sent.basis === poll && !vote.isError;
@@ -44,9 +41,9 @@ export const useOwedPoll = (
 
     const optionIds = toVoteSet(chosenIds, optionId, poll.allowsMultipleChoices);
 
-    board.touch(itemKeyOf({ panel: 'calendar', calendarEntryId: entry.calendarEntryId }));
+    board.touch(toHostItemKey(host));
     setSent({ basis: poll, optionIds });
-    vote.mutate({ pollId: poll.pollId, optionIds });
+    vote.mutate({ hostKind: host.kind, pollId: poll.pollId, optionIds });
   };
 
   return {

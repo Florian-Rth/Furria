@@ -520,8 +520,8 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
 
                 Assert.Equal(
                     [
-                        (ctx.Club.CalendarPolls.IdOf("food"), true, false),
-                        (ctx.Club.CalendarPolls.IdOf("drinks"), false, true),
+                        (ctx.Club.Polls.IdOf("food"), true, false),
+                        (ctx.Club.Polls.IdOf("drinks"), false, true),
                     ],
                     meeting.OpenPolls.Select(poll =>
                         (poll.PollId, poll.IsOwed, poll.AllowsMultipleChoices)
@@ -535,8 +535,8 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                 );
                 Assert.Equal(
                     [
-                        (ctx.Club.CalendarSignUpLists.IdOf("bring"), true, (string?)null),
-                        (ctx.Club.CalendarSignUpLists.IdOf("setup"), false, "Tische"),
+                        (ctx.Club.SignUpLists.IdOf("bring"), true, (string?)null),
+                        (ctx.Club.SignUpLists.IdOf("setup"), false, "Tische"),
                     ],
                     meeting.OpenSignUpLists.Select(list =>
                         (list.SignUpListId, list.IsOwed, list.ViewerText)

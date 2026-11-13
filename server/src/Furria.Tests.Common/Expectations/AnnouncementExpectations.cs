@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Text;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -53,6 +54,121 @@ public sealed class AnnouncementExpectations
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(personId, (await SingleAsync(dbContext, ct)).AuthorPersonId)
+        );
+
+    public Expected ToHaveMentions(params (MentionKind Kind, int TargetId)[] mentions) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    mentions.Order(),
+                    (
+                        await dbContext
+                            .AnnouncementMentions.AsNoTracking()
+                            .Where(row => row.AnnouncementId == _announcementId)
+                            .Select(row => new { row.Kind, row.TargetId })
+                            .ToListAsync(ct)
+                    )
+                        .Select(row => (row.Kind, row.TargetId))
+                        .Order()
+                )
+        );
+
+    public Expected ToHaveAnswers(params (int PersonId, AttendanceAnswer Answer)[] answers) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    answers.Order(),
+                    (
+                        await dbContext
+                            .AttendanceResponses.AsNoTracking()
+                            .Where(row => row.AnnouncementId == _announcementId)
+                            .Select(row => new { row.PersonId, row.Answer })
+                            .ToListAsync(ct)
+                    )
+                        .Select(row => (row.PersonId, row.Answer))
+                        .Order()
+                )
+        );
+
+    public Expected ToAskForAnswersAt(int? position, DateTimeOffset? answersUntil) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var announcement = await SingleAsync(dbContext, ct);
+                Assert.Equal(position, announcement.AttendancePosition);
+                Assert.Equal(answersUntil, announcement.AnswersUntil);
+            }
+        );
+
+    public Expected ToHaveAttendanceClosed(DateTimeOffset? closedAt, int? closedByPersonId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var announcement = await SingleAsync(dbContext, ct);
+                Assert.Equal(closedAt, announcement.AttendanceClosedAt);
+                Assert.Equal(closedByPersonId, announcement.AttendanceClosedByPersonId);
+            }
+        );
+
+    public Expected ToHaveAttendanceRemindedAt(DateTimeOffset? remindedAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    remindedAt,
+                    (await SingleAsync(dbContext, ct)).AttendanceLastRemindedAt
+                )
+        );
+
+    public Expected ToHavePolls(params string[] questions) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    questions,
+                    await dbContext
+                        .Polls.AsNoTracking()
+                        .Where(poll => poll.AnnouncementId == _announcementId)
+                        .OrderBy(poll => poll.Position)
+                        .Select(poll => poll.Question)
+                        .ToListAsync(ct)
+                )
+        );
+
+    public Expected ToHaveSignUpLists(params string[] titles) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    titles,
+                    await dbContext
+                        .SignUpLists.AsNoTracking()
+                        .Where(list => list.AnnouncementId == _announcementId)
+                        .OrderBy(list => list.Position)
+                        .Select(list => list.Title)
+                        .ToListAsync(ct)
+                )
+        );
+
+    public Expected ToHaveLoans(
+        params (AnnouncementAddOnKind Kind, int CalendarEntryId, int? AddOnId, int Position)[] loans
+    ) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    loans,
+                    (
+                        await dbContext
+                            .AnnouncementBorrowedAddOns.AsNoTracking()
+                            .Where(loan => loan.AnnouncementId == _announcementId)
+                            .OrderBy(loan => loan.Position)
+                            .Select(loan => new
+                            {
+                                loan.Kind,
+                                loan.CalendarEntryId,
+                                AddOnId = loan.PollId ?? loan.SignUpListId,
+                                loan.Position,
+                            })
+                            .ToListAsync(ct)
+                    ).Select(loan => (loan.Kind, loan.CalendarEntryId, loan.AddOnId, loan.Position))
+                )
         );
 
     private Task<Announcement> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

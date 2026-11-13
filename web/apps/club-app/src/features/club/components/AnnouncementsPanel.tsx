@@ -3,77 +3,62 @@ import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import { KkIcon } from '@furria/ui/KkIcon';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
-import { KkRule } from '@furria/ui/KkRule';
 import type { KkPanelAction } from '@furria/ui/panel-action';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { Fragment } from 'react';
-import { useMeQuery } from '@/features/session/api';
+import { AnnouncementBulletin } from '@/features/announcements/components/AnnouncementBulletin';
+import { AnnouncementSheet } from '@/features/announcements/components/AnnouncementSheet';
 import { ANNOUNCEMENTS_PATH } from '@/features/session/app-sections';
-import { usePermissions } from '@/features/session/hooks/use-permissions';
-import { isAnnouncementNew } from '@/lib/announcements';
-import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { useClubHubQuery } from '../api';
-import { AnnouncementCard } from './AnnouncementCard';
+import { useAnnouncementsPanel } from '../hooks/use-announcements-panel';
 
-const PANEL_TITLE = 'Aushang';
+const PANEL_TITLE = 'Aushänge';
 const ALL_ANNOUNCEMENTS_LABEL = 'Alle Aushänge';
-const POST_ANNOUNCEMENT_LABEL = 'Aushang schreiben';
-const NOTHING_POSTED_TITLE = 'BRETT LEER';
+const POST_LABEL = 'Aushang schreiben';
+const NOTHING_POSTED_TITLE = 'NOCH NICHTS AM BRETT';
 const NOTHING_POSTED_LINE = 'Keine Aushänge.';
 const NEW_ANNOUNCEMENT_ROUTE = '/announcements/new';
 
 export const AnnouncementsPanel: FC = () => {
-  const clubHub = useClubHubQuery();
-  const me = useMeQuery();
-  const { has } = usePermissions();
+  const panel = useAnnouncementsPanel();
 
-  const announcements = clubHub.data?.announcements;
-  const canPost = has(PERMISSION_KEYS.announcementsPost);
-
-  if (announcements === undefined) {
-    return null;
-  }
-  if (announcements.newest.length === 0 && !canPost) {
+  if (panel === null) {
     return null;
   }
 
-  const cards = announcements.newest.map((announcement, index) => {
-    const separator = index === 0 ? null : <KkRule weight="hair" />;
-
-    return (
-      <Fragment key={announcement.announcementId}>
-        {separator}
-        <AnnouncementCard
-          announcement={announcement}
-          isNew={isAnnouncementNew(announcement.publishedAt, me.data?.lastSeenAnnouncementAt)}
-        />
-      </Fragment>
-    );
-  });
+  const bulletins = panel.items.map((item) => (
+    <AnnouncementBulletin
+      key={item.announcement.announcementId}
+      announcement={item.announcement}
+      marks={item.marks}
+      size={item.size}
+      isNew={item.isNew}
+    />
+  ));
 
   const body =
-    cards.length === 0 ? (
-      <KkEmptyState size="panel" title={NOTHING_POSTED_TITLE} description={NOTHING_POSTED_LINE} />
+    bulletins.length === 0 ? (
+      <KkPanel variant="block">
+        <KkEmptyState size="panel" title={NOTHING_POSTED_TITLE} description={NOTHING_POSTED_LINE} />
+      </KkPanel>
     ) : (
-      cards
+      bulletins
     );
 
-  const postButton = canPost ? (
+  const postButton = panel.canPost ? (
     <KkButton
       variant="outlined"
       fullWidth
+      startIcon={<KkIcon name="add" size="small" />}
       component={Link}
       to={NEW_ANNOUNCEMENT_ROUTE}
-      startIcon={<KkIcon name="add" size="small" />}
     >
-      {POST_ANNOUNCEMENT_LABEL}
+      {POST_LABEL}
     </KkButton>
   ) : null;
 
   const openAll: KkPanelAction | undefined =
-    announcements.totalCount > 0
+    panel.totalCount > 0
       ? {
           label: ALL_ANNOUNCEMENTS_LABEL,
           emphasis: 'quiet',
@@ -84,12 +69,11 @@ export const AnnouncementsPanel: FC = () => {
 
   return (
     <KkPanelSection title={PANEL_TITLE} action={openAll}>
-      <KkPanel variant="block">
-        <Stack sx={{ gap: 2, minWidth: 0 }}>
-          {body}
-          {postButton}
-        </Stack>
-      </KkPanel>
+      <Stack sx={{ gap: 1, minWidth: 0 }}>
+        {body}
+        {postButton}
+      </Stack>
+      <AnnouncementSheet announcements={panel.details} />
     </KkPanelSection>
   );
 };

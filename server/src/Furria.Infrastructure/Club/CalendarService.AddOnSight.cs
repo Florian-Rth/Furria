@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Microsoft.EntityFrameworkCore;
@@ -9,28 +10,64 @@ public sealed partial class CalendarService
     private async Task<Result?> AddOnSightRefusalAsync(AddOnSight sight, CancellationToken ct)
     {
         var rights = await RightsOfAsync(sight.ActorAccountId, ct);
-        var entry = await sight
-            .Entry.AsNoTracking()
-            .Select(EntryFactsRows.Projection)
-            .SingleOrDefaultAsync(ct);
+        var unseen = rights.HoldsClubRead
+            ? Result.NotFound(sight.UnknownMessage)
+            : Result.Forbidden(sight.NotYoursMessage);
+
+        return sight.Host switch
+        {
+            CalendarEntryAddOnHost entry => await EntryAddOnRefusalAsync(
+                sight,
+                new EntrySight(entry, rights, unseen),
+                ct
+            ),
+            AnnouncementAddOnHost => rights.HoldsClubRead
+                ? await AnnouncementAnswerRefusalAsync(sight, ct)
+                : unseen,
+            null => unseen,
+            _ => throw new UnreachableException(),
+        };
+    }
+
+    private async Task<Result?> EntryAddOnRefusalAsync(
+        AddOnSight sight,
+        EntrySight entrySight,
+        CancellationToken ct
+    )
+    {
+        var facts = (
+            await _dbContext
+                .CalendarEntries.AsNoTracking()
+                .Where(entry => entry.Id == entrySight.Host.CalendarEntryId)
+                .Select(EntryFactsRows.Projection)
+                .SingleAsync(ct)
+        ).ToFacts();
         var ties = await _dbContext.CalendarTiesOfAsync(
             sight.PersonId,
             ClubClock.Today(_timeProvider),
             ct
         );
-        var facts = entry?.ToFacts();
 
-        if (facts is not null && ties.Sees(facts, rights))
-        {
-            return sight.Access == AddOnAccess.Answer
-                ? await AnswerRefusalAsync(sight.ActorAccountId, facts, ties, ct)
-                : null;
-        }
+        if (!ties.Sees(facts, entrySight.Rights))
+            return entrySight.Unseen;
 
-        return rights.HoldsClubRead
-            ? Result.NotFound(sight.UnknownMessage)
-            : Result.Forbidden(sight.NotYoursMessage);
+        return sight.Access == AddOnAccess.Answer
+            ? await AnswerRefusalAsync(sight.ActorAccountId, facts, ties, ct)
+            : null;
     }
+
+    private async Task<Result?> AnnouncementAnswerRefusalAsync(
+        AddOnSight sight,
+        CancellationToken ct
+    ) =>
+        sight.Access == AddOnAccess.Answer
+        && !await _dbContext.IsConcernedByAnnouncementsAsync(
+            sight.PersonId,
+            ClubClock.Today(_timeProvider),
+            ct
+        )
+            ? Result.Forbidden(sight.NotYoursMessage)
+            : null;
 
     private enum AddOnAccess
     {
@@ -38,10 +75,16 @@ public sealed partial class CalendarService
         Answer,
     }
 
+    private sealed record EntrySight(
+        CalendarEntryAddOnHost Host,
+        CalendarRights Rights,
+        Result Unseen
+    );
+
     private sealed record AddOnSight(
         int ActorAccountId,
         int PersonId,
-        IQueryable<CalendarEntry> Entry,
+        AddOnHost? Host,
         string UnknownMessage,
         string NotYoursMessage,
         AddOnAccess Access

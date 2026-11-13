@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Authorization;
+using Furria.Application.Club;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Infrastructure.Club;
@@ -10,11 +11,13 @@ namespace Furria.Infrastructure.Start;
 
 public sealed partial class StartService
 {
-    private const int AnnouncementReachDays = 60;
+    private const int AnnouncementNewDays = 60;
 
     private static StartAnnouncementSummary ToAnnouncementSummary(
         AnnouncementRow row,
+        Viewer viewer,
         IReadOnlyDictionary<int, string> officeNames,
+        IReadOnlyDictionary<int, AnnouncementMentionTargets> mentions,
         MediaPictures pictures
     ) =>
         new()
@@ -22,8 +25,13 @@ public sealed partial class StartService
             AnnouncementId = row.AnnouncementId,
             Title = row.Title,
             Body = row.Body,
+            Mentions = mentions.GetValueOrDefault(
+                row.AnnouncementId,
+                AnnouncementMentionTargets.None
+            ),
             PublishedAt = row.PublishedAt,
             ValidUntil = row.ValidUntil,
+            IsNew = IsNewTo(row, viewer),
             Author = row.Author is { } author
                 ? new StartPerson
                 {
@@ -48,7 +56,7 @@ public sealed partial class StartService
         if (!viewer.GrantedKeys.Contains(FurriaPermissions.ClubRead))
             return [];
 
-        var rows = await UnseenAnnouncements(viewer)
+        var rows = await CurrentAnnouncements(viewer)
             .OrderByDescending(announcement => announcement.PublishedAt)
             .ThenByDescending(announcement => announcement.Id)
             .Select(AnnouncementRows.Projection)
@@ -58,25 +66,38 @@ public sealed partial class StartService
             return [];
 
         var officeNames = await _runningBoardSeats.OfficeNamesAsync(viewer.Moment.Today, ct);
+        var mentions = await _mentionTargets.OfAnnouncementsAsync(
+            [.. rows.Select(row => row.AnnouncementId)],
+            MentionReaderOf(viewer),
+            ct
+        );
 
-        return [.. rows.Select(row => ToAnnouncementSummary(row, officeNames, _pictures))];
+        return
+        [
+            .. rows.Select(row =>
+                ToAnnouncementSummary(row, viewer, officeNames, mentions, _pictures)
+            ),
+        ];
     }
 
-    private IQueryable<Announcement> UnseenAnnouncements(Viewer viewer)
+    [Pure]
+    private static MentionReader MentionReaderOf(Viewer viewer) =>
+        new(viewer.PersonId, viewer.GrantedKeys.Contains(FurriaPermissions.CalendarManageClub));
+
+    [Pure]
+    private static bool IsNewTo(AnnouncementRow row, Viewer viewer) =>
+        row.Author?.PersonId != viewer.PersonId
+        && row.PublishedAt >= viewer.Moment.Now.AddDays(-AnnouncementNewDays)
+        && (viewer.LastSeenAnnouncementAt is not { } lastSeen || row.PublishedAt > lastSeen);
+
+    private IQueryable<Announcement> CurrentAnnouncements(Viewer viewer)
     {
-        var personId = viewer.PersonId;
         var today = viewer.Moment.Today;
-        var publishedSince = viewer.Moment.Now.AddDays(-AnnouncementReachDays);
-        var current = _dbContext
+
+        return _dbContext
             .Announcements.AsNoTracking()
             .Where(announcement =>
-                announcement.AuthorPersonId != personId
-                && announcement.PublishedAt >= publishedSince
-                && (announcement.ValidUntil == null || announcement.ValidUntil >= today)
+                announcement.ValidUntil == null || announcement.ValidUntil >= today
             );
-
-        return viewer.LastSeenAnnouncementAt is { } lastSeen
-            ? current.Where(announcement => announcement.PublishedAt > lastSeen)
-            : current;
     }
 }

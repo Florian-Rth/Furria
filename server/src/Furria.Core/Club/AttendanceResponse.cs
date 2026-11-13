@@ -6,7 +6,9 @@ public sealed class AttendanceResponse : ITimestamped
 {
     public int Id { get; set; }
 
-    public int CalendarEntryId { get; set; }
+    public int? CalendarEntryId { get; set; }
+
+    public int? AnnouncementId { get; set; }
 
     public int PersonId { get; set; }
 
@@ -21,6 +23,8 @@ public sealed class AttendanceResponse : ITimestamped
     public DateTimeOffset UpdatedAt { get; set; }
 
     public CalendarEntry? CalendarEntry { get; set; }
+
+    public Announcement? Announcement { get; set; }
 
     public Person? Person { get; set; }
 

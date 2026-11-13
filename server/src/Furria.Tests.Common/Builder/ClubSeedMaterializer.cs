@@ -53,26 +53,24 @@ internal static class ClubSeedMaterializer
             ct
         );
         var events = await InsertEventsAsync(dbContext, recorded, venues, ct);
+        var hosts = new AddOnHostSeedIds(
+            calendarEntries.Concat(events).ToDictionary(StringComparer.Ordinal),
+            announcements
+        );
         var attendanceResponses = await InsertAttendanceResponsesAsync(
             dbContext,
             recorded,
-            calendarEntries.Concat(events).ToDictionary(StringComparer.Ordinal),
+            hosts,
             personIds,
             ct
         );
 
-        var polls = await InsertCalendarPollsAsync(
-            dbContext,
-            recorded,
-            calendarEntries,
-            personIds,
-            ct
-        );
+        var polls = await InsertCalendarPollsAsync(dbContext, recorded, hosts, personIds, ct);
         await InsertCalendarPollVotesAsync(dbContext, recorded, polls, personIds, ct);
         var signUpLists = await InsertCalendarSignUpListsAsync(
             dbContext,
             recorded,
-            calendarEntries,
+            hosts,
             personIds,
             ct
         );
@@ -81,6 +79,16 @@ internal static class ClubSeedMaterializer
             recorded,
             signUpLists,
             personIds,
+            ct
+        );
+        await InsertAnnouncementLoansAsync(
+            dbContext,
+            recorded,
+            new AnnouncementLoanSeedIds(
+                hosts,
+                polls.ToDictionary(poll => poll.Key, poll => poll.Value.Id, StringComparer.Ordinal),
+                signUpLists
+            ),
             ct
         );
         var daySchedules = await InsertCalendarDaySchedulesAsync(
@@ -114,6 +122,36 @@ internal static class ClubSeedMaterializer
             daySchedules.Schedules,
             daySchedules.Steps
         );
+    }
+
+    private static async Task InsertAnnouncementLoansAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        AnnouncementLoanSeedIds ids,
+        CancellationToken ct
+    )
+    {
+        if (recorded.AnnouncementLoans.Count == 0)
+            return;
+
+        dbContext.AnnouncementBorrowedAddOns.AddRange(
+            recorded.AnnouncementLoans.Select(intent => new AnnouncementBorrowedAddOn
+            {
+                AnnouncementId = ids.Hosts.AnnouncementIdOf(intent.AnnouncementAlias)!.Value,
+                CalendarEntryId = ids.Hosts.CalendarEntryIdOf(intent.CalendarEntryAlias)!.Value,
+                Kind = intent.Kind,
+                PollId =
+                    intent.Kind == AnnouncementAddOnKind.Poll
+                        ? SeedAliases.RequireId(ids.PollIds, intent.AddOnAlias!, "Poll")
+                        : null,
+                SignUpListId =
+                    intent.Kind == AnnouncementAddOnKind.SignUpList
+                        ? SeedAliases.RequireId(ids.SignUpListIds, intent.AddOnAlias!, "SignUpList")
+                        : null,
+                Position = intent.Position,
+            })
+        );
+        await dbContext.SaveChangesAsync(ct);
     }
 
     private static async Task InsertClubRecordAsync(
@@ -193,6 +231,10 @@ internal static class ClubSeedMaterializer
                 Body = intent.Body,
                 PublishedAt = intent.PublishedAt ?? DefaultPublishedAt,
                 ValidUntil = intent.ValidUntil,
+                AttendancePosition = intent.Attendance?.Position,
+                AnswersUntil = intent.Attendance?.AnswersUntil,
+                AttendanceClosedAt = intent.Attendance?.ClosedAt,
+                AttendanceLastRemindedAt = intent.Attendance?.LastRemindedAt,
             },
             StringComparer.Ordinal
         );
@@ -531,7 +573,7 @@ internal static class ClubSeedMaterializer
     private static async Task<Dictionary<string, int>> InsertAttendanceResponsesAsync(
         AppDbContext dbContext,
         ClubSeedBuilder recorded,
-        IReadOnlyDictionary<string, int> calendarEntryIds,
+        AddOnHostSeedIds hosts,
         IReadOnlyDictionary<string, int> personIds,
         CancellationToken ct
     )
@@ -540,11 +582,8 @@ internal static class ClubSeedMaterializer
             intent => intent.Alias,
             intent => new AttendanceResponse
             {
-                CalendarEntryId = SeedAliases.RequireId(
-                    calendarEntryIds,
-                    intent.CalendarEntryAlias,
-                    "CalendarEntry"
-                ),
+                CalendarEntryId = hosts.CalendarEntryIdOf(intent.CalendarEntryAlias),
+                AnnouncementId = hosts.AnnouncementIdOf(intent.AnnouncementAlias),
                 PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
                 Answer = intent.Answer,
                 IsRecordedOnBehalf = intent.RecordedByAlias is not null,
@@ -559,12 +598,14 @@ internal static class ClubSeedMaterializer
         {
             dbContext.AttendanceResponses.AddRange(responses.Values);
             dbContext.AttendanceResponseChanges.AddRange(
-                responses.Values.Select(response => new AttendanceResponseChange
-                {
-                    CalendarEntryId = response.CalendarEntryId,
-                    PersonId = response.PersonId,
-                    Answer = response.Answer,
-                })
+                responses
+                    .Values.Where(response => response.CalendarEntryId is not null)
+                    .Select(response => new AttendanceResponseChange
+                    {
+                        CalendarEntryId = response.CalendarEntryId!.Value,
+                        PersonId = response.PersonId,
+                        Answer = response.Answer,
+                    })
             );
             await dbContext.SaveChangesAsync(ct);
         }
@@ -578,23 +619,20 @@ internal static class ClubSeedMaterializer
 
     private static string OptionKey(string pollAlias, string label) => $"{pollAlias}:{label}";
 
-    private static async Task<Dictionary<string, CalendarPoll>> InsertCalendarPollsAsync(
+    private static async Task<Dictionary<string, Poll>> InsertCalendarPollsAsync(
         AppDbContext dbContext,
         ClubSeedBuilder recorded,
-        IReadOnlyDictionary<string, int> calendarEntryIds,
+        AddOnHostSeedIds hosts,
         IReadOnlyDictionary<string, int> personIds,
         CancellationToken ct
     )
     {
-        var polls = recorded.CalendarPolls.ToDictionary(
+        var polls = recorded.Polls.ToDictionary(
             intent => intent.Alias,
-            intent => new CalendarPoll
+            intent => new Poll
             {
-                CalendarEntryId = SeedAliases.RequireId(
-                    calendarEntryIds,
-                    intent.CalendarEntryAlias,
-                    "CalendarEntry"
-                ),
+                CalendarEntryId = hosts.CalendarEntryIdOf(intent.CalendarEntryAlias),
+                AnnouncementId = hosts.AnnouncementIdOf(intent.AnnouncementAlias),
                 Position = intent.Position,
                 Question = intent.Question,
                 AllowsMultipleChoices = intent.AllowsMultipleChoices,
@@ -605,8 +643,7 @@ internal static class ClubSeedMaterializer
                 Options =
                 [
                     .. intent.Options.Select(
-                        (label, position) =>
-                            new CalendarPollOption { Label = label, Position = position }
+                        (label, position) => new PollOption { Label = label, Position = position }
                     ),
                 ],
             },
@@ -615,7 +652,7 @@ internal static class ClubSeedMaterializer
 
         if (polls.Count > 0)
         {
-            dbContext.CalendarPolls.AddRange(polls.Values);
+            dbContext.Polls.AddRange(polls.Values);
             await dbContext.SaveChangesAsync(ct);
         }
 
@@ -630,19 +667,19 @@ internal static class ClubSeedMaterializer
     private static async Task InsertCalendarPollVotesAsync(
         AppDbContext dbContext,
         ClubSeedBuilder recorded,
-        IReadOnlyDictionary<string, CalendarPoll> polls,
+        IReadOnlyDictionary<string, Poll> polls,
         IReadOnlyDictionary<string, int> personIds,
         CancellationToken ct
     )
     {
-        if (recorded.CalendarPollVotes.Count == 0)
+        if (recorded.PollVotes.Count == 0)
             return;
 
-        dbContext.CalendarPollVotes.AddRange(
-            recorded.CalendarPollVotes.Select(intent =>
+        dbContext.PollVotes.AddRange(
+            recorded.PollVotes.Select(intent =>
             {
                 var poll = polls[intent.PollAlias];
-                return new CalendarPollVote
+                return new PollVote
                 {
                     PollId = poll.Id,
                     PollOptionId = poll
@@ -658,20 +695,17 @@ internal static class ClubSeedMaterializer
     private static async Task<Dictionary<string, int>> InsertCalendarSignUpListsAsync(
         AppDbContext dbContext,
         ClubSeedBuilder recorded,
-        IReadOnlyDictionary<string, int> calendarEntryIds,
+        AddOnHostSeedIds hosts,
         IReadOnlyDictionary<string, int> personIds,
         CancellationToken ct
     )
     {
-        var lists = recorded.CalendarSignUpLists.ToDictionary(
+        var lists = recorded.SignUpLists.ToDictionary(
             intent => intent.Alias,
-            intent => new CalendarSignUpList
+            intent => new SignUpList
             {
-                CalendarEntryId = SeedAliases.RequireId(
-                    calendarEntryIds,
-                    intent.CalendarEntryAlias,
-                    "CalendarEntry"
-                ),
+                CalendarEntryId = hosts.CalendarEntryIdOf(intent.CalendarEntryAlias),
+                AnnouncementId = hosts.AnnouncementIdOf(intent.AnnouncementAlias),
                 Position = intent.Position,
                 Title = intent.Title,
                 Hint = intent.Hint,
@@ -684,7 +718,7 @@ internal static class ClubSeedMaterializer
 
         if (lists.Count > 0)
         {
-            dbContext.CalendarSignUpLists.AddRange(lists.Values);
+            dbContext.SignUpLists.AddRange(lists.Values);
             await dbContext.SaveChangesAsync(ct);
         }
 
@@ -763,14 +797,14 @@ internal static class ClubSeedMaterializer
         CancellationToken ct
     )
     {
-        var lines = recorded.CalendarSignUpLines.ToDictionary(
+        var lines = recorded.SignUpLines.ToDictionary(
             intent => intent.Alias,
-            intent => new CalendarSignUpLine
+            intent => new SignUpLine
             {
                 SignUpListId = SeedAliases.RequireId(
                     signUpListIds,
                     intent.SignUpListAlias,
-                    "CalendarSignUpList"
+                    "SignUpList"
                 ),
                 PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
                 Text = intent.Text,
@@ -780,12 +814,18 @@ internal static class ClubSeedMaterializer
 
         foreach (var line in lines.Values)
         {
-            dbContext.CalendarSignUpLines.Add(line);
+            dbContext.SignUpLines.Add(line);
             await dbContext.SaveChangesAsync(ct);
         }
 
         return lines.ToDictionary(line => line.Key, line => line.Value.Id, StringComparer.Ordinal);
     }
+
+    private sealed record AnnouncementLoanSeedIds(
+        AddOnHostSeedIds Hosts,
+        IReadOnlyDictionary<string, int> PollIds,
+        IReadOnlyDictionary<string, int> SignUpListIds
+    );
 
     private sealed record CalendarEntrySeedIds(
         IReadOnlyDictionary<string, int> VenueIds,

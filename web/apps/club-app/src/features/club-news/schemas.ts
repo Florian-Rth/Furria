@@ -1,6 +1,6 @@
 import { z } from 'zod';
+import { MentionedGroupSchema, MentionedPersonSchema } from '@/features/rich-text/schemas';
 import { PictureSchema } from '@/lib/api/schemas';
-import { GroupToneSchema } from '@/lib/group-tone';
 
 const InstantSchema = z.iso.datetime({ offset: true });
 
@@ -26,24 +26,6 @@ export type ReadNewsSession = z.infer<typeof ReadNewsSessionSchema>;
 
 export const ReadNewsSchema = z.object({ sessions: z.array(ReadNewsSessionSchema) });
 export type ReadNews = z.infer<typeof ReadNewsSchema>;
-
-const ReadNewsGroupSchema = z.object({
-  groupId: z.number().int().positive(),
-  name: z.string().min(1),
-  description: z.string(),
-  tone: GroupToneSchema.nullable(),
-  picture: PictureSchema.nullable(),
-});
-export type ReadNewsGroup = z.infer<typeof ReadNewsGroupSchema>;
-
-const ReadNewsPersonSchema = z.object({
-  personId: z.number().int().positive(),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  officeName: z.string().min(1),
-  portrait: PictureSchema.nullable(),
-});
-export type ReadNewsPerson = z.infer<typeof ReadNewsPersonSchema>;
 
 const ReadNewsEventSchema = z.object({
   eventId: z.number().int().positive(),
@@ -73,8 +55,8 @@ export type ReadNewsAlbum = z.infer<typeof ReadNewsAlbumSchema>;
 export const ReadNewsArticleSchema = ReadNewsPostSchema.extend({
   author: z.object({ firstName: z.string().min(1), lastName: z.string().min(1) }).nullable(),
   pictureCaption: z.string().nullable(),
-  mentionedGroups: z.array(ReadNewsGroupSchema),
-  mentionedPersons: z.array(ReadNewsPersonSchema),
+  mentionedGroups: z.array(MentionedGroupSchema),
+  mentionedPersons: z.array(MentionedPersonSchema),
   event: ReadNewsEventSchema.nullable(),
   album: ReadNewsAlbumSchema.nullable(),
 });

@@ -3,7 +3,7 @@ import { KkIcon } from '@furria/ui/KkIcon';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { CalendarParticipantPool } from '../calendar-authoring';
-import { useCalendarAddOns } from '../hooks/use-calendar-add-ons';
+import { useCalendarEntryAddOns } from '../hooks/use-calendar-entry-add-ons';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
 import type { CalendarEntry } from '../schemas';
@@ -27,9 +27,9 @@ export const CalendarEntryAddOnsSection: FC<CalendarEntryAddOnsSectionProps> = (
   clubGroups,
   clubGroupsReload,
 }) => {
-  const addOns = useCalendarAddOns(control, entry);
+  const addOns = useCalendarEntryAddOns(control, entry);
 
-  const cards = addOns.attached.map((card, index) => (
+  const cards = control.values.addOns.map((card, index) => (
     <CalendarAddOnCard
       key={card.key}
       card={card}
@@ -59,8 +59,17 @@ export const CalendarEntryAddOnsSection: FC<CalendarEntryAddOnsSectionProps> = (
     <KkPanelSection title={SECTION_TITLE}>
       {cards}
       {addButton}
-      <CalendarAddOnSheet addOns={addOns} />
-      <CalendarAddOnRemovalDialog addOns={addOns} />
+      <CalendarAddOnSheet
+        sheetId={addOns.sheetId}
+        offered={addOns.offered}
+        onAttach={addOns.attach}
+      />
+      <CalendarAddOnRemovalDialog
+        removal={addOns.removal}
+        open={addOns.isRemovalOpen}
+        onConfirm={addOns.confirmRemoval}
+        onCancel={addOns.cancelRemoval}
+      />
     </KkPanelSection>
   );
 };

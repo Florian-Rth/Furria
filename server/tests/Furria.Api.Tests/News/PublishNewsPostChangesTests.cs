@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.News;
 using Furria.Core.News;
+using Furria.Core.Text;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -49,7 +50,7 @@ public sealed class PublishNewsPostChangesTests : IClassFixture<ApiTestFixture>
             .NewsPost(editedId)
             .ToHaveNoPendingChanges()
             .NewsPost(editedId)
-            .ToMention(new NewsMention(NewsMentionKind.Person, paulaId))
+            .ToMention(new Mention(MentionKind.Person, paulaId))
             .AssertAsync(ct);
     }
 

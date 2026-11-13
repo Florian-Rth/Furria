@@ -1,4 +1,5 @@
 using Furria.Core.News;
+using Furria.Core.Text;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Xunit;
@@ -114,7 +115,7 @@ public sealed class NewsPostExpectations
                 Assert.Equal(withdrawnAt, (await SingleAsync(dbContext, ct)).WithdrawnAt)
         );
 
-    public Expected ToMention(params NewsMention[] mentions) =>
+    public Expected ToMention(params Mention[] mentions) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
             {
@@ -123,8 +124,8 @@ public sealed class NewsPostExpectations
                     .Where(row => row.NewsPostId == _newsPostId)
                     .Select(row =>
                         row.GroupId == null
-                            ? new NewsMention(NewsMentionKind.Person, row.PersonId!.Value)
-                            : new NewsMention(NewsMentionKind.Group, row.GroupId.Value)
+                            ? new Mention(MentionKind.Person, row.PersonId!.Value)
+                            : new Mention(MentionKind.Group, row.GroupId.Value)
                     )
                     .ToListAsync(ct);
                 Assert.Equal(

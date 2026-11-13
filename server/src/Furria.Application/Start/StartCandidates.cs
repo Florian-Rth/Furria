@@ -8,6 +8,8 @@ public sealed record StartCandidates
 
     public required IReadOnlyList<StartAnnouncementSummary> Announcements { get; init; }
 
+    public required IReadOnlyList<StartAnnouncementAddOns> AnnouncementAddOns { get; init; }
+
     public required IReadOnlyList<ToDoSummary> ToDos { get; init; }
 
     public required IReadOnlyList<StartMineSummary> Mine { get; init; }
@@ -25,6 +27,7 @@ public sealed record StartCandidates
         {
             Entries = [],
             Announcements = [],
+            AnnouncementAddOns = [],
             ToDos = toDos,
             Mine = [],
             GroupMoments = [],

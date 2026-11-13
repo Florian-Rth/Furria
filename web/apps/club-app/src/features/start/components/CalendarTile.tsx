@@ -11,6 +11,7 @@ import { EntryMark } from './EntryMark';
 const TILE_LABEL = 'Kalender';
 const HEAD_LABEL = 'KALENDER';
 const RING_CAPTION = 'offen';
+const NO_ENTRIES_LINE = 'Keine anstehenden Termine.';
 
 interface CalendarTileProps {
   panel: StartPanelOf<'calendar'>;
@@ -46,6 +47,7 @@ export const CalendarTile: FC<CalendarTileProps> = ({ panel, board, order }) => 
   ));
   const rowList = rows.length === 0 ? null : <KkStartTile.Rows>{rows}</KkStartTile.Rows>;
   const further = tile.further === null ? null : <KkMeta>{tile.further}</KkMeta>;
+  const emptyLine = tile.isEmpty ? <KkMeta tone="faint">{NO_ENTRIES_LINE}</KkMeta> : null;
 
   return (
     <KkStartTile label={TILE_LABEL} order={order}>
@@ -54,6 +56,7 @@ export const CalendarTile: FC<CalendarTileProps> = ({ panel, board, order }) => 
         {lead}
         {ring}
       </Stack>
+      {emptyLine}
       {rowList}
       {further}
     </KkStartTile>

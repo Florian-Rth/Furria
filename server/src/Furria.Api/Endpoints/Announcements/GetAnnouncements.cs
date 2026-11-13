@@ -1,8 +1,11 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Endpoints.Calendar;
 using Furria.Api.Media;
+using Furria.Api.Mentions;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
+using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 
@@ -37,47 +40,44 @@ public sealed class GetAnnouncements : EndpointWithoutRequest<GetAnnouncementsRe
             return;
         }
 
-        var announcements = await _announcementService.GetAnnouncementsAsync(ct);
+        var mentionReader = await MentionReaders.OfAsync(
+            _authorizer,
+            accountId.Value,
+            User.PersonId(),
+            ct
+        );
         var mayPost = await _authorizer.IsGrantedAsync(
             accountId.Value,
             FurriaPermissions.AnnouncementsPost,
             ct
         );
+        var announcements = await _announcementService.GetAnnouncementsAsync(
+            new AnnouncementReader(accountId.Value, mentionReader, mayPost),
+            ct
+        );
 
-        await Send.OkAsync(ToResponse(announcements, User.PersonId(), mayPost), cancellation: ct);
+        await Send.OkAsync(ToResponse(announcements), cancellation: ct);
     }
 
     private static GetAnnouncementsResponse ToResponse(
-        IReadOnlyList<AnnouncementSummary> announcements,
-        int? viewerPersonId,
-        bool viewerMayPost
-    ) =>
-        new()
-        {
-            Announcements =
-            [
-                .. announcements.Select(announcement =>
-                    ToDto(announcement, viewerPersonId, viewerMayPost)
-                ),
-            ],
-        };
+        IReadOnlyList<AnnouncementSummary> announcements
+    ) => new() { Announcements = [.. announcements.Select(ToDto)] };
 
-    private static AnnouncementDto ToDto(
-        AnnouncementSummary announcement,
-        int? viewerPersonId,
-        bool viewerMayPost
-    ) =>
+    private static AnnouncementDto ToDto(AnnouncementSummary announcement) =>
         new()
         {
             AnnouncementId = announcement.AnnouncementId,
             Title = announcement.Title,
             Body = announcement.Body,
+            Mentions = AnnouncementMentionsDto.From(announcement.Mentions),
             PublishedAt = announcement.PublishedAt,
             ValidUntil = announcement.ValidUntil,
             Author = announcement.Author is { } author ? ToDto(author) : null,
-            ViewerMayEdit =
-                viewerMayPost
-                || announcement.Author is { } writtenBy && writtenBy.PersonId == viewerPersonId,
+            ViewerMayEdit = announcement.ViewerManages,
+            AddOns = [.. announcement.AddOns.Select(AnnouncementAddOnDto.From)],
+            AnswerCount = announcement.AnswerCount,
+            ViewerAnswer = announcement.ViewerAnswer,
+            ViewerMayAnswer = announcement.ViewerMayAnswer,
         };
 
     private static AnnouncementAuthorDto ToDto(AnnouncementAuthorReference author) =>
@@ -104,6 +104,8 @@ public sealed record AnnouncementDto
 
     public required string Body { get; init; }
 
+    public required AnnouncementMentionsDto Mentions { get; init; }
+
     public required DateTimeOffset PublishedAt { get; init; }
 
     public required DateOnly? ValidUntil { get; init; }
@@ -111,6 +113,97 @@ public sealed record AnnouncementDto
     public required AnnouncementAuthorDto? Author { get; init; }
 
     public required bool ViewerMayEdit { get; init; }
+
+    public required IReadOnlyList<AnnouncementAddOnDto> AddOns { get; init; }
+
+    public required int AnswerCount { get; init; }
+
+    public required AttendanceAnswer? ViewerAnswer { get; init; }
+
+    public required bool ViewerMayAnswer { get; init; }
+}
+
+public sealed record AnnouncementAddOnDto
+{
+    public required AnnouncementAddOnKind Kind { get; init; }
+
+    public required AnnouncementAttendanceDto? Attendance { get; init; }
+
+    public required CalendarPollDto? Poll { get; init; }
+
+    public required CalendarSignUpListDto? SignUpList { get; init; }
+
+    public required AnnouncementBorrowedAddOnDto? Borrowed { get; init; }
+
+    public static AnnouncementAddOnDto From(AnnouncementAddOnDetails addOn) =>
+        new()
+        {
+            Kind = addOn.Kind,
+            Attendance = addOn.Attendance is { } attendance
+                ? AnnouncementAttendanceDto.From(attendance)
+                : null,
+            Poll = addOn.Poll is { } poll ? CalendarPollDto.From(poll) : null,
+            SignUpList = addOn.SignUpList is { } list ? CalendarSignUpListDto.From(list) : null,
+            Borrowed = addOn.Borrowed is { } borrowed
+                ? AnnouncementBorrowedAddOnDto.From(borrowed)
+                : null,
+        };
+}
+
+public sealed record AnnouncementBorrowedAddOnDto
+{
+    public required int? AddOnId { get; init; }
+
+    public required CalendarEntryDto Entry { get; init; }
+
+    public static AnnouncementBorrowedAddOnDto From(BorrowedAddOnDetails borrowed) =>
+        new() { AddOnId = borrowed.AddOnId, Entry = CalendarEntryDto.From(borrowed.Entry) };
+}
+
+public sealed record AnnouncementAttendanceDto
+{
+    public required DateTimeOffset? AnswersUntil { get; init; }
+
+    public required DateTimeOffset? ClosedAt { get; init; }
+
+    public required string? ClosedByFirstName { get; init; }
+
+    public required string? ClosedByLastName { get; init; }
+
+    public required bool IsClosed { get; init; }
+
+    public required int Yes { get; init; }
+
+    public required int Maybe { get; init; }
+
+    public required int No { get; init; }
+
+    public required int ConcernedCount { get; init; }
+
+    public required IReadOnlyList<CalendarAttendanceAnswerDto> Answers { get; init; }
+
+    public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
+
+    public required CalendarReminderDto? Reminder { get; init; }
+
+    public static AnnouncementAttendanceDto From(AnnouncementAttendanceDetails attendance) =>
+        new()
+        {
+            AnswersUntil = attendance.AnswersUntil,
+            ClosedAt = attendance.ClosedAt,
+            ClosedByFirstName = attendance.ClosedBy?.FirstName,
+            ClosedByLastName = attendance.ClosedBy?.LastName,
+            IsClosed = attendance.IsClosed,
+            Yes = attendance.Yes,
+            Maybe = attendance.Maybe,
+            No = attendance.No,
+            ConcernedCount = attendance.ConcernedCount,
+            Answers = [.. attendance.Answers.Select(CalendarAttendanceAnswerDto.From)],
+            NotAnswered = attendance.NotAnswered is { } missing
+                ? [.. missing.Select(CalendarAttendancePersonDto.From)]
+                : null,
+            Reminder = CalendarReminderDto.From(attendance.Reminder),
+        };
 }
 
 public sealed record AnnouncementAuthorDto

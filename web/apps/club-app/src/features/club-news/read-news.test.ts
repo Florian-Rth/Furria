@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  editablePostIdOf,
-  groupInitialsOf,
-  mentionCardOf,
-  newestPostsOf,
-  readNewsFrontOf,
-  sessionTitleOf,
-} from './read-news';
+import { editablePostIdOf, newestPostsOf, readNewsFrontOf, sessionTitleOf } from './read-news';
 
 const postOf = (
   slug: string,
@@ -87,45 +80,6 @@ describe('newestPostsOf', () => {
     );
 
     expect(posts.map((post) => post.slug)).toEqual(['a', 'b']);
-  });
-});
-
-describe('mentionCardOf', () => {
-  const cards = {
-    groups: new Map([
-      [3, { groupId: 3, name: 'Garde', description: '', tone: null, picture: null }],
-    ]),
-    persons: new Map([
-      [
-        5,
-        {
-          personId: 5,
-          firstName: 'Eva',
-          lastName: 'Huber',
-          officeName: 'Präsidentin',
-          portrait: null,
-        },
-      ],
-    ]),
-  };
-
-  it.each([
-    [{ kind: 'group', id: 3, label: 'Garde' } as const, 'group'],
-    [{ kind: 'person', id: 5, label: 'Eva' } as const, 'person'],
-    [{ kind: 'group', id: 5, label: 'Weg' } as const, null],
-    [{ kind: 'person', id: 3, label: 'Weg' } as const, null],
-  ])('finds the card of mention %#', (mention, kind) => {
-    expect(mentionCardOf(mention, cards)?.kind ?? null).toBe(kind);
-  });
-});
-
-describe('groupInitialsOf', () => {
-  it.each([
-    ['Große Garde', 'GG'],
-    ['die 3 Tollitäten', 'D3'],
-    ['Elferrat', 'E'],
-  ])('reads %s as %s', (name, initials) => {
-    expect(groupInitialsOf(name)).toBe(initials);
   });
 });
 

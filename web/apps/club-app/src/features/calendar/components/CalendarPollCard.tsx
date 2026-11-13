@@ -8,11 +8,12 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import { KkTimeField } from '@furria/ui/KkTimeField';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
+import type { AddOnCardsEditor } from '../add-on-cards-editor';
 import { CALENDAR_ADD_ON_ICONS, CALENDAR_ADD_ON_LABELS } from '../calendar-add-ons';
+import { hasNoDeadline } from '../calendar-deadlines';
 import { POLL_QUESTION_MAX_LENGTH } from '../calendar-polls';
-import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import { useCalendarPollCard } from '../hooks/use-calendar-poll-card';
-import type { CalendarEntry, CalendarPollForm } from '../schemas';
+import type { CalendarEntryAddOn, CalendarPollForm } from '../schemas';
 import { CalendarPollOptionRow } from './CalendarPollOptionRow';
 
 const QUESTION_LABEL = 'Frage';
@@ -20,15 +21,15 @@ const ADD_OPTION_LABEL = 'Antwort hinzufügen';
 const MULTIPLE_LABEL = 'Mehrere Antworten erlaubt';
 const ANONYMOUS_LABEL = 'Anonym';
 const DEADLINE_DAY_LABEL = 'Abstimmen bis';
-const DEADLINE_EMPTY_LABEL = 'Bis zum Beginn';
 const DEADLINE_TIME_LABEL = 'Uhrzeit';
 
 interface CalendarPollCardProps {
   cardKey: string;
   index: number;
   poll: CalendarPollForm;
-  control: CalendarEntryEditorControl;
-  entry: CalendarEntry | null;
+  editor: AddOnCardsEditor;
+  held: readonly CalendarEntryAddOn[] | null;
+  deadlineEmptyLabel?: string;
   onRemove: () => void;
 }
 
@@ -36,11 +37,12 @@ export const CalendarPollCard: FC<CalendarPollCardProps> = ({
   cardKey,
   index,
   poll,
-  control,
-  entry,
+  editor,
+  held,
+  deadlineEmptyLabel,
   onRemove,
 }) => {
-  const card = useCalendarPollCard({ control, cardKey, index, poll, entry });
+  const card = useCalendarPollCard({ editor, cardKey, index, poll, held });
 
   const changeQuestion = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     card.setQuestion(event.target.value);
@@ -58,6 +60,18 @@ export const CalendarPollCard: FC<CalendarPollCardProps> = ({
       {ADD_OPTION_LABEL}
     </KkButton>
   ) : null;
+
+  const deadlineTime = hasNoDeadline(poll.votesUntilDay) ? null : (
+    <KkTimeField
+      name={card.fieldNames.votesUntilTime}
+      label={DEADLINE_TIME_LABEL}
+      value={poll.votesUntilTime}
+      onChange={card.setVotesUntilTime}
+      disabled={card.isDeadlineTimeLocked}
+      error={card.deadlineError.hasError}
+      helperText={card.deadlineError.text}
+    />
+  );
 
   return (
     <KkAddOnCard
@@ -103,21 +117,11 @@ export const CalendarPollCard: FC<CalendarPollCardProps> = ({
             value={poll.votesUntilDay}
             onChange={card.setVotesUntilDay}
             allowEmpty
-            emptyLabel={DEADLINE_EMPTY_LABEL}
+            emptyLabel={deadlineEmptyLabel}
             disabled={card.isDeadlineLocked}
           />
         }
-        end={
-          <KkTimeField
-            name={card.fieldNames.votesUntilTime}
-            label={DEADLINE_TIME_LABEL}
-            value={poll.votesUntilTime}
-            onChange={card.setVotesUntilTime}
-            disabled={card.isDeadlineTimeLocked}
-            error={card.deadlineError.hasError}
-            helperText={card.deadlineError.text}
-          />
-        }
+        end={deadlineTime}
       />
     </KkAddOnCard>
   );

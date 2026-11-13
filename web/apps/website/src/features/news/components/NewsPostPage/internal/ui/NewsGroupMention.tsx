@@ -1,6 +1,6 @@
 import { KkInlineLink } from '@furria/ui/KkInlineLink';
-import { KkNewsMention } from '@furria/ui/KkNewsMention';
-import { KkNewsMentionCard } from '@furria/ui/KkNewsMentionCard';
+import { KkMention } from '@furria/ui/KkMention';
+import { KkMentionCard } from '@furria/ui/KkMentionCard';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { newsMentionLabels } from '@/features/news/news-content';
@@ -23,8 +23,8 @@ export const NewsGroupMention: FC<NewsGroupMentionProps> = ({ label, group }) =>
   );
 
   return (
-    <KkNewsMention label={label} tone={group.tone}>
-      <KkNewsMentionCard
+    <KkMention label={label} tone={group.tone}>
+      <KkMentionCard
         face={face}
         name={group.name}
         line={group.description}
@@ -32,6 +32,6 @@ export const NewsGroupMention: FC<NewsGroupMentionProps> = ({ label, group }) =>
         picture={group.picture}
         action={action}
       />
-    </KkNewsMention>
+    </KkMention>
   );
 };

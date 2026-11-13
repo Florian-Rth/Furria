@@ -1,5 +1,6 @@
 import { KkNewsArticleHeader } from '@furria/ui/KkNewsArticleHeader';
-import { KkNewsText } from '@furria/ui/KkNewsText';
+import { KkRichText } from '@furria/ui/KkRichText';
+import { NEWS_MENTION_KINDS } from '@furria/ui/news-mention-kinds';
 import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { newTabNote } from '@/features/news/news-content';
@@ -46,7 +47,12 @@ export const NewsPostPage: FC<NewsPostPageProps> = ({ article }) => {
         </KkNewsArticleHeader>
         <NewsPostHero article={article} />
         <NewsMentionContext value={mentionCards}>
-          <KkNewsText text={article.text} newTabNote={newTabNote} mentionView={NewsMention} />
+          <KkRichText
+            text={article.text}
+            mentionKinds={NEWS_MENTION_KINDS}
+            newTabNote={newTabNote}
+            mentionView={NewsMention}
+          />
         </NewsMentionContext>
         {ties}
         <NewsShareRow>

@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { withBeerDesk } from './beer-desk-tile';
 import type { BoardPanel } from './schemas';
 
-const calendar: BoardPanel = { kind: 'calendar', shownCount: 0, entries: [] };
+const calendar: BoardPanel = {
+  kind: 'calendar',
+  shownCount: 0,
+  entries: [],
+  announcementAddOns: [],
+};
 const practice: BoardPanel = { kind: 'practice', shownCount: 0, acts: [] };
 const gallery: BoardPanel = { kind: 'gallery', shownCount: 0, albums: [] };
 

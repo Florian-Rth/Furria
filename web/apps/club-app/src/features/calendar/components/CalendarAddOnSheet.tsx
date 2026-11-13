@@ -1,26 +1,36 @@
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkSheet } from '@furria/ui/KkSheet';
-import type { FC } from 'react';
-import type { CalendarAddOnsControl } from '../hooks/use-calendar-add-ons';
-import { ADD_ON_SHEET_ID } from '../hooks/use-calendar-add-ons';
+import type { FC, ReactNode } from 'react';
+import type { CalendarAddOnKind } from '../schemas';
 import { CalendarAddOnOption } from './CalendarAddOnOption';
 
 const SHEET_TITLE = 'Funktion hinzufügen';
 const SHEET_CLOSE = 'Schließen';
 
 interface CalendarAddOnSheetProps {
-  addOns: CalendarAddOnsControl;
+  sheetId: string;
+  offered: readonly CalendarAddOnKind[];
+  onAttach: (addOn: CalendarAddOnKind) => void;
+  children?: ReactNode;
 }
 
-export const CalendarAddOnSheet: FC<CalendarAddOnSheetProps> = ({ addOns }) => {
-  const options = addOns.offered.map((addOn) => (
-    <CalendarAddOnOption key={addOn} addOn={addOn} onAttach={addOns.attach} />
+export const CalendarAddOnSheet: FC<CalendarAddOnSheetProps> = ({
+  sheetId,
+  offered,
+  onAttach,
+  children,
+}) => {
+  const options = offered.map((addOn) => (
+    <CalendarAddOnOption key={addOn} addOn={addOn} onAttach={onAttach} />
   ));
 
   return (
-    <KkSheet id={ADD_ON_SHEET_ID} title={SHEET_TITLE} closeLabel={SHEET_CLOSE}>
+    <KkSheet id={sheetId} title={SHEET_TITLE} closeLabel={SHEET_CLOSE}>
       <KkSheet.Body>
-        <KkPanel variant="list">{options}</KkPanel>
+        <KkPanel variant="list">
+          {options}
+          {children}
+        </KkPanel>
       </KkSheet.Body>
     </KkSheet>
   );

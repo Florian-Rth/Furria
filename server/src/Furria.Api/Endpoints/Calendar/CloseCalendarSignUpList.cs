@@ -2,6 +2,7 @@ using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
+using Furria.Core.Club;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -32,6 +33,7 @@ public sealed class CloseCalendarSignUpList : Endpoint<CloseCalendarSignUpListRe
         var result = await _calendarService.CloseSignUpListAsync(
             accountId.Value,
             req.SignUpListId,
+            AddOnHostKind.CalendarEntry,
             ct
         );
         if (!result.IsSuccess)

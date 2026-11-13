@@ -272,14 +272,10 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
                 var training = EntryTitled(result, DanceGuardTraining);
                 Assert.Equal(
                     [
-                        (
-                            CalendarEntryAddOnKind.Poll,
-                            ctx.Club.CalendarPolls.IdOf("garde-drinks"),
-                            true
-                        ),
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("garde-drinks"), true),
                         (
                             CalendarEntryAddOnKind.SignUpList,
-                            ctx.Club.CalendarSignUpLists.IdOf("garde-chairs"),
+                            ctx.Club.SignUpLists.IdOf("garde-chairs"),
                             false
                         ),
                     ],

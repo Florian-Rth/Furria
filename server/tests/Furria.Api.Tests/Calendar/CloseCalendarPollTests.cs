@@ -30,7 +30,7 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -43,9 +43,9 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToBeClosedAt(Now, ctx.Identity.People.IdOf("ilka"))
-            .CalendarPoll(pollId)
+            .Poll(pollId)
             .ToHaveVoteCount(1)
             .AssertAsync(ct);
     }
@@ -62,7 +62,7 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf(pollAlias);
+        var pollId = ctx.Club.Polls.IdOf(pollAlias);
 
         await _fixture.AtInstantAsync(
             Now,
@@ -74,7 +74,7 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarPoll(pollId).ToBeClosedAt(closedAt, null).AssertAsync(ct);
+        await ctx.Expected.Poll(pollId).ToBeClosedAt(closedAt, null).AssertAsync(ct);
     }
 
     [Fact]
@@ -82,12 +82,12 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         var response = await CloseAsync(ctx, "chris", pollId, ct);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.CalendarPoll(pollId).ToBeClosedByHand(false).AssertAsync(ct);
+        await ctx.Expected.Poll(pollId).ToBeClosedByHand(false).AssertAsync(ct);
     }
 
     private static async Task<HttpResponseMessage> CloseAsync(

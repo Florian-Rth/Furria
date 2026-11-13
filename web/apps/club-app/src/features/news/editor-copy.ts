@@ -1,8 +1,6 @@
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
-import type { NewsTextBlockKind } from './news-text-editor';
 import type { TeaserSurface } from './teaser-cuts';
-import type { NewsMentionKind } from './types';
 
 export const NEW_POST_TITLE = 'Neue Meldung';
 export const EDITOR_EYEBROW = 'Meldung';
@@ -29,22 +27,9 @@ export const TEASER_CUT_WORDS: Record<TeaserSurface, string> = {
   whatsapp: 'WhatsApp',
 };
 
-export const RAIL_LABEL = 'Format';
-export const BLOCK_WORDS: Record<NewsTextBlockKind, string> = {
-  paragraph: 'Absatz',
-  heading: 'Zwischenüberschrift',
-  list: 'Liste',
-};
-export const BOLD_WORD = 'Fett';
-export const LINK_WORD = 'Link';
-export const MENTION_WORD = 'Erwähnen';
-
 export const MENTION_GROUPS = 'Gruppen';
 export const MENTION_BOARD = 'Vorstand';
-export const MENTION_KIND_WORDS: Record<NewsMentionKind, string> = {
-  group: 'Gruppe',
-  person: 'Vorstand',
-};
+export const MENTION_GROUP_WORD = 'Gruppe';
 export const MENTION_EMPTY = 'Niemand gefunden';
 
 const MENTION_LOAD_ERRORS: Record<QueryErrorKind, string> = {
@@ -55,19 +40,9 @@ const MENTION_LOAD_ERRORS: Record<QueryErrorKind, string> = {
 
 export const mentionLoadErrorOf = (error: Error | null): string | null =>
   toQueryErrorMessage(error, MENTION_LOAD_ERRORS);
-export const MENTION_LIST_LABEL = 'Erwähnen';
-export const MENTION_LABEL_FIELD = 'So steht es im Satz';
-export const MENTION_TARGET = 'Verweist auf';
-export const MENTION_REMOVE = 'Erwähnung entfernen';
-export const MENTION_DONE = 'Fertig';
 export const MENTION_NOT_PUBLIC = 'nicht öffentlich – erscheint als Text';
 
 export const LINK_SHEET_ID = 'news-link';
-export const LINK_SHEET_TITLE = 'Link setzen';
-export const LINK_FIELD = 'Adresse (https://…)';
-export const LINK_APPLY = 'Link setzen';
-export const LINK_REMOVE = 'Link entfernen';
-export const LINK_INVALID = 'Nur Adressen mit https:// oder http://';
 
 export const PICTURE_UPLOAD = 'Hochladen';
 export const PICTURE_EMPTY_NOTE = 'Noch kein Bild.';

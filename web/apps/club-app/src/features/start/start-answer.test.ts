@@ -36,7 +36,7 @@ const start = (entries: StartEntry[]): Start => ({
   viewerIsActiveInClub: true,
   panels: [
     { kind: 'toDos', shownCount: 1, toDos: [{ kind: 'reminderDue', count: 12, group: null }] },
-    { kind: 'calendar', shownCount: entries.length, entries },
+    { kind: 'calendar', shownCount: entries.length, entries, announcementAddOns: [] },
   ],
 });
 

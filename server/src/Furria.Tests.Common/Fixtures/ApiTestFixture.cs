@@ -348,7 +348,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
         await db.SaveChangesAsync(ct);
     }
 
-    public Task CalendarPushesDrainedAsync(CancellationToken ct = default) =>
+    public Task PushesDrainedAsync(CancellationToken ct = default) =>
         Polling.UntilAsync(
             async token =>
             {
@@ -361,7 +361,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
                     : db;
             },
             OutboxDrainTimeout,
-            "The calendar push outbox still holds pushes",
+            "The push outboxes still hold pushes",
             ct
         );
 
@@ -500,6 +500,36 @@ public sealed class ApiTestFixture : IAsyncLifetime
 
         await db.Database.ExecuteSqlAsync(
             $"UPDATE event SET cancelled_at = now() WHERE calendar_entry_id = {eventId}",
+            ct
+        );
+    }
+
+    public async Task RehostAddOnsDirectlyAsync(
+        AddOnTable table,
+        int calendarEntryId,
+        AddOnHostColumns host,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            RehostingOf(table, calendarEntryId, host.CalendarEntryId, host.AnnouncementId),
+            ct
+        );
+    }
+
+    public async Task DeleteAnnouncementDirectlyAsync(
+        int announcementId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"DELETE FROM announcement WHERE id = {announcementId}",
             ct
         );
     }
@@ -785,6 +815,20 @@ public sealed class ApiTestFixture : IAsyncLifetime
 
     public string SignedMediaUrl(int mediaItemId, MediaOwner owner, MediaRendition rendition) =>
         Services.GetRequiredService<MediaUrlSigner>().UrlOf(mediaItemId, owner, rendition);
+
+    public async Task DeleteCalendarEntryDirectlyAsync(
+        int calendarEntryId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"DELETE FROM calendar_entry WHERE id = {calendarEntryId}",
+            ct
+        );
+    }
 
     public async Task DeletePersonDirectlyAsync(int personId, CancellationToken ct = default)
     {
@@ -1172,4 +1216,20 @@ public sealed class ApiTestFixture : IAsyncLifetime
         else
             _infrastructure.ReturnHost(_host);
     }
+
+    private static FormattableString RehostingOf(
+        AddOnTable table,
+        int calendarEntryId,
+        int? newCalendarEntryId,
+        int? announcementId
+    ) =>
+        table switch
+        {
+            AddOnTable.Poll =>
+                $"UPDATE poll SET calendar_entry_id = {newCalendarEntryId}, announcement_id = {announcementId} WHERE calendar_entry_id = {calendarEntryId}",
+            AddOnTable.SignUpList =>
+                $"UPDATE sign_up_list SET calendar_entry_id = {newCalendarEntryId}, announcement_id = {announcementId} WHERE calendar_entry_id = {calendarEntryId}",
+            _ =>
+                $"UPDATE attendance_response SET calendar_entry_id = {newCalendarEntryId}, announcement_id = {announcementId} WHERE calendar_entry_id = {calendarEntryId}",
+        };
 }

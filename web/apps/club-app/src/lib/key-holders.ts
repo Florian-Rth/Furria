@@ -6,8 +6,6 @@ import { toInitials } from './initials';
 
 export const KEY_HOLDER_SINCE_LABEL = 'Inhaber seit';
 
-const NO_KEY_HOLDER_LINE = 'niemand hat einen Schlüssel';
-
 interface KeyHolderPerson {
   personId: number;
   firstName: string;
@@ -32,7 +30,6 @@ export interface KeyVenueSummary {
   initials: string[];
   portraits: (KkImageSource | null)[];
   holderCount: number;
-  emptyLine: string | null;
 }
 
 const toName = (person: KeyHolderPerson): string => `${person.firstName} ${person.lastName}`;
@@ -57,6 +54,5 @@ export const toKeyVenueSummary = (holdings: readonly KeyHolding[]): KeyVenueSumm
       toImageSource(holding.person.portrait ?? null, 'portrait'),
     ),
     holderCount: initials.length,
-    emptyLine: initials.length === 0 ? NO_KEY_HOLDER_LINE : null,
   };
 };

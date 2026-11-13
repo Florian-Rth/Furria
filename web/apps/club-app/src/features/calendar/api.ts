@@ -39,6 +39,7 @@ import {
   requestSignUpListClosing,
 } from './requests';
 import type {
+  AddOnHostKind,
   CalendarEntryResponse,
   CalendarReminderTarget,
   CalendarResponse,
@@ -47,11 +48,15 @@ import type {
   WrittenCalendarEntry,
 } from './schemas';
 
-export const useCalendarQuery = (query: CalendarQuery): UseQueryResult<CalendarResponse, Error> =>
+export const useCalendarQuery = (
+  query: CalendarQuery,
+  enabled = true,
+): UseQueryResult<CalendarResponse, Error> =>
   useQuery({
     queryKey: queryKeys.calendar(query.scope, query.groupId, query.from, query.to),
     queryFn: () => withFreshAccessToken((accessToken) => requestCalendar(query, accessToken)),
     placeholderData: keepPreviousData,
+    enabled,
   });
 
 export const useCalendarEntryQuery = (
@@ -136,28 +141,31 @@ export const useDeleteCalendarEntryMutation = (): UseMutationResult<
   });
 
 export interface PollVoteInput {
+  hostKind: AddOnHostKind;
   pollId: number;
   optionIds: number[];
 }
 
 export interface PollInput {
+  hostKind: AddOnHostKind;
   pollId: number;
 }
 
 export const usePollVoteMutation = (): UseMutationResult<void, Error, PollVoteInput> =>
   useApiMutation({
-    request: ({ pollId, optionIds }: PollVoteInput, accessToken) =>
-      requestPollVotes(pollId, optionIds, accessToken),
+    request: ({ hostKind, pollId, optionIds }: PollVoteInput, accessToken) =>
+      requestPollVotes(hostKind, pollId, optionIds, accessToken),
     changes: ['calendarPollVote'],
     notice: { failure: () => POLL_VOTE_FAILED_MESSAGE },
   });
 
 const usePollStateMutation = (
-  request: (pollId: number, accessToken: string) => Promise<void>,
+  request: (hostKind: AddOnHostKind, pollId: number, accessToken: string) => Promise<void>,
   failureMessage: string,
 ): UseMutationResult<void, Error, PollInput> =>
   useApiMutation({
-    request: ({ pollId }: PollInput, accessToken) => request(pollId, accessToken),
+    request: ({ hostKind, pollId }: PollInput, accessToken) =>
+      request(hostKind, pollId, accessToken),
     changes: ['calendarEntry'],
     notice: { failure: () => failureMessage },
   });
@@ -169,22 +177,25 @@ export const usePollReopeningMutation = (): UseMutationResult<void, Error, PollI
   usePollStateMutation(requestPollReopening, POLL_REOPEN_FAILED_MESSAGE);
 
 export interface OwnSignUpLineInput {
+  hostKind: AddOnHostKind;
   signUpListId: number;
   text: string | null;
 }
 
 export interface SignUpListInput {
+  hostKind: AddOnHostKind;
   signUpListId: number;
 }
 
 export interface SignUpLineRemovalInput {
+  hostKind: AddOnHostKind;
   lineId: number;
 }
 
 export const useOwnSignUpLineMutation = (): UseMutationResult<void, Error, OwnSignUpLineInput> =>
   useApiMutation({
-    request: ({ signUpListId, text }: OwnSignUpLineInput, accessToken) =>
-      requestOwnSignUpLine(signUpListId, text, accessToken),
+    request: ({ hostKind, signUpListId, text }: OwnSignUpLineInput, accessToken) =>
+      requestOwnSignUpLine(hostKind, signUpListId, text, accessToken),
     changes: ['calendarSignUpLine'],
     notice: { failure: () => SIGN_UP_LINE_SAVE_FAILED_MESSAGE },
   });
@@ -195,8 +206,8 @@ export const useOwnSignUpLineDeletionMutation = (): UseMutationResult<
   SignUpListInput
 > =>
   useApiMutation({
-    request: ({ signUpListId }: SignUpListInput, accessToken) =>
-      requestOwnSignUpLineDeletion(signUpListId, accessToken),
+    request: ({ hostKind, signUpListId }: SignUpListInput, accessToken) =>
+      requestOwnSignUpLineDeletion(hostKind, signUpListId, accessToken),
     changes: ['calendarSignUpLine'],
     notice: { failure: () => SIGN_UP_LINE_DELETE_FAILED_MESSAGE },
   });
@@ -207,17 +218,17 @@ export const useSignUpLineRemovalMutation = (): UseMutationResult<
   SignUpLineRemovalInput
 > =>
   useApiMutation({
-    request: ({ lineId }: SignUpLineRemovalInput, accessToken) =>
-      requestSignUpLineRemoval(lineId, accessToken),
+    request: ({ hostKind, lineId }: SignUpLineRemovalInput, accessToken) =>
+      requestSignUpLineRemoval(hostKind, lineId, accessToken),
     changes: ['calendarSignUpLine'],
     notice: { failure: () => SIGN_UP_LINE_REMOVE_FAILED_MESSAGE },
   });
 
 export const useSignUpListClosingMutation = (): UseMutationResult<void, Error, SignUpListInput> =>
   useApiMutation({
-    request: ({ signUpListId }: SignUpListInput, accessToken) =>
-      requestSignUpListClosing(signUpListId, accessToken),
-    changes: ['calendarEntry'],
+    request: ({ hostKind, signUpListId }: SignUpListInput, accessToken) =>
+      requestSignUpListClosing(hostKind, signUpListId, accessToken),
+    changes: ['calendarEntry', 'announcement'],
     notice: { failure: () => SIGN_UP_LIST_CLOSE_FAILED_MESSAGE },
   });
 
@@ -229,7 +240,7 @@ export const useCalendarReminderMutation = (): UseMutationResult<
   useApiMutation({
     request: (target: CalendarReminderTarget, accessToken) =>
       requestCalendarReminder(target, accessToken),
-    changes: ['calendarEntry'],
+    changes: ['calendarEntry', 'announcement'],
     notice: {
       success: () => REMINDER_SENT_MESSAGE,
       failure: (error) => REMINDER_FAILURE_MESSAGES[toReminderFailure(error)],

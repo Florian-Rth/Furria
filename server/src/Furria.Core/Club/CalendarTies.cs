@@ -76,10 +76,10 @@ public sealed record CalendarTies
         entry.OwnerGroupId is { } owner && AdminFunctions.ContainsKey(owner);
 
     [Pure]
-    private bool IsRunningMemberIn(int sessionYear) =>
-        HoldsRunningMembership && !Pauses.Any(pause => pause.Contains(sessionYear));
-
-    [Pure]
     private bool IsTiedToGroup(int groupId) =>
         MemberGroupIds.Contains(groupId) || AdminFunctions.ContainsKey(groupId);
+
+    [Pure]
+    public bool IsRunningMemberIn(int sessionYear) =>
+        HoldsRunningMembership && !Pauses.Any(pause => pause.Contains(sessionYear));
 }

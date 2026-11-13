@@ -1,8 +1,9 @@
 import { KkPollBallot } from '@furria/ui/KkPollBallot';
 import type { FC } from 'react';
+import type { AddOnAnswering } from '../add-on-host';
 import { useCalendarPoll } from '../hooks/use-calendar-poll';
 import { useCalendarPollClosing } from '../hooks/use-calendar-poll-closing';
-import type { CalendarEntry, CalendarPoll } from '../schemas';
+import type { CalendarPoll } from '../schemas';
 import { CalendarCloseAction } from './CalendarCloseAction';
 import { CalendarNamesSheet } from './CalendarNamesSheet';
 import { CalendarNotAnsweredRoll } from './CalendarNotAnsweredRoll';
@@ -15,13 +16,24 @@ const ACTION_SX = { alignSelf: 'flex-start' } as const;
 
 interface CalendarDetailPollProps {
   poll: CalendarPoll;
-  entry: CalendarEntry;
+  answering: AddOnAnswering;
   mayClose: boolean;
+  reopensUntil: string | null;
 }
 
-export const CalendarDetailPoll: FC<CalendarDetailPollProps> = ({ poll, entry, mayClose }) => {
-  const control = useCalendarPoll(poll, entry);
-  const closing = useCalendarPollClosing({ poll, mayClose, startsAt: entry.startsAt });
+export const CalendarDetailPoll: FC<CalendarDetailPollProps> = ({
+  poll,
+  answering,
+  mayClose,
+  reopensUntil,
+}) => {
+  const control = useCalendarPoll(poll, answering);
+  const closing = useCalendarPollClosing({
+    hostKind: answering.host.kind,
+    poll,
+    mayClose,
+    reopensUntil,
+  });
 
   const choices = control.choices.map((choice) => (
     <KkPollBallot.Choice

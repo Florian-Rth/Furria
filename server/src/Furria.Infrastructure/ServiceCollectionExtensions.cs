@@ -120,6 +120,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<BeerTabReminderService>();
         services.AddScoped<BeerStockWarningService>();
         services.AddScoped<AnnouncementService>();
+        services.AddScoped<AnnouncementMentionTargetsQuery>();
         services.AddScoped<CalendarService>();
         services.AddScoped<ChoosablePeopleService>();
         services.AddScoped<EventService>();

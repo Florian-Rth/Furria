@@ -1,4 +1,5 @@
 using Furria.Core.News;
+using Furria.Core.Text;
 using Xunit;
 
 namespace Furria.Api.Tests.News;
@@ -24,10 +25,7 @@ public sealed class NewsTextTests
 
         Assert.Null(reading.Refusal);
         Assert.Equal(
-            [
-                new NewsMention(NewsMentionKind.Group, 7),
-                new NewsMention(NewsMentionKind.Person, 12),
-            ],
+            [new Mention(MentionKind.Group, 7), new Mention(MentionKind.Person, 12)],
             reading.Mentions
         );
     }
@@ -37,7 +35,7 @@ public sealed class NewsTextTests
     {
         var reading = NewsText.Read("@[Paula](person:12) und nochmal @[Paula B.](person:12)");
 
-        Assert.Equal([new NewsMention(NewsMentionKind.Person, 12)], reading.Mentions);
+        Assert.Equal([new Mention(MentionKind.Person, 12)], reading.Mentions);
     }
 
     [Theory]
@@ -78,6 +76,10 @@ public sealed class NewsTextTests
     [InlineData("[](https://example.com)")]
     [InlineData("[**Fett**](https://example.com)")]
     [InlineData("@[Paula](role:3)")]
+    [InlineData("@[Probe](calendar-entry:4)")]
+    [InlineData("@[Ball](event:4)")]
+    [InlineData("@[Bericht](news-post:4)")]
+    [InlineData("@[Fotos](album:4)")]
     [InlineData("@[Paula](person:abc)")]
     [InlineData("@[Paula](person:0)")]
     [InlineData("@[](person:3)")]

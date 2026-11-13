@@ -46,10 +46,10 @@ internal static class CalendarReminderRecords
                 .AttendanceResponses.Where(response => response.CalendarEntryId == addOnId)
                 .Select(response => response.PersonId),
             CalendarEntryAddOnKind.Poll => dbContext
-                .CalendarPollVotes.Where(vote => vote.PollId == addOnId)
+                .PollVotes.Where(vote => vote.PollId == addOnId)
                 .Select(vote => vote.PersonId),
             _ => dbContext
-                .CalendarSignUpLines.Where(line => line.SignUpListId == addOnId)
+                .SignUpLines.Where(line => line.SignUpListId == addOnId)
                 .Select(line => line.PersonId),
         };
 
@@ -69,11 +69,11 @@ internal static class CalendarReminderRecords
                 entry => entry.Id == addOnId && entry.AsksForResponse,
                 ct
             ),
-            CalendarEntryAddOnKind.Poll => await dbContext.CalendarPolls.AnyAsync(
+            CalendarEntryAddOnKind.Poll => await dbContext.Polls.AnyAsync(
                 poll => poll.Id == addOnId && poll.ClosedAt == null,
                 ct
             ),
-            _ => await dbContext.CalendarSignUpLists.AnyAsync(
+            _ => await dbContext.SignUpLists.AnyAsync(
                 list => list.Id == addOnId && list.ClosedAt == null,
                 ct
             ),

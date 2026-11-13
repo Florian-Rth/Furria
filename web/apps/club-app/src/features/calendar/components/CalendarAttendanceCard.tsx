@@ -1,22 +1,20 @@
 import { KkAddOnCard } from '@furria/ui/KkAddOnCard';
 import type { FC } from 'react';
-import {
-  CALENDAR_ADD_ON_ICONS,
-  CALENDAR_ADD_ON_LABELS,
-  toHeldAnswerCount,
-} from '../calendar-add-ons';
+import { CALENDAR_ADD_ON_ICONS, CALENDAR_ADD_ON_LABELS } from '../calendar-add-ons';
 import { toAnswerCountLabel } from '../calendar-labels';
-import type { CalendarEntry } from '../schemas';
 
 const REMOVE_LABEL = 'Zu-/Absage entfernen';
 
 interface CalendarAttendanceCardProps {
-  entry: CalendarEntry | null;
+  answerCount: number;
   onRemove: () => void;
 }
 
-export const CalendarAttendanceCard: FC<CalendarAttendanceCardProps> = ({ entry, onRemove }) => {
-  const answerCountLabel = toAnswerCountLabel(toHeldAnswerCount(entry));
+export const CalendarAttendanceCard: FC<CalendarAttendanceCardProps> = ({
+  answerCount,
+  onRemove,
+}) => {
+  const answerCountLabel = toAnswerCountLabel(answerCount);
 
   return (
     <KkAddOnCard

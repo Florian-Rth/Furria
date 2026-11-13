@@ -2,12 +2,14 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Announcements;
 using Furria.Application.Authorization;
+using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
 namespace Furria.Api.Tests.Announcements;
 
+[SeedsAliases]
 public sealed class WithdrawAnnouncementTests : IClassFixture<ApiTestFixture>
 {
     private const string Title = "Saalreinigung";
@@ -103,6 +105,29 @@ public sealed class WithdrawAnnouncementTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.NoContent, taken.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_DeleteItsAddOnsWithTheirAnswers_When_TheAnnouncementIsWithdrawn()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await AnnouncementAddOnClub.BuildAsync(_fixture, ct);
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var announcementId = ctx.Club.Announcements.IdOf("fest");
+
+        var response = await client.POSTAsync<WithdrawAnnouncement, WithdrawAnnouncementRequest>(
+            new() { AnnouncementId = announcementId }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Announcement(announcementId)
+            .ToHaveAnswers()
+            .Poll(ctx.Club.Polls.IdOf("snack"))
+            .ToNotExist()
+            .SignUpList(ctx.Club.SignUpLists.IdOf("helpers"))
+            .ToNotExist()
+            .AssertAsync(ct);
     }
 
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>

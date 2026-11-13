@@ -1,9 +1,14 @@
 import { useKkNotice } from '@furria/ui/KkNotice';
-import { newsPlainTextOf } from '@furria/ui/news-text';
+import { NEWS_MENTION_KINDS } from '@furria/ui/news-mention-kinds';
+import { plainTextOf } from '@furria/ui/rich-text';
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
+import type { RichTextField } from '@/features/rich-text/hooks/use-rich-text';
+import { useRichText } from '@/features/rich-text/hooks/use-rich-text';
+import type { MentionablesSource } from '@/features/rich-text/types';
 import type { NewsProofsProps } from '../components/proofs/proofs-props';
-import { ACTION_FAILED, NEW_POST_TITLE } from '../editor-copy';
-import type { NewsMentionable } from '../types';
+import { ACTION_FAILED, NEW_POST_TITLE, TEXT_FIELD_LABEL } from '../editor-copy';
+import { CHANGED_MARK } from '../news-copy';
+import { newsFieldIdOf } from '../news-fields';
 import type { NewsEditor } from './use-news-editor';
 import { useNewsEditor } from './use-news-editor';
 import { useNewsMentionables } from './use-news-mentionables';
@@ -13,16 +18,13 @@ import type { NewsTies } from './use-news-ties';
 import { useNewsTies } from './use-news-ties';
 import type { ProseTeaser } from './use-prose-teaser';
 import { useProseTeaser } from './use-prose-teaser';
-import type { ProseText } from './use-prose-text';
-import { useProseText } from './use-prose-text';
 
-export const NEWS_PICKER_LIST_ID = 'news-mention-list';
+const NEWS_PICKER_LIST_ID = 'news-mention-list';
 
 export interface NewsEditorPageState {
   editor: NewsEditor;
-  mentionables: readonly NewsMentionable[];
-  mentionEmptyLabel: string;
-  text: ProseText;
+  mentionables: MentionablesSource;
+  text: RichTextField;
   teaser: ProseTeaser;
   picture: NewsPictureDesk;
   ties: NewsTies;
@@ -36,13 +38,17 @@ export const useNewsEditorPage = (routePostId: string): NewsEditorPageState => {
   const editor = useNewsEditor(routePostId);
   const raiseNotice = useKkNotice();
   const isWide = useIsWideScreen();
-  const { list: mentionables, emptyLabel: mentionEmptyLabel } = useNewsMentionables();
+  const mentionables = useNewsMentionables();
   const { version } = editor;
-  const text = useProseText({
+  const text = useRichText({
     text: version.text,
     isReadOnly: editor.isReadOnly,
     liveText: editor.liveText,
-    mentionables,
+    changedMark: CHANGED_MARK,
+    mentionKinds: NEWS_MENTION_KINDS,
+    mentionables: mentionables.list,
+    fieldId: newsFieldIdOf('text'),
+    label: TEXT_FIELD_LABEL,
     pickerListId: NEWS_PICKER_LIST_ID,
     onChange: (next) => {
       editor.update({ text: next });
@@ -61,7 +67,6 @@ export const useNewsEditorPage = (routePostId: string): NewsEditorPageState => {
   return {
     editor,
     mentionables,
-    mentionEmptyLabel,
     text,
     teaser,
     picture,
@@ -76,7 +81,11 @@ export const useNewsEditorPage = (routePostId: string): NewsEditorPageState => {
     },
     copyText: () => {
       navigator.clipboard
-        .writeText([version.title, version.teaser, newsPlainTextOf(version.text)].join('\n\n'))
+        .writeText(
+          [version.title, version.teaser, plainTextOf(version.text, NEWS_MENTION_KINDS)].join(
+            '\n\n',
+          ),
+        )
         .catch(() => {
           raiseNotice({ tone: 'error', message: ACTION_FAILED });
         });

@@ -100,17 +100,6 @@ export const missingOf = (fields: NewsFields): NewsRequirement[] => {
   return checks.filter(([, missing]) => missing).map(([requirement]) => requirement);
 };
 
-export const textBlocksOf = (text: string): string[] =>
-  text
-    .split(/\n{2,}/)
-    .map((block) => block.trim())
-    .filter((block) => block.length > 0);
-
-export const isChangedBlock = (blockText: string, liveBlocks: ReadonlySet<string>): boolean => {
-  const block = blockText.trim();
-  return block.length > 0 && !liveBlocks.has(block);
-};
-
 const pictureKeyIn = (version: NewsVersion): string => version.picture?.key ?? NO_PICTURE_KEY;
 
 export const changedPartsOf = (live: NewsVersion, working: NewsVersion): NewsVersionPart[] => {

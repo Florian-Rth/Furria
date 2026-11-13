@@ -1,4 +1,5 @@
 import type { KkAnswer } from '@furria/ui/KkAnswerChoice';
+import { toAttendanceChoiceLabel } from '@/lib/calendar-copy';
 import type { StartEntry } from '../schemas';
 import { useEntryAnswer } from './use-entry-answer';
 import type { StartBoard } from './use-start-view';
@@ -21,7 +22,7 @@ export const useOwedAttendance = (entry: StartEntry, board: StartBoard): OwedAtt
   });
 
   return {
-    choiceLabel: `Deine Antwort für ${entry.title}`,
+    choiceLabel: toAttendanceChoiceLabel(entry.title),
     value: entry.attendance?.viewerAnswer ?? null,
     choose: answer.choose,
     error: answer.failure,

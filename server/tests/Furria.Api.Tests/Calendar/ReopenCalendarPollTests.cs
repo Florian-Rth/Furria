@@ -28,7 +28,7 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -41,11 +41,11 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToBeClosedByHand(false)
-            .CalendarPoll(pollId)
+            .Poll(pollId)
             .ToHaveVotesUntil(Now.AddDays(1))
-            .CalendarPoll(pollId)
+            .Poll(pollId)
             .ToHaveVoteCount(1)
             .AssertAsync(ct);
     }
@@ -55,7 +55,7 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("drinks");
+        var pollId = ctx.Club.Polls.IdOf("drinks");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -68,9 +68,9 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToBeClosedByHand(false)
-            .CalendarPoll(pollId)
+            .Poll(pollId)
             .ToHaveVotesUntil(null)
             .AssertAsync(ct);
     }
@@ -80,7 +80,7 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("cutoff");
+        var pollId = ctx.Club.Polls.IdOf("cutoff");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -92,7 +92,7 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarPoll(pollId).ToHaveVotesUntil(null).AssertAsync(ct);
+        await ctx.Expected.Poll(pollId).ToHaveVotesUntil(null).AssertAsync(ct);
     }
 
     [Fact]
@@ -100,7 +100,7 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await _fixture.AtInstantAsync(
             AtTheCoffee,
@@ -112,7 +112,7 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarPoll(pollId).ToBeClosedByHand(true).AssertAsync(ct);
+        await ctx.Expected.Poll(pollId).ToBeClosedByHand(true).AssertAsync(ct);
     }
 
     [Fact]
@@ -120,7 +120,7 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
 
         await _fixture.AtInstantAsync(
             Now,
@@ -132,7 +132,7 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarPoll(pollId).ToBeClosedByHand(true).AssertAsync(ct);
+        await ctx.Expected.Poll(pollId).ToBeClosedByHand(true).AssertAsync(ct);
     }
 
     private static async Task<HttpResponseMessage> ReopenAsync(

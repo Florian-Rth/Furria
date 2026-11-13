@@ -1,27 +1,35 @@
 import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
 import { toAddOnRemovalQuestion, toDiscardedAnswersLabel } from '../calendar-labels';
-import type { CalendarAddOnsControl } from '../hooks/use-calendar-add-ons';
+import type { CalendarAddOnRemoval } from '../hooks/use-calendar-add-ons';
 
-const EYEBROW = 'BAUSTEIN ENTFERNEN';
+const EYEBROW = 'FUNKTION ENTFERNEN';
 const CONFIRM_LABEL = 'Entfernen';
 const CANCEL_LABEL = 'Behalten';
 const CLOSE_LABEL = 'Schließen';
 const NO_FACTS = [] as const;
 
 interface CalendarAddOnRemovalDialogProps {
-  addOns: CalendarAddOnsControl;
+  removal: CalendarAddOnRemoval;
+  open: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
 }
 
-export const CalendarAddOnRemovalDialog: FC<CalendarAddOnRemovalDialogProps> = ({ addOns }) => {
-  const question = toAddOnRemovalQuestion(addOns.removal.kind);
-  const explanation = toDiscardedAnswersLabel(addOns.removal.kind, addOns.removal.discardedAnswers);
+export const CalendarAddOnRemovalDialog: FC<CalendarAddOnRemovalDialogProps> = ({
+  removal,
+  open,
+  onConfirm,
+  onCancel,
+}) => {
+  const question = toAddOnRemovalQuestion(removal.kind);
+  const explanation = toDiscardedAnswersLabel(removal.kind, removal.discardedAnswers);
 
   return (
     <KkConfirmDialog
-      open={addOns.isRemovalOpen}
-      onClose={addOns.cancelRemoval}
-      onConfirm={addOns.confirmRemoval}
+      open={open}
+      onClose={onCancel}
+      onConfirm={onConfirm}
       tone="danger"
       eyebrow={EYEBROW}
       question={question}

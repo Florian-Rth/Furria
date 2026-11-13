@@ -12,6 +12,18 @@ internal static class AnnouncementRows
             announcement.Body,
             announcement.PublishedAt,
             announcement.ValidUntil,
+            new AnnouncementAttendanceRow(
+                announcement.AttendancePosition,
+                announcement.AnswersUntil,
+                announcement.AttendanceClosedAt,
+                announcement.AttendanceClosedBy == null
+                    ? null
+                    : announcement.AttendanceClosedBy.FirstName,
+                announcement.AttendanceClosedBy == null
+                    ? null
+                    : announcement.AttendanceClosedBy.LastName,
+                announcement.AttendanceLastRemindedAt
+            ),
             announcement.Author == null
                 ? null
                 : new AnnouncementAuthorRow(
@@ -30,7 +42,17 @@ internal sealed record AnnouncementRow(
     string Body,
     DateTimeOffset PublishedAt,
     DateOnly? ValidUntil,
+    AnnouncementAttendanceRow Attendance,
     AnnouncementAuthorRow? Author
+);
+
+internal sealed record AnnouncementAttendanceRow(
+    int? Position,
+    DateTimeOffset? AnswersUntil,
+    DateTimeOffset? ClosedAt,
+    string? ClosedByFirstName,
+    string? ClosedByLastName,
+    DateTimeOffset? LastRemindedAt
 );
 
 internal sealed record AnnouncementAuthorRow(

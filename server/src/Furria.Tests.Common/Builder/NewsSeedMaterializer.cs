@@ -1,4 +1,5 @@
 using Furria.Core.News;
+using Furria.Core.Text;
 using Furria.Infrastructure.Persistence;
 
 namespace Furria.Tests.Common.Builder;
@@ -64,8 +65,8 @@ internal static class NewsSeedMaterializer
         };
     }
 
-    private static NewsPostMention MentionOf(NewsMention mention) =>
-        mention.Kind == NewsMentionKind.Group
+    private static NewsPostMention MentionOf(Mention mention) =>
+        mention.Kind == MentionKind.Group
             ? new NewsPostMention { GroupId = mention.TargetId }
             : new NewsPostMention { PersonId = mention.TargetId };
 }

@@ -185,10 +185,11 @@ public sealed class ActGlanceReader
         var answers = await _dbContext
             .AttendanceResponses.AsNoTracking()
             .Where(response =>
-                entryIds.Contains(response.CalendarEntryId) && personIds.Contains(response.PersonId)
+                entryIds.Contains(response.CalendarEntryId!.Value)
+                && personIds.Contains(response.PersonId)
             )
             .Select(response => new AnswerRow(
-                response.CalendarEntryId,
+                response.CalendarEntryId!.Value,
                 response.PersonId,
                 response.Answer
             ))

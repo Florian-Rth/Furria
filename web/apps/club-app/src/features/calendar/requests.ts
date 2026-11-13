@@ -1,9 +1,11 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
+import { toAddOnRouteRoot, toReminderPath } from './add-on-host';
 import type { CalendarEntryPayload } from './calendar-authoring';
 import type { CalendarQuery } from './calendar-query';
 import { toCalendarPath } from './calendar-query';
 import type {
+  AddOnHostKind,
   CalendarEntryResponse,
   CalendarReminderTarget,
   CalendarResponse,
@@ -82,37 +84,47 @@ export const requestCalendarEntryUpdate = (
   });
 
 export const requestPollVotes = (
+  hostKind: AddOnHostKind,
   pollId: number,
   optionIds: readonly number[],
   accessToken: string,
 ): Promise<void> =>
-  apiFetch(`/api/calendar/polls/${pollId}/votes`, {
+  apiFetch(`${toAddOnRouteRoot(hostKind)}/polls/${pollId}/votes`, {
     method: 'PUT',
     body: { optionIds: [...optionIds] },
     schema: NoContentSchema,
     accessToken,
   });
 
-export const requestPollClosing = (pollId: number, accessToken: string): Promise<void> =>
-  apiFetch(`/api/calendar/polls/${pollId}/close`, {
+export const requestPollClosing = (
+  hostKind: AddOnHostKind,
+  pollId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${toAddOnRouteRoot(hostKind)}/polls/${pollId}/close`, {
     method: 'POST',
     schema: NoContentSchema,
     accessToken,
   });
 
-export const requestPollReopening = (pollId: number, accessToken: string): Promise<void> =>
-  apiFetch(`/api/calendar/polls/${pollId}/reopen`, {
+export const requestPollReopening = (
+  hostKind: AddOnHostKind,
+  pollId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${toAddOnRouteRoot(hostKind)}/polls/${pollId}/reopen`, {
     method: 'POST',
     schema: NoContentSchema,
     accessToken,
   });
 
 export const requestOwnSignUpLine = (
+  hostKind: AddOnHostKind,
   signUpListId: number,
   text: string | null,
   accessToken: string,
 ): Promise<void> =>
-  apiFetch(`/api/calendar/sign-up-lists/${signUpListId}/my-line`, {
+  apiFetch(`${toAddOnRouteRoot(hostKind)}/sign-up-lists/${signUpListId}/my-line`, {
     method: 'PUT',
     body: { text },
     schema: NoContentSchema,
@@ -120,27 +132,33 @@ export const requestOwnSignUpLine = (
   });
 
 export const requestOwnSignUpLineDeletion = (
+  hostKind: AddOnHostKind,
   signUpListId: number,
   accessToken: string,
 ): Promise<void> =>
-  apiFetch(`/api/calendar/sign-up-lists/${signUpListId}/my-line`, {
+  apiFetch(`${toAddOnRouteRoot(hostKind)}/sign-up-lists/${signUpListId}/my-line`, {
     method: 'DELETE',
     schema: NoContentSchema,
     accessToken,
   });
 
-export const requestSignUpLineRemoval = (lineId: number, accessToken: string): Promise<void> =>
-  apiFetch(`/api/calendar/sign-up-lines/${lineId}`, {
+export const requestSignUpLineRemoval = (
+  hostKind: AddOnHostKind,
+  lineId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${toAddOnRouteRoot(hostKind)}/sign-up-lines/${lineId}`, {
     method: 'DELETE',
     schema: NoContentSchema,
     accessToken,
   });
 
 export const requestSignUpListClosing = (
+  hostKind: AddOnHostKind,
   signUpListId: number,
   accessToken: string,
 ): Promise<void> =>
-  apiFetch(`/api/calendar/sign-up-lists/${signUpListId}/close`, {
+  apiFetch(`${toAddOnRouteRoot(hostKind)}/sign-up-lists/${signUpListId}/close`, {
     method: 'POST',
     schema: NoContentSchema,
     accessToken,
@@ -150,7 +168,7 @@ export const requestCalendarReminder = (
   target: CalendarReminderTarget,
   accessToken: string,
 ): Promise<void> =>
-  apiFetch(`/api/calendar/entries/${target.calendarEntryId}/reminders`, {
+  apiFetch(toReminderPath(target.host), {
     method: 'POST',
     body: { kind: target.kind, addOnId: target.addOnId },
     schema: NoContentSchema,

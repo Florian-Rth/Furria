@@ -1,3 +1,4 @@
+using Furria.Application.Club;
 using Furria.Application.Management;
 using Furria.Application.Start;
 using Furria.Core.Club;
@@ -36,6 +37,7 @@ public sealed class StartComposerTests
     {
         Entries = [],
         Announcements = [],
+        AnnouncementAddOns = [],
         ToDos = [],
         Mine = [],
         GroupMoments = [],
@@ -70,7 +72,76 @@ public sealed class StartComposerTests
             TuesdayEvening
         );
 
-        Assert.Equal([StartPanelKind.Announcements], KindsOf(start));
+        Assert.Equal([StartPanelKind.Announcements, StartPanelKind.Calendar], KindsOf(start));
+    }
+
+    [Fact]
+    public void Should_ShowTheCalendarAboveNewPanels_When_OnlyAnAnnouncementAddOnIsOwed()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                Announcements = [AnnouncementPublishedAt(1, DaysAgo(1))],
+                AnnouncementAddOns =
+                [
+                    AnnouncementAddOnsPublishedAt(2, DaysAgo(3), isOwed: false),
+                    AnnouncementAddOnsPublishedAt(3, DaysAgo(2), isOwed: true),
+                ],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal([StartPanelKind.Calendar, StartPanelKind.Announcements], KindsOf(start));
+        Assert.Equal(
+            [3, 2],
+            CalendarOf(start)
+                .AnnouncementAddOns!.Select(announcement => announcement.AnnouncementId)
+        );
+    }
+
+    [Fact]
+    public void Should_RankTheCalendarAboveNewPanels_When_AnAnnouncementAddOnIsOwedBesideALaterEntry()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                Entries = [EntryAt(Sunday, OnDay(20, 19, 0))],
+                Announcements = [AnnouncementPublishedAt(1, DaysAgo(1))],
+                AnnouncementAddOns = [AnnouncementAddOnsPublishedAt(3, DaysAgo(2), isOwed: true)],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal([StartPanelKind.Calendar, StartPanelKind.Announcements], KindsOf(start));
+    }
+
+    [Fact]
+    public void Should_KeepAnEmptyCalendar_When_SheHasNoEntryAndOwesNoAnnouncementAddOn()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                AnnouncementAddOns = [AnnouncementAddOnsPublishedAt(2, DaysAgo(3), isOwed: false)],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal([StartPanelKind.Calendar], KindsOf(start));
+        Assert.Empty(CalendarOf(start).Entries!);
+    }
+
+    [Fact]
+    public void Should_RankAnEmptyCalendarBelowNews_When_SheHasNoEntry()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                News = [NewsPublishedAt("orden", DaysAgo(1))],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal([StartPanelKind.News, StartPanelKind.Calendar], KindsOf(start));
     }
 
     [Fact]
@@ -302,7 +373,10 @@ public sealed class StartComposerTests
             TuesdayEvening
         );
 
-        Assert.Equal([StartPanelKind.Mine, StartPanelKind.ToDos], KindsOf(start));
+        Assert.Equal(
+            [StartPanelKind.Mine, StartPanelKind.ToDos, StartPanelKind.Calendar],
+            KindsOf(start)
+        );
     }
 
     [Theory]
@@ -325,7 +399,10 @@ public sealed class StartComposerTests
             TuesdayEvening
         );
 
-        Assert.Equal([StartPanelKind.ToDos, StartPanelKind.Mine], KindsOf(start));
+        Assert.Equal(
+            [StartPanelKind.ToDos, StartPanelKind.Mine, StartPanelKind.Calendar],
+            KindsOf(start)
+        );
     }
 
     [Fact]
@@ -433,7 +510,7 @@ public sealed class StartComposerTests
     }
 
     [Fact]
-    public void Should_DropTheCalendar_When_HerNearestEntryLiesBeyondSixtyDays()
+    public void Should_KeepAnEmptyCalendar_When_HerNearestEntryLiesBeyondSixtyDays()
     {
         var start = StartComposer.Compose(
             Nothing with
@@ -443,7 +520,8 @@ public sealed class StartComposerTests
             TuesdayEvening
         );
 
-        Assert.Empty(start.Panels);
+        Assert.Equal([StartPanelKind.Calendar], KindsOf(start));
+        Assert.Empty(CalendarOf(start).Entries!);
     }
 
     [Fact]
@@ -522,6 +600,24 @@ public sealed class StartComposerTests
 
         Assert.Equal(6, CalendarOf(start).ShownCount);
         Assert.Equal(4, PanelOf(start, StartPanelKind.Announcements).ShownCount);
+    }
+
+    [Fact]
+    public void Should_RankAnnouncementsBelowNewsAndTheCalendar_When_NoneOfThemIsNew()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                Announcements = [AnnouncementPublishedAt(1, DaysAgo(30)) with { IsNew = false }],
+                News = [NewsPublishedAt("orden", DaysAgo(1))],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal(
+            [StartPanelKind.News, StartPanelKind.Calendar, StartPanelKind.Announcements],
+            KindsOf(start)
+        );
     }
 
     [Fact]
@@ -799,8 +895,10 @@ public sealed class StartComposerTests
             AnnouncementId = announcementId,
             Title = $"Aushang {announcementId}",
             Body = "Text",
+            Mentions = AnnouncementMentionTargets.None,
             PublishedAt = publishedAt,
             ValidUntil = null,
+            IsNew = true,
             Author = new StartPerson
             {
                 PersonId = 1,
@@ -809,5 +907,25 @@ public sealed class StartComposerTests
                 Portrait = null,
                 OfficeName = null,
             },
+        };
+
+    private static StartAnnouncementAddOns AnnouncementAddOnsPublishedAt(
+        int announcementId,
+        DateTimeOffset publishedAt,
+        bool isOwed
+    ) =>
+        new()
+        {
+            AnnouncementId = announcementId,
+            Title = $"Aushang {announcementId}",
+            PublishedAt = publishedAt,
+            Attendance = new StartAnnouncementAttendance
+            {
+                Position = 0,
+                ViewerAnswer = isOwed ? null : AttendanceAnswer.Yes,
+                IsOwed = isOwed,
+            },
+            OpenPolls = [],
+            OpenSignUpLists = [],
         };
 }

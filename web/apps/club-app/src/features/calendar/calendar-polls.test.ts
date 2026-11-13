@@ -345,7 +345,10 @@ describe('mayReopenPoll', () => {
     ['an organiser after the start', true, true, '2027-01-15T11:00:00Z', false],
     ['an organiser on an open poll', true, false, '2027-01-20T15:00:00Z', false],
     ['a member', false, true, '2027-01-20T15:00:00Z', false],
-  ] as const)('lets %s reopen: %s', (_case, mayClose, isClosed, startsAt, expected) => {
-    expect(mayReopenPoll({ poll: poll({ isClosed }), mayClose, startsAt, nowMs })).toBe(expected);
+    ['an organiser on a host that never closes', true, true, null, true],
+  ] as const)('lets %s reopen: %s', (_case, mayClose, isClosed, reopensUntil, expected) => {
+    expect(mayReopenPoll({ poll: poll({ isClosed }), mayClose, reopensUntil, nowMs })).toBe(
+      expected,
+    );
   });
 });

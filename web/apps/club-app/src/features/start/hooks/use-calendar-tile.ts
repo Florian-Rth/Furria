@@ -69,6 +69,7 @@ export interface CalendarTileView {
   lead: CalendarLeadView | null;
   rows: CalendarRowView[];
   further: string | null;
+  isEmpty: boolean;
   ring: OwedRingView | null;
 }
 
@@ -98,7 +99,10 @@ export const useCalendarTile = (
   const sheet = useKkSheetCommands();
   const { now } = board;
   const split = splitCalendar(panel.entries, panel.shownCount);
-  const tally = toOwedTally(panel.entries);
+  const tally = toOwedTally({
+    entries: panel.entries,
+    announcements: panel.announcementAddOns,
+  });
 
   const opener = (entry: StartEntry) => (): void => {
     sheet.open(toPeekId('entry', entry.calendarEntryId));
@@ -156,6 +160,7 @@ export const useCalendarTile = (
     lead: split.lead === null ? null : toLead(split.lead),
     rows: split.next.map(toRow),
     further: split.further > 0 ? `+${split.further} weitere` : null,
+    isEmpty: panel.entries.length === 0,
     ring:
       tally.owed === 0
         ? null

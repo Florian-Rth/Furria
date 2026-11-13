@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Start, StartAnnouncement, StartEntry, StartPanel } from './schemas';
+import type {
+  Start,
+  StartAnnouncement,
+  StartAnnouncementAddOns,
+  StartEntry,
+  StartPanel,
+} from './schemas';
 import type { StartItemRef, StartVisit } from './start-visit';
 import { itemKeyOf, reconcileFrozenVisit, toStartVisit } from './start-visit';
 
@@ -29,8 +35,10 @@ const announcement = (announcementId: number, title: string): StartAnnouncement 
   announcementId,
   title,
   body: 'Abfahrt am Rathaus.',
+  mentions: { persons: [], groups: [], calendarEntries: [], events: [], newsPosts: [], albums: [] },
   publishedAt: '2027-01-18T08:00:00Z',
   validUntil: null,
+  isNew: true,
   author: {
     personId: 1,
     firstName: 'Karin',
@@ -52,6 +60,7 @@ const calendar = (entries: StartEntry[], shownCount = entries.length): StartPane
   kind: 'calendar',
   shownCount,
   entries,
+  announcementAddOns: [],
 });
 
 const announcements = (items: StartAnnouncement[]): StartPanel => ({
@@ -74,6 +83,10 @@ const visit = (frozen: Start, dimmed: string[] = []): StartVisit => ({
 describe('itemKeyOf', () => {
   it.each<{ ref: StartItemRef; expected: string }>([
     { ref: { panel: 'calendar', calendarEntryId: 811 }, expected: 'calendar:811' },
+    {
+      ref: { panel: 'announcementAddOns', announcementId: 5 },
+      expected: 'announcementAddOns:5',
+    },
     {
       ref: { panel: 'mine', kind: 'membershipEnding', subjectId: null, on: '2027-01-31' },
       expected: 'mine:membershipEnding:0:2027-01-31',
@@ -178,5 +191,38 @@ describe('reconcileFrozenVisit', () => {
     },
   ])('holds the visit when $label', ({ frozen, fresh, touched, expected }) => {
     expect(reconcileFrozenVisit(frozen, fresh, new Set(touched))).toEqual(expected);
+  });
+});
+
+describe('reconcileFrozenVisit with announcement add-ons', () => {
+  const festival = (isOwed: boolean): StartAnnouncementAddOns => ({
+    announcementId: 5,
+    title: 'Sommerfest',
+    publishedAt: '2027-01-18T09:00:00Z',
+    attendance: { position: 0, viewerAnswer: isOwed ? null : 'yes', isOwed },
+    openPolls: [],
+    openSignUpLists: [],
+  });
+  const withAddOns = (addOns: StartAnnouncementAddOns[]): StartPanel => ({
+    kind: 'calendar',
+    shownCount: 0,
+    entries: [],
+    announcementAddOns: addOns,
+  });
+  const frozen = visit(start([withAddOns([festival(true)])]));
+
+  it('takes her fresh answer', () => {
+    expect(reconcileFrozenVisit(frozen, start([withAddOns([festival(false)])]), new Set())).toEqual(
+      visit(start([withAddOns([festival(false)])])),
+    );
+  });
+
+  it.each<{ touched: string[]; expected: string[] }>([
+    { touched: [], expected: ['announcementAddOns:5'] },
+    { touched: ['announcementAddOns:5'], expected: [] },
+  ])('dims an announcement that left unless touched: $touched', ({ touched, expected }) => {
+    expect(reconcileFrozenVisit(frozen, start([]), new Set(touched)).dimmedKeys).toEqual(
+      new Set(expected),
+    );
   });
 });

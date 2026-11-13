@@ -62,7 +62,7 @@ internal static class CalendarAddOnRecords
         };
 
     [Pure]
-    private static CalendarEntryAddOnDetails PollAddOn(CalendarPollDetails poll) =>
+    private static CalendarEntryAddOnDetails PollAddOn(PollDetails poll) =>
         new()
         {
             Kind = CalendarEntryAddOnKind.Poll,
@@ -72,7 +72,7 @@ internal static class CalendarAddOnRecords
         };
 
     [Pure]
-    private static CalendarEntryAddOnDetails SignUpListAddOn(CalendarSignUpListDetails list) =>
+    private static CalendarEntryAddOnDetails SignUpListAddOn(SignUpListDetails list) =>
         new()
         {
             Kind = CalendarEntryAddOnKind.SignUpList,

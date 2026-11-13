@@ -8,20 +8,24 @@ import { kkTokens } from '../../../tokens';
 interface KkCalendarDetailSectionProps extends PropsWithChildren {
   icon: KkIconName;
   title: string;
+  id?: string;
 }
 
 export const KkCalendarDetailSection: FC<KkCalendarDetailSectionProps> = ({
   icon,
   title,
+  id,
   children,
 }) => (
   <Stack
     component="section"
+    id={id}
     data-kk-calendar-detail-section
     sx={(theme) => ({
       gap: 1,
       minWidth: 0,
       pt: 1.5,
+      scrollMarginTop: theme.spacing(2),
       borderTopWidth: kkTokens.line.hair,
       borderTopStyle: 'solid',
       borderTopColor: (theme.vars ?? theme).palette.divider,

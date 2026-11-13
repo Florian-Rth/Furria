@@ -1,20 +1,15 @@
 import type { KkNewsStripPhoto } from '@furria/ui/KkNewsTieStrip';
 import type { KkNewsCategory } from '@furria/ui/news-category';
-import type { NewsMention } from '@furria/ui/news-text';
-import { newsReadingMinutesOf } from '@furria/ui/news-text';
+import { NEWS_MENTION_KINDS } from '@furria/ui/news-mention-kinds';
+import { readingMinutesOf } from '@furria/ui/rich-text';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { CATEGORY_LABELS, CATEGORY_TONES } from '@/features/news/news-copy';
 import type { NewsHub } from '@/features/news/schemas';
+import type { MentionCard, MentionCards } from '@/features/rich-text/mention-cards';
+import { mentionCardsOf } from '@/features/rich-text/mention-cards';
 import { sessionYearsLabelOf } from '@/lib/club';
-import type {
-  ReadNews,
-  ReadNewsAlbum,
-  ReadNewsArticle,
-  ReadNewsGroup,
-  ReadNewsPerson,
-  ReadNewsPost,
-} from './schemas';
+import type { ReadNews, ReadNewsAlbum, ReadNewsArticle, ReadNewsPost } from './schemas';
 
 export interface ReadNewsSessionView {
   key: string;
@@ -27,19 +22,8 @@ export interface ReadNewsFront {
   sessions: ReadNewsSessionView[];
 }
 
-export interface ReadNewsMentionCards {
-  groups: ReadonlyMap<number, ReadNewsGroup>;
-  persons: ReadonlyMap<number, ReadNewsPerson>;
-}
-
-export type ReadNewsMentionCard =
-  | { kind: 'group'; group: ReadNewsGroup }
-  | { kind: 'person'; person: ReadNewsPerson };
-
 const LONG_DATE = 'd. MMMM yyyy';
 const SHORT_DATE = 'dd.MM.';
-const NAME_WORDS = /[\p{L}\p{N}]+/gu;
-const INITIALS_LENGTH = 2;
 
 export const sessionTitleOf = (startYear: number, sessionNumber: number | null): string =>
   sessionNumber === null
@@ -78,7 +62,7 @@ export const longDateOf = (iso: string): string => format(new Date(iso), LONG_DA
 export const shortDateOf = (iso: string): string => format(new Date(iso), SHORT_DATE);
 
 export const readingTimeOf = (text: string): string | null => {
-  const minutes = newsReadingMinutesOf(text);
+  const minutes = readingMinutesOf(text, NEWS_MENTION_KINDS);
 
   return minutes === null ? null : `${minutes} Min. Lesezeit`;
 };
@@ -102,29 +86,11 @@ export const albumStripOf = (album: ReadNewsAlbum): KkNewsStripPhoto[] =>
     aspect: photo.width / photo.height,
   }));
 
-export const mentionCardsOf = (article: ReadNewsArticle): ReadNewsMentionCards => ({
-  groups: new Map(article.mentionedGroups.map((group) => [group.groupId, group])),
-  persons: new Map(article.mentionedPersons.map((person) => [person.personId, person])),
-});
-
-export const mentionCardOf = (
-  mention: NewsMention,
-  cards: ReadNewsMentionCards,
-): ReadNewsMentionCard | null => {
-  if (mention.kind === 'group') {
-    const group = cards.groups.get(mention.id);
-    return group === undefined ? null : { kind: 'group', group };
-  }
-
-  const person = cards.persons.get(mention.id);
-  return person === undefined ? null : { kind: 'person', person };
-};
-
-export const groupInitialsOf = (name: string): string =>
-  (name.match(NAME_WORDS) ?? [])
-    .slice(0, INITIALS_LENGTH)
-    .map((word) => word.charAt(0).toLocaleUpperCase('de-DE'))
-    .join('');
+export const articleMentionCardsOf = (article: ReadNewsArticle): MentionCards =>
+  mentionCardsOf([
+    ...article.mentionedGroups.map((group): MentionCard => ({ kind: 'group', group })),
+    ...article.mentionedPersons.map((person): MentionCard => ({ kind: 'person', person })),
+  ]);
 
 export const editablePostIdOf = (hub: NewsHub | undefined, slug: string): string | null => {
   const post = hub?.sections

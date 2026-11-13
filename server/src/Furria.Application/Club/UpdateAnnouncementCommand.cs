@@ -10,7 +10,11 @@ public sealed record UpdateAnnouncementCommand
 
     public required DateOnly? ValidUntil { get; init; }
 
+    public required IReadOnlyList<AnnouncementAddOnInput> AddOns { get; init; }
+
     public required int ActorPersonId { get; init; }
+
+    public required int ActorAccountId { get; init; }
 
     public required bool ActorMayPostAnnouncements { get; init; }
 }

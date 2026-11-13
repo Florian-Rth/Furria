@@ -1,7 +1,8 @@
 import type { KkNewsStripPhoto } from '@furria/ui/KkNewsTieStrip';
 import type { KkNewsCategory } from '@furria/ui/news-category';
+import { NEWS_MENTION_KINDS } from '@furria/ui/news-mention-kinds';
 import type { KkNewsTone } from '@furria/ui/news-proof-types';
-import { newsReadingMinutesOf } from '@furria/ui/news-text';
+import { readingMinutesOf } from '@furria/ui/rich-text';
 import type { LinkProps } from '@tanstack/react-router';
 import type { NumberedSession } from '@/lib/api/session-section';
 import { formatClockTime, formatLongDate, formatWeekdayAndFullDate } from '@/lib/date';
@@ -138,7 +139,7 @@ export const buildSessionLabel = (session: NumberedSession): string =>
     : `${session.number}. SESSION ${session.yearsLabel}`;
 
 export const deriveReadingTime = (text: string): string | null => {
-  const minutes = newsReadingMinutesOf(text);
+  const minutes = readingMinutesOf(text, NEWS_MENTION_KINDS);
 
   return minutes === null ? null : `${minutes} Min. Lesezeit`;
 };

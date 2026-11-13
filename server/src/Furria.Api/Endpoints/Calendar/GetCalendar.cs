@@ -472,7 +472,7 @@ public sealed record CalendarSignUpListDto
     public required CalendarReminderDto? Reminder { get; init; }
 
     [Pure]
-    public static CalendarSignUpListDto From(CalendarSignUpListDetails list) =>
+    public static CalendarSignUpListDto From(SignUpListDetails list) =>
         new()
         {
             SignUpListId = list.SignUpListId,
@@ -507,7 +507,7 @@ public sealed record CalendarSignUpLineDto
     public required bool ByViewer { get; init; }
 
     [Pure]
-    public static CalendarSignUpLineDto From(CalendarSignUpLineDetails line) =>
+    public static CalendarSignUpLineDto From(SignUpLineDetails line) =>
         new()
         {
             LineId = line.LineId,
@@ -550,7 +550,7 @@ public sealed record CalendarPollDto
     public required IReadOnlyList<CalendarPollOptionDto> Options { get; init; }
 
     [Pure]
-    public static CalendarPollDto From(CalendarPollDetails poll) =>
+    public static CalendarPollDto From(PollDetails poll) =>
         new()
         {
             PollId = poll.PollId,
@@ -585,7 +585,7 @@ public sealed record CalendarPollOptionDto
     public required IReadOnlyList<CalendarPollVoterDto> Voters { get; init; }
 
     [Pure]
-    public static CalendarPollOptionDto From(CalendarPollOptionDetails option) =>
+    public static CalendarPollOptionDto From(PollOptionDetails option) =>
         new()
         {
             OptionId = option.OptionId,
@@ -605,7 +605,7 @@ public sealed record CalendarPollVoterDto
     public required string LastName { get; init; }
 
     [Pure]
-    public static CalendarPollVoterDto From(CalendarPollVoter voter) =>
+    public static CalendarPollVoterDto From(PollVoter voter) =>
         new()
         {
             PersonId = voter.PersonId,

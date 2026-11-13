@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.News;
 using Furria.Application.Results;
 using Furria.Core.News;
+using Furria.Core.Text;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
@@ -87,8 +88,8 @@ public sealed partial class NewsService
     private async Task RewriteMentionsAsync(NewsPost post, CancellationToken ct)
     {
         var mentions = NewsText.Read(post.Text).Mentions;
-        var groupIds = TargetsOf(mentions, NewsMentionKind.Group);
-        var personIds = TargetsOf(mentions, NewsMentionKind.Person);
+        var groupIds = TargetsOf(mentions, MentionKind.Group);
+        var personIds = TargetsOf(mentions, MentionKind.Person);
         var groups = await _dbContext
             .Groups.Where(group => groupIds.Contains(group.Id))
             .Select(group => group.Id)
@@ -106,6 +107,6 @@ public sealed partial class NewsService
     }
 
     [Pure]
-    private static List<int> TargetsOf(IReadOnlyList<NewsMention> mentions, NewsMentionKind kind) =>
+    private static List<int> TargetsOf(IReadOnlyList<Mention> mentions, MentionKind kind) =>
         [.. mentions.Where(mention => mention.Kind == kind).Select(mention => mention.TargetId)];
 }

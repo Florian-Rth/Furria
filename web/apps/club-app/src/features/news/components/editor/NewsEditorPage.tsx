@@ -2,9 +2,12 @@ import { KkPublishCeremony } from '@furria/ui/KkPublishCeremony';
 import { KkScreen } from '@furria/ui/KkScreen';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { RichTextLinkSheet } from '@/features/rich-text/components/RichTextLinkSheet';
+import { RichTextMentionLayer } from '@/features/rich-text/components/RichTextMentionLayer';
 import { AREA_HANDOVERS, NEWS_ORIGIN } from '@/features/session/app-sections';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
-import { NEWS_PICKER_LIST_ID, useNewsEditorPage } from '../../hooks/use-news-editor-page';
+import { LINK_SHEET_ID } from '../../editor-copy';
+import { useNewsEditorPage } from '../../hooks/use-news-editor-page';
 import { NewsImposition } from '../proofs/NewsImposition';
 import { NewsProofPeek } from '../proofs/NewsProofPeek';
 import { NewsProofSheet } from '../proofs/NewsProofSheet';
@@ -17,8 +20,6 @@ import { NewsEditorSkeleton } from './NewsEditorSkeleton';
 import { NewsGallerySheet } from './NewsGallerySheet';
 import { NewsGoneNotice } from './NewsGoneNotice';
 import { NewsLifecycleDialog } from './NewsLifecycleDialog';
-import { NewsLinkSheet } from './NewsLinkSheet';
-import { NewsMentionLayer } from './NewsMentionLayer';
 import { NewsPressFoot } from './NewsPressFoot';
 import { NewsTieSheets } from './NewsTieSheets';
 
@@ -58,7 +59,7 @@ export const NewsEditorPage: FC<NewsEditorPageProps> = ({ postId }) => {
           teaser={page.teaser}
           picture={picture}
           ties={page.ties}
-          mentionables={page.mentionables}
+          mentionables={page.mentionables.list}
         />
       </KkPublishCeremony>
       {peek}
@@ -76,13 +77,8 @@ export const NewsEditorPage: FC<NewsEditorPageProps> = ({ postId }) => {
       foot={<NewsPressFoot editor={editor} text={text} />}
     >
       <NewsEditorLayout main={main} aside={aside} />
-      <NewsMentionLayer
-        text={text}
-        mentionables={page.mentionables}
-        emptyLabel={page.mentionEmptyLabel}
-        listId={NEWS_PICKER_LIST_ID}
-      />
-      <NewsLinkSheet text={text} />
+      <RichTextMentionLayer text={text} source={page.mentionables} />
+      <RichTextLinkSheet text={text} sheetId={LINK_SHEET_ID} />
       <NewsGallerySheet onPick={picture.pickPhoto} />
       <NewsTieSheets ties={page.ties} />
       <NewsProofSheet {...page.proofProps} />

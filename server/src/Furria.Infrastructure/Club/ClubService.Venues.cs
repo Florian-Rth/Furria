@@ -64,13 +64,15 @@ public sealed partial class ClubService
 
         return
         [
-            .. venues.Select(venue => new ClubHubVenue
-            {
-                VenueId = venue.VenueId,
-                Name = venue.Name,
-                SortOrder = venue.SortOrder,
-                Holders = holdersByVenue.TryGetValue(venue.VenueId, out var holders) ? holders : [],
-            }),
+            .. venues
+                .Where(venue => holdersByVenue.ContainsKey(venue.VenueId))
+                .Select(venue => new ClubHubVenue
+                {
+                    VenueId = venue.VenueId,
+                    Name = venue.Name,
+                    SortOrder = venue.SortOrder,
+                    Holders = holdersByVenue[venue.VenueId],
+                }),
         ];
     }
 

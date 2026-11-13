@@ -543,6 +543,68 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_DropTheTakenOverAttendance_When_TheAttendanceAddOnIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAsync(
+            ctx,
+            ctx.Club.CalendarEntries.IdOf("asking-meeting"),
+            [],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Announcement(ctx.Club.Announcements.IdOf("aushang"))
+            .ToHaveLoans(
+                (
+                    AnnouncementAddOnKind.Poll,
+                    ctx.Club.CalendarEntries.IdOf("poll-meeting"),
+                    ctx.Club.Polls.IdOf("snack"),
+                    1
+                )
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DropEveryTakenOverAddOn_When_TheEntryNarrowsToChosenPeople()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(entryId, Farewell) with
+            {
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.Attendance)],
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [ctx.Identity.People.IdOf("ilka")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Announcement(ctx.Club.Announcements.IdOf("aushang"))
+            .ToHaveLoans(
+                (
+                    AnnouncementAddOnKind.Poll,
+                    ctx.Club.CalendarEntries.IdOf("poll-meeting"),
+                    ctx.Club.Polls.IdOf("snack"),
+                    1
+                )
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_StartWithoutAnswers_When_TheAttendanceAddOnIsAttachedAgain()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -598,11 +660,11 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        var pollId = ctx.Club.Polls.IdOf("snack");
         await ctx
-            .Expected.CalendarPoll(pollId)
+            .Expected.Poll(pollId)
             .ToHaveOptions("Kuchen", "Brezeln", "Obst")
-            .CalendarPoll(pollId)
+            .Poll(pollId)
             .ToHaveVotesOf(ctx.Identity.People.IdOf("chris"), "Kuchen")
             .AssertAsync(ct);
     }
@@ -621,7 +683,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
-            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
             .ToHaveOptions("Kuchen", "Laugenbrezeln")
             .AssertAsync(ct);
     }
@@ -644,7 +706,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ctx
-            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
             .ToHaveOptions("Kuchen", "Brezeln")
             .AssertAsync(ct);
     }
@@ -677,9 +739,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
             .ToBeClosedAt(meetingStart, null)
-            .CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .SignUpList(ctx.Club.SignUpLists.IdOf("duties"))
             .ToBeClosedAt(meetingStart, null)
             .AssertAsync(ct);
     }
@@ -691,7 +753,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         var deadline = EarlyMeetingStart.AddDays(-1);
         var early = PollAddOn(
-            ctx.Club.CalendarPolls.IdOf("early"),
+            ctx.Club.Polls.IdOf("early"),
             "Wer fährt?",
             false,
             false,
@@ -717,7 +779,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("early"))
+            .Expected.Poll(ctx.Club.Polls.IdOf("early"))
             .ToBeClosedAt(deadline, null)
             .AssertAsync(ct);
     }
@@ -740,7 +802,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                     [
                         Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
                         Days(ctx),
-                        SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Abbau", null),
+                        SignUpListAddOn(ctx.Club.SignUpLists.IdOf("duties"), "Abbau", null),
                     ],
                     ct
                 );
@@ -750,7 +812,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .Expected.SignUpList(ctx.Club.SignUpLists.IdOf("duties"))
             .ToHaveSettings("Aufbau", null, null)
             .AssertAsync(ct);
     }
@@ -785,7 +847,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
             .ToHaveOptions("Kuchen", "Brezeln")
             .AssertAsync(ct);
     }
@@ -805,7 +867,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ctx
-            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
             .ToHaveQuestion(SnackQuestion)
             .AssertAsync(ct);
     }
@@ -820,9 +882,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
-            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
             .ToNotExist()
-            .CalendarPoll(ctx.Club.CalendarPolls.IdOf("days"))
+            .Poll(ctx.Club.Polls.IdOf("days"))
             .ToHaveVoteCount(2)
             .AssertAsync(ct);
     }
@@ -846,10 +908,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx
-            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("days"))
-            .ToBeAnonymous(true)
-            .AssertAsync(ct);
+        await ctx.Expected.Poll(ctx.Club.Polls.IdOf("days")).ToBeAnonymous(true).AssertAsync(ct);
     }
 
     [Fact]
@@ -882,7 +941,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         {
             Poll = Days(ctx).Poll! with
             {
-                PollId = ctx.Club.CalendarPolls.IdOf("elsewhere"),
+                PollId = ctx.Club.Polls.IdOf("elsewhere"),
                 Options =
                 [
                     new() { OptionId = null, Label = "Ja" },
@@ -895,7 +954,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ctx
-            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
             .ToHaveOptions("Kuchen", "Brezeln")
             .AssertAsync(ct);
     }
@@ -920,7 +979,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("duties");
+        var listId = ctx.Club.SignUpLists.IdOf("duties");
 
         var response = await RewriteAddOnsAsync(
             ctx,
@@ -933,9 +992,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToHaveSettings("Wer hilft beim Aufbau?", "Ab 17 Uhr", null)
-            .CalendarSignUpList(listId)
+            .SignUpList(listId)
             .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Tische"))
             .CalendarEntry(ctx.Club.CalendarEntries.IdOf("poll-meeting"))
             .ToHaveSignUpListsAt((1, "Wer hilft beim Aufbau?", "Ab 17 Uhr"))
@@ -952,7 +1011,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
-            .Expected.CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .Expected.SignUpList(ctx.Club.SignUpLists.IdOf("duties"))
             .ToNotExist()
             .AssertAsync(ct);
     }
@@ -965,13 +1024,13 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 
         var response = await RewriteAddOnsAsync(
             ctx,
-            [SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("elsewhere-list"), "Fremd", null)],
+            [SignUpListAddOn(ctx.Club.SignUpLists.IdOf("elsewhere-list"), "Fremd", null)],
             ct
         );
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ctx
-            .Expected.CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .Expected.SignUpList(ctx.Club.SignUpLists.IdOf("duties"))
             .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Tische"))
             .AssertAsync(ct);
     }
@@ -981,7 +1040,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var list = SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Aufbau", null);
+        var list = SignUpListAddOn(ctx.Club.SignUpLists.IdOf("duties"), "Aufbau", null);
         var late = list with
         {
             SignUpList = list.SignUpList! with { SignUpUntil = TrainingStart.AddMinutes(1) },
@@ -1186,7 +1245,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         };
 
     private static PutCalendarEntryAddOnDataDto Duties(SeededContext ctx) =>
-        SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Aufbau", null);
+        SignUpListAddOn(ctx.Club.SignUpLists.IdOf("duties"), "Aufbau", null);
 
     private static async Task<HttpResponseMessage> MoveEntryAsync(
         SeededContext ctx,
@@ -1237,11 +1296,11 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     private static PutCalendarEntryAddOnDataDto Snack(
         SeededContext ctx,
         params (string? OptionAlias, string Label)[] options
-    ) => PollAddOn(ctx.Club.CalendarPolls.IdOf("snack"), SnackQuestion, false, false, ctx, options);
+    ) => PollAddOn(ctx.Club.Polls.IdOf("snack"), SnackQuestion, false, false, ctx, options);
 
     private static PutCalendarEntryAddOnDataDto Days(SeededContext ctx) =>
         PollAddOn(
-            ctx.Club.CalendarPolls.IdOf("days"),
+            ctx.Club.Polls.IdOf("days"),
             DaysQuestion,
             true,
             true,
@@ -1275,7 +1334,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                     .. options.Select(option => new PutCalendarEntryPollOptionDataDto
                     {
                         OptionId = option.OptionAlias is { } alias
-                            ? ctx.Club.CalendarPollOptions.IdOf(alias)
+                            ? ctx.Club.PollOptions.IdOf(alias)
                             : null,
                         Label = option.Label,
                     }),
@@ -1404,6 +1463,21 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 Farewell,
                                 AbendprobeStart.AddDays(5),
                                 asksForResponse: true
+                            )
+                            .AddAnnouncement("aushang", "ilka", "Aushang", "Bitte antworten.")
+                            .AddAnnouncementLoan(
+                                "aushang",
+                                "asking-meeting",
+                                AnnouncementAddOnKind.Attendance,
+                                addOnAlias: null,
+                                position: 0
+                            )
+                            .AddAnnouncementLoan(
+                                "aushang",
+                                "poll-meeting",
+                                AnnouncementAddOnKind.Poll,
+                                "snack",
+                                position: 1
                             )
                             .AddCalendarEntry("poll-meeting", Farewell, AbendprobeStart.AddDays(6))
                             .AddCalendarPoll(

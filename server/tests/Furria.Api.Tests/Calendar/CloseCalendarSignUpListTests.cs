@@ -42,7 +42,7 @@ public sealed class CloseCalendarSignUpListTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf(listAlias);
+        var listId = ctx.Club.SignUpLists.IdOf(listAlias);
 
         await _fixture.AtInstantAsync(
             Now,
@@ -55,7 +55,7 @@ public sealed class CloseCalendarSignUpListTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx
-            .Expected.CalendarSignUpList(listId)
+            .Expected.SignUpList(listId)
             .ToBeClosedBy(closerAlias is null ? null : ctx.Identity.People.IdOf(closerAlias))
             .AssertAsync(ct);
     }
@@ -72,7 +72,7 @@ public sealed class CloseCalendarSignUpListTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf(listAlias);
+        var listId = ctx.Club.SignUpLists.IdOf(listAlias);
 
         await _fixture.AtInstantAsync(
             Now,
@@ -84,7 +84,7 @@ public sealed class CloseCalendarSignUpListTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarSignUpList(listId).ToBeClosedAt(closedAt, null).AssertAsync(ct);
+        await ctx.Expected.SignUpList(listId).ToBeClosedAt(closedAt, null).AssertAsync(ct);
     }
 
     [Fact]
@@ -92,12 +92,12 @@ public sealed class CloseCalendarSignUpListTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.CalendarSignUpLists.IdOf("cakes");
+        var listId = ctx.Club.SignUpLists.IdOf("cakes");
 
         var response = await CloseAsync(ctx, "chris", listId, ct);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.CalendarSignUpList(listId).ToBeClosedByHand(false).AssertAsync(ct);
+        await ctx.Expected.SignUpList(listId).ToBeClosedByHand(false).AssertAsync(ct);
     }
 
     private static async Task<HttpResponseMessage> CloseAsync(

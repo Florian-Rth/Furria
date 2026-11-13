@@ -1,3 +1,5 @@
+using Furria.Application.Club;
+
 namespace Furria.Application.Start;
 
 public sealed record StartAnnouncementSummary
@@ -8,9 +10,13 @@ public sealed record StartAnnouncementSummary
 
     public required string Body { get; init; }
 
+    public required AnnouncementMentionTargets Mentions { get; init; }
+
     public required DateTimeOffset PublishedAt { get; init; }
 
     public required DateOnly? ValidUntil { get; init; }
+
+    public required bool IsNew { get; init; }
 
     public required StartPerson? Author { get; init; }
 }

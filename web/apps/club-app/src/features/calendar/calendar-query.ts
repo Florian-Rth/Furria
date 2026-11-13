@@ -1,3 +1,5 @@
+import { toLocalIsoDay } from '@/lib/calendar-days';
+
 export type CalendarScope = 'all' | 'club' | 'group';
 
 export interface CalendarQuery {
@@ -24,3 +26,11 @@ export const toCalendarPath = (query: CalendarQuery): string => {
 
   return `${CALENDAR_ENDPOINT}?${params.toString()}`;
 };
+
+export const toEntrySearch = (entry: {
+  calendarEntryId: number;
+  startsAt: string;
+}): { day: string; entry: number } => ({
+  day: toLocalIsoDay(entry.startsAt),
+  entry: entry.calendarEntryId,
+});

@@ -1,15 +1,13 @@
 import { KkNewsArticleHeader } from '@furria/ui/KkNewsArticleHeader';
 import { KkNewsHero } from '@furria/ui/KkNewsHero';
-import { KkNewsText } from '@furria/ui/KkNewsText';
+import { NEWS_MENTION_KINDS } from '@furria/ui/news-mention-kinds';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { bylineOf, mentionCardsOf, readNewsCategoryOf } from '../read-news';
-import { NEW_TAB_NOTE } from '../read-news-copy';
-import { ReadNewsMentionContext } from '../read-news-mention-context';
+import { RichText } from '@/features/rich-text/components/RichText';
+import { articleMentionCardsOf, bylineOf, readNewsCategoryOf } from '../read-news';
 import type { ReadNewsArticle as Article } from '../schemas';
 import { ReadNewsAlbumTie } from './ReadNewsAlbumTie';
 import { ReadNewsEventTie } from './ReadNewsEventTie';
-import { ReadNewsMention } from './ReadNewsMention';
 import { ReadNewsPhoto } from './ReadNewsPhoto';
 
 const HERO_PHOTO_SIZES = '(min-width: 900px) 45rem, 100vw';
@@ -21,7 +19,7 @@ interface ReadNewsArticleProps {
 export const ReadNewsArticle: FC<ReadNewsArticleProps> = ({ article }) => {
   const category = readNewsCategoryOf(article.category);
   const byline = bylineOf(article);
-  const mentionCards = mentionCardsOf(article);
+  const mentionCards = articleMentionCardsOf(article);
   const photo = <ReadNewsPhoto picture={article.picture} sizes={HERO_PHOTO_SIZES} />;
   const hero =
     article.picture === null ? null : (
@@ -38,9 +36,7 @@ export const ReadNewsArticle: FC<ReadNewsArticleProps> = ({ article }) => {
         <KkNewsArticleHeader.Lead teaser={article.teaser} fit="column" />
       </KkNewsArticleHeader>
       {hero}
-      <ReadNewsMentionContext value={mentionCards}>
-        <KkNewsText text={article.text} newTabNote={NEW_TAB_NOTE} mentionView={ReadNewsMention} />
-      </ReadNewsMentionContext>
+      <RichText text={article.text} mentionKinds={NEWS_MENTION_KINDS} cards={mentionCards} />
       {eventTie}
       {albumTie}
     </Stack>

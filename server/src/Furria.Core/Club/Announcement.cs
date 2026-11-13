@@ -16,9 +16,29 @@ public sealed class Announcement : ITimestamped
 
     public DateOnly? ValidUntil { get; set; }
 
+    public int? AttendancePosition { get; set; }
+
+    public DateTimeOffset? AnswersUntil { get; set; }
+
+    public DateTimeOffset? AttendanceClosedAt { get; set; }
+
+    public int? AttendanceClosedByPersonId { get; set; }
+
+    public DateTimeOffset? AttendanceLastRemindedAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
 
     public Person? Author { get; set; }
+
+    public Person? AttendanceClosedBy { get; set; }
+
+    public ICollection<AnnouncementMention> Mentions { get; set; } = [];
+
+    public ICollection<Poll> Polls { get; set; } = [];
+
+    public ICollection<SignUpList> SignUpLists { get; set; } = [];
+
+    public ICollection<AnnouncementBorrowedAddOn> BorrowedAddOns { get; set; } = [];
 }

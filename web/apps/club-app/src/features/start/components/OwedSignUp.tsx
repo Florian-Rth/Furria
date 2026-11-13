@@ -3,20 +3,21 @@ import type { FC } from 'react';
 import { SIGN_UP_LINE_TEXT_MAX_LENGTH } from '@/features/calendar/calendar-sign-up-lists';
 import { useOwedSignUp } from '../hooks/use-owed-sign-up';
 import type { StartBoard } from '../hooks/use-start-view';
-import type { StartEntry, StartSignUpList } from '../schemas';
+import type { OwedHost } from '../owed-items';
+import type { StartSignUpList } from '../schemas';
 
 const OWN_LABEL = 'Du';
 const FIELD_LABEL = 'Dein Eintrag';
 const SIGN_UP_LABEL = 'Eintragen';
 
 interface OwedSignUpProps {
-  entry: StartEntry;
+  host: OwedHost;
   list: StartSignUpList;
   board: StartBoard;
 }
 
-export const OwedSignUp: FC<OwedSignUpProps> = ({ entry, list, board }) => {
-  const signUp = useOwedSignUp(entry, list, board);
+export const OwedSignUp: FC<OwedSignUpProps> = ({ host, list, board }) => {
+  const signUp = useOwedSignUp(host, list, board);
   const fieldName = `start-sign-up-${list.signUpListId}`;
 
   const own = signUp.isSigned ? (

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MentionTargetsSchema } from '@/features/rich-text/schemas';
 import { PictureSchema, SessionLogoSchema } from '@/lib/api/schemas';
 import { CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 
@@ -31,6 +32,7 @@ export const ClubAnnouncementSchema = z.object({
   announcementId: z.number().int(),
   title: z.string(),
   body: z.string(),
+  mentions: MentionTargetsSchema,
   publishedAt: z.iso.datetime({ offset: true }),
   validUntil: z.iso.date().nullable(),
   author: ClubPersonSchema.nullable(),

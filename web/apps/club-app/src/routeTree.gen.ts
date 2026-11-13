@@ -113,6 +113,7 @@ import { Route as AppBeerListManageHandoverRouteImport } from './routes/_app/bee
 import { Route as AppBeerListManageEnrollmentsRouteImport } from './routes/_app/beer-list_.manage.enrollments'
 import { Route as AppBeerListManageCratesRouteImport } from './routes/_app/beer-list_.manage.crates'
 import { Route as AppBeerListManageCodeRouteImport } from './routes/_app/beer-list_.manage.code'
+import { Route as AppAnnouncementsAnnouncementIdEditRouteImport } from './routes/_app/announcements_.$announcementId_.edit'
 import { Route as AppActsActIdVideosRouteImport } from './routes/_app/acts_.$actId_.videos'
 import { Route as AppActsActIdTrainingRouteImport } from './routes/_app/acts_.$actId_.training'
 import { Route as AppActsActIdPracticeRouteImport } from './routes/_app/acts_.$actId_.practice'
@@ -700,6 +701,12 @@ const AppBeerListManageCodeRoute = AppBeerListManageCodeRouteImport.update({
   path: '/code',
   getParentRoute: () => AppBeerListManageRoute,
 } as any)
+const AppAnnouncementsAnnouncementIdEditRoute =
+  AppAnnouncementsAnnouncementIdEditRouteImport.update({
+    id: '/announcements_/$announcementId_/edit',
+    path: '/announcements/$announcementId/edit',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppActsActIdVideosRoute = AppActsActIdVideosRouteImport.update({
   id: '/acts_/$actId_/videos',
   path: '/acts/$actId/videos',
@@ -1066,6 +1073,7 @@ export interface FileRoutesByFullPath {
   '/acts/$actId/practice': typeof AppActsActIdPracticeRoute
   '/acts/$actId/training': typeof AppActsActIdTrainingRoute
   '/acts/$actId/videos': typeof AppActsActIdVideosRoute
+  '/announcements/$announcementId/edit': typeof AppAnnouncementsAnnouncementIdEditRoute
   '/beer-list/manage/code': typeof AppBeerListManageCodeRoute
   '/beer-list/manage/crates': typeof AppBeerListManageCratesRoute
   '/beer-list/manage/enrollments': typeof AppBeerListManageEnrollmentsRoute
@@ -1216,6 +1224,7 @@ export interface FileRoutesByTo {
   '/acts/$actId/practice': typeof AppActsActIdPracticeRoute
   '/acts/$actId/training': typeof AppActsActIdTrainingRoute
   '/acts/$actId/videos': typeof AppActsActIdVideosRoute
+  '/announcements/$announcementId/edit': typeof AppAnnouncementsAnnouncementIdEditRoute
   '/beer-list/manage/code': typeof AppBeerListManageCodeRoute
   '/beer-list/manage/crates': typeof AppBeerListManageCratesRoute
   '/beer-list/manage/enrollments': typeof AppBeerListManageEnrollmentsRoute
@@ -1373,6 +1382,7 @@ export interface FileRoutesById {
   '/_app/acts_/$actId_/practice': typeof AppActsActIdPracticeRoute
   '/_app/acts_/$actId_/training': typeof AppActsActIdTrainingRoute
   '/_app/acts_/$actId_/videos': typeof AppActsActIdVideosRoute
+  '/_app/announcements_/$announcementId_/edit': typeof AppAnnouncementsAnnouncementIdEditRoute
   '/_app/beer-list_/manage/code': typeof AppBeerListManageCodeRoute
   '/_app/beer-list_/manage/crates': typeof AppBeerListManageCratesRoute
   '/_app/beer-list_/manage/enrollments': typeof AppBeerListManageEnrollmentsRoute
@@ -1528,6 +1538,7 @@ export interface FileRouteTypes {
     | '/acts/$actId/practice'
     | '/acts/$actId/training'
     | '/acts/$actId/videos'
+    | '/announcements/$announcementId/edit'
     | '/beer-list/manage/code'
     | '/beer-list/manage/crates'
     | '/beer-list/manage/enrollments'
@@ -1678,6 +1689,7 @@ export interface FileRouteTypes {
     | '/acts/$actId/practice'
     | '/acts/$actId/training'
     | '/acts/$actId/videos'
+    | '/announcements/$announcementId/edit'
     | '/beer-list/manage/code'
     | '/beer-list/manage/crates'
     | '/beer-list/manage/enrollments'
@@ -1834,6 +1846,7 @@ export interface FileRouteTypes {
     | '/_app/acts_/$actId_/practice'
     | '/_app/acts_/$actId_/training'
     | '/_app/acts_/$actId_/videos'
+    | '/_app/announcements_/$announcementId_/edit'
     | '/_app/beer-list_/manage/code'
     | '/_app/beer-list_/manage/crates'
     | '/_app/beer-list_/manage/enrollments'
@@ -2659,6 +2672,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBeerListManageCodeRouteImport
       parentRoute: typeof AppBeerListManageRoute
     }
+    '/_app/announcements_/$announcementId_/edit': {
+      id: '/_app/announcements_/$announcementId_/edit'
+      path: '/announcements/$announcementId/edit'
+      fullPath: '/announcements/$announcementId/edit'
+      preLoaderRoute: typeof AppAnnouncementsAnnouncementIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/acts_/$actId_/videos': {
       id: '/_app/acts_/$actId_/videos'
       path: '/acts/$actId/videos'
@@ -3178,6 +3198,7 @@ interface AppRouteChildren {
   AppActsActIdPracticeRoute: typeof AppActsActIdPracticeRoute
   AppActsActIdTrainingRoute: typeof AppActsActIdTrainingRoute
   AppActsActIdVideosRoute: typeof AppActsActIdVideosRoute
+  AppAnnouncementsAnnouncementIdEditRoute: typeof AppAnnouncementsAnnouncementIdEditRoute
   AppClubNewsSlugRoute: typeof AppClubNewsSlugRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
   AppEventsEventIdManageRoute: typeof AppEventsEventIdManageRoute
@@ -3299,6 +3320,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppActsActIdPracticeRoute: AppActsActIdPracticeRoute,
   AppActsActIdTrainingRoute: AppActsActIdTrainingRoute,
   AppActsActIdVideosRoute: AppActsActIdVideosRoute,
+  AppAnnouncementsAnnouncementIdEditRoute:
+    AppAnnouncementsAnnouncementIdEditRoute,
   AppClubNewsSlugRoute: AppClubNewsSlugRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,
   AppEventsEventIdManageRoute: AppEventsEventIdManageRoute,

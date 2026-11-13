@@ -1,72 +1,56 @@
 import { toImageSource } from '@furria/ui/image-source';
+import type { KkMentionSection } from '@furria/ui/KkMentionPicker';
 import type { KkProseMentionTone } from '@furria/ui/KkProseField';
-import type { NewsInline } from '@furria/ui/news-text';
-import { newsMentionKeyOf, readNewsText } from '@furria/ui/news-text';
+import { NEWS_MENTION_KINDS } from '@furria/ui/news-mention-kinds';
+import { mentionChoiceOf } from '@/features/rich-text/mention-choice';
+import { mentionTonesOf } from '@/features/rich-text/mention-tones';
+import { mentionableOf } from '@/features/rich-text/mentionable';
+import type { Mentionable } from '@/features/rich-text/types';
+import { groupInitialsOf, toInitials } from '@/lib/initials';
 import type { NewsMentionables } from './schemas';
-import type { NewsMentionable } from './types';
 
-const initialsOf = (words: readonly string[]): string =>
-  words
-    .map((word) => word.trim().charAt(0))
-    .filter((letter) => letter.length > 0)
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
-
-export const mentionablesOf = (
-  response: NewsMentionables,
-  groupWord: string,
-): NewsMentionable[] => [
-  ...response.groups.map(
-    (group): NewsMentionable => ({
+export const mentionablesOf = (response: NewsMentionables, groupWord: string): Mentionable[] => [
+  ...response.groups.map((group) =>
+    mentionableOf({
       kind: 'group',
-      id: newsMentionKeyOf({ kind: 'group', id: group.groupId }),
       targetId: group.groupId,
       name: group.name,
       line: group.description.trim().length === 0 ? groupWord : group.description,
       tone: group.tone,
-      initials: initialsOf(group.name.split(/\s+/)),
+      initials: groupInitialsOf(group.name),
       image: toImageSource(group.picture, 'groupPicture'),
-      isPublic: true,
+      isOffered: true,
     }),
   ),
-  ...response.persons.map(
-    (person): NewsMentionable => ({
+  ...response.persons.map((person) =>
+    mentionableOf({
       kind: 'person',
-      id: newsMentionKeyOf({ kind: 'person', id: person.personId }),
       targetId: person.personId,
       name: `${person.firstName} ${person.lastName}`,
       line: person.officeName,
       tone: null,
-      initials: initialsOf([person.firstName, person.lastName]),
+      initials: toInitials(person.firstName, person.lastName),
       image: toImageSource(person.portrait, 'portrait'),
-      isPublic: true,
+      isOffered: true,
     }),
   ),
 ];
 
-const mentionKeysIn = (inlines: readonly NewsInline[]): string[] =>
-  inlines.flatMap((inline) =>
-    inline.kind === 'mention' ? [newsMentionKeyOf(inline.mention)] : [],
-  );
-
-export const mentionKeysOf = (text: string): string[] =>
-  readNewsText(text).flatMap((block) =>
-    block.kind === 'list' ? block.items.flatMap(mentionKeysIn) : mentionKeysIn(block.inlines),
-  );
-
-export const mentionTonesOf = (
-  mentionables: readonly NewsMentionable[],
+export const newsMentionTonesOf = (
+  mentionables: readonly Mentionable[],
   text: string,
-): KkProseMentionTone[] => {
-  const known = new Set(mentionables.map((mentionable) => mentionable.id));
-  const stale = [...new Set(mentionKeysOf(text))].filter((key) => !known.has(key));
-  return [
-    ...mentionables.map((mentionable) => ({
-      id: mentionable.id,
-      tone: mentionable.tone,
-      isPublic: true,
-    })),
-    ...stale.map((id) => ({ id, tone: null, isPublic: false })),
-  ];
-};
+): KkProseMentionTone[] => mentionTonesOf(mentionables, text, NEWS_MENTION_KINDS);
+
+export const newsMentionSectionsOf = (
+  choices: readonly Mentionable[],
+  titles: { groups: string; board: string },
+): KkMentionSection[] => [
+  {
+    title: titles.groups,
+    choices: choices.filter((choice) => choice.kind === 'group').map(mentionChoiceOf),
+  },
+  {
+    title: titles.board,
+    choices: choices.filter((choice) => choice.kind === 'person').map(mentionChoiceOf),
+  },
+];

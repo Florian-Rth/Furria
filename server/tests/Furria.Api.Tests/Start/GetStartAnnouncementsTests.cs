@@ -59,6 +59,7 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
 
                 var announcement = Assert.Single(AnnouncementsOf(start));
                 Assert.Equal(ctx.Club.Announcements.IdOf("busfahrt"), announcement.AnnouncementId);
+                Assert.True(announcement.IsNew);
                 Assert.Equal("Busfahrt zum Rosenmontagsumzug", announcement.Title);
                 Assert.Equal("Abfahrt 9 Uhr am Markt.", announcement.Body);
                 Assert.Equal(TuesdayEvening.AddDays(-1), announcement.PublishedAt);
@@ -72,7 +73,7 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveOutAnAnnouncement_When_SheSawTheBoardAfterItWasPublished()
+    public async Task Should_ListAnAnnouncementAsSeen_When_SheSawTheBoardAfterItWasPublished()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -104,15 +105,19 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
                 var start = await StartOfAsync(client);
 
                 Assert.Equal(
-                    [ctx.Club.Announcements.IdOf("neu")],
-                    AnnouncementsOf(start).Select(announcement => announcement.AnnouncementId)
+                    [
+                        (ctx.Club.Announcements.IdOf("neu"), true),
+                        (ctx.Club.Announcements.IdOf("gelesen"), false),
+                    ],
+                    AnnouncementsOf(start)
+                        .Select(announcement => (announcement.AnnouncementId, announcement.IsNew))
                 );
             }
         );
     }
 
     [Fact]
-    public async Task Should_LeaveOutAnAnnouncement_When_ItWasPublishedMoreThanSixtyDaysAgo()
+    public async Task Should_ListAnAnnouncementAsSeen_When_ItWasPublishedMoreThanSixtyDaysAgo()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -143,8 +148,12 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
                 var start = await StartOfAsync(client);
 
                 Assert.Equal(
-                    [ctx.Club.Announcements.IdOf("noch-frisch")],
-                    AnnouncementsOf(start).Select(announcement => announcement.AnnouncementId)
+                    [
+                        (ctx.Club.Announcements.IdOf("noch-frisch"), true),
+                        (ctx.Club.Announcements.IdOf("alt"), false),
+                    ],
+                    AnnouncementsOf(start)
+                        .Select(announcement => (announcement.AnnouncementId, announcement.IsNew))
                 );
             }
         );
@@ -192,7 +201,7 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveOutAnAnnouncement_When_SheWroteIt()
+    public async Task Should_ListHerOwnAnnouncementAsSeen_When_SheWroteIt()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -215,7 +224,8 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
 
                 var start = await StartOfAsync(client);
 
-                Assert.Empty(AnnouncementsOf(start));
+                var announcement = Assert.Single(AnnouncementsOf(start));
+                Assert.False(announcement.IsNew);
             }
         );
     }

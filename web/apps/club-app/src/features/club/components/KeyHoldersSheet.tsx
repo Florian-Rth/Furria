@@ -1,4 +1,3 @@
-import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkSheet } from '@furria/ui/KkSheet';
 import type { FC } from 'react';
@@ -9,8 +8,6 @@ import type { ClubVenue } from '../schemas';
 import { KeyHolderRow } from './KeyHolderRow';
 
 const SHEET_CLOSE_LABEL = 'Schlüsselliste schließen';
-const NO_HOLDERS_TITLE = 'Kein Schlüssel vergeben';
-const NO_HOLDERS_DESCRIPTION = 'Für diesen Ort ist kein Schlüssel ausgegeben.';
 
 const toVenueId = (venue: ClubVenue): number => venue.venueId;
 
@@ -27,24 +24,19 @@ export const KeyHoldersSheet: FC<KeyHoldersSheetProps> = ({ venues }) => {
 
   const entries = toKeyHolderEntries(venue.holders);
 
-  const body =
-    entries.length === 0 ? (
-      <KkEmptyState size="panel" title={NO_HOLDERS_TITLE} description={NO_HOLDERS_DESCRIPTION} />
-    ) : (
-      <KkPanel>
-        {entries.map((entry) => (
-          <KeyHolderRow key={entry.personId} entry={entry} />
-        ))}
-      </KkPanel>
-    );
-
   return (
     <KkSheet
       id={toPeekId('venue', venue.venueId)}
       title={venue.name}
       closeLabel={SHEET_CLOSE_LABEL}
     >
-      <KkSheet.Body>{body}</KkSheet.Body>
+      <KkSheet.Body>
+        <KkPanel>
+          {entries.map((entry) => (
+            <KeyHolderRow key={entry.personId} entry={entry} />
+          ))}
+        </KkPanel>
+      </KkSheet.Body>
     </KkSheet>
   );
 };

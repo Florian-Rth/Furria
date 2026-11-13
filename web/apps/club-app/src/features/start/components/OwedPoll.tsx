@@ -2,16 +2,17 @@ import { KkPollBallot } from '@furria/ui/KkPollBallot';
 import type { FC } from 'react';
 import { useOwedPoll } from '../hooks/use-owed-poll';
 import type { StartBoard } from '../hooks/use-start-view';
-import type { StartEntry, StartPoll } from '../schemas';
+import type { OwedHost } from '../owed-items';
+import type { StartPoll } from '../schemas';
 
 interface OwedPollProps {
-  entry: StartEntry;
+  host: OwedHost;
   poll: StartPoll;
   board: StartBoard;
 }
 
-export const OwedPoll: FC<OwedPollProps> = ({ entry, poll, board }) => {
-  const ballot = useOwedPoll(entry, poll, board);
+export const OwedPoll: FC<OwedPollProps> = ({ host, poll, board }) => {
+  const ballot = useOwedPoll(host, poll, board);
 
   const choices = ballot.choices.map((choice) => (
     <KkPollBallot.Choice
