@@ -126,6 +126,7 @@ export const StartAnnouncementSchema = z.object({
   mentions: MentionTargetsSchema,
   publishedAt: z.iso.datetime({ offset: true }),
   validUntil: z.iso.date().nullable(),
+  isNew: z.boolean(),
   author: StartPersonSchema.nullable(),
 });
 export type StartAnnouncement = z.infer<typeof StartAnnouncementSchema>;

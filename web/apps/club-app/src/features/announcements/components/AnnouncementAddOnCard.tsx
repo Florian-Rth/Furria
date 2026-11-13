@@ -3,7 +3,6 @@ import { CalendarPollCard } from '@/features/calendar/components/CalendarPollCar
 import { CalendarSignUpListCard } from '@/features/calendar/components/CalendarSignUpListCard';
 import type { CalendarAddOnsControl } from '@/features/calendar/hooks/use-calendar-add-ons';
 import type { CalendarEntryAddOn } from '@/features/calendar/schemas';
-import { ANNOUNCEMENT_DEADLINE_EMPTY_LABEL } from '../announcements-labels';
 import type { AnnouncementAddOnsEditor } from '../hooks/use-announcement-add-ons-editor';
 import type { Announcement, AnnouncementAddOnCardForm } from '../schemas';
 import { AnnouncementAttendanceCard } from './AnnouncementAttendanceCard';
@@ -51,7 +50,6 @@ export const AnnouncementAddOnCard: FC<AnnouncementAddOnCardProps> = ({
           poll={card.poll}
           editor={editor}
           held={held}
-          deadlineEmptyLabel={ANNOUNCEMENT_DEADLINE_EMPTY_LABEL}
           onRemove={remove}
         />
       );
@@ -61,9 +59,9 @@ export const AnnouncementAddOnCard: FC<AnnouncementAddOnCardProps> = ({
           cardKey={card.key}
           index={index}
           list={card.signUpList}
+          withHint={false}
           editor={editor}
           held={held}
-          deadlineEmptyLabel={ANNOUNCEMENT_DEADLINE_EMPTY_LABEL}
           onRemove={remove}
         />
       );

@@ -7,7 +7,7 @@ namespace Furria.Infrastructure.Club;
 
 public sealed partial class ClubService
 {
-    private const int HubAnnouncementCount = 2;
+    private const int HubAnnouncementCount = 3;
 
     private async Task<ClubHubAnnouncements> AnnouncementsAsync(
         DateOnly today,

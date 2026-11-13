@@ -150,7 +150,7 @@ public sealed class GetStartAnnouncementAddOnsTests : IClassFixture<ApiTestFixtu
     }
 
     [Fact]
-    public async Task Should_LeaveOutTheCalendarPanel_When_SheOwesNothingAndHasNoEntries()
+    public async Task Should_KeepAnEmptyCalendarPanel_When_SheOwesNothingAndHasNoEntries()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -174,7 +174,16 @@ public sealed class GetStartAnnouncementAddOnsTests : IClassFixture<ApiTestFixtu
 
                 var start = await StartOfAsync(ctx, "lena");
 
-                Assert.DoesNotContain(start.Panels, panel => panel.Kind == StartPanelKind.Calendar);
+                var calendar = Assert.Single(
+                    start.Panels,
+                    panel => panel.Kind == StartPanelKind.Calendar
+                );
+                Assert.Empty(calendar.Entries!);
+                Assert.All(
+                    calendar.AnnouncementAddOns!,
+                    announcement =>
+                        Assert.All(announcement.OpenPolls, poll => Assert.False(poll.IsOwed))
+                );
             }
         );
     }

@@ -53,7 +53,7 @@ export const toLentCalendarAddOn = (
   addOnId: number | null,
 ): CalendarEntryAddOn | null => entry.addOns.find((held) => holdsLent(held, kind, addOnId)) ?? null;
 
-const toLentName = (lent: CalendarEntryAddOn | null): string | null => {
+export const toLentName = (lent: CalendarEntryAddOn | null): string | null => {
   switch (lent?.kind) {
     case 'poll':
       return lent.poll.question;

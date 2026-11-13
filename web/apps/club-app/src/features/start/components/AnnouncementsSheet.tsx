@@ -4,7 +4,7 @@ import { useAnnouncementsSheet } from '../hooks/use-announcements-sheet';
 import type { StartBoard } from '../hooks/use-start-view';
 import { AnnouncementBlock } from './AnnouncementBlock';
 
-const SHEET_TITLE = 'Neue Aushänge';
+const SHEET_TITLE = 'Aushänge';
 const CLOSE_LABEL = 'Schließen';
 
 interface AnnouncementsSheetProps {

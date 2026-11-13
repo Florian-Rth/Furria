@@ -243,6 +243,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             Mentions = AnnouncementMentionsDto.From(announcement.Mentions),
             PublishedAt = announcement.PublishedAt,
             ValidUntil = announcement.ValidUntil,
+            IsNew = announcement.IsNew,
             Author = announcement.Author is { } author ? ToDto(author) : null,
         };
 
@@ -570,6 +571,8 @@ public sealed record StartAnnouncementDto
     public required DateTimeOffset PublishedAt { get; init; }
 
     public required DateOnly? ValidUntil { get; init; }
+
+    public required bool IsNew { get; init; }
 
     public required StartPersonDto? Author { get; init; }
 }

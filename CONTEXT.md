@@ -1441,8 +1441,10 @@ Reactions, a news category, pinning and a **read receipt**
 and the club has no rule that asks anyone to prove they read one. Whether an announcement is *new
 to you* is answered by a single last-seen moment on the account, never by tracking each
 announcement against each reader. Opening the new Aushänge — on Start or on the board — moves that
-moment to the newest announcement shown, never backwards and never past now; Start lists an
-announcement as new for at most 60 days and never one she wrote herself (ruled 2026-10-02, L2).
+moment to the newest announcement shown, never backwards and never past now. Start lists every
+current announcement (not past its *Gültig bis*) for as long as it stays current; it marks one as
+new only when someone else wrote it, it is at most 60 days old and was published after her
+last-seen moment (ruled 2026-10-02, L2; "always on Start while current" ruled 2026-11-13).
 _UI copy_: Aushang; Titel, Text, Autor, Gültig bis; Neuer Aushang; Erwähnung
 _Avoid_: notice (that is the shell's live-evening layer), news post (that is public website news),
 message, chat, bulletin board, category, attachment, read receipt, copying an entry's add-ons

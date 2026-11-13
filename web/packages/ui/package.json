@@ -57,6 +57,8 @@
     "./KkBrandLockup": "./src/KkBrandLockup.tsx",
     "./KkBrandStage": "./src/KkBrandStage/KkBrandStage.tsx",
     "./KkBroomMark": "./src/KkBroomMark.tsx",
+    "./KkBulletin": "./src/KkBulletin/KkBulletin.tsx",
+    "./bulletin": "./src/KkBulletin/bulletin.ts",
     "./KkButton": "./src/KkButton.tsx",
     "./KkCalendarAgenda": "./src/KkCalendarAgenda/KkCalendarAgenda.tsx",
     "./KkCalendarAgendaLine": "./src/KkCalendarAgenda/internal/ui/KkCalendarAgendaLine.tsx",

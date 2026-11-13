@@ -16,13 +16,11 @@ import {
   ANNOUNCEMENT_CONTENT_SECTION_TITLE,
   ANNOUNCEMENT_CREATE_TITLE,
   ANNOUNCEMENT_EDIT_TITLE,
-  ANNOUNCEMENT_RUNTIME_SECTION_TITLE,
   ANNOUNCEMENT_SAVE_LABEL,
   ANNOUNCEMENT_TITLE_FIELD_LABEL,
-  ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL,
   ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL,
+  ANNOUNCEMENT_VALID_UNTIL_HINT,
   ANNOUNCEMENTS_ORIGIN,
-  toValidUntilQuickChoices,
   WITHDRAW_ANNOUNCEMENT_DANGER_LABEL,
 } from '../announcements-labels';
 import { useAnnouncementEditor } from '../hooks/use-announcement-editor';
@@ -46,7 +44,6 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
   const withdrawal = useAnnouncementWithdrawal(announcement);
   const isBodyInvalid = errors.body !== undefined;
   const bodyHelper = errors.body?.message;
-  const validUntilQuickChoices = toValidUntilQuickChoices(new Date());
 
   const dangerLine =
     announcement === null ? null : (
@@ -97,16 +94,13 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
           error={isBodyInvalid}
           helperText={bodyHelper}
         />
-      </KkFormSection>
-      <KkFormSection title={ANNOUNCEMENT_RUNTIME_SECTION_TITLE}>
         <KkDateField
           name="validUntil"
           label={ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL}
           value={control.validUntil}
           onChange={control.setValidUntil}
           allowEmpty
-          emptyLabel={ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL}
-          quickChoices={validUntilQuickChoices}
+          hint={ANNOUNCEMENT_VALID_UNTIL_HINT}
           error={errors.validUntil !== undefined}
           helperText={errors.validUntil?.message}
         />

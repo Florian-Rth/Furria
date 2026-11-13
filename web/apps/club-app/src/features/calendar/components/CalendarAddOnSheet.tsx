@@ -1,6 +1,6 @@
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkSheet } from '@furria/ui/KkSheet';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import type { CalendarAddOnKind } from '../schemas';
 import { CalendarAddOnOption } from './CalendarAddOnOption';
 
@@ -11,9 +11,15 @@ interface CalendarAddOnSheetProps {
   sheetId: string;
   offered: readonly CalendarAddOnKind[];
   onAttach: (addOn: CalendarAddOnKind) => void;
+  children?: ReactNode;
 }
 
-export const CalendarAddOnSheet: FC<CalendarAddOnSheetProps> = ({ sheetId, offered, onAttach }) => {
+export const CalendarAddOnSheet: FC<CalendarAddOnSheetProps> = ({
+  sheetId,
+  offered,
+  onAttach,
+  children,
+}) => {
   const options = offered.map((addOn) => (
     <CalendarAddOnOption key={addOn} addOn={addOn} onAttach={onAttach} />
   ));
@@ -21,7 +27,10 @@ export const CalendarAddOnSheet: FC<CalendarAddOnSheetProps> = ({ sheetId, offer
   return (
     <KkSheet id={sheetId} title={SHEET_TITLE} closeLabel={SHEET_CLOSE}>
       <KkSheet.Body>
-        <KkPanel variant="list">{options}</KkPanel>
+        <KkPanel variant="list">
+          {options}
+          {children}
+        </KkPanel>
       </KkSheet.Body>
     </KkSheet>
   );

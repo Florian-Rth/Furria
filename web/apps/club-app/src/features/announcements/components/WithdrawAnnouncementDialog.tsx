@@ -16,7 +16,7 @@ import type { AnnouncementWithdrawal } from '../hooks/use-announcement-withdrawa
 import type { Announcement, AnnouncementAuthor } from '../schemas';
 
 const AUTHOR_FACT_LABEL = 'Autor';
-const PUBLISHED_FACT_LABEL = 'Ausgehängt';
+const PUBLISHED_FACT_LABEL = 'Veröffentlicht';
 
 const toAuthorFacts = (author: AnnouncementAuthor | null): KkConfirmFact[] =>
   author === null

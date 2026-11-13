@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { CalendarPoll, CalendarSignUpList } from '@/features/calendar/schemas';
+import type { CalendarEntry, CalendarPoll, CalendarSignUpList } from '@/features/calendar/schemas';
 import { toDayTime } from '@/lib/day';
 import {
   toAnnouncementAddOnKind,
+  toAnnouncementAddOnMarks,
   toAnnouncementClosesAt,
   toAnnouncementPayload,
   toAnswersUntilPaths,
@@ -270,5 +271,148 @@ describe('toAnnouncementPayload', () => {
         },
       ],
     });
+  });
+});
+
+describe('toAnnouncementAddOnMarks', () => {
+  const entry: CalendarEntry = {
+    calendarEntryId: 9,
+    title: 'Stellprobe',
+    startsAt: '2027-01-21T17:00:00Z',
+    endsAt: null,
+    kind: 'plain',
+    venueId: null,
+    venueName: null,
+    ownerGroupId: null,
+    ownerGroupName: null,
+    ownerGroupTone: null,
+    participatingGroups: [],
+    audience: 'club',
+    audienceGroups: [],
+    audiencePeople: [],
+    asksForResponse: true,
+    addOns: [],
+    openFunctions: [{ kind: 'poll', addOnId: 4, hasAnswered: false }],
+    attendance: null,
+    description: null,
+    viewerAnswer: null,
+    mayAnswer: true,
+    isRunning: false,
+    event: null,
+  };
+  const votedPoll: CalendarPoll = {
+    ...poll,
+    options: [{ optionId: 1, label: 'Pizza', voteCount: 1, viewerChose: true, voters: [] }],
+  };
+  const ownLine = { lineId: 2, personId: 2, firstName: 'Lena', lastName: 'Brandt', text: null };
+  const signedList: CalendarSignUpList = {
+    ...list,
+    lines: [
+      ...list.lines,
+      { ...ownLine, byViewer: true },
+      { ...ownLine, lineId: 3, text: 'Kuchen', byViewer: true },
+    ],
+  };
+  const borrowed = (addOnId: number | null, lent: CalendarEntry): AnnouncementAddOn => ({
+    kind: 'borrowed',
+    lentKind: addOnId === null ? 'attendance' : 'poll',
+    addOnId,
+    entry: lent,
+  });
+
+  it.each<{
+    label: string;
+    addOns: AnnouncementAddOn[];
+    viewerAnswer: 'yes' | null;
+    viewerMayAnswer: boolean;
+    expected: string[];
+  }>([
+    {
+      label: 'a member who answered nothing',
+      addOns: heldAddOns,
+      viewerAnswer: null,
+      viewerMayAnswer: true,
+      expected: ['owed', 'owed', 'owed'],
+    },
+    {
+      label: 'a member who answered everything',
+      addOns: [
+        ...heldAddOns.slice(0, 1),
+        { kind: 'poll', poll: votedPoll, borrowed: null },
+        { kind: 'signUpList', signUpList: signedList, borrowed: null },
+      ],
+      viewerAnswer: 'yes',
+      viewerMayAnswer: true,
+      expected: ['answered', 'answered', 'answered'],
+    },
+    {
+      label: 'a reader who may not answer',
+      addOns: heldAddOns,
+      viewerAnswer: null,
+      viewerMayAnswer: false,
+      expected: ['quiet', 'quiet', 'quiet'],
+    },
+    {
+      label: 'a closed poll she skipped and a closed one she voted in',
+      addOns: [
+        { kind: 'poll', poll: { ...poll, isClosed: true }, borrowed: null },
+        { kind: 'poll', poll: { ...votedPoll, pollId: 8, isClosed: true }, borrowed: null },
+      ],
+      viewerAnswer: null,
+      viewerMayAnswer: true,
+      expected: ['closed', 'answered'],
+    },
+    {
+      label: 'a taken-over poll she has not voted in',
+      addOns: [borrowed(4, entry)],
+      viewerAnswer: null,
+      viewerMayAnswer: false,
+      expected: ['owed'],
+    },
+    {
+      label: 'a taken-over Zu-/Absage she answered',
+      addOns: [borrowed(null, { ...entry, viewerAnswer: 'yes' })],
+      viewerAnswer: null,
+      viewerMayAnswer: true,
+      expected: ['answered'],
+    },
+    {
+      label: 'a taken-over Zu-/Absage of an entry she may not answer',
+      addOns: [borrowed(null, { ...entry, mayAnswer: false })],
+      viewerAnswer: null,
+      viewerMayAnswer: true,
+      expected: ['quiet'],
+    },
+  ])('marks each add-on for $label', ({ addOns, viewerAnswer, viewerMayAnswer, expected }) => {
+    expect(
+      toAnnouncementAddOnMarks({ addOns, viewerAnswer, viewerMayAnswer }).map((mark) => mark.state),
+    ).toEqual(expected);
+  });
+
+  it('names each add-on by its question or title and keeps only open deadlines', () => {
+    const addOns: AnnouncementAddOn[] = [
+      ...heldAddOns.slice(0, 1),
+      { kind: 'poll', poll: { ...poll, votesUntil: '2027-01-20T19:00:00Z' }, borrowed: null },
+      {
+        kind: 'signUpList',
+        signUpList: { ...signedList, isClosed: true, signUpUntil: '2027-01-20T19:00:00Z' },
+        borrowed: null,
+      },
+      borrowed(4, {
+        ...entry,
+        addOns: [{ kind: 'poll', poll: { ...poll, pollId: 4, question: 'Wohin?' } }],
+      }),
+    ];
+
+    expect(
+      toAnnouncementAddOnMarks({ addOns, viewerAnswer: null, viewerMayAnswer: true }).map(
+        ({ name, until }) => ({ name, until }),
+      ),
+    ).toEqual([
+      { name: null, until: null },
+      { name: 'Welches Essen?', until: '2027-01-20T19:00:00Z' },
+      { name: 'Wer backt?', until: null },
+      { name: 'Wohin?', until: null },
+    ]);
   });
 });

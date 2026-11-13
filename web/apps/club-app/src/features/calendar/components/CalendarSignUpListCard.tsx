@@ -7,6 +7,7 @@ import { KkTimeField } from '@furria/ui/KkTimeField';
 import type { ChangeEvent, FC } from 'react';
 import type { AddOnCardsEditor } from '../add-on-cards-editor';
 import { CALENDAR_ADD_ON_ICONS, CALENDAR_ADD_ON_LABELS } from '../calendar-add-ons';
+import { hasNoDeadline } from '../calendar-deadlines';
 import {
   SIGN_UP_LIST_HINT_MAX_LENGTH,
   SIGN_UP_LIST_TITLE_MAX_LENGTH,
@@ -26,7 +27,8 @@ interface CalendarSignUpListCardProps {
   list: CalendarSignUpListForm;
   editor: AddOnCardsEditor;
   held: readonly CalendarEntryAddOn[] | null;
-  deadlineEmptyLabel: string;
+  deadlineEmptyLabel?: string;
+  withHint?: boolean;
   onRemove: () => void;
 }
 
@@ -37,6 +39,7 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
   editor,
   held,
   deadlineEmptyLabel,
+  withHint = true,
   onRemove,
 }) => {
   const card = useCalendarSignUpListCard({ editor, cardKey, index, list, held });
@@ -44,6 +47,31 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
   const changeTitle = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     card.setTitle(event.target.value);
   };
+
+  const hintField = withHint ? (
+    <KkTextArea
+      name={card.fieldNames.hint}
+      label={HINT_LABEL}
+      value={list.hint}
+      rows={HINT_ROWS}
+      readOnly={card.isFrozen}
+      maxLength={SIGN_UP_LIST_HINT_MAX_LENGTH}
+      error={card.hintError.hasError}
+      helperText={card.hintError.text}
+      onChange={card.setHint}
+    />
+  ) : null;
+  const deadlineTime = hasNoDeadline(list.signUpUntilDay) ? null : (
+    <KkTimeField
+      name={card.fieldNames.signUpUntilTime}
+      label={DEADLINE_TIME_LABEL}
+      value={list.signUpUntilTime}
+      onChange={card.setSignUpUntilTime}
+      disabled={card.isDeadlineTimeLocked}
+      error={card.deadlineError.hasError}
+      helperText={card.deadlineError.text}
+    />
+  );
 
   return (
     <KkAddOnCard
@@ -64,17 +92,7 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
         helperText={card.titleError.text}
         onChange={changeTitle}
       />
-      <KkTextArea
-        name={card.fieldNames.hint}
-        label={HINT_LABEL}
-        value={list.hint}
-        rows={HINT_ROWS}
-        readOnly={card.isFrozen}
-        maxLength={SIGN_UP_LIST_HINT_MAX_LENGTH}
-        error={card.hintError.hasError}
-        helperText={card.hintError.text}
-        onChange={card.setHint}
-      />
+      {hintField}
       <KkFormPair
         balance="leading"
         start={
@@ -88,17 +106,7 @@ export const CalendarSignUpListCard: FC<CalendarSignUpListCardProps> = ({
             disabled={card.isFrozen}
           />
         }
-        end={
-          <KkTimeField
-            name={card.fieldNames.signUpUntilTime}
-            label={DEADLINE_TIME_LABEL}
-            value={list.signUpUntilTime}
-            onChange={card.setSignUpUntilTime}
-            disabled={card.isDeadlineTimeLocked}
-            error={card.deadlineError.hasError}
-            helperText={card.deadlineError.text}
-          />
-        }
+        end={deadlineTime}
       />
     </KkAddOnCard>
   );

@@ -11,20 +11,6 @@ const UNSIGNED_KEY = 'unsigned';
 const authorKeyOf = (author: StartPerson | null): string =>
   author === null ? UNSIGNED_KEY : String(author.personId);
 
-export const isUnread = (
-  announcement: StartAnnouncement,
-  lastSeenAnnouncementAt: string | null | undefined,
-): boolean => {
-  if (lastSeenAnnouncementAt === undefined) {
-    return false;
-  }
-  if (lastSeenAnnouncementAt === null) {
-    return true;
-  }
-
-  return Date.parse(announcement.publishedAt) > Date.parse(lastSeenAnnouncementAt);
-};
-
 export const authorGroupsOf = (announcements: readonly StartAnnouncement[]): AuthorGroup[] => {
   const groups = new Map<string, AuthorGroup>();
 

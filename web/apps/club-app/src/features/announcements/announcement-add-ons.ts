@@ -29,7 +29,12 @@ import type {
 } from '@/features/calendar/schemas';
 import { toInstant } from '@/lib/day';
 import { toAnnouncementDeadlineStart } from './announcement-add-on-issues';
-import { toBorrowedAddOnKey, toBorrowedForm } from './announcement-borrowing';
+import {
+  toBorrowedAddOnKey,
+  toBorrowedForm,
+  toLentCalendarAddOn,
+  toLentName,
+} from './announcement-borrowing';
 import type {
   Announcement,
   AnnouncementAddOn,
@@ -38,6 +43,7 @@ import type {
   AnnouncementAttendance,
   AnnouncementAttendanceForm,
   AnnouncementForm,
+  BorrowedAnnouncementAddOn,
 } from './schemas';
 import { AnnouncementAddOnKindSchema } from './schemas';
 
@@ -311,3 +317,122 @@ export const toAnnouncementPayload = (form: AnnouncementForm): AnnouncementPaylo
   validUntil: form.validUntil,
   addOns: form.addOns.map(toAddOnPayload),
 });
+
+export type AnnouncementAddOnState = 'owed' | 'answered' | 'closed' | 'quiet';
+
+export interface AnnouncementAddOnMark {
+  key: string;
+  kind: AnnouncementAddOnKind;
+  state: AnnouncementAddOnState;
+  name: string | null;
+  until: string | null;
+}
+
+type AnnouncementAnswerState = Pick<Announcement, 'viewerAnswer' | 'viewerMayAnswer'>;
+
+interface AnswerFacts {
+  hasAnswered: boolean;
+  isOpen: boolean;
+  isClosed: boolean;
+  mayAnswer: boolean;
+  name: string | null;
+  until: string | null;
+}
+
+const stateOf = ({
+  hasAnswered,
+  isOpen,
+  isClosed,
+  mayAnswer,
+}: AnswerFacts): AnnouncementAddOnState => {
+  if (hasAnswered) {
+    return 'answered';
+  }
+  if (isClosed) {
+    return 'closed';
+  }
+
+  return isOpen && mayAnswer ? 'owed' : 'quiet';
+};
+
+const borrowedFactsOf = ({ entry, addOnId, lentKind }: BorrowedAnnouncementAddOn): AnswerFacts => {
+  const lent = { name: toLentName(toLentCalendarAddOn(entry, lentKind, addOnId)), until: null };
+
+  if (addOnId === null) {
+    return {
+      ...lent,
+      hasAnswered: entry.viewerAnswer !== null,
+      isOpen: entry.asksForResponse,
+      isClosed: false,
+      mayAnswer: entry.mayAnswer,
+    };
+  }
+
+  const open = entry.openFunctions.find(
+    (candidate) => candidate.kind === lentKind && candidate.addOnId === addOnId,
+  );
+
+  return {
+    ...lent,
+    hasAnswered: open?.hasAnswered ?? false,
+    isOpen: open !== undefined,
+    isClosed: false,
+    mayAnswer: entry.mayAnswer,
+  };
+};
+
+const answerFactsOf = (addOn: AnnouncementAddOn, state: AnnouncementAnswerState): AnswerFacts => {
+  switch (addOn.kind) {
+    case 'borrowed':
+      return borrowedFactsOf(addOn);
+    case 'attendance':
+      return {
+        hasAnswered: state.viewerAnswer !== null,
+        isOpen: !addOn.attendance.isClosed,
+        isClosed: addOn.attendance.isClosed,
+        mayAnswer: state.viewerMayAnswer,
+        name: null,
+        until: addOn.attendance.answersUntil,
+      };
+    case 'poll':
+      return {
+        hasAnswered: addOn.poll.options.some((option) => option.viewerChose),
+        isOpen: !addOn.poll.isClosed,
+        isClosed: addOn.poll.isClosed,
+        mayAnswer: state.viewerMayAnswer,
+        name: addOn.poll.question,
+        until: addOn.poll.votesUntil,
+      };
+    case 'signUpList':
+      return {
+        hasAnswered: addOn.signUpList.lines.some((line) => line.byViewer),
+        isOpen: !addOn.signUpList.isClosed,
+        isClosed: addOn.signUpList.isClosed,
+        mayAnswer: state.viewerMayAnswer,
+        name: addOn.signUpList.title,
+        until: addOn.signUpList.signUpUntil,
+      };
+  }
+};
+
+const kindOf = (addOn: AnnouncementAddOn): AnnouncementAddOnKind =>
+  addOn.kind === 'borrowed' ? addOn.lentKind : addOn.kind;
+
+export const toAnnouncementAddOnMarks = (
+  announcement: Pick<Announcement, 'addOns' | 'viewerAnswer' | 'viewerMayAnswer'>,
+): AnnouncementAddOnMark[] =>
+  announcement.addOns.map((addOn) => {
+    const facts = answerFactsOf(addOn, announcement);
+    const isOpen = !facts.isClosed;
+
+    return {
+      key: toAnnouncementAddOnKey(addOn),
+      kind: kindOf(addOn),
+      state: stateOf(facts),
+      name: facts.name,
+      until: isOpen ? facts.until : null,
+    };
+  });
+
+export const owesAnyAnswer = (marks: readonly AnnouncementAddOnMark[]): boolean =>
+  marks.some((mark) => mark.state === 'owed');

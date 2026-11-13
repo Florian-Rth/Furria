@@ -41,8 +41,14 @@ export const KkFormPair: FC<KkFormPairProps> = ({
   sx,
 }) => {
   const spans = PAIR_SPANS[balance];
-  const startSize = sizeOf(spans.start, phone);
+  const isAlone = end === null;
+  const startSize = isAlone ? FULL_ROW : sizeOf(spans.start, phone);
   const endSize = sizeOf(spans.end, phone);
+  const endCell = isAlone ? null : (
+    <Grid size={endSize} sx={CELL_SX}>
+      {end}
+    </Grid>
+  );
 
   return (
     <Grid
@@ -54,9 +60,7 @@ export const KkFormPair: FC<KkFormPairProps> = ({
       <Grid size={startSize} sx={CELL_SX}>
         {start}
       </Grid>
-      <Grid size={endSize} sx={CELL_SX}>
-        {end}
-      </Grid>
+      {endCell}
     </Grid>
   );
 };

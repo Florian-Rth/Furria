@@ -33,7 +33,7 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
   },
   [PERMISSION_KEYS.announcementsPost]: {
     title: 'Aushänge schreiben',
-    line: 'Aushänge veröffentlichen, bearbeiten und abnehmen, auch die anderer.',
+    line: 'Aushänge veröffentlichen, bearbeiten und löschen, auch die anderer.',
   },
   [PERMISSION_KEYS.clubManage]: {
     title: 'Vereinsdaten, Sessionseinträge und Orte pflegen',

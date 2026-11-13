@@ -110,7 +110,7 @@ const quietPanelOf = (panel: StartPanel, held: (key: string) => boolean): StartP
 };
 
 const holdsAnything = (panel: StartPanel): boolean =>
-  panelSizeOf(panel) > 0 || (panel.kind === 'calendar' && panel.announcementAddOns.length > 0);
+  panel.kind === 'calendar' || panelSizeOf(panel) > 0;
 
 export const withoutQuiet = (
   start: Start,

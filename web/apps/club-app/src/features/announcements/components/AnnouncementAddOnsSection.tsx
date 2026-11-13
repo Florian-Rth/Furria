@@ -1,6 +1,7 @@
 import { KkButton } from '@furria/ui/KkButton';
 import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkIcon } from '@furria/ui/KkIcon';
+import { KkSelectRow } from '@furria/ui/KkSelectRow';
 import type { FC } from 'react';
 import { CalendarAddOnRemovalDialog } from '@/features/calendar/components/CalendarAddOnRemovalDialog';
 import { CalendarAddOnSheet } from '@/features/calendar/components/CalendarAddOnSheet';
@@ -55,29 +56,19 @@ export const AnnouncementAddOnsSection: FC<AnnouncementAddOnsSectionProps> = ({
       {ADD_ADD_ON_LABEL}
     </KkButton>
   );
-  const borrowButton = isFull ? null : (
-    <KkButton
-      variant="outlined"
-      size="small"
-      startIcon={<KkIcon name="calendar" size="small" />}
-      onClick={borrowing.openSheet}
-      sx={{ alignSelf: 'flex-start' }}
-    >
-      {BORROW_ADD_ONS_LABEL}
-    </KkButton>
-  );
 
   return (
     <KkFormSection title={ADD_ONS_SECTION_TITLE}>
       {attached}
       {addButton}
-      {borrowButton}
       <AnnouncementBorrowSheet borrowing={borrowing} />
       <CalendarAddOnSheet
         sheetId={addOns.sheetId}
         offered={addOns.offered}
         onAttach={addOns.attach}
-      />
+      >
+        <KkSelectRow title={BORROW_ADD_ONS_LABEL} onClick={borrowing.openSheet} />
+      </CalendarAddOnSheet>
       <CalendarAddOnRemovalDialog
         removal={addOns.removal}
         open={addOns.isRemovalOpen}

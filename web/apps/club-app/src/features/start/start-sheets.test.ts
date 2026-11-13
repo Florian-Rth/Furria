@@ -37,6 +37,7 @@ const announcement = (announcementId: number, publishedAt: string): StartAnnounc
   mentions: { persons: [], groups: [], calendarEntries: [], events: [], newsPosts: [], albums: [] },
   publishedAt,
   validUntil: null,
+  isNew: true,
   author: {
     personId: 1,
     firstName: 'Karin',

@@ -24,6 +24,15 @@ public sealed class GetClubHubAnnouncementsTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
+    private static readonly DateTimeOffset PublishedInOctober = new(
+        2026,
+        10,
+        12,
+        10,
+        0,
+        0,
+        TimeSpan.Zero
+    );
     private static readonly DateTimeOffset PublishedInNovember = new(
         2026,
         11,
@@ -60,7 +69,7 @@ public sealed class GetClubHubAnnouncementsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CarryTheNewestTwoAndCountThemAll_When_TheHubIsRead()
+    public async Task Should_CarryTheNewestThreeAndCountThemAll_When_TheHubIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -75,10 +84,11 @@ public sealed class GetClubHubAnnouncementsTests : IClassFixture<ApiTestFixture>
                     [
                         ctx.Club.Announcements.IdOf("januar"),
                         ctx.Club.Announcements.IdOf("dezember"),
+                        ctx.Club.Announcements.IdOf("november"),
                     ],
                     result.Announcements.Newest.Select(announcement => announcement.AnnouncementId)
                 );
-                Assert.Equal(3, result.Announcements.TotalCount);
+                Assert.Equal(4, result.Announcements.TotalCount);
             }
         );
     }
@@ -180,6 +190,7 @@ public sealed class GetClubHubAnnouncementsTests : IClassFixture<ApiTestFixture>
                         PublishedInNovember,
                         ExpiredBeforeTheSession
                     )
+                    .AddAnnouncement("oktober", "alice", "Oktober", Body, PublishedInOctober)
                     .AddAnnouncement("november", "alice", "November", Body, PublishedInNovember)
                     .AddAnnouncement("dezember", "alice", "Dezember", Body, PublishedInDecember)
                     .AddAnnouncement(

@@ -16,6 +16,7 @@ interface AnnouncementDetailAddOnProps {
   announcement: Announcement;
   answering: AddOnAnswering;
   closesAt: string | null;
+  anchorId: string;
 }
 
 export const AnnouncementDetailAddOn: FC<AnnouncementDetailAddOnProps> = ({
@@ -23,9 +24,10 @@ export const AnnouncementDetailAddOn: FC<AnnouncementDetailAddOnProps> = ({
   announcement,
   answering,
   closesAt,
+  anchorId,
 }) => {
   if (addOn.kind === 'borrowed') {
-    return <AnnouncementDetailBorrowedAddOn addOn={addOn} />;
+    return <AnnouncementDetailBorrowedAddOn addOn={addOn} anchorId={anchorId} />;
   }
 
   const mayModerate = announcement.viewerMayEdit;
@@ -51,6 +53,7 @@ export const AnnouncementDetailAddOn: FC<AnnouncementDetailAddOnProps> = ({
     <KkCalendarDetail.Section
       icon={CALENDAR_ADD_ON_ICONS[addOn.kind]}
       title={CALENDAR_ADD_ON_LABELS[addOn.kind]}
+      id={anchorId}
     >
       {content}
     </KkCalendarDetail.Section>

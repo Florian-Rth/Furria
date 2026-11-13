@@ -72,7 +72,7 @@ public sealed class StartComposerTests
             TuesdayEvening
         );
 
-        Assert.Equal([StartPanelKind.Announcements], KindsOf(start));
+        Assert.Equal([StartPanelKind.Announcements, StartPanelKind.Calendar], KindsOf(start));
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public sealed class StartComposerTests
     }
 
     [Fact]
-    public void Should_DropTheCalendar_When_SheHasNoEntryAndOwesNoAnnouncementAddOn()
+    public void Should_KeepAnEmptyCalendar_When_SheHasNoEntryAndOwesNoAnnouncementAddOn()
     {
         var start = StartComposer.Compose(
             Nothing with
@@ -126,7 +126,22 @@ public sealed class StartComposerTests
             TuesdayEvening
         );
 
-        Assert.Empty(KindsOf(start));
+        Assert.Equal([StartPanelKind.Calendar], KindsOf(start));
+        Assert.Empty(CalendarOf(start).Entries!);
+    }
+
+    [Fact]
+    public void Should_RankAnEmptyCalendarBelowNews_When_SheHasNoEntry()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                News = [NewsPublishedAt("orden", DaysAgo(1))],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal([StartPanelKind.News, StartPanelKind.Calendar], KindsOf(start));
     }
 
     [Fact]
@@ -358,7 +373,10 @@ public sealed class StartComposerTests
             TuesdayEvening
         );
 
-        Assert.Equal([StartPanelKind.Mine, StartPanelKind.ToDos], KindsOf(start));
+        Assert.Equal(
+            [StartPanelKind.Mine, StartPanelKind.ToDos, StartPanelKind.Calendar],
+            KindsOf(start)
+        );
     }
 
     [Theory]
@@ -381,7 +399,10 @@ public sealed class StartComposerTests
             TuesdayEvening
         );
 
-        Assert.Equal([StartPanelKind.ToDos, StartPanelKind.Mine], KindsOf(start));
+        Assert.Equal(
+            [StartPanelKind.ToDos, StartPanelKind.Mine, StartPanelKind.Calendar],
+            KindsOf(start)
+        );
     }
 
     [Fact]
@@ -489,7 +510,7 @@ public sealed class StartComposerTests
     }
 
     [Fact]
-    public void Should_DropTheCalendar_When_HerNearestEntryLiesBeyondSixtyDays()
+    public void Should_KeepAnEmptyCalendar_When_HerNearestEntryLiesBeyondSixtyDays()
     {
         var start = StartComposer.Compose(
             Nothing with
@@ -499,7 +520,8 @@ public sealed class StartComposerTests
             TuesdayEvening
         );
 
-        Assert.Empty(start.Panels);
+        Assert.Equal([StartPanelKind.Calendar], KindsOf(start));
+        Assert.Empty(CalendarOf(start).Entries!);
     }
 
     [Fact]
@@ -578,6 +600,24 @@ public sealed class StartComposerTests
 
         Assert.Equal(6, CalendarOf(start).ShownCount);
         Assert.Equal(4, PanelOf(start, StartPanelKind.Announcements).ShownCount);
+    }
+
+    [Fact]
+    public void Should_RankAnnouncementsBelowNewsAndTheCalendar_When_NoneOfThemIsNew()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                Announcements = [AnnouncementPublishedAt(1, DaysAgo(30)) with { IsNew = false }],
+                News = [NewsPublishedAt("orden", DaysAgo(1))],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal(
+            [StartPanelKind.News, StartPanelKind.Calendar, StartPanelKind.Announcements],
+            KindsOf(start)
+        );
     }
 
     [Fact]
@@ -858,6 +898,7 @@ public sealed class StartComposerTests
             Mentions = AnnouncementMentionTargets.None,
             PublishedAt = publishedAt,
             ValidUntil = null,
+            IsNew = true,
             Author = new StartPerson
             {
                 PersonId = 1,

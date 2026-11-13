@@ -15,10 +15,12 @@ import type { AnnouncementAddOnKind, BorrowedAnnouncementAddOn } from '../schema
 
 interface AnnouncementDetailBorrowedAddOnProps {
   addOn: BorrowedAnnouncementAddOn;
+  anchorId: string;
 }
 
 export const AnnouncementDetailBorrowedAddOn: FC<AnnouncementDetailBorrowedAddOnProps> = ({
   addOn,
+  anchorId,
 }) => {
   const { lent, answering, mayModerate, source, search } = useBorrowedAddOn(addOn);
   const contents: Record<AnnouncementAddOnKind, ReactNode> = {
@@ -47,6 +49,7 @@ export const AnnouncementDetailBorrowedAddOn: FC<AnnouncementDetailBorrowedAddOn
     <KkCalendarDetail.Section
       icon={CALENDAR_ADD_ON_ICONS[addOn.lentKind]}
       title={CALENDAR_ADD_ON_LABELS[addOn.lentKind]}
+      id={anchorId}
     >
       <KkInlineLink component={Link} to={CALENDAR_PATH} search={search}>
         {source}

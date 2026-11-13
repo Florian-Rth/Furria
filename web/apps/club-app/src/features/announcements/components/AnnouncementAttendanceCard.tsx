@@ -7,8 +7,8 @@ import {
   CALENDAR_ADD_ON_ICONS,
   CALENDAR_ADD_ON_LABELS,
 } from '@/features/calendar/calendar-add-ons';
+import { hasNoAnswersUntil } from '../announcement-add-ons';
 import {
-  ANNOUNCEMENT_DEADLINE_EMPTY_LABEL,
   ANSWERS_UNTIL_DAY_LABEL,
   DEADLINE_TIME_LABEL,
   REMOVE_ATTENDANCE_LABEL,
@@ -34,6 +34,18 @@ export const AnnouncementAttendanceCard: FC<AnnouncementAttendanceCardProps> = (
 }) => {
   const card = useAnnouncementAttendanceCard({ editor, index, attendance, announcement });
 
+  const answersUntilTime = hasNoAnswersUntil(attendance) ? null : (
+    <KkTimeField
+      name={card.fieldNames.answersUntilTime}
+      label={DEADLINE_TIME_LABEL}
+      value={attendance.answersUntilTime}
+      onChange={card.setAnswersUntilTime}
+      disabled={card.isTimeLocked}
+      error={card.deadlineError.hasError}
+      helperText={card.deadlineError.text}
+    />
+  );
+
   return (
     <KkAddOnCard
       icon={CALENDAR_ADD_ON_ICONS.attendance}
@@ -51,21 +63,10 @@ export const AnnouncementAttendanceCard: FC<AnnouncementAttendanceCardProps> = (
             value={attendance.answersUntilDay}
             onChange={card.setAnswersUntilDay}
             allowEmpty
-            emptyLabel={ANNOUNCEMENT_DEADLINE_EMPTY_LABEL}
             disabled={card.isFrozen}
           />
         }
-        end={
-          <KkTimeField
-            name={card.fieldNames.answersUntilTime}
-            label={DEADLINE_TIME_LABEL}
-            value={attendance.answersUntilTime}
-            onChange={card.setAnswersUntilTime}
-            disabled={card.isTimeLocked}
-            error={card.deadlineError.hasError}
-            helperText={card.deadlineError.text}
-          />
-        }
+        end={answersUntilTime}
       />
     </KkAddOnCard>
   );

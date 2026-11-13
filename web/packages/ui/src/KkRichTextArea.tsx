@@ -1,4 +1,3 @@
-import Divider from '@mui/material/Divider';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
@@ -82,7 +81,6 @@ export const KkRichTextArea: FC<KkRichTextAreaProps> = ({
       </Typography>
       <Stack sx={frameStyle(error)}>
         <KkFormatRail label={formatLabel} items={formatItems} orientation="horizontal" />
-        <Divider />
         <Stack sx={{ px: HELPER_INSET, py: 1.5, minWidth: 0 }}>
           <KkProseField
             hostRef={hostRef}

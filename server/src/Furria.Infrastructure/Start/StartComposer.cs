@@ -178,15 +178,12 @@ public static class StartComposer
         };
 
     [Pure]
-    private static BandedPanel? CalendarPanelOf(
+    private static BandedPanel CalendarPanelOf(
         IReadOnlyList<StartEntrySummary> rows,
         IReadOnlyList<StartAnnouncementAddOns> announcementAddOns,
         StartMoment moment
     )
     {
-        if (rows.Count == 0 && !announcementAddOns.Any(announcement => announcement.IsOwed))
-            return null;
-
         var shownCount = ShownCountOf(CalendarCap, rows.Count);
         var picked = rows.OrderBy(row => PickRankOf(row, moment))
             .ThenBy(row => row.StartsAt)
@@ -224,6 +221,7 @@ public static class StartComposer
             .Concat(
                 announcementAddOns.Any(announcement => announcement.IsOwed) ? [StartBand.Work] : []
             )
+            .Append(StartBand.Later)
             .Min();
 
     [Pure]
@@ -265,7 +263,9 @@ public static class StartComposer
                             .ThenByDescending(announcement => announcement.AnnouncementId),
                     ],
                 },
-                StartBand.New
+                announcements.Any(announcement => announcement.IsNew)
+                    ? StartBand.New
+                    : StartBand.Later
             );
 
     [Pure]

@@ -322,6 +322,7 @@ describe('visit hold', () => {
       },
       publishedAt: '2027-01-18T09:00:00Z',
       validUntil: null,
+      isNew: true,
       author: {
         personId: 3,
         firstName: 'Frank',

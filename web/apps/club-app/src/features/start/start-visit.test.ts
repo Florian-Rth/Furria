@@ -38,6 +38,7 @@ const announcement = (announcementId: number, title: string): StartAnnouncement 
   mentions: { persons: [], groups: [], calendarEntries: [], events: [], newsPosts: [], albums: [] },
   publishedAt: '2027-01-18T08:00:00Z',
   validUntil: null,
+  isNew: true,
   author: {
     personId: 1,
     firstName: 'Karin',
