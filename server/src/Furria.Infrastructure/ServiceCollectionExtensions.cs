@@ -87,6 +87,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CredentialChangeNotifier>();
         services.AddScoped<PasskeyService>();
         services.AddScoped<PushSubscriptionService>();
+        services.AddScoped<PushTopicService>();
         services.AddScoped<PushSender>();
         services
             .AddHttpClient(PushSender.HttpClientName)

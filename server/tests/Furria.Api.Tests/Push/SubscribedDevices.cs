@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Push;
+using Furria.Core.Push;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.Push;
@@ -9,6 +10,21 @@ namespace Furria.Api.Tests.Push;
 
 internal static class SubscribedDevices
 {
+    private static async Task SwitchedAsync(
+        SeededContext ctx,
+        string accountAlias,
+        PushTopic topic,
+        bool isEnabled,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync(accountAlias, ct);
+        var response = await client.PUTAsync<PutMyPushTopic, PutMyPushTopicRequest>(
+            new PutMyPushTopicRequest { Topic = topic, IsEnabled = isEnabled }
+        );
+        response.EnsureSuccessStatusCode();
+    }
+
     internal static async Task<string> SubscribedDeviceAsync(
         SeededContext ctx,
         string accountAlias,
@@ -33,6 +49,20 @@ internal static class SubscribedDevices
 
         return device;
     }
+
+    internal static Task MutedAsync(
+        SeededContext ctx,
+        string accountAlias,
+        PushTopic topic,
+        CancellationToken ct
+    ) => SwitchedAsync(ctx, accountAlias, topic, isEnabled: false, ct);
+
+    internal static Task UnmutedAsync(
+        SeededContext ctx,
+        string accountAlias,
+        PushTopic topic,
+        CancellationToken ct
+    ) => SwitchedAsync(ctx, accountAlias, topic, isEnabled: true, ct);
 
     internal static IReadOnlyList<JsonElement> PushesAt(ApiTestFixture fixture, string device) =>
         [

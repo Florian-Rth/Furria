@@ -4,6 +4,7 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
+using Furria.Core.Push;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -53,6 +54,28 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
         Assert.Empty(PushesAt(_fixture, devices.Ilka));
         Assert.Empty(PushesAt(_fixture, devices.Paula));
         Assert.Empty(PushesAt(_fixture, devices.Fred));
+    }
+
+    [Fact]
+    public async Task Should_SkipTheMember_When_HeMutedInvitations()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+        await MutedAsync(ctx, "chris", PushTopic.Invitations, ct);
+
+        await CreateAsync(
+            ctx,
+            ClubEntry() with
+            {
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
+            },
+            ct
+        );
+
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Empty(PushesAt(_fixture, devices.Chris));
+        Assert.Single(PushesAt(_fixture, devices.Mara));
     }
 
     [Fact]

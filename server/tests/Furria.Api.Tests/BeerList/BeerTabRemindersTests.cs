@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Push;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -40,6 +41,26 @@ public sealed class BeerTabRemindersTests : IClassFixture<ApiTestFixture>
         var push = Assert.Single(PushesAt(_fixture, drinkersPhone));
         Assert.Equal("/beer-list", UrlOf(push));
         Assert.Empty(PushesAt(_fixture, wardensPhone));
+    }
+
+    [Fact]
+    public async Task Should_RemindAgain_When_TheHolderSwitchesTabRemindersBackOn()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = NoonTomorrow;
+        var ctx = await BuildAsync(
+            beerList => beerList.AddBeerCrates(Pot, Drinker, 2, now - Week),
+            ct
+        );
+        var phone = await SubscribedDeviceAsync(ctx, Drinker, "tab-muted", ct);
+        await MutedAsync(ctx, Drinker, PushTopic.BeerTab, ct);
+
+        await RemindAtAsync(now, ct);
+        Assert.Empty(PushesAt(_fixture, phone));
+
+        await UnmutedAsync(ctx, Drinker, PushTopic.BeerTab, ct);
+        await RemindAtAsync(now + TimeSpan.FromHours(1), ct);
+        Assert.Single(PushesAt(_fixture, phone));
     }
 
     [Fact]

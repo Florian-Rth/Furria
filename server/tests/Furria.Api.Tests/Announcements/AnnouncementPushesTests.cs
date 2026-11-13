@@ -3,6 +3,7 @@ using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Announcements;
 using Furria.Application.Authorization;
+using Furria.Core.Push;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -41,6 +42,21 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
         Assert.Single(PushesAt(_fixture, devices.Paula));
         Assert.Empty(PushesAt(_fixture, devices.Bea));
         Assert.Empty(PushesAt(_fixture, devices.Fred));
+    }
+
+    [Fact]
+    public async Task Should_SkipTheMember_When_SheMutedAnnouncements()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+        await MutedAsync(ctx, "alice", PushTopic.Announcements, ct);
+
+        await PostAsync(ctx, ct);
+
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Empty(PushesAt(_fixture, devices.Alice));
+        Assert.Single(PushesAt(_fixture, devices.Paula));
     }
 
     [Fact]

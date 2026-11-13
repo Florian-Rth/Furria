@@ -2,6 +2,7 @@ using Furria.Application.Authorization;
 using Furria.Application.Push;
 using Furria.Core.BeerList;
 using Furria.Core.Club;
+using Furria.Core.Push;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Push;
@@ -120,6 +121,7 @@ public sealed class BeerStockWarningService
                 && operatorIds.Contains(account.PersonId.Value)
                 && !account.IsDisabled
             )
+            .ListeningTo(_dbContext, PushTopic.BeerStock)
             .OrderBy(account => account.Id)
             .Select(account => account.Id)
             .ToListAsync(ct);

@@ -30,3 +30,22 @@ export const PushOpenMessageSchema = z.object({
   type: z.literal(PUSH_OPEN_MESSAGE),
   path: AppPathSchema,
 });
+
+export const PushTopicSchema = z.enum([
+  'invitations',
+  'changes',
+  'reminders',
+  'announcements',
+  'beerTab',
+  'beerStock',
+]);
+export type PushTopic = z.infer<typeof PushTopicSchema>;
+
+export const PushTopicSettingSchema = z.object({
+  topic: PushTopicSchema,
+  isEnabled: z.boolean(),
+});
+export type PushTopicSetting = z.infer<typeof PushTopicSettingSchema>;
+
+export const PushTopicsSchema = z.object({ topics: z.array(PushTopicSettingSchema) });
+export type PushTopics = z.infer<typeof PushTopicsSchema>;

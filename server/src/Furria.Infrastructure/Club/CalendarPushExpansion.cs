@@ -161,7 +161,7 @@ public sealed class CalendarPushExpansion
         CancellationToken ct
     )
     {
-        var accounts = _dbContext.PushableAccounts();
+        var accounts = _dbContext.PushableAccounts(CalendarPushRules.TopicOf(push.Reason));
 
         if (push.ActorPersonId is { } actorPersonId)
             accounts = accounts.Where(account => account.PersonId != actorPersonId);

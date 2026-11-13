@@ -1,19 +1,25 @@
 using Furria.Core.Club;
+using Furria.Core.Push;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Push;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
 
 internal static class CalendarReminderRecords
 {
-    internal static IQueryable<Account> PushableAccounts(this AppDbContext dbContext) =>
+    internal static IQueryable<Account> PushableAccounts(
+        this AppDbContext dbContext,
+        PushTopic topic
+    ) =>
         dbContext
             .Users.AsNoTracking()
             .Where(account => !account.IsDisabled && account.PersonId != null)
             .Where(account =>
                 dbContext.PushSubscriptions.Any(device => device.AccountId == account.Id)
-            );
+            )
+            .ListeningTo(dbContext, topic);
 
     internal static async Task<IReadOnlySet<int>> ReachablePersonIdsAsync(
         this AppDbContext dbContext,
@@ -23,7 +29,7 @@ internal static class CalendarReminderRecords
     )
     {
         var reachable = await dbContext
-            .PushableAccounts()
+            .PushableAccounts(PushTopic.Reminders)
             .Where(account => personIds.Contains(account.PersonId!.Value))
             .Where(account => account.PersonId != exceptPersonId)
             .Select(account => account.PersonId!.Value)

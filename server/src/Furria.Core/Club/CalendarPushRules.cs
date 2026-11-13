@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using Furria.Core.Push;
 
 namespace Furria.Core.Club;
 
@@ -31,6 +32,15 @@ public static class CalendarPushRules
         reason == CalendarPushReason.AsksForResponse
             ? startsAt > now
             : AddOnClosing.EntryEndOf(startsAt, endsAt) > now;
+
+    [Pure]
+    public static PushTopic TopicOf(CalendarPushReason reason) =>
+        reason switch
+        {
+            CalendarPushReason.Moved or CalendarPushReason.Deleted => PushTopic.Changes,
+            CalendarPushReason.Reminder => PushTopic.Reminders,
+            _ => PushTopic.Invitations,
+        };
 
     [Pure]
     public static bool IsReminderDue(DateTimeOffset closesAt, DateTimeOffset now) => closesAt > now;
