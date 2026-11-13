@@ -16,6 +16,11 @@ namespace Furria.Api.Tests.Studio;
 [SeedsAliases]
 public sealed class GetMyActsTests : IClassFixture<ApiTestFixture>
 {
+    private static readonly DateTimeOffset AtTheSessionOpening = ClubClock.At(
+        new DateOnly(2026, 11, 11),
+        new TimeOnly(12, 0)
+    );
+
     private readonly ApiTestFixture _fixture;
 
     public GetMyActsTests(ApiTestFixture fixture)
@@ -112,18 +117,25 @@ public sealed class GetMyActsTests : IClassFixture<ApiTestFixture>
     public async Task Should_SkipACancelledEvening_When_TellingTheNextEvening()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-        var gala = ctx.Club.Events.IdOf(Gala);
-        var summerParty = ctx.Club.Events.IdOf(SummerParty);
-        var actId = await GardetanzAsync(ctx, ct);
-        await SavedAsync(planner, gala, null, [Line(actId, 0)]);
-        await SavedAsync(planner, summerParty, null, [Line(actId, 0)]);
-        await _fixture.CancelEventDirectlyAsync(gala, ct);
-        var anna = await ctx.Identity.ClientForAsync(Anna, ct);
 
-        var (_, result) = await anna.GETAsync<GetMyActs, GetMyActsResponse>();
+        await _fixture.AtInstantAsync(
+            AtTheSessionOpening,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+                var planner = await ctx.Identity.ClientForAsync(Planner, ct);
+                var gala = ctx.Club.Events.IdOf(Gala);
+                var summerParty = ctx.Club.Events.IdOf(SummerParty);
+                var actId = await GardetanzAsync(ctx, ct);
+                await SavedAsync(planner, gala, null, [Line(actId, 0)]);
+                await SavedAsync(planner, summerParty, null, [Line(actId, 0)]);
+                await _fixture.CancelEventDirectlyAsync(gala, ct);
+                var anna = await ctx.Identity.ClientForAsync(Anna, ct);
 
-        Assert.Equal(summerParty, Assert.Single(result.Acts).NextEvening?.EventId);
+                var (_, result) = await anna.GETAsync<GetMyActs, GetMyActsResponse>();
+
+                Assert.Equal(summerParty, Assert.Single(result.Acts).NextEvening?.EventId);
+            }
+        );
     }
 }
