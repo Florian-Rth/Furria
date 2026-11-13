@@ -103,6 +103,8 @@ public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
         "/api/push/key",
         "/api/push/subscription",
         "/api/push/subscription/remove",
+        "/api/push/topics",
+        "/api/push/topics/{topic}",
         "/api/beer-list/tab",
         "/api/changes",
     ];

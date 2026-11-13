@@ -5552,6 +5552,23 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("media_worker_heartbeat", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Infrastructure.Push.MutedPushTopic", b =>
+                {
+                    b.Property<int>("AccountId")
+                        .HasColumnType("integer")
+                        .HasColumnName("account_id");
+
+                    b.Property<string>("Topic")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("topic");
+
+                    b.HasKey("AccountId", "Topic")
+                        .HasName("pk_muted_push_topic");
+
+                    b.ToTable("muted_push_topic", (string)null);
+                });
+
             modelBuilder.Entity("Furria.Infrastructure.Push.OutboxPush", b =>
                 {
                     b.Property<long>("Id")
@@ -7510,6 +7527,18 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_refresh_token_account_account_id");
+
+                    b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.Push.MutedPushTopic", b =>
+                {
+                    b.HasOne("Furria.Infrastructure.Identity.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_muted_push_topic_account_account_id");
 
                     b.Navigation("Account");
                 });

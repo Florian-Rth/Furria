@@ -1,6 +1,7 @@
 import type { KkNoticeRequest } from '@furria/ui/KkNotice';
 import type { PushReadiness } from './push-readiness';
-import type { PushDelivery } from './schemas';
+import type { PushTopicsTally } from './push-topics';
+import type { PushDelivery, PushTopic } from './schemas';
 import type { TestPushReport } from './test-push-report';
 
 export const PUSH_SECTION_TITLE = 'Benachrichtigungen';
@@ -14,6 +15,72 @@ export const PUSH_READINESS_NOTES: Partial<Record<PushReadiness, string>> = {
   blocked:
     'Mitteilungen von FURRIA sind in den Einstellungen deines Geräts blockiert. Erlaube sie dort, dann kannst du sie hier einschalten.',
 };
+
+export interface PushTopicCopy {
+  label: string;
+  description: string;
+}
+
+export const PUSH_TOPIC_COPY: Record<PushTopic, PushTopicCopy> = {
+  invitations: {
+    label: 'Einladungen',
+    description: 'Neue Termine, bei denen du dabei bist oder zu- oder absagen sollst',
+  },
+  changes: {
+    label: 'Änderungen und Absagen',
+    description: 'Wenn sich ein Termin verschiebt oder ausfällt',
+  },
+  reminders: {
+    label: 'Erinnerungen',
+    description: 'Offene Zusagen, Abstimmungen und Eintragungen',
+  },
+  announcements: {
+    label: 'Aushänge',
+    description: 'Wenn ein neuer Aushang erscheint',
+  },
+  beerTab: {
+    label: 'Bierliste',
+    description: 'Wenn deine offenen Kisten bezahlt werden wollen',
+  },
+  beerStock: {
+    label: 'Bierbestand',
+    description: 'Wenn das Bier bald ausgeht',
+  },
+};
+
+export const PUSH_TOPICS_LABEL = 'Themen';
+
+export const PUSH_TOPICS_ACTION = 'Auswählen';
+
+export const PUSH_TOPICS_SHEET_ID = 'push-topics';
+
+export const PUSH_TOPICS_SHEET_TITLE = 'Benachrichtigungen';
+
+export const PUSH_TOPICS_SHEET_CLOSE = 'Schließen';
+
+export const PUSH_TOPICS_SHEET_DONE = 'Fertig';
+
+export const PUSH_TOPIC_SWITCH_FAILED =
+  'Die Einstellung ließ sich nicht speichern. Versuch es noch einmal.';
+
+export const pushTopicsTallyLabelOf = (tally: PushTopicsTally): string => {
+  switch (tally.kind) {
+    case 'all':
+      return 'Alles';
+    case 'none':
+      return 'Nichts';
+    case 'some':
+      return `${tally.enabled} von ${tally.total}`;
+  }
+};
+
+export const PUSH_ASK_EYEBROW = 'Benachrichtigungen';
+
+export const PUSH_ASK_HEADLINE = { line1: 'Nichts', line2: 'verpassen' } as const;
+
+export const PUSH_ASK_LATER_NOTE = 'Das kannst du jederzeit in deinem Profil ändern.';
+
+export const PUSH_ASK_NEXT = 'Weiter';
 
 export const PUSH_SWITCHED_ON = 'Dieses Gerät bekommt jetzt Mitteilungen.';
 

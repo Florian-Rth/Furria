@@ -1,35 +1,36 @@
-import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
-import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import type { FC } from 'react';
-import { SWITCH_STATE_LABELS } from '@/lib/state-chips';
-import { usePushSwitch } from '../hooks/use-push-switch';
-import { PUSH_SECTION_TITLE, PUSH_SWITCH_LABEL } from '../push-copy';
+import { usePushTopics } from '../hooks/use-push-topics';
+import { PUSH_SECTION_TITLE, PUSH_TOPICS_SHEET_ID } from '../push-copy';
+import { PushDeviceSwitch } from './PushDeviceSwitch';
+import { PushTopicsRow } from './PushTopicsRow';
+import { PushTopicsSheet } from './PushTopicsSheet';
 
 export const PushDevicePanel: FC = () => {
-  const control = usePushSwitch();
-  if (control.readiness === undefined) {
+  const topics = usePushTopics();
+  const sheets = useKkSheetCommands();
+  if (topics.hearsNothing) {
     return null;
   }
 
-  const body =
-    control.note === undefined ? (
-      <KkSwitchRow
-        label={PUSH_SWITCH_LABEL}
-        checked={control.isOn}
-        onChange={control.toggle}
-        stateLabel={SWITCH_STATE_LABELS}
-        busy={control.isSwitching}
-        disabled={control.isSwitching}
-      />
-    ) : (
-      <KkNote tone="hint">{control.note}</KkNote>
+  const openTopics = (): void => {
+    sheets.open(PUSH_TOPICS_SHEET_ID);
+  };
+
+  const topicsRow =
+    topics.tallyLabel === undefined ? null : (
+      <PushTopicsRow tallyLabel={topics.tallyLabel} onChoose={openTopics} />
     );
 
   return (
     <KkPanelSection title={PUSH_SECTION_TITLE}>
-      <KkPanel variant="block">{body}</KkPanel>
+      <KkPanel variant="block">
+        <PushDeviceSwitch />
+        {topicsRow}
+      </KkPanel>
+      <PushTopicsSheet control={topics} />
     </KkPanelSection>
   );
 };

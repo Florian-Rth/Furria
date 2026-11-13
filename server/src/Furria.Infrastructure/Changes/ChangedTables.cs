@@ -110,6 +110,7 @@ public static class ChangedTables
         [typeof(BeerCrate)] = [DomainChange.BeerCrate],
         [typeof(BeerPayment)] = [DomainChange.BeerPayment],
         [typeof(PushSubscription)] = [DomainChange.PushDevice],
+        [typeof(MutedPushTopic)] = [DomainChange.PushDevice],
         [typeof(Hall)] = [DomainChange.Hall],
         [typeof(TablePlan)] = [DomainChange.TablePlan],
         [typeof(TableType)] = [DomainChange.Seating],

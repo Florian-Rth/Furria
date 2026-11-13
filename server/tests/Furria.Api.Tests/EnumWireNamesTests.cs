@@ -18,6 +18,7 @@ using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.News;
+using Furria.Core.Push;
 using Furria.Core.RunningOrders;
 using Furria.Core.Studio;
 using Furria.Tests.Common.Fixtures;
@@ -119,6 +120,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(AdmissionAgeBand)] =
             "underTwelve twelveToThirteen fourteenToFifteen sixteenToSeventeen eighteenPlus",
         [typeof(GroupStatementState)] = "answered open new changed",
+        [typeof(PushTopic)] = "invitations changes reminders announcements beerTab beerStock",
     };
 
     private readonly ApiTestFixture _fixture;

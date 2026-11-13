@@ -2,6 +2,7 @@ using FastEndpoints;
 using Furria.Api.Endpoints.BeerList;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
+using Furria.Core.Push;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -44,6 +45,26 @@ public sealed class BeerStockWarningsTests : IClassFixture<ApiTestFixture>
         Assert.Equal("/beer-list/manage/stock", UrlOf(push));
         Assert.Single(PushesAt(_fixture, operatorsPhone));
         Assert.Empty(PushesAt(_fixture, drinkersPhone));
+    }
+
+    [Fact]
+    public async Task Should_SkipTheOperator_When_HeMutedStockWarnings()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAsync(cratesLeft: 7, ct);
+        var wardensPhone = await SubscribedDeviceAsync(ctx, Warden, "stock-muted-warden", ct);
+        var operatorsPhone = await SubscribedDeviceAsync(
+            ctx,
+            SecondOperator,
+            "stock-muted-otto",
+            ct
+        );
+        await MutedAsync(ctx, SecondOperator, PushTopic.BeerStock, ct);
+
+        await WarnAtAsync(NoonTomorrow, ct);
+
+        Assert.Single(PushesAt(_fixture, wardensPhone));
+        Assert.Empty(PushesAt(_fixture, operatorsPhone));
     }
 
     [Fact]

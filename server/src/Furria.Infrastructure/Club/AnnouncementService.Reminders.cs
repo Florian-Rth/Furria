@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Push;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -51,7 +52,7 @@ public sealed partial class AnnouncementService
             return Result.Validation(NobodyOpenMessage);
 
         var accountIds = await _dbContext
-            .PushableAccounts()
+            .PushableAccounts(PushTopic.Reminders)
             .Where(account => open.Contains(account.PersonId!.Value))
             .OrderBy(account => account.Id)
             .Select(account => account.Id)

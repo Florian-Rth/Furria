@@ -1,4 +1,5 @@
 using Furria.Core.BeerList;
+using Furria.Core.Push;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Push;
 using Microsoft.EntityFrameworkCore;
@@ -103,6 +104,7 @@ public sealed class BeerTabReminderService
         _dbContext
             .Users.AsNoTracking()
             .Where(account => account.PersonId == personId && !account.IsDisabled)
+            .ListeningTo(_dbContext, PushTopic.BeerTab)
             .Select(account => account.Id)
             .ToListAsync(ct);
 

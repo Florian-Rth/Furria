@@ -2,6 +2,7 @@ import { createFileRoute, Navigate, Outlet, redirect, useLocation } from '@tanst
 import type { FC } from 'react';
 import { GalleryDevelopingPoller } from '@/features/gallery/components/GalleryDevelopingPoller';
 import { buildLoginSearch } from '@/features/login/login-redirect';
+import { PushAskGate } from '@/features/push/components/PushAskGate';
 import { AppFailure } from '@/features/session/components/AppFailure';
 import { AppShell } from '@/features/session/components/AppShell';
 import { ScreenNotFound } from '@/features/session/components/ScreenNotFound';
@@ -23,9 +24,11 @@ const AppLayout: FC = () => {
   return (
     <AppShell>
       <GalleryDevelopingPoller />
-      <WelcomeGate>
-        <Outlet />
-      </WelcomeGate>
+      <PushAskGate>
+        <WelcomeGate>
+          <Outlet />
+        </WelcomeGate>
+      </PushAskGate>
     </AppShell>
   );
 };

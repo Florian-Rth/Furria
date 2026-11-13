@@ -75,6 +75,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
 
+    public DbSet<MutedPushTopic> MutedPushTopics => Set<MutedPushTopic>();
+
     public DbSet<Session> Sessions => Set<Session>();
 
     public DbSet<Venue> Venues => Set<Venue>();
