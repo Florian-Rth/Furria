@@ -12,13 +12,8 @@ import Typography from '@mui/material/Typography';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { ClubMailButton } from '@/components/ClubMailButton';
-import {
-  buildFoundedLabel,
-  groupsLabels,
-  resolveGroupOpenness,
-} from '@/features/club/groups-content';
+import { buildFoundedLabel, groupsLabels } from '@/features/club/groups-content';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
-import { GroupOpennessChip } from './GroupOpennessChip';
 
 const BANNER_SIZES = '(min-width: 600px) 40rem, 100vw';
 const BANNER_ASPECT_RATIO = aspectRatioCss('banner');
@@ -32,7 +27,6 @@ interface GroupModalPanelProps {
 }
 
 export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId, onClose }) => {
-  const openness = resolveGroupOpenness(group.isRecruiting);
   const description = group.description.trim();
   const hasDescription = description !== '';
   const body = hasDescription ? description : groupsLabels.noDescription;
@@ -101,16 +95,12 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
             {group.name}
           </Typography>
           {founded}
-          <GroupOpennessChip openness={openness} />
         </Stack>
         <Typography
           variant="body1"
           sx={{ color: 'text.secondary', fontStyle: hasDescription ? 'normal' : 'italic' }}
         >
           {body}
-        </Typography>
-        <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-          {openness.note}
         </Typography>
         <Stack direction="row" sx={{ gap: 2, flexWrap: 'wrap', pt: 0.5 }}>
           <Button
