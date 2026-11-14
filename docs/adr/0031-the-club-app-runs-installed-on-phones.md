@@ -24,6 +24,9 @@ there shows the install page (`features/app-install`) instead of the app.**
   declaration there first. Android hands the link to the installed app: the manifest scope `/`
   covers the route, `launch_handler` `navigate-existing` reuses the open app window and
   `handle_links: preferred` asks browsers that support it to open in-scope links in the app.
+  Since 2026-11-10 also the **claim window** `/claim-window`, and since 2026-11-14 the access
+  request `/request-access` it links to while closed: the projector QR code opens them on
+  phones without the app, and signing up finishes in the tab; the gate takes over after.
 - **The install page picks the steps for the browser in hand** (`install-guide.ts`): one tap via
   `beforeinstallprompt` where the browser offers it (captured before React mounts by
   `public/install-boot.js`), else the menu steps of iPhone Safari (≤18 share bar, 26 "•••"
