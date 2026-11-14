@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { reelPositionOf, reelScenesOf, reelSlotsOf } from './reel-timeline';
+import { reelPositionOf, reelQrPoseOf, reelScenesOf, reelSlotsOf } from './reel-timeline';
 
 const FIRST = reelScenesOf(true);
 const LATER = reelScenesOf(false);
@@ -21,9 +21,9 @@ describe('reelPositionOf', () => {
   it.each([
     { elapsed: 0, loop: 0, key: 'opener', sceneMs: 0 },
     { elapsed: 4500, loop: 0, key: 'start', sceneMs: 500 },
-    { elapsed: 67999, loop: 0, key: 'finale', sceneMs: 7999 },
-    { elapsed: 68000, loop: 1, key: 'start', sceneMs: 0 },
-    { elapsed: 68000 + 64000 + 7100, loop: 2, key: 'calendar', sceneMs: 100 },
+    { elapsed: 153999, loop: 0, key: 'finale', sceneMs: 9999 },
+    { elapsed: 154000, loop: 1, key: 'start', sceneMs: 0 },
+    { elapsed: 154000 + 150000 + 20100, loop: 2, key: 'calendar', sceneMs: 100 },
   ])('$elapsed ms is $sceneMs ms into $key of loop $loop', ({ elapsed, loop, key, sceneMs }) => {
     const position = reelPositionOf(elapsed, FIRST, LATER);
     const scenes = position.loop === 0 ? FIRST : LATER;
@@ -59,11 +59,23 @@ describe('reelSlotsOf', () => {
   });
 
   it('preloads the first scene of the next loop during the finale and leaves the finale into it', () => {
-    expect(slotsAt(61000)).toEqual(['finale:live:match', 'start:waiting:whip']);
-    expect(slotsAt(68300)).toEqual([
+    expect(slotsAt(150000)).toEqual(['finale:live:match', 'start:waiting:whip']);
+    expect(slotsAt(154300)).toEqual([
       'finale:leaving:whip',
       'start:live:whip',
       'calendar:waiting:match',
     ]);
+  });
+});
+
+describe('reelQrPoseOf', () => {
+  it.each([
+    { elapsed: 30000, pose: 'away' },
+    { elapsed: 144000 + 9000, pose: 'hero' },
+    { elapsed: 144000 + 9200, pose: 'corner' },
+    { elapsed: 154000 + 5000, pose: 'corner' },
+    { elapsed: 154000 + 140000 + 500, pose: 'hero' },
+  ])('$elapsed ms shows the access code as $pose', ({ elapsed, pose }) => {
+    expect(reelQrPoseOf(reelPositionOf(elapsed, FIRST, LATER), FIRST, LATER)).toBe(pose);
   });
 });

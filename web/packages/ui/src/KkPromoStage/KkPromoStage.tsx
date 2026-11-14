@@ -1,5 +1,4 @@
 import { KkPromoStageCopy } from './internal/layout/KkPromoStageCopy';
-import { KkPromoStageCorner } from './internal/layout/KkPromoStageCorner';
 import { KkPromoStageDevice } from './internal/layout/KkPromoStageDevice';
 import { KkPromoStageFoot } from './internal/layout/KkPromoStageFoot';
 import { KkPromoStageRoot } from './internal/layout/KkPromoStageRoot';
@@ -32,7 +31,6 @@ export const KkPromoStage = Object.assign(KkPromoStageRoot, {
   NameWall: KkPromoStageNameWall,
   Crest: KkPromoStageCrest,
   Index: KkPromoStageIndex,
-  Corner: KkPromoStageCorner,
   QrCard: KkPromoStageQrCard,
   Foot: KkPromoStageFoot,
   Ticker: KkPromoStageTicker,

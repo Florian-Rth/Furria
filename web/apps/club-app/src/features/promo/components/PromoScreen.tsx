@@ -12,6 +12,7 @@ import {
   PROMO_WORDMARK,
   sessionMetaOf,
 } from '../promo-copy';
+import { HERO_QR } from '../reel-placements';
 import { PromoSceneSlot } from './PromoSceneSlot';
 
 export const PromoScreen: FC = () => {
@@ -30,20 +31,17 @@ export const PromoScreen: FC = () => {
             phase={slot.phase}
             cut={slot.cut}
             wallNames={reel.wallNames}
-            accessUrl={reel.accessUrl}
-            accessAddress={reel.accessAddress}
             yearsLabel={reel.yearsLabel}
           />
         ))}
         <KkPromoStage.Index items={PROMO_INDEX} active={reel.indexActive} />
-        <KkPromoStage.Corner>
-          <KkPromoStage.QrCard
-            value={reel.accessUrl}
-            call={PROMO_QR_CALL}
-            address={reel.accessAddress}
-            shown={reel.cornerShown}
-          />
-        </KkPromoStage.Corner>
+        <KkPromoStage.QrCard
+          value={reel.accessUrl}
+          call={PROMO_QR_CALL}
+          address={reel.accessAddress}
+          pose={reel.qrPose}
+          hero={HERO_QR}
+        />
         <KkPromoStage.Foot>
           <KkPromoStage.Ticker items={reel.tickerItems} />
         </KkPromoStage.Foot>

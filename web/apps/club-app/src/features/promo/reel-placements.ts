@@ -4,5 +4,4 @@ export const CREST_ORIGIN = {
   x: (CREST_CENTER.x / 1280) * 100,
   y: (CREST_CENTER.y / 720) * 100,
 } as const;
-export const HERO_QR = { centerX: 975, centerY: 352 } as const;
-export const QR_DOCK = { x: 140, y: 140, scale: 196 / 330 } as const;
+export const HERO_QR = { right: 1140, bottom: 550 } as const;

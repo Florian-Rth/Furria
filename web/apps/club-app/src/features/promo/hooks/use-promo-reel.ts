@@ -1,4 +1,4 @@
-import type { KkPromoArrival, KkPromoWallName } from '@furria/ui/promo-stage-types';
+import type { KkPromoArrival, KkPromoQrPose, KkPromoWallName } from '@furria/ui/promo-stage-types';
 import { relevantSessionYear, sessionYearsLabelOf } from '@/lib/club';
 import { wallNamesOf } from '../arrival-show';
 import { arrivalTickerOf, PROMO_TICKER } from '../promo-copy';
@@ -9,6 +9,7 @@ import { useLoopBaseline } from './use-loop-baseline';
 import { usePromoMembers } from './use-promo-members';
 import { useReelClock } from './use-reel-clock';
 import { useReelPosition } from './use-reel-position';
+import { useReelQrPose } from './use-reel-qr-pose';
 
 const INDEX_OF: Partial<Record<ReelSceneKey, number>> = {
   start: 0,
@@ -29,7 +30,7 @@ interface PromoReel {
   slots: ReelSlot[];
   wallNames: KkPromoWallName[];
   arrival: KkPromoArrival | null;
-  cornerShown: boolean;
+  qrPose: KkPromoQrPose;
   indexActive: number;
   tickerItems: readonly string[];
   yearsLabel: string;
@@ -42,6 +43,7 @@ export const usePromoReel = (): PromoReel => {
   const clock = useReelClock(arrival !== null);
   const position = useReelPosition(clock, FIRST_LOOP, LATER_LOOP, REEL_LEAVE_MS);
   const knownAtLoopStart = useLoopBaseline(position.loop, members, members.length > 0);
+  const qrPose = useReelQrPose(clock, FIRST_LOOP, LATER_LOOP);
   const slots = reelSlotsOf(position, FIRST_LOOP, LATER_LOOP);
   const liveKey = slots.find((slot) => slot.phase === 'live')?.scene.key;
 
@@ -50,7 +52,7 @@ export const usePromoReel = (): PromoReel => {
     slots,
     wallNames: wallNamesOf(members, knownAtLoopStart),
     arrival,
-    cornerShown: position.loop > 0 && liveKey !== 'finale',
+    qrPose,
     indexActive: liveKey === undefined ? NO_INDEX : (INDEX_OF[liveKey] ?? NO_INDEX),
     tickerItems: arrival === null ? PROMO_TICKER : arrivalTickerOf(arrival.names),
     yearsLabel: sessionYearsLabelOf(relevantSessionYear(new Date())),
