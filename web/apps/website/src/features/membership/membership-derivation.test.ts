@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { ApplicantStanding, DerivedMembership } from './membership-derivation';
 import {
-  ACTIVE_FEE_EUROS,
   calculateAge,
   deriveApplicantStanding,
   deriveMembership,
   parseBirthDate,
-  YOUTH_FEE_EUROS,
 } from './membership-derivation';
 
 const localDate = (value: string): Date => new Date(`${value}T12:00`);
@@ -39,8 +37,8 @@ describe('calculateAge', () => {
 
 describe('deriveMembership', () => {
   it.each<[string, string, DerivedMembership | null]>([
-    ['2008-07-30', '2026-07-30', { age: 18, typeId: 'active', feeEuros: ACTIVE_FEE_EUROS }],
-    ['2008-07-30', '2026-07-29', { age: 17, typeId: 'youth', feeEuros: YOUTH_FEE_EUROS }],
+    ['2008-07-30', '2026-07-30', { age: 18, typeId: 'active' }],
+    ['2008-07-30', '2026-07-29', { age: 17, typeId: 'youth' }],
     ['', '2026-07-30', null],
     ['2026-07-31', '2026-07-30', null],
     ['1880-01-01', '2026-07-30', null],
@@ -50,9 +48,9 @@ describe('deriveMembership', () => {
 });
 
 describe('deriveApplicantStanding', () => {
-  const child: DerivedMembership = { age: 14, typeId: 'youth', feeEuros: YOUTH_FEE_EUROS };
-  const teen: DerivedMembership = { age: 16, typeId: 'youth', feeEuros: YOUTH_FEE_EUROS };
-  const adult: DerivedMembership = { age: 19, typeId: 'active', feeEuros: ACTIVE_FEE_EUROS };
+  const child: DerivedMembership = { age: 14, typeId: 'youth' };
+  const teen: DerivedMembership = { age: 16, typeId: 'youth' };
+  const adult: DerivedMembership = { age: 19, typeId: 'active' };
 
   it.each<[string, DerivedMembership | null, number | null, ApplicantStanding]>([
     ['nobody yet without a birth date', null, 16, 'pending'],

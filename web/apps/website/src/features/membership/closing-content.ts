@@ -12,7 +12,7 @@ export interface JoinClosingBandContent {
 export const joinClosingBandContent: JoinClosingBandContent = {
   kicker: 'ZWEI MINUTEN, DANN IST ES ERLEDIGT',
   headline: 'MACH DEN ANFANG.',
-  lead: 'Der Antrag geht direkt an den Verein. Nichts wird abgebucht und nichts ist bindend, bis wir dich aufgenommen haben.',
+  lead: 'Der Antrag geht direkt an den Verein. Nichts ist bindend, bis wir dich aufgenommen haben.',
   ctaLabel: 'Jetzt Antrag stellen →',
   ctaHref: joinApplyHref,
 };

@@ -4,7 +4,6 @@ import type { FC } from 'react';
 import {
   applyConsentLead,
   applyConsentLegend,
-  applyConsentNote,
   applyErrorTitle,
   applySubmitDisabledHint,
   applySubmitLabel,
@@ -51,7 +50,6 @@ export const ApplyFormSection: FC<ApplyFormSectionProps> = ({ state }) => {
                 <ApplyForm.Consent>
                   <ApplyForm.ConsentLabel lead={applyConsentLead} />
                 </ApplyForm.Consent>
-                <ApplyForm.Note>{applyConsentNote}</ApplyForm.Note>
               </ApplyForm.BlockBody>
             </ApplyForm.Block>
             <ApplyForm.Honeypot />

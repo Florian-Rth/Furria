@@ -20,7 +20,7 @@ export const CONFIRMATION_VERDICT_VIEWS: Record<ConfirmationVerdict, Confirmatio
   confirmed: {
     eyebrow: 'ANTRAG BESTÄTIGT',
     headline: 'JETZT IST ER BEI UNS.',
-    text: 'Danke! Dein Antrag ist beim Verein angekommen. Wir sehen ihn uns in der nächsten Sitzung an, entscheiden über die Aufnahme und melden uns bei dir, so oder so. Bis dahin musst du nichts tun und nichts zahlen.',
+    text: 'Danke! Dein Antrag ist beim Verein angekommen. Wir sehen ihn uns in der nächsten Sitzung an, entscheiden über die Aufnahme und melden uns bei dir, so oder so. Bis dahin musst du nichts tun.',
     next: 'onward',
   },
   alreadyConfirmed: {

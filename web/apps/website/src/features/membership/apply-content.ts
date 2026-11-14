@@ -59,9 +59,6 @@ export const applyPrivacyLabel = 'Datenschutzhinweise';
 
 export const applyPrivacyHref = '/privacy';
 
-export const applyConsentNote =
-  'Jetzt wird nichts abgebucht. Der Beitrag wird erst fällig, wenn wir dich aufgenommen haben.';
-
 export const applySummaryEyebrow = 'DEIN ANTRAG';
 
 export const applySummaryNote =
@@ -142,16 +139,9 @@ export const MEMBERSHIP_TYPE_LABELS: Record<MembershipTypeId, string> = {
 
 const PENDING_DERIVATION = 'ergibt sich aus dem Geburtsdatum';
 
-export const applyNothingDueValue = '0 €';
-
 export const buildApplySummaryRows = (derived: DerivedMembership | null): ApplySummaryRow[] => [
   {
     label: 'MITGLIEDSCHAFT',
     value: derived === null ? PENDING_DERIVATION : MEMBERSHIP_TYPE_LABELS[derived.typeId],
   },
-  {
-    label: 'BEITRAG',
-    value: derived === null ? PENDING_DERIVATION : `${derived.feeEuros} € im Jahr`,
-  },
-  { label: 'JETZT FÄLLIG', value: applyNothingDueValue },
 ];

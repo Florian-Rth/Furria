@@ -16,7 +16,7 @@ export const SITE_ORIGIN = 'https://furrscher-carnevals-club.de';
 
 export const SITE_NAME = 'Furrscher Carnevals Club';
 
-export const SITE_ALTERNATE_NAMES = ['FCC Großfurra', 'FCC', 'FURRIA'];
+export const SITE_ALTERNATE_NAMES = ['FCC Großfurra', 'FCC'];
 
 const PAGE_TITLE_SUFFIX = 'FCC Großfurra';
 
