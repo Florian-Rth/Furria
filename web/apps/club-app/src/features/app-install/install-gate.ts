@@ -12,6 +12,7 @@ const TAB_LINK_PATHS = [
   /^\/reset-password\/?$/,
   /^\/invitation(\/.*)?$/,
   /^\/claim-window\/?$/,
+  /^\/request-access\/?$/,
   /^\/photos\/?$/,
   /^\/beer-list\/book\/?$/,
 ];

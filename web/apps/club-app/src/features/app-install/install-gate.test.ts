@@ -56,6 +56,16 @@ describe('isInstallGateClosed', () => {
       input: { ...PHONE_TAB, pathname: '/invitations' },
       expected: true,
     },
+    {
+      label: 'the claim window from the projector code',
+      input: { ...PHONE_TAB, pathname: '/claim-window' },
+      expected: false,
+    },
+    {
+      label: 'the access request from the closed claim window',
+      input: { ...PHONE_TAB, pathname: '/request-access' },
+      expected: false,
+    },
     { label: 'the login page', input: { ...PHONE_TAB, pathname: '/login' }, expected: true },
   ] as const)('$label', ({ input, expected }) => {
     expect(isInstallGateClosed(input)).toBe(expected);
