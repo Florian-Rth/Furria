@@ -3,7 +3,6 @@ import { useTheme } from '@mui/material/styles';
 import {
   buildGroupBadge,
   buildGroupsIntro,
-  countRecruitingGroups,
   groupByKind,
   resolveSectionTitle,
 } from '@/features/club/groups-content';
@@ -52,7 +51,7 @@ export const useGroupGallery = (groups: PublicGroup[]): GroupGallery => {
   };
 
   return {
-    intro: buildGroupsIntro(groups.length, countRecruitingGroups(groups)),
+    intro: buildGroupsIntro(groups.length),
     sections: kindSections.map((section) => ({
       key: section.kindName ?? '',
       title: resolveSectionTitle(section.kindName, kindSections.length),

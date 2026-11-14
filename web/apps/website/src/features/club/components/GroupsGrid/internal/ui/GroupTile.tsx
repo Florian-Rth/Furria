@@ -4,13 +4,8 @@ import { KkCard } from '@furria/ui/KkCard';
 import { KkPhoto } from '@furria/ui/KkPhoto';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import {
-  buildGroupOpenLabel,
-  groupsLabels,
-  resolveGroupOpenness,
-} from '@/features/club/groups-content';
+import { buildGroupOpenLabel, groupsLabels } from '@/features/club/groups-content';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
-import { GroupOpennessChip } from './GroupOpennessChip';
 
 const DESCRIPTION_CLAMP = 3;
 const TILE_SIZES = '(min-width: 900px) 25vw, (min-width: 600px) 50vw, 100vw';
@@ -24,7 +19,6 @@ interface GroupTileProps {
 }
 
 export const GroupTile: FC<GroupTileProps> = ({ group, tint, tone, badge, onOpen }) => {
-  const openness = resolveGroupOpenness(group.isRecruiting);
   const description = group.description.trim();
   const picture = toImageSource(group.picture, 'groupPicture', TILE_SIZES);
   const media = (
@@ -49,9 +43,6 @@ export const GroupTile: FC<GroupTileProps> = ({ group, tint, tone, badge, onOpen
         </KkCard.Media>
         <KkCard.Body>
           <KkCard.Title>{group.name}</KkCard.Title>
-          <KkCard.Meta>
-            <GroupOpennessChip openness={openness} />
-          </KkCard.Meta>
           {text}
           <KkCard.Footer>
             <Typography

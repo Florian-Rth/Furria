@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
-import type { GroupsIntroKind } from './groups-content';
-import {
-  countRecruitingGroups,
-  groupByKind,
-  OTHER_GROUPS_TITLE,
-  resolveGroupsIntroKind,
-  resolveSectionTitle,
-} from './groups-content';
+import { groupByKind, OTHER_GROUPS_TITLE, resolveSectionTitle } from './groups-content';
 
 const group = (
   groupId: number,
@@ -22,24 +15,6 @@ const group = (
   groupKindName,
   foundedYear: null,
   tone: null,
-});
-
-describe('countRecruitingGroups', () => {
-  it('counts only the groups that are open', () => {
-    expect(countRecruitingGroups([group(1, true), group(2, false), group(3, true)])).toBe(2);
-  });
-});
-
-describe('resolveGroupsIntroKind', () => {
-  it.each<[number, number, GroupsIntroKind]>([
-    [6, 0, 'none'],
-    [1, 0, 'none'],
-    [1, 1, 'sole'],
-    [6, 6, 'all'],
-    [6, 2, 'some'],
-  ])('reads %i groups with %i recruiting as %s', (total, recruiting, kind) => {
-    expect(resolveGroupsIntroKind(total, recruiting)).toBe(kind);
-  });
 });
 
 describe('groupByKind', () => {

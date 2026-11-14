@@ -1,4 +1,3 @@
-import type { KkChipTone } from '@furria/ui/KkChip';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
 
 export const groupsChapter = {
@@ -25,65 +24,10 @@ export const groupsLabels = {
     'Zu dieser Gruppe steht hier noch nichts. Frag uns einfach, dann erzählen wir dir mehr.',
 } as const;
 
-export interface GroupOpenness {
-  label: string;
-  note: string;
-  tone: KkChipTone;
-  dot: boolean;
-}
-
-const RECRUITING_OPENNESS: GroupOpenness = {
-  label: 'sucht Verstärkung',
-  note: 'Diese Gruppe nimmt gerade neue Leute auf — meld dich, dann verabreden wir einen ersten Termin.',
-  tone: 'gold',
-  dot: true,
-};
-
-const SETTLED_OPENNESS: GroupOpenness = {
-  label: 'sucht gerade niemanden',
-  note: 'Frag trotzdem nach — was eine Gruppe braucht, ändert sich jede Session.',
-  tone: 'neutral',
-  dot: false,
-};
-
-export const resolveGroupOpenness = (isRecruiting: boolean): GroupOpenness =>
-  isRecruiting ? RECRUITING_OPENNESS : SETTLED_OPENNESS;
-
-export const countRecruitingGroups = (groups: PublicGroup[]): number =>
-  groups.filter((group) => group.isRecruiting).length;
-
-export type GroupsIntroKind = 'none' | 'sole' | 'all' | 'some';
-
-export const resolveGroupsIntroKind = (total: number, recruiting: number): GroupsIntroKind => {
-  if (recruiting === 0) {
-    return 'none';
-  }
-
-  if (total === 1) {
-    return 'sole';
-  }
-
-  return recruiting >= total ? 'all' : 'some';
-};
-
 export const formatGroupCount = (total: number): string =>
   total === 1 ? 'eine Gruppe' : `${total} Gruppen`;
 
-export const formatRecruitingCount = (recruiting: number): string =>
-  recruiting === 1 ? 'Eine davon sucht' : `${recruiting} davon suchen`;
-
-const introTails: Record<GroupsIntroKind, (recruiting: number) => string> = {
-  none: () => 'Gerade sucht keine davon aktiv Verstärkung — fragen kannst du trotzdem jederzeit.',
-  sole: () => 'Sie sucht gerade Verstärkung.',
-  all: () => 'Alle suchen gerade Verstärkung.',
-  some: (recruiting) => `${formatRecruitingCount(recruiting)} gerade Verstärkung.`,
-};
-
-export const buildGroupsIntro = (total: number, recruiting: number): string => {
-  const tail = introTails[resolveGroupsIntroKind(total, recruiting)](recruiting);
-
-  return `Aktuell ${formatGroupCount(total)}. ${tail}`;
-};
+export const buildGroupsIntro = (total: number): string => `Aktuell ${formatGroupCount(total)}.`;
 
 export const buildGroupOpenLabel = (groupName: string): string => `${groupName} — mehr erfahren`;
 
