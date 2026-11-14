@@ -29,13 +29,6 @@ const GROUP_ENTRY: JoinFaqEntry = {
     'Nein. Mitglied sein und in einer Gruppe sein sind zwei verschiedene Dinge. Keine Gruppe, eine oder gleich mehrere: Das entscheidest du, und du kannst es jederzeit ändern. Viele sind einfach dabei, weil sie den Verein mögen — das reicht völlig.',
 };
 
-const COST_ENTRY: JoinFaqEntry = {
-  id: 'cost',
-  question: 'Was kostet mich das wirklich?',
-  answer:
-    '30 € im Jahr. Wer unter 18 ist, zur Schule geht, eine Ausbildung macht oder studiert, zahlt 15 €. Dazu kommen je nach Gruppe Kostüme oder Ausflüge — beides freiwillig und von Gruppe zu Gruppe verschieden. Und deine Zeit: erfahrungsgemäß der teuerste Posten, aber auch der, den hinterher keiner bereut.',
-};
-
 const TIME_ENTRY: JoinFaqEntry = {
   id: 'time',
   question: 'Ich habe kaum Zeit.',
@@ -72,7 +65,6 @@ export const buildChildFaqAnswer = (ageOfConsent: number | null): string =>
 export const buildJoinFaq = (ageOfConsent: number | null): JoinFaqEntry[] => [
   DANCING_ENTRY,
   GROUP_ENTRY,
-  COST_ENTRY,
   TIME_ENTRY,
   LOCAL_ENTRY,
   { id: CHILD_ENTRY_ID, question: CHILD_QUESTION, answer: buildChildFaqAnswer(ageOfConsent) },

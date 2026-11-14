@@ -23,7 +23,7 @@ export const joinEyebrow = 'DU MÖCHTEST MITMACHEN?';
 export const joinPageTitle = 'MITGLIED WERDEN';
 
 export const joinDescription =
-  'Auf dieser Seite steht alles, was du für den Schritt in den Verein brauchst: was eine Mitgliedschaft kostet, was du dafür bekommst, wie der Antrag abläuft — und welche Gruppe zu dir passt. Vorkenntnisse im Tanzen, Reimen oder Kassenführen sind ausdrücklich keine Bedingung.';
+  'Auf dieser Seite steht alles, was du für den Schritt in den Verein brauchst: was eine Mitgliedschaft bedeutet, wie der Antrag abläuft — und welche Gruppe zu dir passt. Vorkenntnisse im Tanzen, Reimen oder Kassenführen sind ausdrücklich keine Bedingung.';
 
 export const joinHref = '/join';
 export const joinApplyHref = '/join/apply';

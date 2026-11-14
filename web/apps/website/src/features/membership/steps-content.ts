@@ -8,7 +8,7 @@ export const joinStepsKicker = 'SO WIRD MAN MITGLIED';
 export const joinStepsTitle = 'VIER SCHRITTE.';
 
 export const joinStepsIntro =
-  'Vom ersten Gedanken bis zur Aufnahme sind es vier Schritte. Der erste kostet nichts als ein paar Minuten Neugier, und keiner davon verpflichtet dich zu etwas.';
+  'Vom ersten Gedanken bis zur Aufnahme sind es vier Schritte. Der erste braucht nur ein paar Minuten Neugier, und keiner davon verpflichtet dich zu etwas.';
 
 export const buildJoinStepNumeral = (index: number): string => String(index + 1).padStart(2, '0');
 
@@ -22,7 +22,7 @@ const LATER_JOIN_STEPS: JoinStep[] = [
   {
     title: 'Antrag stellen',
     description:
-      'Ein Formular, zwei Minuten, online — danach bestätigst du ihn mit einem Klick in der Mail. Kein PDF zum Ausdrucken, keine Unterschrift per Post, und abgebucht wird dabei nichts.',
+      'Ein Formular, zwei Minuten, online — danach bestätigst du ihn mit einem Klick in der Mail. Kein PDF zum Ausdrucken, keine Unterschrift per Post.',
   },
   {
     title: 'Aufnahme',

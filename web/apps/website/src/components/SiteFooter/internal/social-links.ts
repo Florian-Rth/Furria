@@ -15,6 +15,6 @@ export const buildSocialLinks = (club: PublicClub | undefined): SocialLink[] =>
   club === undefined
     ? []
     : [
-        ...linkOf('facebook', 'FURRIA auf Facebook', club.facebookUrl),
-        ...linkOf('instagram', 'FURRIA auf Instagram', club.instagramUrl),
+        ...linkOf('facebook', 'FCC auf Facebook', club.facebookUrl),
+        ...linkOf('instagram', 'FCC auf Instagram', club.instagramUrl),
       ];

@@ -36,13 +36,13 @@ export const STATIC_PAGES = {
     path: '/join',
     title: pageTitle('Mitglied werden'),
     description:
-      'Mitglied im Furrscher Carnevals Club e.V. in Großfurra werden: was die Mitgliedschaft kostet, was sie bedeutet, wo du hinpasst — und der Weg zum Beitrittsantrag. Du musst nicht tanzen können.',
+      'Mitglied im Furrscher Carnevals Club e.V. in Großfurra werden: was die Mitgliedschaft bedeutet, wo du hinpasst — und der Weg zum Beitrittsantrag. Du musst nicht tanzen können.',
   },
   joinApply: {
     path: '/join/apply',
     title: pageTitle('Beitrittsantrag'),
     description:
-      'Beitrittsantrag für den Furrscher Carnevals Club e.V. in Großfurra: ein Formular, zwei Minuten. Mitgliedschaft und Beitrag ergeben sich aus dem Geburtsdatum, jetzt wird nichts abgebucht.',
+      'Beitrittsantrag für den Furrscher Carnevals Club e.V. in Großfurra: ein Formular, zwei Minuten. Die Mitgliedschaft ergibt sich aus dem Geburtsdatum.',
   },
   imprint: {
     path: '/imprint',

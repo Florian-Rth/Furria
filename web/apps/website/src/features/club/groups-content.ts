@@ -3,7 +3,7 @@ import type { PublicGroup } from '@/lib/public-groups/schemas';
 
 export const groupsChapter = {
   numeral: '04',
-  kicker: 'WER BEI FURRIA AUFTRITT',
+  kicker: 'WER BEIM FCC AUFTRITT',
   title: 'UNSERE GRUPPEN',
 } as const;
 

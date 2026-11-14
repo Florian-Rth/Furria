@@ -2,10 +2,6 @@ export const MAJORITY_AGE = 18;
 
 export const MAX_PLAUSIBLE_AGE = 120;
 
-export const ACTIVE_FEE_EUROS = 30;
-
-export const YOUTH_FEE_EUROS = 15;
-
 export type MembershipTypeId = 'active' | 'youth';
 
 export type ApplicantStanding = 'pending' | 'tooYoung' | 'minor' | 'adult';
@@ -13,7 +9,6 @@ export type ApplicantStanding = 'pending' | 'tooYoung' | 'minor' | 'adult';
 export interface DerivedMembership {
   age: number;
   typeId: MembershipTypeId;
-  feeEuros: number;
 }
 
 const DATE_ONLY_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/;
@@ -67,7 +62,6 @@ export const deriveMembership = (birthDate: string, today: Date): DerivedMembers
   return {
     age,
     typeId: isMinor ? 'youth' : 'active',
-    feeEuros: isMinor ? YOUTH_FEE_EUROS : ACTIVE_FEE_EUROS,
   };
 };
 
