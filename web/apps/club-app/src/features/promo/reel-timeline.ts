@@ -1,4 +1,4 @@
-import type { KkPromoCut, KkPromoScenePhase } from '@furria/ui/promo-stage-types';
+import type { KkPromoCut, KkPromoQrPose, KkPromoScenePhase } from '@furria/ui/promo-stage-types';
 
 export const REEL_SCENE_KEYS = [
   'opener',
@@ -31,20 +31,24 @@ export interface ReelSlot {
   cut: KkPromoCut;
 }
 
+const SCENE_MS = 20000;
+const FINALE_MS = 10000;
+
 const REEL: readonly ReelScene[] = [
   { key: 'opener', ms: 4000, cut: 'hard' },
-  { key: 'start', ms: 7000, cut: 'mask' },
-  { key: 'calendar', ms: 7000, cut: 'match' },
-  { key: 'event', ms: 8000, cut: 'hard' },
-  { key: 'dance', ms: 10000, cut: 'whip' },
-  { key: 'gallery', ms: 8000, cut: 'mask' },
-  { key: 'website', ms: 9000, cut: 'wipe' },
-  { key: 'beer', ms: 7000, cut: 'hard' },
-  { key: 'finale', ms: 8000, cut: 'match' },
+  { key: 'start', ms: SCENE_MS, cut: 'mask' },
+  { key: 'calendar', ms: SCENE_MS, cut: 'match' },
+  { key: 'event', ms: SCENE_MS, cut: 'hard' },
+  { key: 'dance', ms: SCENE_MS, cut: 'whip' },
+  { key: 'gallery', ms: SCENE_MS, cut: 'mask' },
+  { key: 'website', ms: SCENE_MS, cut: 'wipe' },
+  { key: 'beer', ms: SCENE_MS, cut: 'hard' },
+  { key: 'finale', ms: FINALE_MS, cut: 'match' },
 ];
 
 const LATER_LOOP_OPENING_CUT: KkPromoCut = 'whip';
 export const REEL_LEAVE_MS = 1000;
+const QR_DOCK_LEAD_MS = 850;
 
 export const reelScenesOf = (firstLoop: boolean): ReelScene[] => {
   if (firstLoop) {
@@ -120,4 +124,18 @@ export const reelSlotsOf = (
   }
 
   return slots;
+};
+
+export const reelQrPoseOf = (
+  position: ReelPosition,
+  firstLoop: readonly ReelScene[],
+  laterLoop: readonly ReelScene[],
+): KkPromoQrPose => {
+  const scene = (position.loop === 0 ? firstLoop : laterLoop)[position.index];
+
+  if (scene?.key === 'finale') {
+    return position.sceneMs < scene.ms - QR_DOCK_LEAD_MS ? 'hero' : 'corner';
+  }
+
+  return position.loop === 0 ? 'away' : 'corner';
 };

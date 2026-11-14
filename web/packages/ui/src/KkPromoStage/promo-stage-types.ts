@@ -15,7 +15,7 @@ export interface KkPromoArrival {
 
 export type { KkPromoDeviceEntry } from './internal/layout/KkPromoStageDevice';
 export type { KkPromoHeadlineSize } from './internal/ui/KkPromoStageHeadline';
-export type { KkPromoDock, KkPromoQrSize } from './internal/ui/KkPromoStageQrCard';
+export type { KkPromoQrAnchor, KkPromoQrPose } from './internal/ui/KkPromoStageQrCard';
 export type { KkPromoArrivalLabels } from './internal/ui/PromoArrival';
 
 export interface KkPromoWallName {

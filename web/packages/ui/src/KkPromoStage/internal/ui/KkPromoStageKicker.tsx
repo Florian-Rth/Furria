@@ -5,7 +5,7 @@ import { motion } from 'motion/react';
 import type { FC } from 'react';
 import { kkTokens } from '../../../tokens';
 import { usePromoScene } from '../logic/promo-scene-context';
-import { PROMO_SETTLE, PROMO_SHARP, PROMO_SLAM } from '../promo-motion';
+import { PROMO_SETTLE, PROMO_SLAM } from '../promo-motion';
 
 const SQUARE = 34;
 
@@ -53,19 +53,6 @@ export const KkPromoStageKicker: FC<KkPromoStageKickerProps> = ({
           {label}
         </Typography>
       </Box>
-      <Box
-        component={motion.div}
-        aria-hidden
-        initial={{ scaleX: 0 }}
-        animate={{ scaleX: live ? 1 : 0 }}
-        transition={{ duration: 0.9, ease: PROMO_SHARP, delay: at(0.2) }}
-        sx={{
-          flexGrow: 1,
-          transformOrigin: 'left center',
-          borderBottom: kkTokens.line.hair,
-          borderColor: 'divider',
-        }}
-      />
     </Stack>
   );
 };
