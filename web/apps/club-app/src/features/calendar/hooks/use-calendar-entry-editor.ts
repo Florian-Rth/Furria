@@ -2,7 +2,9 @@ import { useSearch } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useFormState } from 'react-hook-form';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import type { DayTime } from '@/lib/day';
 import { toIsoDay } from '@/lib/day';
 import type { AddOnCardsEditor } from '../add-on-cards-editor';
@@ -110,6 +112,8 @@ export const useCalendarEntryEditor = ({
   const search = useSearch({ strict: false });
   const { day } = search;
   const draft = toEntryDraft(search);
+  const { has } = usePermissions();
+  const mayNotifyMembers = has(PERMISSION_KEYS.pushNotifyClub);
   const createMutation = useCreateCalendarEntryMutation();
   const updateMutation = useUpdateCalendarEntryMutation();
   const landedDay = useRef(day ?? toIsoDay(today));
@@ -336,7 +340,8 @@ export const useCalendarEntryEditor = ({
     setEndTime: (value) => {
       form.setValue('endTime', value, FIELD_EDIT);
     },
-    notifyMembers: entry === null ? toNotifyMembersSwitch(values, setNotifyMembers) : null,
+    notifyMembers:
+      entry === null && mayNotifyMembers ? toNotifyMembersSwitch(values, setNotifyMembers) : null,
     isEditing: entry !== null,
     isDirty: write.isDirty,
     canSubmit: write.canSubmit,

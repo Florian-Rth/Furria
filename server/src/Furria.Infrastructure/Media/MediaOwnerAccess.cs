@@ -3,6 +3,7 @@ using Furria.Application.Results;
 using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Studio;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Media;
@@ -13,18 +14,23 @@ public sealed class MediaOwnerAccess
     private const string UnknownGroup = "There is no such group.";
     private const string UnknownNewsPost = "There is no such news post.";
     private const string UnknownEvent = "There is no such event.";
-    private const string UnknownAct = "There is no such act.";
     private const string UnknownSession = "There is no such session record.";
-    private const string ArchivedAct = "The act is archived and takes no more media.";
+    private const string ArchivedGroup = "The group is archived and takes no more pictures.";
     private const string NotPermitted = "The caller may not add media to this owner.";
 
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
+    private readonly ActStudioGate _studioGate;
 
-    public MediaOwnerAccess(AppDbContext dbContext, PermissionAuthorizer authorizer)
+    public MediaOwnerAccess(
+        AppDbContext dbContext,
+        PermissionAuthorizer authorizer,
+        ActStudioGate studioGate
+    )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
+        _studioGate = studioGate;
     }
 
     public async Task<Result> MayUploadAsync(
@@ -50,7 +56,11 @@ public sealed class MediaOwnerAccess
                 owner.Id!.Value,
                 ct
             ),
-            MediaOwnerKind.Act => await MayUploadActMediaAsync(accountId, owner.Id!.Value, ct),
+            MediaOwnerKind.Act => await _studioGate.EditableStudioAsync(
+                accountId,
+                owner.Id!.Value,
+                ct
+            ),
             MediaOwnerKind.Session => await MayUploadSessionLogoAsync(
                 accountId,
                 owner.Id!.Value,
@@ -85,10 +95,16 @@ public sealed class MediaOwnerAccess
         CancellationToken ct
     )
     {
-        if (!await _dbContext.Groups.AnyAsync(group => group.Id == groupId, ct))
+        var group = await _dbContext
+            .Groups.Where(row => row.Id == groupId)
+            .Select(row => new { IsArchived = row.ArchivedOn != null })
+            .SingleOrDefaultAsync(ct);
+        if (group is null)
             return Result.NotFound(UnknownGroup);
+        if (!await _authorizer.CanAdministerGroupAsync(accountId, groupId, ct))
+            return Result.Forbidden(NotPermitted);
 
-        return PermittedIf(await _authorizer.CanAdministerGroupAsync(accountId, groupId, ct));
+        return group.IsArchived ? Result.Conflict(ArchivedGroup) : Result.Success();
     }
 
     private async Task<Result> MayUploadNewsPictureAsync(
@@ -132,36 +148,6 @@ public sealed class MediaOwnerAccess
             await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.ClubManage, ct)
         );
     }
-
-    private async Task<Result> MayUploadActMediaAsync(
-        int accountId,
-        int actId,
-        CancellationToken ct
-    )
-    {
-        var act = await _dbContext
-            .Acts.Where(row => row.Id == actId)
-            .Select(row => new { row.GroupId, IsArchived = row.ArchivedAt != null })
-            .SingleOrDefaultAsync(ct);
-        if (act is null)
-            return Result.NotFound(UnknownAct);
-        if (act.IsArchived)
-            return Result.Conflict(ArchivedAct);
-
-        return PermittedIf(
-            (
-                act.GroupId is { } groupId
-                && await _authorizer.CanAdministerGroupAsync(accountId, groupId, ct)
-            ) || await IsCoEditorAsync(accountId, actId, ct)
-        );
-    }
-
-    private async Task<bool> IsCoEditorAsync(int accountId, int actId, CancellationToken ct) =>
-        await _authorizer.ActivePersonIdAsync(accountId, ct) is { } personId
-        && await _dbContext.ActCoEditors.AnyAsync(
-            editor => editor.ActId == actId && editor.PersonId == personId,
-            ct
-        );
 
     private static Result PermittedIf(bool isPermitted) =>
         isPermitted ? Result.Success() : Result.Forbidden(NotPermitted);

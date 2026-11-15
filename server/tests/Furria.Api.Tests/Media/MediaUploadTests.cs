@@ -355,6 +355,38 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_RefuseTheGroupPicture_When_TheGroupIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("gerda"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup(
+                                "tanzgarde",
+                                "Tanzgarde",
+                                archivedOn: new DateOnly(2020, 1, 1)
+                            )
+                            .AddGroupAdmin("gerda-tanzgarde", "tanzgarde", "gerda")
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("gerda", ct);
+
+        var response = await TusUploadSteps.CreateAsync(
+            client,
+            TusUploadSteps.GroupOwner(ctx.Groups.Groups.IdOf("tanzgarde")),
+            "garde.jpg",
+            ChunkLength,
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_RefuseTheGroupPicture_When_TheCallerDoesNotAdministerTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -594,6 +626,28 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseActMedia_When_TheActsSessionIsOver()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, actId) = await GardeWithDanceAsync(ct);
+        HttpResponseMessage? response = null;
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromDays(400),
+            async () =>
+                response = await TusUploadSteps.CreateAsync(
+                    await ctx.Identity.SignInAgainAsync("gerda", ct),
+                    TusUploadSteps.ActOwner(actId),
+                    "Gardemarsch.wav",
+                    ChunkLength,
+                    ct
+                )
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response?.StatusCode);
     }
 
     [Fact]

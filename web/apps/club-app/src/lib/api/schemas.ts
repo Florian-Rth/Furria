@@ -149,6 +149,7 @@ export const PERMISSION_KEYS = {
   rolesManage: 'roles.manage',
   clubRead: 'club.read',
   announcementsPost: 'announcements.post',
+  pushNotifyClub: 'push.notify_club',
   clubManage: 'club.manage',
   keyHoldingsManage: 'key_holdings.manage',
   boardManage: 'board.manage',

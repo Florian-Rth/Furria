@@ -35,6 +35,10 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Aushänge schreiben',
     line: 'Aushänge veröffentlichen, bearbeiten und löschen, auch die anderer.',
   },
+  [PERMISSION_KEYS.pushNotifyClub]: {
+    title: 'Alle Mitglieder benachrichtigen',
+    line: 'Beim Anlegen eines Aushangs oder Vereinstermins eine Push-Nachricht an alle Mitglieder schicken.',
+  },
   [PERMISSION_KEYS.clubManage]: {
     title: 'Vereinsdaten, Sessionseinträge und Orte pflegen',
     line: 'Vereinsdaten ändern; Sessionseinträge pflegen; Orte anlegen, bearbeiten und archivieren.',

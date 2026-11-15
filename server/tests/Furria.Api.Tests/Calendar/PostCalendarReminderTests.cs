@@ -163,6 +163,22 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_PushOnlyTheMeantGroup_When_AGroupAdminRemindsAGroupEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("group-owned-training");
+
+        var response = await RemindAtAsync(Now, ctx, "gerd", Attendance(entryId), ct);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Single(PushesAt(_fixture, devices.Fred));
+        Assert.Empty(PushesAt(_fixture, devices.Chris));
+    }
+
+    [Fact]
     public async Task Should_RefuseRemindingWithoutStampingTheThrottle_When_TheFunctionIsClosed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -498,11 +514,14 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
                             .AddMembershipPause("paula-pause", "paula-first", 2026, 2026)
                             .AddPerson("fred", "Fred", "Fremd")
                             .AddAccount("fred")
+                            .AddPerson("gerd", "Gerd", "Gruppe")
+                            .AddAccount("gerd")
                     )
                     .Groups(groups =>
                         groups
                             .AddGroup("tanzgarde", "Tanzgarde")
                             .AddGroupMembership("fred-tanzgarde", "tanzgarde", "fred", JoinedIn2017)
+                            .AddGroupAdmin("gerd-leads-tanzgarde", "tanzgarde", "gerd")
                     )
                     .Roles(roles =>
                         roles.AddRoleWithHolder(
@@ -553,6 +572,14 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
                                 "training",
                                 "Training",
                                 MeetingStart.AddDays(1),
+                                audienceGroupAliases: ["tanzgarde"],
+                                asksForResponse: true
+                            )
+                            .AddCalendarEntry(
+                                "group-owned-training",
+                                "Gardetraining",
+                                MeetingStart.AddDays(3),
+                                ownerGroupAlias: "tanzgarde",
                                 audienceGroupAliases: ["tanzgarde"],
                                 asksForResponse: true
                             )

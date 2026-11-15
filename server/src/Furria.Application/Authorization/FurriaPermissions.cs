@@ -8,6 +8,7 @@ public static class FurriaPermissions
     public const string GroupsManage = "groups.manage";
     public const string RolesManage = "roles.manage";
     public const string AnnouncementsPost = "announcements.post";
+    public const string PushNotifyClub = "push.notify_club";
     public const string ClubManage = "club.manage";
     public const string KeyHoldingsManage = "key_holdings.manage";
     public const string BoardManage = "board.manage";
@@ -36,6 +37,7 @@ public static class FurriaPermissions
         GroupsManage,
         RolesManage,
         AnnouncementsPost,
+        PushNotifyClub,
         ClubManage,
         KeyHoldingsManage,
         BoardManage,
