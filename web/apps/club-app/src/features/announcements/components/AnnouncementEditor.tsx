@@ -1,6 +1,7 @@
 import { KkDateField } from '@furria/ui/KkDateField';
 import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkRichTextArea } from '@furria/ui/KkRichTextArea';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import { KkTextField } from '@furria/ui/KkTextField';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
@@ -16,6 +17,8 @@ import {
   ANNOUNCEMENT_CONTENT_SECTION_TITLE,
   ANNOUNCEMENT_CREATE_TITLE,
   ANNOUNCEMENT_EDIT_TITLE,
+  ANNOUNCEMENT_NOTIFY_MEMBERS_DESCRIPTION,
+  ANNOUNCEMENT_NOTIFY_MEMBERS_LABEL,
   ANNOUNCEMENT_SAVE_LABEL,
   ANNOUNCEMENT_TITLE_FIELD_LABEL,
   ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL,
@@ -44,6 +47,18 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
   const withdrawal = useAnnouncementWithdrawal(announcement);
   const isBodyInvalid = errors.body !== undefined;
   const bodyHelper = errors.body?.message;
+
+  const notifySwitch =
+    control.notifyMembers === null ? null : (
+      <KkSwitchRow
+        label={ANNOUNCEMENT_NOTIFY_MEMBERS_LABEL}
+        description={ANNOUNCEMENT_NOTIFY_MEMBERS_DESCRIPTION}
+        checked={control.notifyMembers.checked}
+        onChange={control.notifyMembers.set}
+        stateChip={false}
+        disabled={control.isSaving}
+      />
+    );
 
   const dangerLine =
     announcement === null ? null : (
@@ -104,6 +119,7 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
           error={errors.validUntil !== undefined}
           helperText={errors.validUntil?.message}
         />
+        {notifySwitch}
       </KkFormSection>
       <AnnouncementAddOnsSection
         cards={control.values.addOns}

@@ -45,6 +45,20 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_PushNobody_When_TheAuthorPostsWithoutNotifyingMembers()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+
+        await PostAsync(ctx, null, notifyMembers: false, ct);
+
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Empty(PushesAt(_fixture, devices.Alice));
+        Assert.Empty(PushesAt(_fixture, devices.Paula));
+    }
+
+    [Fact]
     public async Task Should_SkipTheMember_When_SheMutedAnnouncements()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -104,9 +118,16 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
     private static Task<int> PostAsync(SeededContext ctx, CancellationToken ct) =>
         PostAsync(ctx, null, ct);
 
+    private static Task<int> PostAsync(
+        SeededContext ctx,
+        DateOnly? validUntil,
+        CancellationToken ct
+    ) => PostAsync(ctx, validUntil, notifyMembers: true, ct);
+
     private static async Task<int> PostAsync(
         SeededContext ctx,
         DateOnly? validUntil,
+        bool notifyMembers,
         CancellationToken ct
     )
     {
@@ -122,6 +143,7 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
                 Body = Body,
                 ValidUntil = validUntil,
                 AddOns = [],
+                NotifyMembers = notifyMembers,
             }
         );
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

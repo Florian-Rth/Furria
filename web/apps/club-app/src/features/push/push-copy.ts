@@ -24,7 +24,8 @@ export interface PushTopicCopy {
 export const PUSH_TOPIC_COPY: Record<PushTopic, PushTopicCopy> = {
   invitations: {
     label: 'Einladungen',
-    description: 'Neue Termine, bei denen du dabei bist oder zu- oder absagen sollst',
+    description:
+      'Neue Termine, bei denen du dabei bist, zu- oder absagen sollst oder der Verein informiert wird',
   },
   changes: {
     label: 'Änderungen und Absagen',

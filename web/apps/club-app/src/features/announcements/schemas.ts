@@ -206,6 +206,7 @@ export const AnnouncementFormSchema = z
       .max(ANNOUNCEMENT_BODY_MAX_LENGTH, BODY_TOO_LONG_MESSAGE),
     validUntil: z.iso.date().nullable(),
     addOns: z.array(AnnouncementAddOnCardFormSchema),
+    notifyMembers: z.boolean(),
   })
   .superRefine((form, ctx) => {
     for (const issue of toAnnouncementAddOnIssues(form.addOns, form.validUntil)) {

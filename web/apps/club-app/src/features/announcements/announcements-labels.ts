@@ -32,6 +32,8 @@ export const ANNOUNCEMENT_VALID_UNTIL_HINT =
   'Ohne Datum bleibt der Aushang sichtbar, bis er gelöscht wird.';
 export const ANNOUNCEMENT_BODY_PLACEHOLDER = 'Text des Aushangs';
 export const ANNOUNCEMENT_CONTENT_SECTION_TITLE = 'Aushang';
+export const ANNOUNCEMENT_NOTIFY_MEMBERS_LABEL = 'Mitglieder benachrichtigen';
+export const ANNOUNCEMENT_NOTIFY_MEMBERS_DESCRIPTION = 'Push-Mitteilung an alle Mitglieder';
 
 export const ADD_ONS_SECTION_TITLE = 'Funktionen';
 export const ADD_ADD_ON_LABEL = 'Funktion hinzufügen';

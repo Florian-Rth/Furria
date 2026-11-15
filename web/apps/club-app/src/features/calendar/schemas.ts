@@ -428,6 +428,7 @@ export const CalendarEntryFormSchema = z
     endTime: z.string(),
     addOns: z.array(CalendarAddOnCardFormSchema),
     participatingGroupIds: z.array(z.string()),
+    notifyMembers: z.boolean(),
   })
   .superRefine((form, ctx) => {
     const hasParticipatingGroups = form.addOns.some((card) => card.kind === 'participatingGroups');

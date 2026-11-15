@@ -4980,9 +4980,9 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_outbox_calendar_push_kind", "kind IN ('Plain', 'Training', 'Trip', 'Event')");
 
-                            t.HasCheckConstraint("ck_outbox_calendar_push_reason", "reason IN ('AsksForResponse', 'Chosen', 'Moved', 'Deleted', 'Reminder')");
+                            t.HasCheckConstraint("ck_outbox_calendar_push_reason", "reason IN ('AsksForResponse', 'Chosen', 'Moved', 'Deleted', 'Reminder', 'Announced')");
 
-                            t.HasCheckConstraint("ck_outbox_calendar_push_recipients", "reason IN ('AsksForResponse', 'Reminder') OR cardinality(person_ids) > 0");
+                            t.HasCheckConstraint("ck_outbox_calendar_push_recipients", "reason IN ('AsksForResponse', 'Reminder', 'Announced') OR cardinality(person_ids) > 0");
 
                             t.HasCheckConstraint("ck_outbox_calendar_push_reminder", "(reason = 'Reminder') = (reminder_kind IS NOT NULL AND reminder_add_on_id IS NOT NULL AND reminder_closes_at IS NOT NULL)");
 

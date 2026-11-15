@@ -68,6 +68,7 @@ public sealed class PostCalendarEntry
             AudiencePersonIds = req.AudiencePersonIds,
             AddOns = [.. req.AddOns.Select(ToInput)],
             ParticipatingGroupIds = req.ParticipatingGroupIds,
+            NotifyMembers = req.NotifyMembers,
         };
 
     private static CalendarEntryAddOnInput ToInput(PostCalendarEntryAddOnDataDto addOn) =>
@@ -163,6 +164,8 @@ public sealed record PostCalendarEntryRequest
     public required IReadOnlyList<PostCalendarEntryAddOnDataDto> AddOns { get; init; }
 
     public required IReadOnlyList<int> ParticipatingGroupIds { get; init; }
+
+    public required bool NotifyMembers { get; init; }
 }
 
 public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequest>
@@ -190,6 +193,8 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
         "Ohne den Baustein „Mitwirkende Gruppen“ wirken keine Gruppen mit.";
     private const string EndsBeforeItStartsMessage =
         "Ein Zeitraum kann nicht vor seinem Beginn enden.";
+    private const string NotifyOnlyClubWideMessage =
+        "Nur Einträge für den ganzen Verein benachrichtigen alle Mitglieder.";
 
     public PostCalendarEntryValidator()
     {
@@ -211,6 +216,10 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
             .NotEqual(CalendarEntryKind.Event)
             .WithMessage(EventsLiveInTheWorkbenchMessage);
         RuleFor(request => request.Audience).IsInEnum().WithMessage(UnknownAudienceMessage);
+        RuleFor(request => request.NotifyMembers)
+            .Equal(false)
+            .When(request => request.Audience != CalendarEntryAudience.Club)
+            .WithMessage(NotifyOnlyClubWideMessage);
         RuleFor(request => request.AudienceGroupIds).NotNull();
         RuleFor(request => request.AudiencePersonIds).NotNull();
         RuleFor(request => request.AudienceGroupIds)
