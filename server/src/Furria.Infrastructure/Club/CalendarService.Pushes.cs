@@ -8,14 +8,17 @@ public sealed partial class CalendarService
 {
     private async Task EnqueueCreatePushesAsync(
         CalendarEntry entry,
-        int? actorPersonId,
+        CreatePushChoice choice,
         CancellationToken ct
     )
     {
         var venueName = await VenueNameAsync(entry.VenueId, ct);
+        var actorPersonId = choice.ActorPersonId;
 
         if (entry.AsksForResponse)
             EnqueuePush(CalendarPushReason.AsksForResponse, entry, [], actorPersonId, venueName);
+        else if (choice.NotifyMembers)
+            EnqueuePush(CalendarPushReason.Announced, entry, [], actorPersonId, venueName);
         else if (entry.Audience == CalendarEntryAudience.People)
             EnqueuePush(
                 CalendarPushReason.Chosen,
@@ -92,7 +95,7 @@ public sealed partial class CalendarService
         string? venueName
     )
     {
-        if (reason != CalendarPushReason.AsksForResponse && personIds.Count == 0)
+        if (!CalendarPushRules.ReachesEveryoneConcerned(reason) && personIds.Count == 0)
             return;
 
         _dbContext.OutboxCalendarPushes.Add(
@@ -154,6 +157,8 @@ public sealed partial class CalendarService
     [Pure]
     private static IReadOnlyList<int> ChosenOf(CalendarEntry entry) =>
         [.. entry.AudiencePeople.Select(link => link.PersonId)];
+
+    private sealed record CreatePushChoice(int? ActorPersonId, bool NotifyMembers);
 
     private sealed record PushBaseline(
         bool Moves,

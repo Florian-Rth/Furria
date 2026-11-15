@@ -24,11 +24,18 @@ export const requestAnnouncementMentionables = (
     accessToken,
   });
 
-const toAnnouncementBody = (payload: AnnouncementPayload): AnnouncementPayload => ({
+type AnnouncementUpdateBody = Omit<AnnouncementPayload, 'notifyMembers'>;
+
+const toAnnouncementBody = (payload: AnnouncementPayload): AnnouncementUpdateBody => ({
   title: payload.title,
   body: payload.body,
   validUntil: payload.validUntil,
   addOns: payload.addOns,
+});
+
+const toCreatedAnnouncementBody = (payload: AnnouncementPayload): AnnouncementPayload => ({
+  ...toAnnouncementBody(payload),
+  notifyMembers: payload.notifyMembers,
 });
 
 export const requestCreateAnnouncement = (
@@ -37,7 +44,7 @@ export const requestCreateAnnouncement = (
 ): Promise<CreatedAnnouncement> =>
   apiFetch('/api/announcements', {
     method: 'POST',
-    body: toAnnouncementBody(payload),
+    body: toCreatedAnnouncementBody(payload),
     schema: CreatedAnnouncementSchema,
     accessToken,
   });

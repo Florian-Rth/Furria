@@ -2,10 +2,15 @@ import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkMultiSelectField } from '@furria/ui/KkMultiSelectField';
 import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import { toAudienceGroupOptions, toParticipantsEmptyLabel } from '../calendar-authoring';
-import { CALENDAR_AUDIENCE_OPTIONS } from '../calendar-labels';
+import {
+  CALENDAR_AUDIENCE_OPTIONS,
+  NOTIFY_MEMBERS_DESCRIPTION,
+  NOTIFY_MEMBERS_LABEL,
+} from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
 import type { AudienceGroup, AudiencePerson } from '../schemas';
@@ -72,6 +77,19 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
       />
     ) : null;
 
+  const notify = control.notifyMembers;
+  const notifySwitch =
+    notify === null || notify.choice === 'unavailable' ? null : (
+      <KkSwitchRow
+        label={NOTIFY_MEMBERS_LABEL}
+        description={NOTIFY_MEMBERS_DESCRIPTION}
+        checked={notify.checked}
+        onChange={notify.set}
+        stateChip={false}
+        disabled={notify.choice === 'alwaysSent' || control.isSaving}
+      />
+    );
+
   const ownerField =
     ownerOptions.length < 2 ? null : (
       <KkSelectField
@@ -97,6 +115,7 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
       />
       {groupsPicker}
       {peoplePicker}
+      {notifySwitch}
       {ownerField}
     </KkFormSection>
   );

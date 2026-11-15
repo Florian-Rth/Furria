@@ -95,6 +95,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
                 AudiencePersonIds = [],
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
                 ParticipatingGroupIds = [tanzgarde, ctx.Groups.Groups.IdOf("kindergarde")],
+                NotifyMembers = false,
             }
         );
 
@@ -381,6 +382,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
             AudiencePersonIds = [],
             AddOns = [PostAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
             ParticipatingGroupIds = participatingGroupIds,
+            NotifyMembers = false,
         };
 
     private static async Task<PostCalendarEntryResponse> WriteAsync(

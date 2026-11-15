@@ -47,7 +47,10 @@ public static class CalendarPushRules
 
     [Pure]
     public static bool ReachesEveryoneConcerned(CalendarPushReason reason) =>
-        reason is CalendarPushReason.AsksForResponse or CalendarPushReason.Reminder;
+        reason
+            is CalendarPushReason.AsksForResponse
+                or CalendarPushReason.Reminder
+                or CalendarPushReason.Announced;
 
     [Pure]
     public static bool MayConcern(

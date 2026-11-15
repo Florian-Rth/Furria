@@ -21,7 +21,9 @@ import {
   WrittenCalendarEntrySchema,
 } from './schemas';
 
-const toEntryBody = (payload: CalendarEntryPayload): CalendarEntryPayload => ({
+type CalendarEntryUpdateBody = Omit<CalendarEntryPayload, 'notifyMembers'>;
+
+const toEntryBody = (payload: CalendarEntryPayload): CalendarEntryUpdateBody => ({
   title: payload.title,
   description: payload.description,
   ownerGroupId: payload.ownerGroupId,
@@ -34,6 +36,11 @@ const toEntryBody = (payload: CalendarEntryPayload): CalendarEntryPayload => ({
   audiencePersonIds: payload.audiencePersonIds,
   addOns: payload.addOns,
   participatingGroupIds: payload.participatingGroupIds,
+});
+
+const toCreatedEntryBody = (payload: CalendarEntryPayload): CalendarEntryPayload => ({
+  ...toEntryBody(payload),
+  notifyMembers: payload.notifyMembers,
 });
 
 export const requestCalendar = (
@@ -66,7 +73,7 @@ export const requestCalendarEntryCreation = (
 ): Promise<WrittenCalendarEntry> =>
   apiFetch('/api/calendar/entries', {
     method: 'POST',
-    body: toEntryBody(payload),
+    body: toCreatedEntryBody(payload),
     schema: WrittenCalendarEntrySchema,
     accessToken,
   });
