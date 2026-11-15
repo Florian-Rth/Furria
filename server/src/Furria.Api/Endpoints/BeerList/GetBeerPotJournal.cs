@@ -48,6 +48,8 @@ public sealed class GetBeerPotJournal
         new()
         {
             CrateId = crate.CrateId,
+            BeerDrinkId = crate.BeerDrinkId,
+            DrinkName = crate.DrinkName,
             Person = crate.Person is { } person ? ToDto(person) : null,
             PriceCents = crate.PriceCents,
             BookedAt = crate.BookedAt,
@@ -63,9 +65,18 @@ public sealed class GetBeerPotJournal
             Person = payment.Person is { } person ? ToDto(person) : null,
             Crates = payment.Crates,
             AmountCents = payment.AmountCents,
+            Drinks = [.. payment.Drinks.Select(ToDto)],
             BookedAt = payment.BookedAt,
             BookedBy = payment.BookedBy is { } bookedBy ? ToDto(bookedBy) : null,
             UndoneAt = payment.UndoneAt,
+        };
+
+    private static BeerJournalPaymentDrinkDto ToDto(BeerPaymentDrinkSummary drink) =>
+        new()
+        {
+            BeerDrinkId = drink.BeerDrinkId,
+            Name = drink.Name,
+            Crates = drink.Crates,
         };
 
     private static BeerJournalPersonDto ToDto(BeerListPerson person) =>
@@ -102,6 +113,10 @@ public sealed record BeerJournalCrateDto
 {
     public required int CrateId { get; init; }
 
+    public required int BeerDrinkId { get; init; }
+
+    public required string DrinkName { get; init; }
+
     public required BeerJournalPersonDto? Person { get; init; }
 
     public required int PriceCents { get; init; }
@@ -125,6 +140,8 @@ public sealed record BeerJournalPaymentDto
 
     public required int AmountCents { get; init; }
 
+    public required IReadOnlyList<BeerJournalPaymentDrinkDto> Drinks { get; init; }
+
     public required DateTimeOffset BookedAt { get; init; }
 
     public required BeerJournalPersonDto? BookedBy { get; init; }
@@ -139,4 +156,13 @@ public sealed record BeerJournalPersonDto
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+}
+
+public sealed record BeerJournalPaymentDrinkDto
+{
+    public required int BeerDrinkId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required int Crates { get; init; }
 }

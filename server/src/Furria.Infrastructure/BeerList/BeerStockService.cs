@@ -26,8 +26,9 @@ public sealed class BeerStockService
 
     public Task<Result> BookDeliveryAsync(BeerDeliveryCommand command, CancellationToken ct) =>
         BookAsync(
-            command.BeerPotId,
             new StockChange(
+                command.BeerPotId,
+                command.BeerDrinkId,
                 BeerStockMovementKind.Delivery,
                 command.Crates,
                 command.BookedByPersonId
@@ -40,8 +41,9 @@ public sealed class BeerStockService
         CancellationToken ct
     ) =>
         BookAsync(
-            command.BeerPotId,
             new StockChange(
+                command.BeerPotId,
+                command.BeerDrinkId,
                 BeerStockMovementKind.Correction,
                 command.Crates,
                 command.BookedByPersonId
@@ -59,16 +61,14 @@ public sealed class BeerStockService
             IsolationLevel.RepeatableRead,
             ct
         );
+        var drinks = await DrinkStocksAsync(beerPotId, ct);
         var movements = await MovementsOfAsync(beerPotId, ct);
-        var crates = await BeerPotLedger.StockOfAsync(_dbContext, beerPotId, ct);
-        var cratesTakenInPaceWindow = await CratesTakenInPaceWindowAsync(ct);
         await snapshot.CommitAsync(ct);
 
         return Result<BeerStockDetails>.Success(
             new BeerStockDetails
             {
-                Crates = crates,
-                Forecast = ProjectionOf(crates, isOpen.Value, cratesTakenInPaceWindow),
+                Drinks = [.. drinks.Select(drink => StockOf(drink, isOpen.Value))],
                 Movements = movements,
             }
         );
@@ -83,33 +83,67 @@ public sealed class BeerStockService
             .Select(pot => (bool?)(pot.ClosedAt == null))
             .SingleOrDefaultAsync(ct);
 
-    private Task<int> CratesTakenInPaceWindowAsync(CancellationToken ct)
-    {
-        var windowStart =
-            _timeProvider.GetUtcNow() - TimeSpan.FromDays(BeerStockForecast.PaceWindowDays);
-
-        return BeerPotLedger
-            .TakenCrates(_dbContext)
-            .CountAsync(crate => crate.BookedAt > windowStart, ct);
-    }
-
-    private BeerStockProjection ProjectionOf(
-        int crates,
-        bool isOpen,
-        int cratesTakenInPaceWindow
-    ) =>
+    private BeerDrinkStockSummary StockOf(DrinkStockRow drink, bool potIsOpen) =>
         new()
         {
-            PaceWindowDays = BeerStockForecast.PaceWindowDays,
-            CratesTakenInPaceWindow = cratesTakenInPaceWindow,
-            ProjectedEmptyOn = isOpen
-                ? BeerStockForecast.ProjectedEmptyOn(
-                    crates,
-                    cratesTakenInPaceWindow,
-                    ClubClock.Today(_timeProvider)
-                )
-                : null,
+            BeerDrinkId = drink.BeerDrinkId,
+            Name = drink.Name,
+            CratePriceCents = drink.CratePriceCents,
+            IsDefault = drink.IsDefault,
+            IsRetired = drink.IsRetired,
+            Crates = drink.Crates,
+            Forecast = new BeerStockProjection
+            {
+                PaceWindowDays = BeerStockForecast.PaceWindowDays,
+                CratesTakenInPaceWindow = drink.CratesTakenInPaceWindow,
+                ProjectedEmptyOn =
+                    potIsOpen && !drink.IsRetired
+                        ? BeerStockForecast.ProjectedEmptyOn(
+                            drink.Crates,
+                            drink.CratesTakenInPaceWindow,
+                            ClubClock.Today(_timeProvider)
+                        )
+                        : null,
+            },
         };
+
+    private async Task<IReadOnlyList<DrinkStockRow>> DrinkStocksAsync(
+        int beerPotId,
+        CancellationToken ct
+    )
+    {
+        var stockMovements = BeerPotLedger.StockMovements(_dbContext);
+        var takenCrates = BeerPotLedger.TakenCrates(_dbContext);
+        var paceWindowStart =
+            _timeProvider.GetUtcNow() - TimeSpan.FromDays(BeerStockForecast.PaceWindowDays);
+
+        return await _dbContext
+            .BeerPotDrinks.AsNoTracking()
+            .Where(potDrink => potDrink.BeerPotId == beerPotId)
+            .OrderBy(potDrink => potDrink.RetiredAt != null)
+            .ThenBy(potDrink => EF.Functions.Collate(potDrink.Drink!.Name, GermanCollation.Name))
+            .ThenBy(potDrink => potDrink.BeerDrinkId)
+            .Select(potDrink => new DrinkStockRow(
+                potDrink.BeerDrinkId,
+                potDrink.Drink!.Name,
+                potDrink.CratePriceCents,
+                potDrink.IsDefault,
+                potDrink.RetiredAt != null,
+                stockMovements
+                    .Where(movement =>
+                        movement.BeerPotId == beerPotId
+                        && movement.BeerDrinkId == potDrink.BeerDrinkId
+                    )
+                    .Sum(movement => movement.Crates)
+                    - takenCrates.Count(crate =>
+                        crate.BeerPotId == beerPotId && crate.BeerDrinkId == potDrink.BeerDrinkId
+                    ),
+                takenCrates.Count(crate =>
+                    crate.BeerDrinkId == potDrink.BeerDrinkId && crate.BookedAt > paceWindowStart
+                )
+            ))
+            .ToListAsync(ct);
+    }
 
     private async Task<IReadOnlyList<BeerStockMovementSummary>> MovementsOfAsync(
         int beerPotId,
@@ -124,6 +158,8 @@ public sealed class BeerStockService
             {
                 MovementId = movement.Id,
                 Kind = movement.Kind,
+                BeerDrinkId = movement.BeerDrinkId,
+                DrinkName = movement.PotDrink!.Drink!.Name,
                 Crates = movement.Crates,
                 BookedAt = movement.BookedAt,
                 BookedBy =
@@ -138,12 +174,12 @@ public sealed class BeerStockService
             })
             .ToListAsync(ct);
 
-    private async Task<Result> BookAsync(int beerPotId, StockChange change, CancellationToken ct)
+    private async Task<Result> BookAsync(StockChange change, CancellationToken ct)
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var isOpen = await IsOpenAsync(
-            BeerPotLedger.LockedPot(_dbContext, beerPotId),
-            beerPotId,
+            BeerPotLedger.LockedPot(_dbContext, change.BeerPotId),
+            change.BeerPotId,
             ct
         );
         if (isOpen is null)
@@ -152,13 +188,24 @@ public sealed class BeerStockService
         if (!isOpen.Value)
             return Result.Conflict(ClosedPotMessage);
 
-        if (await BeerPotLedger.StockOfAsync(_dbContext, beerPotId, ct) + change.Crates < 0)
+        var drinkCheck = await DrinkCheckAsync(change, ct);
+        if (!drinkCheck.IsSuccess)
+            return drinkCheck;
+
+        var stock = await BeerPotLedger.StockOfAsync(
+            _dbContext,
+            change.BeerPotId,
+            change.BeerDrinkId,
+            ct
+        );
+        if (stock + change.Crates < 0)
             return Result.Conflict(BelowZeroMessage);
 
         _dbContext.BeerStockMovements.Add(
             new BeerStockMovement
             {
-                BeerPotId = beerPotId,
+                BeerPotId = change.BeerPotId,
+                BeerDrinkId = change.BeerDrinkId,
                 Kind = change.Kind,
                 Crates = change.Crates,
                 BookedByPersonId = change.BookedByPersonId,
@@ -171,9 +218,39 @@ public sealed class BeerStockService
         return Result.Success();
     }
 
+    private async Task<Result> DrinkCheckAsync(StockChange change, CancellationToken ct)
+    {
+        var isRetired = await BeerPotLedger
+            .PotDrink(_dbContext, change.BeerPotId, change.BeerDrinkId)
+            .AsNoTracking()
+            .Select(potDrink => (bool?)(potDrink.RetiredAt != null))
+            .SingleOrDefaultAsync(ct);
+
+        return isRetired switch
+        {
+            null => Result.NotFound(BeerListMessages.UnknownDrink),
+            true when change.Kind == BeerStockMovementKind.Delivery => Result.Conflict(
+                BeerListMessages.RetiredDrink
+            ),
+            _ => Result.Success(),
+        };
+    }
+
     private sealed record StockChange(
+        int BeerPotId,
+        int BeerDrinkId,
         BeerStockMovementKind Kind,
         int Crates,
         int? BookedByPersonId
+    );
+
+    private sealed record DrinkStockRow(
+        int BeerDrinkId,
+        string Name,
+        int CratePriceCents,
+        bool IsDefault,
+        bool IsRetired,
+        int Crates,
+        int CratesTakenInPaceWindow
     );
 }

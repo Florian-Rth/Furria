@@ -30,6 +30,7 @@ public sealed class PostBeerStockCorrection : Endpoint<PostBeerStockCorrectionRe
             new BeerStockCorrectionCommand
             {
                 BeerPotId = req.BeerPotId,
+                BeerDrinkId = req.BeerDrinkId,
                 Crates = req.Crates,
                 BookedByPersonId = User.PersonId(),
             },
@@ -51,6 +52,8 @@ public sealed record PostBeerStockCorrectionRequest
     [RouteParam]
     public required int BeerPotId { get; init; }
 
+    public required int BeerDrinkId { get; init; }
+
     public required int Crates { get; init; }
 }
 
@@ -61,6 +64,7 @@ public sealed class PostBeerStockCorrectionValidator : Validator<PostBeerStockCo
     public PostBeerStockCorrectionValidator()
     {
         RuleFor(request => request.BeerPotId).GreaterThan(0);
+        RuleFor(request => request.BeerDrinkId).GreaterThan(0);
         RuleFor(request => request.Crates)
             .Must(crates =>
                 crates != 0

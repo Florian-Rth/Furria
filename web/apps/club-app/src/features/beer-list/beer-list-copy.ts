@@ -1,6 +1,7 @@
 import type { QueryErrorKind } from '@/lib/query-error';
 import { cratesLabel } from './booking/booking-copy';
 import type { BeerBookingGate } from './booking/booking-gate';
+import type { BeerGiver } from './schemas';
 
 export const BEER_LIST_TITLE = 'Bierliste';
 export const openMeta = (amount: string): string => `${amount} offen`;
@@ -30,13 +31,17 @@ export const OPEN_GROUP = 'Offen';
 export const earlierOpenGroup = (owner: string | null): string =>
   owner === null ? 'Offen, frühere Liste' : `Offen bei ${owner}`;
 export const paidGroupTitle = (day: string): string => `Bezahlt am ${day}`;
-export const CRATE_LINE = 'Kiste';
-export const enteredByLine = (firstName: string): string => `Kiste · von ${firstName}`;
+export const enteredByLine = (drinkName: string, firstName: string): string =>
+  `${drinkName} · von ${firstName}`;
 export const openDaysNote = (days: number): string => (days === 0 ? 'heute' : `${days} T.`);
 
 export const GIVERS_TITLE = 'Wer hat Kisten gegeben';
 export const GIVERS_LABEL = 'Gegebene Kisten nach Name';
 export const NO_GIVERS = 'Noch keine Kisten gegeben.';
+export const giverCountOf = (giver: BeerGiver): string =>
+  giver.drinks.length > 1
+    ? giver.drinks.map((drink) => `${drink.crates} ${drink.name}`).join(' · ')
+    : cratesLabel(giver.crates);
 
 const FORMER_NOTE = 'Du nimmst nicht mehr an der Bierliste teil. Teilnehmen: Mein Profil.';
 const KEEPER_NOTE = 'Zum Buchen in Mein Profil an der Bierliste teilnehmen.';

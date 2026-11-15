@@ -3,13 +3,21 @@ import {
   bookableOf,
   centsOfPriceText,
   crateStateOf,
-  deliveriesOf,
+  drinkLimitsOf,
+  drinkTrendsOf,
+  fullPaymentOf,
   hubSummaryOf,
+  initialDrinkOf,
+  initialStockDrinkOf,
   journalOf,
+  leadDrinkOf,
   openCratesOf,
+  paidDrinksOf,
   paymentPreviewOf,
+  paymentRowsOf,
   rosterOf,
   signedCountOfText,
+  steppedPaymentOf,
   stockChangeOf,
   stockSeriesOf,
 } from './beer-hub';
@@ -69,6 +77,8 @@ const crate = (
   extra: { undoneAt?: string; beerPaymentId?: number; priceCents?: number } = {},
 ) => ({
   crateId,
+  beerDrinkId: 1,
+  drinkName: 'Bier',
   person: person(personId, 'P', `${personId}`),
   priceCents: extra.priceCents ?? 1500,
   bookedAt,
@@ -77,25 +87,152 @@ const crate = (
   beerPaymentId: extra.beerPaymentId ?? null,
 });
 
-describe('openCratesOf and paymentPreviewOf', () => {
-  it('settles the oldest open crates of the person first, at their own prices', () => {
+describe('openCratesOf', () => {
+  it('keeps the open crates of the person, oldest first', () => {
     const crates = [
       crate(4, 1, '2026-11-03T10:00:00.000Z'),
-      crate(3, 1, '2026-10-20T10:00:00.000Z', { priceCents: 1300 }),
+      crate(3, 1, '2026-10-20T10:00:00.000Z'),
       crate(2, 1, '2026-10-10T10:00:00.000Z', { beerPaymentId: 9 }),
       crate(5, 1, '2026-10-01T10:00:00.000Z', { undoneAt: '2026-10-01T10:00:05.000Z' }),
       crate(6, 2, '2026-09-01T10:00:00.000Z'),
     ];
 
-    const open = openCratesOf(crates, 1);
-    const preview = paymentPreviewOf(open, 1);
+    expect(openCratesOf(crates, 1).map((entry) => entry.crateId)).toEqual([3, 4]);
+  });
+});
 
-    expect(open.map((entry) => entry.crateId)).toEqual([3, 4]);
-    expect(preview.lines.map((line) => [line.crate.crateId, line.settled])).toEqual([
-      [3, true],
-      [4, false],
+const openCrate = (
+  crateId: number,
+  beerDrinkId: number,
+  drinkName: string,
+  priceCents: number,
+) => ({
+  crateId,
+  beerDrinkId,
+  drinkName,
+  person: person(1, 'P', '1'),
+  priceCents,
+  bookedAt: `2026-10-0${crateId}T10:00:00.000Z`,
+  enteredBy: null,
+  undoneAt: null,
+  beerPaymentId: null,
+});
+
+const OLDEST_FIRST = [
+  openCrate(1, 1, 'Veltins', 1300),
+  openCrate(2, 2, 'Radler', 1600),
+  openCrate(3, 1, 'Veltins', 1500),
+  openCrate(4, 1, 'Veltins', 1800),
+];
+
+describe('paymentRowsOf', () => {
+  it('lists each drink once with its open count, in order of its oldest crate', () => {
+    expect(paymentRowsOf(OLDEST_FIRST)).toEqual([
+      { beerDrinkId: 1, name: 'Veltins', open: 3 },
+      { beerDrinkId: 2, name: 'Radler', open: 1 },
     ]);
-    expect(preview.cents).toBe(1300);
+  });
+});
+
+describe('paymentPreviewOf', () => {
+  it.each([
+    [[], [], 0, 0, false],
+    [[{ beerDrinkId: 1, crates: 1 }], [1], 1, 1300, false],
+    [[{ beerDrinkId: 1, crates: 2 }], [1, 3], 2, 2800, false],
+    [[{ beerDrinkId: 2, crates: 1 }], [2], 1, 1600, false],
+    [
+      [
+        { beerDrinkId: 1, crates: 1 },
+        { beerDrinkId: 2, crates: 1 },
+      ],
+      [1, 2],
+      2,
+      2900,
+      false,
+    ],
+    [
+      [
+        { beerDrinkId: 1, crates: 3 },
+        { beerDrinkId: 2, crates: 1 },
+      ],
+      [1, 2, 3, 4],
+      4,
+      6200,
+      true,
+    ],
+    [[{ beerDrinkId: 1, crates: 9 }], [1, 3, 4], 3, 4600, false],
+    [[{ beerDrinkId: 7, crates: 2 }], [], 0, 0, false],
+  ])('picks %j settle %j: %i crates, %i cents, full %s', (picks, settled, crates, cents, full) => {
+    const preview = paymentPreviewOf(OLDEST_FIRST, picks);
+
+    expect(preview.lines.filter((line) => line.settled).map((line) => line.crate.crateId)).toEqual(
+      settled,
+    );
+    expect([preview.crates, preview.cents, preview.full]).toEqual([crates, cents, full]);
+  });
+
+  it('pairs every drink row with its picked count', () => {
+    const preview = paymentPreviewOf(OLDEST_FIRST, [{ beerDrinkId: 2, crates: 1 }]);
+
+    expect(preview.drinks.map((drink) => [drink.beerDrinkId, drink.crates, drink.open])).toEqual([
+      [1, 0, 3],
+      [2, 1, 1],
+    ]);
+  });
+});
+
+const PAYMENT_ROWS = [
+  { beerDrinkId: 1, name: 'Veltins', open: 3 },
+  { beerDrinkId: 2, name: 'Radler', open: 1 },
+];
+
+describe('steppedPaymentOf', () => {
+  it.each([
+    [[], 1, 1, [1, 0]],
+    [[{ beerDrinkId: 1, crates: 3 }], 1, 1, [3, 0]],
+    [[{ beerDrinkId: 1, crates: 2 }], 1, -1, [1, 0]],
+    [[], 1, -1, [0, 0]],
+    [[{ beerDrinkId: 1, crates: 2 }], 2, 1, [2, 1]],
+    [[{ beerDrinkId: 2, crates: 1 }], 2, 1, [0, 1]],
+  ])('picks %j, drink %i, step %i → %j', (picks, beerDrinkId, step, expected) => {
+    expect(
+      steppedPaymentOf(PAYMENT_ROWS, picks, beerDrinkId, step).map((pick) => pick.crates),
+    ).toEqual(expected);
+  });
+});
+
+describe('fullPaymentOf', () => {
+  it('picks every open crate of every drink', () => {
+    expect(fullPaymentOf(PAYMENT_ROWS)).toEqual([
+      { beerDrinkId: 1, crates: 3 },
+      { beerDrinkId: 2, crates: 1 },
+    ]);
+  });
+});
+
+describe('paidDrinksOf', () => {
+  it.each([
+    [[], []],
+    [
+      [
+        { beerDrinkId: 1, crates: 0 },
+        { beerDrinkId: 2, crates: 1 },
+      ],
+      [{ beerDrinkId: 2, crates: 1 }],
+    ],
+    [
+      [
+        { beerDrinkId: 2, crates: 1 },
+        { beerDrinkId: 1, crates: 5 },
+      ],
+      [
+        { beerDrinkId: 1, crates: 3 },
+        { beerDrinkId: 2, crates: 1 },
+      ],
+    ],
+    [[{ beerDrinkId: 9, crates: 2 }], []],
+  ])('picks %j → request drinks %j', (picks, expected) => {
+    expect(paidDrinksOf(PAYMENT_ROWS, picks)).toEqual(expected);
   });
 });
 
@@ -117,6 +254,8 @@ describe('stockSeriesOf', () => {
     const movements = [
       {
         movementId: 1,
+        beerDrinkId: 1,
+        drinkName: 'Bier',
         kind: 'delivery' as const,
         crates: 10,
         bookedAt: '2026-11-01T10:00:00.000Z',
@@ -129,31 +268,6 @@ describe('stockSeriesOf', () => {
     ];
 
     expect(stockSeriesOf(movements, crates, NOW, 5)).toEqual([0, 10, 8, 9, 9]);
-  });
-});
-
-describe('deliveriesOf', () => {
-  const movementOf = (
-    kind: 'delivery' | 'correction' | 'handoverCarry',
-    crates: number,
-    bookedAt: string,
-  ) => ({ movementId: 1, kind, crates, bookedAt, bookedBy: null });
-
-  it('sums the restocks of each day and ignores corrections and removals', () => {
-    expect(
-      deliveriesOf(
-        [
-          movementOf('delivery', 10, '2026-11-03T13:00:00.000Z'),
-          movementOf('handoverCarry', 4, '2026-11-03T20:00:00.000Z'),
-          movementOf('correction', 2, '2026-11-04T13:00:00.000Z'),
-          movementOf('delivery', -1, '2026-11-05T09:00:00.000Z'),
-          movementOf('delivery', 6, '2026-11-05T11:00:00.000Z'),
-          movementOf('delivery', 9, '2026-10-01T11:00:00.000Z'),
-        ],
-        '2026-11-05T12:00:00.000Z',
-        3,
-      ),
-    ).toEqual([0, 14, 6]);
   });
 });
 
@@ -206,6 +320,157 @@ describe('rosterOf', () => {
   });
 });
 
+const drink = (
+  beerDrinkId: number,
+  name: string,
+  crates: number,
+  projectedEmptyOn: string | null,
+  isRetired = false,
+  isDefault = false,
+) => ({
+  beerDrinkId,
+  name,
+  cratePriceCents: 1800,
+  isRetired,
+  isDefault,
+  crates,
+  forecast: { paceWindowDays: 21, cratesTakenInPaceWindow: 9, projectedEmptyOn },
+});
+
+describe('leadDrinkOf', () => {
+  it.each([
+    [
+      'the drink running out soonest leads',
+      [drink(1, 'Veltins', 9, '2026-11-20'), drink(2, 'Radler', 3, '2026-11-08')],
+      2,
+    ],
+    [
+      'a drink with a forecast leads one without',
+      [drink(1, 'Veltins', 1, null), drink(2, 'Radler', 30, '2026-12-08')],
+      2,
+    ],
+    [
+      'without forecasts the smallest stock leads',
+      [drink(1, 'Veltins', 6, null), drink(2, 'Radler', 2, null)],
+      2,
+    ],
+    [
+      'a retired drink never leads',
+      [drink(1, 'Veltins', 6, '2026-12-01'), drink(2, 'Radler', 0, '2026-11-05', true)],
+      1,
+    ],
+    ['nothing listed has no lead', [drink(2, 'Radler', 0, null, true)], null],
+  ])('%s', (_label, drinks, expected) => {
+    expect(leadDrinkOf(drinks)?.beerDrinkId ?? null).toBe(expected);
+  });
+});
+
+describe('drinkLimitsOf and initialDrinkOf', () => {
+  it.each([
+    [
+      'caps a booking at the drink stock and at twenty',
+      [drink(1, 'Veltins', 3, null), drink(2, 'Radler', 40, null)],
+      [
+        { beerDrinkId: 1, maxCount: 3 },
+        { beerDrinkId: 2, maxCount: 20 },
+      ],
+      '',
+    ],
+    [
+      'leaves out empty and retired drinks and preselects the one left',
+      [
+        drink(1, 'Veltins', 0, null),
+        drink(2, 'Radler', 5, null),
+        drink(3, 'Helles', 4, null, true),
+      ],
+      [{ beerDrinkId: 2, maxCount: 5 }],
+      '2',
+    ],
+    [
+      'preselects the default drink in stock',
+      [drink(1, 'Veltins', 3, null), drink(2, 'Radler', 5, null, false, true)],
+      [
+        { beerDrinkId: 1, maxCount: 3 },
+        { beerDrinkId: 2, maxCount: 5 },
+      ],
+      '2',
+    ],
+    [
+      'skips a sold-out default for the only drink in stock',
+      [drink(1, 'Veltins', 3, null), drink(2, 'Radler', 0, null, false, true)],
+      [{ beerDrinkId: 1, maxCount: 3 }],
+      '1',
+    ],
+  ])('%s', (_label, drinks, limits, initial) => {
+    expect(drinkLimitsOf(drinks)).toEqual(limits);
+    expect(initialDrinkOf(drinks)).toBe(initial);
+  });
+});
+
+describe('initialStockDrinkOf', () => {
+  it.each([
+    [
+      'the default drink even when it is empty',
+      [drink(1, 'Veltins', 3, null), drink(2, 'Radler', 0, null, false, true)],
+      '2',
+    ],
+    [
+      'the only listed drink',
+      [drink(1, 'Veltins', 0, null), drink(2, 'Radler', 0, null, true)],
+      '1',
+    ],
+    [
+      'nothing among several without a default',
+      [drink(1, 'Veltins', 3, null), drink(2, 'Radler', 1, null)],
+      '',
+    ],
+  ])('%s', (_label, drinks, expected) => {
+    expect(initialStockDrinkOf(drinks)).toBe(expected);
+  });
+});
+
+describe('drinkTrendsOf', () => {
+  it('tracks each listed drink on its own and leaves retired drinks out', () => {
+    const movementOf = (
+      movementId: number,
+      beerDrinkId: number,
+      crates: number,
+      bookedAt: string,
+    ) => ({
+      movementId,
+      beerDrinkId,
+      drinkName: '',
+      kind: 'delivery' as const,
+      crates,
+      bookedAt,
+      bookedBy: null,
+    });
+    const trends = drinkTrendsOf(
+      {
+        drinks: [
+          drink(1, 'Veltins', 8, '2026-11-08'),
+          drink(2, 'Radler', 5, null),
+          drink(3, 'Helles', 0, null, true),
+        ],
+        movements: [
+          movementOf(1, 1, 10, '2026-11-01T10:00:00.000Z'),
+          movementOf(2, 2, 5, '2026-11-03T10:00:00.000Z'),
+          movementOf(3, 3, 4, '2026-11-01T10:00:00.000Z'),
+        ],
+      },
+      [crate(1, 1, '2026-11-02T10:00:00.000Z'), crate(2, 1, '2026-11-02T11:00:00.000Z')],
+      NOW,
+    );
+
+    expect(
+      trends.map((trend) => [trend.beerDrinkId, trend.series.slice(-5), trend.outlook.warns]),
+    ).toEqual([
+      [1, [0, 10, 8, 8, 8], true],
+      [2, [0, 0, 0, 5, 5], false],
+    ]);
+  });
+});
+
 describe('hubSummaryOf', () => {
   it.each([
     ['2026-11-10', true],
@@ -213,11 +478,7 @@ describe('hubSummaryOf', () => {
     [null, false],
   ])('projected empty on %s warns: %s', (projectedEmptyOn, warns) => {
     const summary = hubSummaryOf({
-      stock: {
-        crates: 4,
-        forecast: { paceWindowDays: 21, cratesTakenInPaceWindow: 9, projectedEmptyOn },
-        movements: [],
-      },
+      stock: { drinks: [drink(1, 'Bier', 4, projectedEmptyOn)], movements: [] },
       crates: [],
       roster: [],
       now: NOW,
@@ -226,13 +487,32 @@ describe('hubSummaryOf', () => {
     expect(summary.warns).toBe(warns);
   });
 
-  it('starts the stock series on the Berlin day sixty days back including today', () => {
+  it('sums the listed drinks and names the one running out soonest when there are several', () => {
     const summary = hubSummaryOf({
       stock: {
-        crates: 4,
-        forecast: { paceWindowDays: 21, cratesTakenInPaceWindow: 0, projectedEmptyOn: null },
+        drinks: [
+          drink(1, 'Veltins', 9, '2026-11-20'),
+          drink(2, 'Radler', 3, '2026-11-08'),
+          drink(3, 'Helles', 0, null, true),
+        ],
         movements: [],
       },
+      crates: [],
+      roster: [],
+      now: NOW,
+    });
+
+    expect([summary.stock, summary.leadName, summary.emptyOn, summary.warns]).toEqual([
+      12,
+      'Radler',
+      '2026-11-08',
+      true,
+    ]);
+  });
+
+  it('starts the stock series on the Berlin day sixty days back including today', () => {
+    const summary = hubSummaryOf({
+      stock: { drinks: [drink(1, 'Bier', 4, null)], movements: [] },
       crates: [],
       roster: [],
       now: '2026-11-04T23:30:00.000Z',
@@ -256,6 +536,7 @@ describe('journalOf', () => {
             beerPaymentId: 7,
             person: person(1, 'P', '1'),
             crates: 2,
+            drinks: [{ beerDrinkId: 1, name: 'Bier', crates: 2 }],
             amountCents: 3000,
             bookedAt: '2026-11-04T12:00:00.000Z',
             bookedBy: null,

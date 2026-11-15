@@ -143,6 +143,7 @@ type BeerTakerKey = (typeof BEER_ENROLLED_KEYS)[number];
 
 interface BeerCratesSpec {
   readonly person: BeerTakerKey;
+  readonly drink: BeerDrinkName;
   readonly count: number;
   readonly paid: boolean;
 }
@@ -531,24 +532,39 @@ const ROLE_HOLDINGS: readonly RoleHoldingSpec[] = [
   { role: 'Technik', person: 'dirk', sinceOn: '2019-11-11' },
 ];
 
+const BEER_DRINKS = [
+  { name: 'Veltins', cratePriceCents: 1600 },
+  { name: 'Radler', cratePriceCents: 1500 },
+] as const;
+type BeerDrinkName = (typeof BEER_DRINKS)[number]['name'];
 const BEER_POT = {
-  cratePriceCents: 1600,
   paymentLink: 'https://paypal.me/frankweber',
+  drinks: BEER_DRINKS,
 } as const;
 const BEER_OWNER_KEY = 'frank';
 const BEER_ENROLLED_KEYS = ['lena', BEER_OWNER_KEY, 'sabine', 'kevin', 'gerd'] as const;
-const BEER_DELIVERIES = [24, 20] as const;
-const BEER_CRATES_FOR: readonly BeerCratesSpec[] = [
-  { person: 'lena', count: 2, paid: false },
-  { person: 'sabine', count: 3, paid: false },
-  { person: 'kevin', count: 2, paid: true },
-  { person: 'kevin', count: 3, paid: false },
-  { person: 'gerd', count: 1, paid: false },
-  { person: 'frank', count: 4, paid: true },
-  { person: 'lena', count: 1, paid: false },
+const BEER_DELIVERIES: readonly { readonly drink: BeerDrinkName; readonly crates: number }[] = [
+  { drink: 'Veltins', crates: 24 },
+  { drink: 'Radler', crates: 6 },
+  { drink: 'Veltins', crates: 20 },
 ];
-const BEER_OWN_CRATES: { readonly person: BeerTakerKey; readonly count: number } = {
+const BEER_STOCK_LOSS_DRINK: BeerDrinkName = 'Veltins';
+const BEER_CRATES_FOR: readonly BeerCratesSpec[] = [
+  { person: 'lena', drink: 'Veltins', count: 2, paid: false },
+  { person: 'sabine', drink: 'Veltins', count: 3, paid: false },
+  { person: 'kevin', drink: 'Veltins', count: 2, paid: true },
+  { person: 'kevin', drink: 'Radler', count: 3, paid: false },
+  { person: 'gerd', drink: 'Veltins', count: 1, paid: false },
+  { person: 'frank', drink: 'Veltins', count: 4, paid: true },
+  { person: 'lena', drink: 'Radler', count: 1, paid: false },
+];
+const BEER_OWN_CRATES: {
+  readonly person: BeerTakerKey;
+  readonly drink: BeerDrinkName;
+  readonly count: number;
+} = {
   person: 'lena',
+  drink: 'Veltins',
   count: 2,
 };
 const BEER_PAYMENT: { readonly person: BeerTakerKey; readonly crates: number } = {
@@ -1399,18 +1415,31 @@ const fillBeerPot = async (
   personIds: ReadonlyMap<string, number>,
 ): Promise<void> => {
   const pot = `beer-list/pots/${beerPotId}`;
-  for (const crates of BEER_DELIVERIES) {
-    await send('POST', `${pot}/deliveries`, frank, { crates });
+  const open = await getJson('beer-list/pot', frank, OpenBeerPotSchema);
+  const drinkIds = new Map(
+    (open.pot?.drinks ?? []).map((drink) => [drink.name, drink.beerDrinkId]),
+  );
+  const drinkIdOf = (name: BeerDrinkName): number => lookUp(drinkIds, name, 'drink');
+  for (const delivery of BEER_DELIVERIES) {
+    await send('POST', `${pot}/deliveries`, frank, {
+      beerDrinkId: drinkIdOf(delivery.drink),
+      crates: delivery.crates,
+    });
   }
-  await send('POST', `${pot}/stock-corrections`, frank, { crates: -BEER_STOCK_LOSS });
+  await send('POST', `${pot}/stock-corrections`, frank, {
+    beerDrinkId: drinkIdOf(BEER_STOCK_LOSS_DRINK),
+    crates: -BEER_STOCK_LOSS,
+  });
   for (const crates of BEER_CRATES_FOR) {
     await send('POST', `${pot}/crates`, frank, {
       personId: lookUp(personIds, crates.person, 'person'),
+      beerDrinkId: drinkIdOf(crates.drink),
       count: crates.count,
       paid: crates.paid,
     });
   }
   await send('POST', 'beer-list/crates', lookUp(viewers, BEER_OWN_CRATES.person, 'session'), {
+    beerDrinkId: drinkIdOf(BEER_OWN_CRATES.drink),
     count: BEER_OWN_CRATES.count,
   });
   await send('POST', `${pot}/payments`, frank, {

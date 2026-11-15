@@ -68,6 +68,8 @@ public sealed class GetMyBeerTab : EndpointWithoutRequest<GetMyBeerTabResponse>
         new()
         {
             CrateId = crate.CrateId,
+            BeerDrinkId = crate.BeerDrinkId,
+            DrinkName = crate.DrinkName,
             PriceCents = crate.PriceCents,
             BookedAt = crate.BookedAt,
             EnteredBy = crate.EnteredBy is { } enteredBy ? ToDto(enteredBy) : null,
@@ -114,6 +116,10 @@ public sealed record BeerTabPotDto
 public sealed record BeerTabCrateDto
 {
     public required int CrateId { get; init; }
+
+    public required int BeerDrinkId { get; init; }
+
+    public required string DrinkName { get; init; }
 
     public required int PriceCents { get; init; }
 

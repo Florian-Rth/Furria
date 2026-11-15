@@ -8,6 +8,10 @@ public sealed record BeerStockMovementSummary
 
     public required BeerStockMovementKind Kind { get; init; }
 
+    public required int BeerDrinkId { get; init; }
+
+    public required string DrinkName { get; init; }
+
     public required int Crates { get; init; }
 
     public required DateTimeOffset BookedAt { get; init; }

@@ -44,6 +44,29 @@ public sealed class BeerStockExpectations
             }
         );
 
+    public Expected ToHold(int beerDrinkId, int crates) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var movedIn = await dbContext
+                    .BeerStockMovements.AsNoTracking()
+                    .Where(movement =>
+                        movement.BeerPotId == _beerPotId && movement.BeerDrinkId == beerDrinkId
+                    )
+                    .SumAsync(movement => movement.Crates, ct);
+                var taken = await dbContext
+                    .BeerCrates.AsNoTracking()
+                    .CountAsync(
+                        crate =>
+                            crate.BeerPotId == _beerPotId
+                            && crate.BeerDrinkId == beerDrinkId
+                            && crate.UndoneAt == null,
+                        ct
+                    );
+                Assert.Equal(crates, movedIn - taken);
+            }
+        );
+
     public Expected ToEndWith(
         BeerStockMovementKind kind,
         int crates,

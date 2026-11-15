@@ -11,7 +11,6 @@ namespace Furria.Api.Tests.BeerList;
 public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownPotId = 999_997;
-    private const int RaisedCratePrice = 16_00;
     private const string PaymentLink = "https://paypal.me/gretageldbeutel";
 
     private readonly ApiTestFixture _fixture;
@@ -22,7 +21,7 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SaveTheSettings_When_AnOperatorChangesThem()
+    public async Task Should_SaveThePayPalLink_When_AnOperatorChangesIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -33,18 +32,13 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
 
         var client = await ctx.Identity.ClientForAsync("greta", ct);
         var response = await client.PUTAsync<PutBeerPot, PutBeerPotRequest>(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf("topf"),
-                CratePriceCents = RaisedCratePrice,
-                PaymentLink = " ",
-            }
+            new() { BeerPotId = ctx.BeerList.Pots.IdOf("topf"), PaymentLink = " " }
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
             .Expected.BeerPot(ctx.BeerList.Pots.IdOf("topf"))
-            .ToHaveSettings(RaisedCratePrice, null)
+            .ToHavePaymentLink(null)
             .AssertAsync(ct);
     }
 
@@ -63,7 +57,6 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
             new()
             {
                 BeerPotId = ctx.BeerList.Pots.IdOf("topf"),
-                CratePriceCents = RaisedCratePrice,
                 PaymentLink = "https://example.com/zahlen",
             }
         );
@@ -71,10 +64,7 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         await ctx
             .Expected.BeerPot(ctx.BeerList.Pots.IdOf("topf"))
-            .ToHaveSettings(
-                BeerListSeedBuilder.DefaultCratePriceCents,
-                BeerListSeedBuilder.DefaultPaymentLink
-            )
+            .ToHavePaymentLink(BeerListSeedBuilder.DefaultPaymentLink)
             .AssertAsync(ct);
     }
 
@@ -99,21 +89,13 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
 
         var client = await ctx.Identity.ClientForAsync("greta", ct);
         var response = await client.PUTAsync<PutBeerPot, PutBeerPotRequest>(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf("alter-topf"),
-                CratePriceCents = RaisedCratePrice,
-                PaymentLink = PaymentLink,
-            }
+            new() { BeerPotId = ctx.BeerList.Pots.IdOf("alter-topf"), PaymentLink = PaymentLink }
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         await ctx
             .Expected.BeerPot(ctx.BeerList.Pots.IdOf("alter-topf"))
-            .ToHaveSettings(
-                BeerListSeedBuilder.DefaultCratePriceCents,
-                BeerListSeedBuilder.DefaultPaymentLink
-            )
+            .ToHavePaymentLink(BeerListSeedBuilder.DefaultPaymentLink)
             .AssertAsync(ct);
     }
 
@@ -125,12 +107,7 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
 
         var client = await ctx.Identity.ClientForAsync("greta", ct);
         var response = await client.PUTAsync<PutBeerPot, PutBeerPotRequest>(
-            new()
-            {
-                BeerPotId = UnknownPotId,
-                CratePriceCents = RaisedCratePrice,
-                PaymentLink = PaymentLink,
-            }
+            new() { BeerPotId = UnknownPotId, PaymentLink = PaymentLink }
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);

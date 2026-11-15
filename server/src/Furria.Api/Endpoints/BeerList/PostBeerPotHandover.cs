@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
@@ -48,10 +49,15 @@ public sealed class PostBeerPotHandover
         {
             BeerPotId = req.BeerPotId,
             SuccessorPersonId = req.SuccessorPersonId,
-            SuccessorSettings = BeerPotSettingsRules.ToSettings(
-                req.CratePriceCents,
-                req.PaymentLink
-            ),
+            SuccessorPaymentLink = BeerPotSettingsRules.ToPaymentLink(req.PaymentLink),
+            CarriedDrinkPrices =
+            [
+                .. req.Drinks.Select(drink => new BeerDrinkPrice
+                {
+                    BeerDrinkId = drink.BeerDrinkId,
+                    CratePriceCents = drink.CratePriceCents,
+                }),
+            ],
             HandedOverByPersonId = User.PersonId(),
         };
 }
@@ -63,19 +69,51 @@ public sealed record PostBeerPotHandoverRequest
 
     public required int SuccessorPersonId { get; init; }
 
-    public required int CratePriceCents { get; init; }
-
     public string? PaymentLink { get; init; }
+
+    public required IReadOnlyList<HandoverBeerDrinkDataDto> Drinks { get; init; }
+}
+
+public sealed record HandoverBeerDrinkDataDto
+{
+    public required int BeerDrinkId { get; init; }
+
+    public required int CratePriceCents { get; init; }
 }
 
 public sealed class PostBeerPotHandoverValidator : Validator<PostBeerPotHandoverRequest>
 {
+    private const string DrinkTwiceMessage = "Jedes Getränk bekommt genau einen Preis.";
+
     public PostBeerPotHandoverValidator()
     {
         RuleFor(request => request.BeerPotId).GreaterThan(0);
         RuleFor(request => request.SuccessorPersonId).GreaterThan(0);
-        RuleFor(request => request.CratePriceCents).CratePrice();
         RuleFor(request => request.PaymentLink).PaymentLink();
+        RuleFor(request => request.Drinks).NotNull();
+        RuleForEach(request => request.Drinks)
+            .NotNull()
+            .SetValidator(new HandoverBeerDrinkDataValidator());
+        RuleFor(request => request.Drinks)
+            .Must(EachDrinkOnce)
+            .When(request => request.Drinks is not null && request.Drinks.All(IsGiven))
+            .WithMessage(DrinkTwiceMessage);
+    }
+
+    [Pure]
+    private static bool IsGiven(HandoverBeerDrinkDataDto? drink) => drink is not null;
+
+    [Pure]
+    private static bool EachDrinkOnce(IReadOnlyList<HandoverBeerDrinkDataDto> drinks) =>
+        drinks.Select(drink => drink.BeerDrinkId).Distinct().Count() == drinks.Count;
+}
+
+public sealed class HandoverBeerDrinkDataValidator : Validator<HandoverBeerDrinkDataDto>
+{
+    public HandoverBeerDrinkDataValidator()
+    {
+        RuleFor(drink => drink.BeerDrinkId).GreaterThan(0);
+        RuleFor(drink => drink.CratePriceCents).CratePrice();
     }
 }
 

@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import type { OpenBeerPot } from '@/features/beer-list/schemas';
 import { SAVE_LABEL } from '../beer-hub-copy';
 import { usePotSettingsForm } from '../hooks/use-pot-settings-form';
-import { BeerPotSettingsFields } from './BeerPotSettingsFields';
+import { BeerPaymentLinkField } from './BeerPaymentLinkField';
 import { BeerRejection } from './BeerRejection';
 
 interface BeerSettingsFormProps {
@@ -15,7 +15,7 @@ export const BeerSettingsForm: FC<BeerSettingsFormProps> = ({ pot }) => {
 
   return (
     <>
-      <BeerPotSettingsFields fields={form.fields} />
+      <BeerPaymentLinkField fields={form.fields} />
       <BeerRejection rejection={form.rejection} />
       <KkButton
         variant="contained"

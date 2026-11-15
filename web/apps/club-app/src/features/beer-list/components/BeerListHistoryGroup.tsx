@@ -2,7 +2,6 @@ import { KkTabLedger } from '@furria/ui/KkTabLedger';
 import type { FC } from 'react';
 import { formatEuroCents } from '@/lib/money';
 import {
-  CRATE_LINE,
   earlierOpenGroup,
   enteredByLine,
   OPEN_GROUP,
@@ -32,8 +31,8 @@ const titleOf = (group: BeerHistoryGroup): string => {
 
 const lineLabelOf = (crate: BeerTabCrate, myPersonId: number | null): string =>
   crate.enteredBy === null || crate.enteredBy.personId === myPersonId
-    ? CRATE_LINE
-    : enteredByLine(crate.enteredBy.firstName);
+    ? crate.drinkName
+    : enteredByLine(crate.drinkName, crate.enteredBy.firstName);
 
 export const BeerListHistoryGroup: FC<BeerListHistoryGroupProps> = ({
   group,

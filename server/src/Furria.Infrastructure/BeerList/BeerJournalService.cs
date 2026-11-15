@@ -49,6 +49,8 @@ public sealed class BeerJournalService
             .Select(crate => new BeerJournalCrateSummary
             {
                 CrateId = crate.Id,
+                BeerDrinkId = crate.BeerDrinkId,
+                DrinkName = crate.PotDrink!.Drink!.Name,
                 Person =
                     crate.Person == null
                         ? null
@@ -77,6 +79,24 @@ public sealed class BeerJournalService
     private async Task<IReadOnlyList<BeerJournalPaymentSummary>> PaymentsAsync(
         int beerPotId,
         CancellationToken ct
+    )
+    {
+        var drinks = await BeerPotLedger.SettledDrinksAsync(_dbContext, beerPotId, ct);
+        var payments = await PaymentRowsAsync(beerPotId, ct);
+        return
+        [
+            .. payments.Select(payment =>
+                payment with
+                {
+                    Drinks = [.. drinks[payment.BeerPaymentId]],
+                }
+            ),
+        ];
+    }
+
+    private async Task<IReadOnlyList<BeerJournalPaymentSummary>> PaymentRowsAsync(
+        int beerPotId,
+        CancellationToken ct
     ) =>
         await _dbContext
             .BeerPayments.AsNoTracking()
@@ -97,6 +117,7 @@ public sealed class BeerJournalService
                         },
                 Crates = payment.Crates,
                 AmountCents = payment.AmountCents,
+                Drinks = Array.Empty<BeerPaymentDrinkSummary>(),
                 BookedAt = payment.BookedAt,
                 BookedBy =
                     payment.BookedBy == null

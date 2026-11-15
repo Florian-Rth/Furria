@@ -27,8 +27,8 @@ export const BeerCratesSheetBody: FC<BeerCratesSheetBodyProps> = ({ beerPotId })
     <BeerCratesForm
       beerPotId={beerPotId}
       bookable={sheet.bookable}
+      drinks={sheet.drinks}
       initialPersonId={null}
-      stock={sheet.stock}
       landing={START_LANDING}
     />
   );

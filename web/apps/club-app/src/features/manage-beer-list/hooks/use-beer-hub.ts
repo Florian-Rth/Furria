@@ -19,6 +19,7 @@ import {
   hubSummaryOf,
   journalDaysOf,
   journalOf,
+  listedDrinksOf,
   openRosterOf,
   rosterOf,
 } from '../beer-hub';
@@ -26,7 +27,12 @@ import { HUB_PATH } from '../beer-hub-copy';
 import type { BeerPane } from '../beer-pane';
 import { beerPaneOf } from '../beer-pane';
 import { dayKeyOf } from '../beer-time';
-import type { BeerEnrollment, BeerJournalCrate, BeerJournalPayment } from '../schemas';
+import type {
+  BeerEnrollment,
+  BeerJournalCrate,
+  BeerJournalPayment,
+  BeerStockDrink,
+} from '../schemas';
 
 const NO_ENROLLMENTS: readonly BeerEnrollment[] = [];
 
@@ -35,6 +41,7 @@ export type BeerPanePath =
   | '/beer-list/manage/payment'
   | '/beer-list/manage/crates'
   | '/beer-list/manage/settings'
+  | '/beer-list/manage/drinks'
   | '/beer-list/manage/enrollments'
   | '/beer-list/manage/handover'
   | '/beer-list/manage/code'
@@ -42,6 +49,8 @@ export type BeerPanePath =
 
 export interface BeerOpenHub {
   pot: OpenBeerPot;
+  drinks: readonly BeerStockDrink[];
+  listedDrinks: readonly BeerStockDrink[];
   roster: readonly BeerRosterRow[];
   openRoster: readonly BeerRosterRow[];
   summary: BeerHubSummary;
@@ -147,6 +156,8 @@ export const useBeerHub = (): BeerHub => {
       kind: 'open',
       open: {
         pot,
+        drinks: stockQuery.data.drinks,
+        listedDrinks: listedDrinksOf(stockQuery.data.drinks),
         roster,
         openRoster,
         summary: hubSummaryOf({

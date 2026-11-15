@@ -9,7 +9,15 @@ const crate = (
   bookedAt: string,
   paidAt: string | null = null,
   priceCents = 1500,
-): BeerTabCrate => ({ crateId, priceCents, bookedAt, enteredBy: null, paidAt });
+): BeerTabCrate => ({
+  crateId,
+  beerDrinkId: 1,
+  drinkName: 'Bier',
+  priceCents,
+  bookedAt,
+  enteredBy: null,
+  paidAt,
+});
 
 const pot = (
   beerPotId: number,

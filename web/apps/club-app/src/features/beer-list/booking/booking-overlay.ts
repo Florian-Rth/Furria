@@ -3,6 +3,8 @@ import type { BeerTabCrate, BeerTabPot, OpenBeerPot } from '../schemas';
 
 export interface BeerBookedCrates {
   crateIds: readonly number[];
+  beerDrinkId: number;
+  drinkName: string;
   priceCents: number;
   bookedAt: string;
 }
@@ -56,6 +58,8 @@ const missingCratesOf = (
     .filter((crateId) => !known.has(crateId) && !undoneIds.includes(crateId))
     .map((crateId) => ({
       crateId,
+      beerDrinkId: booked.beerDrinkId,
+      drinkName: booked.drinkName,
       priceCents: booked.priceCents,
       bookedAt: booked.bookedAt,
       enteredBy: null,

@@ -17,6 +17,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
     private const int UnknownPotId = 999_996;
     private const int SuccessorsPrice = 16_00;
     private const string SuccessorsLink = "https://paypal.me/ottoott";
+    private const string Radler = "Radler";
 
     private readonly ApiTestFixture _fixture;
 
@@ -39,7 +40,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             PostBeerPotHandover,
             PostBeerPotHandoverRequest,
             PostBeerPotHandoverResponse
-        >(HandoverTo(potId, ctx.Identity.People.IdOf(Successor)));
+        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Successor)));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(7, result.CarriedCrates);
@@ -53,7 +54,9 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             .BeerPot(result.BeerPotId)
             .ToBeOwnedBy(ctx.Identity.People.IdOf(Successor))
             .BeerPot(result.BeerPotId)
-            .ToHaveSettings(SuccessorsPrice, SuccessorsLink)
+            .ToHavePaymentLink(SuccessorsLink)
+            .BeerPot(result.BeerPotId)
+            .ToListDrinks(("Bier", SuccessorsPrice))
             .BeerPot(result.BeerPotId)
             .ToBeOpenedAt(now)
             .BeerStockOfPot(result.BeerPotId)
@@ -75,7 +78,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             PostBeerPotHandover,
             PostBeerPotHandoverRequest,
             PostBeerPotHandoverResponse
-        >(HandoverTo(potId, ctx.Identity.People.IdOf(Successor)));
+        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Successor)));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -109,7 +112,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             PostBeerPotHandover,
             PostBeerPotHandoverRequest,
             PostBeerPotHandoverResponse
-        >(HandoverTo(ctx.BeerList.Pots.IdOf(Pot), ctx.Identity.People.IdOf(Successor)));
+        >(HandoverTo(ctx, ctx.BeerList.Pots.IdOf(Pot), ctx.Identity.People.IdOf(Successor)));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -130,7 +133,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             PostBeerPotHandover,
             PostBeerPotHandoverRequest,
             PostBeerPotHandoverResponse
-        >(HandoverTo(potId, ctx.Identity.People.IdOf(Successor)));
+        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Successor)));
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(0, result.CarriedCrates);
@@ -156,7 +159,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             PostBeerPotHandover,
             PostBeerPotHandoverRequest,
             PostBeerPotHandoverResponse
-        >(HandoverTo(potId, ctx.Identity.People.IdOf(Drinker)));
+        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Drinker)));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ExpectUntouchedAsync(ctx, potId, ct);
@@ -174,7 +177,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             PostBeerPotHandover,
             PostBeerPotHandoverRequest,
             PostBeerPotHandoverResponse
-        >(HandoverTo(potId, ctx.Identity.People.IdOf(Warden)));
+        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Warden)));
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ExpectUntouchedAsync(ctx, potId, ct);
@@ -192,7 +195,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             PostBeerPotHandover,
             PostBeerPotHandoverRequest,
             PostBeerPotHandoverResponse
-        >(HandoverTo(potId, UnknownPersonId));
+        >(HandoverTo(ctx, potId, UnknownPersonId));
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         await ExpectUntouchedAsync(ctx, potId, ct);
@@ -209,7 +212,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             PostBeerPotHandover,
             PostBeerPotHandoverRequest,
             PostBeerPotHandoverResponse
-        >(HandoverTo(UnknownPotId, ctx.Identity.People.IdOf(Successor)));
+        >(HandoverTo(ctx, UnknownPotId, ctx.Identity.People.IdOf(Successor)));
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         await ctx.Expected.BeerPots().ToHaveCount(1).AssertAsync(ct);
@@ -239,7 +242,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             PostBeerPotHandover,
             PostBeerPotHandoverRequest,
             PostBeerPotHandoverResponse
-        >(HandoverTo(ctx.BeerList.Pots.IdOf(Pot), ctx.Identity.People.IdOf(Successor)));
+        >(HandoverTo(ctx, ctx.BeerList.Pots.IdOf(Pot), ctx.Identity.People.IdOf(Successor)));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         await ctx.Expected.BeerPots().ToHaveCount(1).AssertAsync(ct);
@@ -253,7 +256,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
         var potId = ctx.BeerList.Pots.IdOf(Pot);
         var greta = await ctx.Identity.ClientForAsync(Warden, ct);
         var otto = await ctx.Identity.ClientForAsync(Successor, ct);
-        var handover = HandoverTo(potId, ctx.Identity.People.IdOf(Successor));
+        var handover = HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Successor));
 
         var responses = await _fixture.WhileBeerPotIsLockedAsync(
             potId,
@@ -296,9 +299,9 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
                     PostBeerPotHandover,
                     PostBeerPotHandoverRequest,
                     PostBeerPotHandoverResponse
-                >(HandoverTo(potId, ctx.Identity.People.IdOf(Successor)));
+                >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Successor)));
                 var booking = mira.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(
-                    new() { Count = 1 }
+                    new() { BeerDrinkId = BeerListCast.BeerOf(ctx), Count = 1 }
                 );
                 return (await handing, await booking);
             },
@@ -319,6 +322,87 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_CarryEveryListedDrinkWithItsStockAtTheSuccessorsPrices_When_ThePotListsSeveral()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithDrinksAsync(ct);
+        var potId = ctx.BeerList.Pots.IdOf(Pot);
+        var radlerId = ctx.BeerList.Drinks.IdOf(Radler);
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var (response, result) = await client.POSTAsync<
+            PostBeerPotHandover,
+            PostBeerPotHandoverRequest,
+            PostBeerPotHandoverResponse
+        >(
+            new()
+            {
+                BeerPotId = potId,
+                SuccessorPersonId = ctx.Identity.People.IdOf(Successor),
+                Drinks =
+                [
+                    new() { BeerDrinkId = radlerId, CratePriceCents = 13_00 },
+                    new() { BeerDrinkId = BeerOf(ctx), CratePriceCents = SuccessorsPrice },
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(11, result.CarriedCrates);
+        await ctx
+            .Expected.BeerPot(result.BeerPotId)
+            .ToListDrinks(("Bier", SuccessorsPrice), (Radler, 13_00))
+            .BeerPot(result.BeerPotId)
+            .ToHaveDefaultDrink(Radler)
+            .BeerStockOfPot(result.BeerPotId)
+            .ToHold(BeerOf(ctx), 7)
+            .BeerStockOfPot(result.BeerPotId)
+            .ToHold(radlerId, 4)
+            .BeerStockOfPot(potId)
+            .ToStandAt(0)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnValidationAndKeepThePotOpen_When_AListedDrinkGetsNoPrice()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithDrinksAsync(ct);
+        var potId = ctx.BeerList.Pots.IdOf(Pot);
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var (response, _) = await client.POSTAsync<
+            PostBeerPotHandover,
+            PostBeerPotHandoverRequest,
+            PostBeerPotHandoverResponse
+        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Successor)));
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx.Expected.BeerPots().ToHaveCount(1).BeerPot(potId).ToBeOpen().AssertAsync(ct);
+    }
+
+    private Task<SeededContext> BuildWithDrinksAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                WithSuccessor(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden)
+                            .AddBeerDrink(Pot, Radler, 12_00, isDefault: true)
+                            .AddBeerDrink(
+                                Pot,
+                                "Alt",
+                                retiredAt: _fixture.TimeProvider.GetUtcNow().AddDays(-1)
+                            )
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                            .AddBeerDelivery(Pot, 10)
+                            .AddBeerDelivery(Pot, 4, drink: Radler)
+                            .AddBeerCrates(Pot, Drinker, 3)
+                    ),
+            ct
+        );
+
     private static Task ExpectUntouchedAsync(SeededContext ctx, int potId, CancellationToken ct) =>
         ctx
             .Expected.BeerPots()
@@ -329,13 +413,17 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             .ToHaveMovementCount(1)
             .AssertAsync(ct);
 
-    private static PostBeerPotHandoverRequest HandoverTo(int beerPotId, int successorPersonId) =>
+    private static PostBeerPotHandoverRequest HandoverTo(
+        SeededContext ctx,
+        int beerPotId,
+        int successorPersonId
+    ) =>
         new()
         {
             BeerPotId = beerPotId,
             SuccessorPersonId = successorPersonId,
-            CratePriceCents = SuccessorsPrice,
             PaymentLink = SuccessorsLink,
+            Drinks = [new() { BeerDrinkId = BeerOf(ctx), CratePriceCents = SuccessorsPrice }],
         };
 
     private Task<SeededContext> BuildAsync(int delivered, int taken, CancellationToken ct) =>

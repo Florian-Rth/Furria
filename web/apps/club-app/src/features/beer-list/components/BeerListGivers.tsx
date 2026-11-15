@@ -3,8 +3,7 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkTabLedger } from '@furria/ui/KkTabLedger';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { GIVERS_LABEL, GIVERS_TITLE, NO_GIVERS } from '../beer-list-copy';
-import { cratesLabel } from '../booking/booking-copy';
+import { GIVERS_LABEL, GIVERS_TITLE, giverCountOf, NO_GIVERS } from '../beer-list-copy';
 import type { BeerGiver } from '../schemas';
 
 interface BeerListGiversProps {
@@ -16,7 +15,7 @@ export const BeerListGivers: FC<BeerListGiversProps> = ({ givers, myPersonId }) 
   const rows = givers.map((giver) => {
     const initials = toInitials(giver.firstName, giver.lastName);
     const name = `${giver.firstName} ${giver.lastName}`;
-    const count = cratesLabel(giver.crates);
+    const count = giverCountOf(giver);
     const own = giver.personId === myPersonId;
 
     return (

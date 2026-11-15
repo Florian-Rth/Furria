@@ -1,4 +1,6 @@
+using System.Diagnostics.Contracts;
 using Furria.Application.Authorization;
+using Furria.Application.BeerList;
 using Furria.Application.Push;
 using Furria.Core.BeerList;
 using Furria.Core.Club;
@@ -40,35 +42,62 @@ public sealed class BeerStockWarningService
         if (!BeerListNoticeSchedule.IsSendingTime(now))
             return;
 
-        var beerPotId = await ArmedOpenPotIdAsync(ct);
-        if (beerPotId is not { } armedPotId)
+        var armed = await ArmedDrinksOfOpenPotAsync(ct);
+        if (armed.Count == 0)
             return;
 
-        var stock = await _beerStockService.GetStockAsync(armedPotId, ct);
+        var beerPotId = armed[0].BeerPotId;
+        var stock = await _beerStockService.GetStockAsync(beerPotId, ct);
         if (!stock.IsSuccess)
             return;
 
         var today = ClubClock.DayOf(now);
-        var crates = stock.Value.Crates;
-        var forecast = stock.Value.Forecast;
-        if (
-            forecast.ProjectedEmptyOn is not { } projectedEmptyOn
-            || !BeerListNoticeSchedule.IsStockWarningDue(projectedEmptyOn, today)
-        )
+        var armedDrinkIds = armed.Select(drink => drink.BeerDrinkId).ToHashSet();
+        var due = DueDrinks(stock.Value.Drinks, armedDrinkIds, today);
+        if (due.Count == 0)
             return;
 
-        var message = BeerListPushes.StockWarning(crates, projectedEmptyOn, today);
+        var message = BeerListPushes.StockWarning(
+            [.. due.Select(drink => drink.RunningLow)],
+            today
+        );
         var delivered = await WarnOperatorsAsync(message, today, ct);
         if (delivered == 0)
             return;
 
-        await RecordWarningOnOpenPotAsync(now, ct);
+        await RecordWarningAsync(beerPotId, [.. due.Select(drink => drink.BeerDrinkId)], now, ct);
         _logger.LogInformation(
-            "Beer stock warning for pot {BeerPotId} reached {DeliveredDevices} devices",
-            armedPotId,
+            "Beer stock warning for pot {BeerPotId} on {DueDrinks} drinks reached {DeliveredDevices} devices",
+            beerPotId,
+            due.Count,
             delivered
         );
     }
+
+    [Pure]
+    private static IReadOnlyList<DueDrink> DueDrinks(
+        IReadOnlyList<BeerDrinkStockSummary> drinks,
+        IReadOnlySet<int> armedDrinkIds,
+        DateOnly today
+    ) =>
+        [
+            .. drinks
+                .Where(drink => armedDrinkIds.Contains(drink.BeerDrinkId) && !drink.IsRetired)
+                .Select(drink => (drink, projectedEmptyOn: drink.Forecast.ProjectedEmptyOn))
+                .Where(entry =>
+                    entry.projectedEmptyOn is { } emptyOn
+                    && BeerListNoticeSchedule.IsStockWarningDue(emptyOn, today)
+                )
+                .OrderBy(entry => entry.projectedEmptyOn)
+                .Select(entry => new DueDrink(
+                    entry.drink.BeerDrinkId,
+                    new BeerDrinkRunningLow(
+                        entry.drink.Name,
+                        entry.drink.Crates,
+                        entry.projectedEmptyOn!.Value
+                    )
+                )),
+        ];
 
     private async Task<int> WarnOperatorsAsync(
         PushMessage message,
@@ -83,26 +112,34 @@ public sealed class BeerStockWarningService
         return delivered;
     }
 
-    private Task<int?> ArmedOpenPotIdAsync(CancellationToken ct) =>
-        _dbContext
-            .BeerPots.AsNoTracking()
-            .Where(pot => pot.ClosedAt == null)
-            .Where(pot =>
-                pot.StockWarningSentAt == null
+    private async Task<IReadOnlyList<ArmedDrink>> ArmedDrinksOfOpenPotAsync(CancellationToken ct) =>
+        await _dbContext
+            .BeerPotDrinks.AsNoTracking()
+            .Where(potDrink => potDrink.Pot!.ClosedAt == null && potDrink.RetiredAt == null)
+            .Where(potDrink =>
+                potDrink.StockWarningSentAt == null
                 || _dbContext.BeerStockMovements.Any(movement =>
-                    movement.BeerPotId == pot.Id
+                    movement.BeerPotId == potDrink.BeerPotId
+                    && movement.BeerDrinkId == potDrink.BeerDrinkId
                     && movement.Kind == BeerStockMovementKind.Delivery
-                    && movement.BookedAt > pot.StockWarningSentAt
+                    && movement.BookedAt > potDrink.StockWarningSentAt
                 )
             )
-            .Select(pot => (int?)pot.Id)
-            .SingleOrDefaultAsync(ct);
+            .Select(potDrink => new ArmedDrink(potDrink.BeerPotId, potDrink.BeerDrinkId))
+            .ToListAsync(ct);
 
-    private Task RecordWarningOnOpenPotAsync(DateTimeOffset sentAt, CancellationToken ct) =>
+    private Task RecordWarningAsync(
+        int beerPotId,
+        IReadOnlyList<int> beerDrinkIds,
+        DateTimeOffset sentAt,
+        CancellationToken ct
+    ) =>
         _dbContext
-            .BeerPots.Where(pot => pot.ClosedAt == null)
+            .BeerPotDrinks.Where(potDrink =>
+                potDrink.BeerPotId == beerPotId && beerDrinkIds.Contains(potDrink.BeerDrinkId)
+            )
             .ExecuteUpdateAsync(
-                setters => setters.SetProperty(pot => pot.StockWarningSentAt, sentAt),
+                setters => setters.SetProperty(potDrink => potDrink.StockWarningSentAt, sentAt),
                 ct
             );
 
@@ -126,4 +163,8 @@ public sealed class BeerStockWarningService
             .Select(account => account.Id)
             .ToListAsync(ct);
     }
+
+    private sealed record ArmedDrink(int BeerPotId, int BeerDrinkId);
+
+    private sealed record DueDrink(int BeerDrinkId, BeerDrinkRunningLow RunningLow);
 }

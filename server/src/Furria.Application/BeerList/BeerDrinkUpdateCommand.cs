@@ -1,0 +1,10 @@
+namespace Furria.Application.BeerList;
+
+public sealed record BeerDrinkUpdateCommand
+{
+    public required int BeerPotId { get; init; }
+
+    public required int BeerDrinkId { get; init; }
+
+    public required BeerDrinkSettings Settings { get; init; }
+}

@@ -1,17 +1,18 @@
 import { KkPourHead } from '@furria/ui/KkPourHead';
-import { KkPourStockCurve } from '@furria/ui/KkPourStockCurve';
+import { KkPourStockLines } from '@furria/ui/KkPourStockLines';
 import type { FC } from 'react';
 import type { BeerHubSummary } from '../beer-hub';
 import {
   COUNTERS_LABEL,
   HEAD_LABEL,
+  headCaptionOf,
   OVERDUE_LABEL,
   openTabsLabelOf,
   PEOPLE_LABEL,
   STOCK_LABEL,
   STOCK_UNIT,
-  stockCaptionOf,
   stockChartLabelsOf,
+  stockLinesOf,
   tileEuroOf,
 } from '../beer-hub-copy';
 
@@ -20,7 +21,7 @@ interface BeerHubHeadProps {
 }
 
 export const BeerHubHead: FC<BeerHubHeadProps> = ({ summary }) => {
-  const caption = stockCaptionOf(summary);
+  const caption = headCaptionOf(summary);
   const stockValue = String(summary.stock);
   const openValue = tileEuroOf(summary.openCents);
   const overdueValue = String(summary.overdue);
@@ -28,15 +29,8 @@ export const BeerHubHead: FC<BeerHubHeadProps> = ({ summary }) => {
   const openLabel = openTabsLabelOf(summary.openTabs);
   const overdueAttention = summary.overdue > 0;
   const chartLabels = stockChartLabelsOf(summary);
-  const spark = (
-    <KkPourStockCurve
-      values={summary.series}
-      deliveries={summary.deliveries}
-      forecastDays={summary.daysLeft}
-      warn={summary.warns}
-      labels={chartLabels}
-    />
-  );
+  const lines = stockLinesOf(summary);
+  const spark = <KkPourStockLines lines={lines} labels={chartLabels} />;
 
   return (
     <KkPourHead label={HEAD_LABEL}>

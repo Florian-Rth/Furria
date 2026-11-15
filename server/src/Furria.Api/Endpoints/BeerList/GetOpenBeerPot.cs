@@ -35,10 +35,19 @@ public sealed class GetOpenBeerPot : EndpointWithoutRequest<GetOpenBeerPotRespon
         {
             BeerPotId = pot.BeerPotId,
             Owner = pot.Owner is { } owner ? ToDto(owner) : null,
-            CratePriceCents = pot.CratePriceCents,
             PaymentLink = pot.PaymentLink,
             OpenedAt = pot.OpenedAt,
-            HasStock = pot.HasStock,
+            Drinks = [.. pot.Drinks.Select(ToDto)],
+        };
+
+    private static OpenBeerPotDrinkDto ToDto(BeerPotDrinkSummary drink) =>
+        new()
+        {
+            BeerDrinkId = drink.BeerDrinkId,
+            Name = drink.Name,
+            CratePriceCents = drink.CratePriceCents,
+            HasStock = drink.HasStock,
+            IsDefault = drink.IsDefault,
         };
 
     private static BeerPotOwnerDto ToDto(BeerListPerson owner) =>
@@ -61,13 +70,24 @@ public sealed record OpenBeerPotDetailsDto
 
     public required BeerPotOwnerDto? Owner { get; init; }
 
-    public required int CratePriceCents { get; init; }
-
     public required string? PaymentLink { get; init; }
 
     public required DateTimeOffset OpenedAt { get; init; }
 
+    public required IReadOnlyList<OpenBeerPotDrinkDto> Drinks { get; init; }
+}
+
+public sealed record OpenBeerPotDrinkDto
+{
+    public required int BeerDrinkId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required int CratePriceCents { get; init; }
+
     public required bool HasStock { get; init; }
+
+    public required bool IsDefault { get; init; }
 }
 
 public sealed record BeerPotOwnerDto

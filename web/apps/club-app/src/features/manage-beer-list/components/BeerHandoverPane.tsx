@@ -12,7 +12,7 @@ export const BeerHandoverPane: FC = () => {
   const context = open === null ? '' : ownerContextOf(open.pot.owner, open.pot.paymentLink);
   const body =
     open === null ? null : (
-      <BeerHandoverForm beerPotId={open.pot.beerPotId} stock={open.summary.stock} />
+      <BeerHandoverForm beerPotId={open.pot.beerPotId} carried={open.listedDrinks} />
     );
 
   return (

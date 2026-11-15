@@ -37,6 +37,15 @@ public sealed class GetBeerGivers : EndpointWithoutRequest<GetBeerGiversResponse
             FirstName = giver.FirstName,
             LastName = giver.LastName,
             Crates = giver.Crates,
+            Drinks = [.. giver.Drinks.Select(ToDto)],
+        };
+
+    private static BeerGiverDrinkDto ToDto(BeerGiverDrinkSummary drink) =>
+        new()
+        {
+            BeerDrinkId = drink.BeerDrinkId,
+            Name = drink.Name,
+            Crates = drink.Crates,
         };
 }
 
@@ -52,6 +61,17 @@ public sealed record BeerGiverSummaryDto
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+
+    public required int Crates { get; init; }
+
+    public required IReadOnlyList<BeerGiverDrinkDto> Drinks { get; init; }
+}
+
+public sealed record BeerGiverDrinkDto
+{
+    public required int BeerDrinkId { get; init; }
+
+    public required string Name { get; init; }
 
     public required int Crates { get; init; }
 }

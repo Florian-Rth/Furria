@@ -5,8 +5,9 @@ import type { FC } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';
 import { EMPTY_TITLE, OPEN_POT_LABEL, OWNER_LABEL } from '../beer-hub-copy';
 import { useOpenPotForm } from '../hooks/use-open-pot-form';
+import { BeerNewDrinkRows } from './BeerNewDrinkRows';
+import { BeerPaymentLinkField } from './BeerPaymentLinkField';
 import { BeerPotPersonField } from './BeerPotPersonField';
-import { BeerPotSettingsFields } from './BeerPotSettingsFields';
 import { BeerRejection } from './BeerRejection';
 
 interface BeerOpenPotFormProps {
@@ -20,7 +21,8 @@ export const BeerOpenPotForm: FC<BeerOpenPotFormProps> = ({ owner }) => {
     <KkPanelSection title={EMPTY_TITLE}>
       <Stack sx={{ gap: 2, minWidth: 0 }}>
         <BeerPotPersonField label={OWNER_LABEL} fields={form.fields} />
-        <BeerPotSettingsFields fields={form.fields} />
+        <BeerNewDrinkRows drinks={form.drinks} />
+        <BeerPaymentLinkField fields={form.fields} />
         <BeerRejection rejection={form.rejection} />
         <KkButton
           variant="contained"

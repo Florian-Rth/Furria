@@ -11,16 +11,10 @@ public sealed class BeerPotConfiguration : IEntityTypeConfiguration<BeerPot>
         builder.ToTable(
             "beer_pot",
             table =>
-            {
-                table.HasCheckConstraint(
-                    "ck_beer_pot_crate_price",
-                    $"crate_price_cents > 0 AND crate_price_cents <= {BeerPot.MaxCratePriceCents}"
-                );
                 table.HasCheckConstraint(
                     "ck_beer_pot_period",
                     "closed_at IS NULL OR closed_at >= opened_at"
-                );
-            }
+                )
         );
         builder.HasKey(pot => pot.Id);
 

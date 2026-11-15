@@ -14,6 +14,7 @@ public sealed class GetMyBeerTabTests : IClassFixture<ApiTestFixture>
     private const string OtherDrinker = "jonas";
     private const int OldPrice = 13_00;
     private const int Price = 15_00;
+    private const int RadlerPrice = 12_00;
 
     private readonly ApiTestFixture _fixture;
 
@@ -44,9 +45,10 @@ public sealed class GetMyBeerTabTests : IClassFixture<ApiTestFixture>
                                 closedAt: now.AddDays(-40)
                             )
                             .AddBeerPot(Pot, Warden, Price, openedAt: now.AddDays(-40))
+                            .AddBeerDrink(Pot, "Radler", RadlerPrice)
                             .AddBeerListEnrollment("mira-bier", Drinker)
                             .AddBeerCrates("alter-topf", Drinker, 2, now.AddDays(-50))
-                            .AddBeerCrate("montag", Pot, Drinker, now.AddDays(-9))
+                            .AddBeerCrate("montag", Pot, Drinker, now.AddDays(-9), drink: "Radler")
                             .AddBeerCrate(
                                 "von-greta",
                                 Pot,
@@ -78,10 +80,13 @@ public sealed class GetMyBeerTabTests : IClassFixture<ApiTestFixture>
         Assert.True(open.IsOpen);
         Assert.Equal(ctx.Identity.People.IdOf(Warden), open.Owner?.PersonId);
         Assert.Equal(BeerListSeedBuilder.DefaultPaymentLink, open.PaymentLink);
-        Assert.Equal((2, 2 * Price), (open.OpenCrates, open.OpenCents));
+        Assert.Equal((2, Price + RadlerPrice), (open.OpenCrates, open.OpenCents));
         Assert.Equal(
-            [ctx.BeerList.Crates.IdOf("von-greta"), ctx.BeerList.Crates.IdOf("montag")],
-            open.Crates.Select(crate => crate.CrateId)
+            [
+                (ctx.BeerList.Crates.IdOf("von-greta"), BeerListCast.BeerOf(ctx), "Bier"),
+                (ctx.BeerList.Crates.IdOf("montag"), ctx.BeerList.Drinks.IdOf("Radler"), "Radler"),
+            ],
+            open.Crates.Select(crate => (crate.CrateId, crate.BeerDrinkId, crate.DrinkName))
         );
         Assert.Equal(ctx.Identity.People.IdOf(Warden), open.Crates[0].EnteredBy?.PersonId);
         Assert.All(open.Crates, crate => Assert.Null(crate.PaidAt));

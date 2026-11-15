@@ -42,6 +42,14 @@ public sealed class BeerStockMovementConfiguration : IEntityTypeConfiguration<Be
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
+            .HasOne(movement => movement.PotDrink)
+            .WithMany()
+            .HasForeignKey(movement => new { movement.BeerPotId, movement.BeerDrinkId })
+            .HasPrincipalKey(potDrink => new { potDrink.BeerPotId, potDrink.BeerDrinkId })
+            .HasConstraintName("fk_beer_stock_movement_beer_pot_drink_beer_pot_id_beer_drink_id")
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
             .HasOne(movement => movement.BookedBy)
             .WithMany()
             .HasForeignKey(movement => movement.BookedByPersonId)
@@ -52,11 +60,19 @@ public sealed class BeerStockMovementConfiguration : IEntityTypeConfiguration<Be
             .HasIndex(movement => new { movement.BeerPotId, movement.BookedAt })
             .IncludeProperties(movement => movement.Crates);
         builder
+            .HasIndex(movement => new { movement.BeerPotId, movement.BeerDrinkId })
+            .IncludeProperties(movement => movement.Crates);
+        builder
             .HasIndex(
-                movement => new { movement.BeerPotId, movement.Kind },
-                "ix_beer_stock_movement_beer_pot_id_kind_handover"
+                movement => new
+                {
+                    movement.BeerPotId,
+                    movement.BeerDrinkId,
+                    movement.Kind,
+                },
+                "ix_beer_stock_movement_beer_pot_id_beer_drink_id_kind_handover"
             )
-            .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_kind_handover")
+            .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_beer_drink_id_kind_handover")
             .IsUnique()
             .HasFilter("kind IN ('HandoverCarry', 'HandedOver')");
         builder.HasIndex(movement => movement.BookedByPersonId);

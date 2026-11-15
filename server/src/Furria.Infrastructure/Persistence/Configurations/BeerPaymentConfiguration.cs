@@ -18,7 +18,7 @@ public sealed class BeerPaymentConfiguration : IEntityTypeConfiguration<BeerPaym
                 );
                 table.HasCheckConstraint(
                     "ck_beer_payment_amount",
-                    $"amount_cents >= crates AND amount_cents <= crates * {BeerPot.MaxCratePriceCents}"
+                    $"amount_cents >= crates AND amount_cents <= crates * {BeerPotDrink.MaxCratePriceCents}"
                 );
                 table.HasCheckConstraint(
                     "ck_beer_payment_undone",

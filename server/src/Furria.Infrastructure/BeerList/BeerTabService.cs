@@ -42,23 +42,19 @@ public sealed class BeerTabService
     }
 
     public async Task<Result<BeerCrateBookingDetails>> BookOwnCratesAsync(
-        int personId,
-        int count,
+        BeerOwnCratesCommand command,
         CancellationToken ct
     )
     {
         if (await OpenPotIdAsync(ct) is not { } openPotId)
             return Result<BeerCrateBookingDetails>.Conflict(NoOpenPotMessage);
 
-        var booked = await BookAsync(
-            new CrateEntry(openPotId, personId, count, personId, false),
-            ct
-        );
+        var booked = await BookAsync(OwnEntry(openPotId, command), ct);
         if (booked.IsSuccess)
             return booked;
 
         return await OpenPotIdAsync(ct) is { } successorPotId && successorPotId != openPotId
-            ? await BookAsync(new CrateEntry(successorPotId, personId, count, personId, false), ct)
+            ? await BookAsync(OwnEntry(successorPotId, command), ct)
             : booked;
     }
 
@@ -76,6 +72,7 @@ public sealed class BeerTabService
         return await BookAsync(
             new CrateEntry(
                 command.BeerPotId,
+                command.BeerDrinkId,
                 command.PersonId,
                 command.Count,
                 command.EnteredByPersonId,
@@ -149,8 +146,9 @@ public sealed class BeerTabService
         return new BeerTabDetails { Pots = [.. pots.Select(pot => PotOf(pot, crates))] };
     }
 
-    public async Task<IReadOnlyList<BeerGiverSummary>> GetGiversAsync(CancellationToken ct) =>
-        await BeerPotLedger
+    public async Task<IReadOnlyList<BeerGiverSummary>> GetGiversAsync(CancellationToken ct)
+    {
+        var tallies = await BeerPotLedger
             .TakenCrates(_dbContext)
             .Where(crate => crate.Pot!.ClosedAt == null && crate.PersonId != null)
             .GroupBy(crate => new
@@ -158,18 +156,54 @@ public sealed class BeerTabService
                 PersonId = crate.PersonId!.Value,
                 crate.Person!.FirstName,
                 crate.Person.LastName,
+                crate.BeerDrinkId,
+                DrinkName = crate.PotDrink!.Drink!.Name,
             })
             .OrderBy(giver => EF.Functions.Collate(giver.Key.LastName, GermanCollation.Name))
             .ThenBy(giver => EF.Functions.Collate(giver.Key.FirstName, GermanCollation.Name))
             .ThenBy(giver => giver.Key.PersonId)
-            .Select(giver => new BeerGiverSummary
-            {
-                PersonId = giver.Key.PersonId,
-                FirstName = giver.Key.FirstName,
-                LastName = giver.Key.LastName,
-                Crates = giver.Count(),
-            })
+            .ThenBy(giver => EF.Functions.Collate(giver.Key.DrinkName, GermanCollation.Name))
+            .ThenBy(giver => giver.Key.BeerDrinkId)
+            .Select(giver => new GiverDrinkTally(
+                giver.Key.PersonId,
+                giver.Key.FirstName,
+                giver.Key.LastName,
+                new BeerGiverDrinkSummary
+                {
+                    BeerDrinkId = giver.Key.BeerDrinkId,
+                    Name = giver.Key.DrinkName,
+                    Crates = giver.Count(),
+                }
+            ))
             .ToListAsync(ct);
+
+        return [.. tallies.GroupBy(tally => tally.PersonId).Select(GiverOf)];
+    }
+
+    [Pure]
+    private static BeerGiverSummary GiverOf(IGrouping<int, GiverDrinkTally> tallies)
+    {
+        var first = tallies.First();
+        return new BeerGiverSummary
+        {
+            PersonId = first.PersonId,
+            FirstName = first.FirstName,
+            LastName = first.LastName,
+            Crates = tallies.Sum(tally => tally.Drink.Crates),
+            Drinks = [.. tallies.Select(tally => tally.Drink)],
+        };
+    }
+
+    [Pure]
+    private static CrateEntry OwnEntry(int beerPotId, BeerOwnCratesCommand command) =>
+        new(
+            beerPotId,
+            command.BeerDrinkId,
+            command.PersonId,
+            command.Count,
+            command.PersonId,
+            false
+        );
 
     [Pure]
     private static BeerTabPotDetails PotOf(TabPot pot, IReadOnlyList<TabCrate> crates)
@@ -210,6 +244,8 @@ public sealed class BeerTabService
                 new BeerTabCrateSummary
                 {
                     CrateId = crate.Id,
+                    BeerDrinkId = crate.BeerDrinkId,
+                    DrinkName = crate.PotDrink!.Drink!.Name,
                     PriceCents = crate.PriceCents,
                     BookedAt = crate.BookedAt,
                     EnteredBy =
@@ -235,21 +271,38 @@ public sealed class BeerTabService
     )
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        var pot = await BeerPotLedger
+        var isOpen = await BeerPotLedger
             .LockedPot(_dbContext, entry.BeerPotId)
-            .Select(row => new { row.ClosedAt, row.CratePriceCents })
+            .Select(row => (bool?)(row.ClosedAt == null))
             .SingleOrDefaultAsync(ct);
-        if (pot is null)
+        if (isOpen is null)
             return Result<BeerCrateBookingDetails>.NotFound(BeerListMessages.UnknownPot);
 
-        if (pot.ClosedAt is not null)
+        if (!isOpen.Value)
             return Result<BeerCrateBookingDetails>.Conflict(ClosedPotMessage);
 
-        if (await BeerPotLedger.StockOfAsync(_dbContext, entry.BeerPotId, ct) < entry.Count)
+        var drink = await BeerPotLedger
+            .PotDrink(_dbContext, entry.BeerPotId, entry.BeerDrinkId)
+            .AsNoTracking()
+            .Select(potDrink => new { potDrink.CratePriceCents, potDrink.RetiredAt })
+            .SingleOrDefaultAsync(ct);
+        if (drink is null)
+            return Result<BeerCrateBookingDetails>.NotFound(BeerListMessages.UnknownDrink);
+
+        if (drink.RetiredAt is not null)
+            return Result<BeerCrateBookingDetails>.Conflict(BeerListMessages.RetiredDrink);
+
+        var stock = await BeerPotLedger.StockOfAsync(
+            _dbContext,
+            entry.BeerPotId,
+            entry.BeerDrinkId,
+            ct
+        );
+        if (stock < entry.Count)
             return Result<BeerCrateBookingDetails>.Conflict(BelowZeroMessage);
 
         var now = _timeProvider.GetUtcNow();
-        var crates = NewCrates(entry, pot.CratePriceCents, now);
+        var crates = NewCrates(entry, drink.CratePriceCents, now);
         _dbContext.BeerCrates.AddRange(crates);
         await _dbContext.SaveChangesAsync(ct);
         int? beerPaymentId = null;
@@ -283,7 +336,7 @@ public sealed class BeerTabService
             {
                 BeerPotId = entry.BeerPotId,
                 PersonId = entry.PersonId,
-                Crates = entry.Count,
+                Drinks = [new() { BeerDrinkId = entry.BeerDrinkId, Crates = entry.Count }],
                 BookedByPersonId = entry.EnteredByPersonId,
             },
             ct
@@ -301,6 +354,7 @@ public sealed class BeerTabService
                 .Select(_ => new BeerCrate
                 {
                     BeerPotId = entry.BeerPotId,
+                    BeerDrinkId = entry.BeerDrinkId,
                     PersonId = entry.PersonId,
                     PriceCents = priceCents,
                     EnteredByPersonId = entry.EnteredByPersonId,
@@ -398,6 +452,7 @@ public sealed class BeerTabService
 
     private sealed record CrateEntry(
         int BeerPotId,
+        int BeerDrinkId,
         int PersonId,
         int Count,
         int? EnteredByPersonId,
@@ -422,4 +477,11 @@ public sealed class BeerTabService
     );
 
     private sealed record TabCrate(int BeerPotId, BeerTabCrateSummary Summary);
+
+    private sealed record GiverDrinkTally(
+        int PersonId,
+        string FirstName,
+        string LastName,
+        BeerGiverDrinkSummary Drink
+    );
 }

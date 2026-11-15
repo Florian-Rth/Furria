@@ -4,8 +4,9 @@ import { formatEuroCents } from '@/lib/money';
 import { toQueryErrorKind, toQueryErrorMessage } from '@/lib/query-error';
 import { useNow } from '@/lib/use-now';
 import { useBeerCratesBooking, useBeerCratesUndo } from '../api';
-import type { OpenBeerPot } from '../schemas';
+import type { BeerPotDrink, OpenBeerPot } from '../schemas';
 import { BOOKING_ERROR_MESSAGES, bookedStamp, UNDO_ERROR_MESSAGES } from './booking-copy';
+import { pickedDrinkOf } from './booking-drinks';
 import { bookingPhaseOf } from './booking-gate';
 import type { BeerBookedCrates, BeerBookingPending } from './booking-overlay';
 import { NO_PENDING_BOOKING } from './booking-overlay';
@@ -13,11 +14,11 @@ import { UNDO_WINDOW_MS, undoRemainingMsOf } from './booking-window';
 
 const TICK_MS = 200;
 const NO_CRATE_IDS: readonly number[] = [];
+const NO_DRINKS: readonly BeerPotDrink[] = [];
 
 export type BeerBookingCelebration = KkTabFigureRoll;
 
 interface BeerBookingShared {
-  priceCents: number;
   failure: string | null;
   pending: BeerBookingPending;
   freshCrateIds: readonly number[];
@@ -27,6 +28,9 @@ interface BeerBookingShared {
 export interface BeerBookingChoosing extends BeerBookingShared {
   phase: 'choose';
   lapsed: BeerBookedCrates | null;
+  drinks: readonly BeerPotDrink[];
+  drink: BeerPotDrink | null;
+  chooseDrink: (beerDrinkId: number) => void;
   count: number;
   isBooking: boolean;
   chooseCount: (count: number) => void;
@@ -36,6 +40,7 @@ export interface BeerBookingChoosing extends BeerBookingShared {
 export interface BeerBookingUndoing extends BeerBookingShared {
   phase: 'undo';
   lastCount: number;
+  lastDrinkName: string;
   lastCents: number;
   remainingMs: number;
   isUndoing: boolean;
@@ -58,13 +63,15 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
   const booking = useBeerCratesBooking();
   const undoing = useBeerCratesUndo();
   const [count, setCount] = useState(1);
+  const [pickedDrinkId, setPickedDrinkId] = useState<number | null>(null);
   const [pending, setPending] = useState<BeerBookingPending>(NO_PENDING_BOOKING);
   const [deadline, setDeadline] = useState<UndoDeadline | null>(null);
   const [spin, setSpin] = useState(0);
   const [burstKey, setBurstKey] = useState(0);
   const [isTicking, setIsTicking] = useState(false);
   const now = useNow(TICK_MS, isTicking).getTime();
-  const priceCents = pot?.cratePriceCents ?? 0;
+  const drinks = pot?.drinks ?? NO_DRINKS;
+  const drink = pickedDrinkOf(drinks, pickedDrinkId);
   const remainingMs = deadline === null ? 0 : undoRemainingMsOf(deadline.endsAt, now);
   const live = deadline !== null && (remainingMs > 0 || undoing.isPending) ? deadline : null;
   const phase = bookingPhaseOf(live !== null, pot);
@@ -74,28 +81,33 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
   }
 
   const book = (): void => {
-    if (pot === null || booking.isPending) {
+    if (pot === null || drink === null || booking.isPending) {
       return;
     }
 
     const sentAt = Date.now();
 
     undoing.reset();
-    booking.mutate(count, {
-      onSuccess: (result) => {
-        const booked: BeerBookedCrates = {
-          crateIds: result.crateIds,
-          priceCents,
-          bookedAt: new Date(sentAt).toISOString(),
-        };
+    booking.mutate(
+      { beerDrinkId: drink.beerDrinkId, count },
+      {
+        onSuccess: (result) => {
+          const booked: BeerBookedCrates = {
+            crateIds: result.crateIds,
+            beerDrinkId: drink.beerDrinkId,
+            drinkName: drink.name,
+            priceCents: drink.cratePriceCents,
+            bookedAt: new Date(sentAt).toISOString(),
+          };
 
-        setPending((current) => ({ booked, undoneIds: current.undoneIds }));
-        setDeadline({ booked, endsAt: sentAt + UNDO_WINDOW_MS });
-        setIsTicking(true);
-        setSpin((value) => value + 1);
-        setBurstKey((value) => value + 1);
+          setPending((current) => ({ booked, undoneIds: current.undoneIds }));
+          setDeadline({ booked, endsAt: sentAt + UNDO_WINDOW_MS });
+          setIsTicking(true);
+          setSpin((value) => value + 1);
+          setBurstKey((value) => value + 1);
+        },
       },
-    });
+    );
   };
 
   const undo = (): void => {
@@ -124,7 +136,6 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
   };
 
   const shared: BeerBookingShared = {
-    priceCents,
     failure:
       toQueryErrorMessage(undoing.error, UNDO_ERROR_MESSAGES) ??
       toQueryErrorMessage(booking.error, BOOKING_ERROR_MESSAGES),
@@ -144,6 +155,9 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
       ...shared,
       phase: 'choose',
       lapsed,
+      drinks,
+      drink,
+      chooseDrink: setPickedDrinkId,
       count,
       isBooking: booking.isPending,
       chooseCount: setCount,
@@ -159,6 +173,7 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
     celebration: { spin, burstKey, stamp: bookedStamp(formatEuroCents(lastCents)) },
     phase: 'undo',
     lastCount,
+    lastDrinkName: live.booked.drinkName,
     lastCents,
     remainingMs,
     isUndoing: undoing.isPending,

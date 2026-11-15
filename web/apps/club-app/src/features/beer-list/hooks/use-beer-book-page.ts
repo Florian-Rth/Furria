@@ -128,7 +128,11 @@ export const useBeerBookPage = (): BeerBookView => {
     booking,
     done: {
       isDone: isBookingDone(lapsed, dismissed),
-      line: doneDetail(lapsed?.crateIds.length ?? 0, formatEuroCents(totals.openCents)),
+      line: doneDetail(
+        lapsed?.crateIds.length ?? 0,
+        lapsed?.drinkName ?? '',
+        formatEuroCents(totals.openCents),
+      ),
       payees,
       again: bookAgain,
     },

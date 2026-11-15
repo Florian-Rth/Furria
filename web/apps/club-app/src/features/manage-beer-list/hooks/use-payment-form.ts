@@ -4,18 +4,16 @@ import type { WriteLanding } from '@/features/write/landing-target';
 import type { PersonRef } from '@/lib/api/schemas';
 import { useBeerPaymentMutation } from '../api';
 import type { BeerPaymentPreview } from '../beer-hub';
-import { countOfText, paymentPreviewOf } from '../beer-hub';
+import { fullPaymentOf, paymentPreviewOf, paymentRowsOf, steppedPaymentOf } from '../beer-hub';
 import type { BeerWriteState } from '../form-fields';
 import { touchingChangeOf, writeStateOf } from '../form-fields';
 import type { BeerJournalCrate } from '../schemas';
 import { beerPaymentFormSchema } from '../schemas';
 
 export interface PaymentForm extends BeerWriteState {
-  cratesText: string;
-  setCratesText: (text: string) => void;
-  cratesError: string | undefined;
-  count: number;
   preview: BeerPaymentPreview;
+  step: (beerDrinkId: number, step: number) => void;
+  payAll: () => void;
 }
 
 export interface PaymentTarget {
@@ -26,27 +24,32 @@ export interface PaymentTarget {
 
 export const usePaymentForm = (target: PaymentTarget, landing: WriteLanding): PaymentForm => {
   const paying = useBeerPaymentMutation();
+  const rows = paymentRowsOf(target.oldestFirst);
   const write = useWriteForm({
-    schema: beerPaymentFormSchema(target.oldestFirst.length),
-    defaults: { crates: String(target.oldestFirst.length) },
-    mutate: (crates) =>
+    schema: beerPaymentFormSchema(rows),
+    defaults: { drinks: [] },
+    mutate: (drinks) =>
       paying.mutateAsync({
         beerPotId: target.beerPotId,
         personId: target.person.personId,
-        crates,
+        drinks,
+        crates: drinks.reduce((sum, drink) => sum + drink.crates, 0),
         name: target.person.firstName,
       }),
     landing: () => landing,
   });
-  const cratesField = useController({ control: write.form.control, name: 'crates' });
-  const count = countOfText(cratesField.field.value);
+  const drinksField = useController({ control: write.form.control, name: 'drinks' });
+  const setDrinks = touchingChangeOf(drinksField.field);
+  const picks = drinksField.field.value;
 
   return {
-    cratesText: cratesField.field.value,
-    setCratesText: touchingChangeOf(cratesField.field),
-    cratesError: cratesField.fieldState.error?.message,
-    count,
-    preview: paymentPreviewOf(target.oldestFirst, count),
+    preview: paymentPreviewOf(target.oldestFirst, picks),
+    step: (beerDrinkId, step) => {
+      setDrinks([...steppedPaymentOf(rows, picks, beerDrinkId, step)]);
+    },
+    payAll: () => {
+      setDrinks([...fullPaymentOf(rows)]);
+    },
     ...writeStateOf(write),
   };
 };

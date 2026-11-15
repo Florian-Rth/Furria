@@ -26,4 +26,5 @@ public static class WriteConflictMessages
 
     public const string OpenBeerPot = "Es gibt schon eine offene Bierliste.";
     public const string RunningBeerListEnrollment = "Du stehst schon auf der Bierliste.";
+    public const string DuplicateBeerDrink = "Dieses Getränk gibt es schon.";
 }

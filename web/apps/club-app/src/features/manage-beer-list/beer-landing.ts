@@ -3,6 +3,8 @@ import { HUB_PATH } from './beer-hub-copy';
 
 export const HUB_LANDING: WriteLanding = { to: HUB_PATH };
 
+export const DRINKS_LANDING: WriteLanding = { to: `${HUB_PATH}/drinks` };
+
 export const personLandingOf = (personId: number): WriteLanding => ({
   to: '/beer-list/manage/persons/$personId',
   params: { personId },
@@ -18,3 +20,5 @@ export const closedPotLandingOf = (beerPotId: number): WriteLanding => ({
   to: '/beer-list/manage/pots/$beerPotId',
   params: { beerPotId },
 });
+
+export const drinkPathOf = (beerDrinkId: number): string => `${HUB_PATH}/drinks/${beerDrinkId}`;

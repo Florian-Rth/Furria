@@ -1,14 +1,18 @@
 import type { PersonRef } from '@/lib/api/schemas';
 import { dayKeyOf } from './beer-time';
 import type {
+  BeerDrinkRow,
   BeerEnrollment,
+  BeerForecast,
   BeerJournalCrate,
   BeerJournalResponse,
   BeerMovement,
+  BeerPaymentDrink,
+  BeerPaymentPick,
   BeerPotForm,
-  BeerPotSettings,
   BeerPotTab,
   BeerStockChange,
+  BeerStockDrink,
   BeerStockResponse,
 } from './schemas';
 
@@ -17,6 +21,9 @@ export const OVERDUE_AFTER_DAYS = 7;
 const WARN_WITHIN_DAYS = 7;
 
 export const SPARK_DAYS = 60;
+export const DRINK_NAME_MAX = 40;
+export const MAX_DRINKS = 12;
+const DEFAULT_PACE_WINDOW_DAYS = 21;
 
 export type BeerTabState = 'overdue' | 'open' | 'paid';
 
@@ -30,19 +37,30 @@ export interface BeerRosterRow {
   state: BeerTabState;
 }
 
-export interface BeerHubSummary {
-  stock: number;
+export interface BeerOutlook {
   emptyOn: string | null;
   daysLeft: number | null;
   warns: boolean;
+  paceWindowDays: number;
+}
+
+export interface BeerHubSummary extends BeerOutlook {
+  stock: number;
+  leadName: string | null;
   openCents: number;
   openTabs: number;
   overdue: number;
   enrolled: number;
-  paceWindowDays: number;
-  series: readonly number[];
-  deliveries: readonly number[];
+  drinks: readonly BeerDrinkTrend[];
   seriesFromOn: string;
+}
+
+export interface BeerDrinkTrend {
+  beerDrinkId: number;
+  name: string;
+  stock: number;
+  series: readonly number[];
+  outlook: BeerOutlook;
 }
 
 export const openDaysOf = (oldestOpenAt: string | null, now: string): number | null =>
@@ -147,35 +165,104 @@ export const stockSeriesOf = (
   });
 };
 
-const restocks = (movement: BeerMovement): boolean =>
-  movement.crates > 0 && (movement.kind === 'delivery' || movement.kind === 'handoverCarry');
-
-export const deliveriesOf = (
-  movements: readonly BeerMovement[],
-  now: string,
-  days: number,
-): readonly number[] => {
-  const end = Date.parse(now);
-  const restocked = movements.filter(restocks);
-
-  return Array.from({ length: days }, (_, index) => {
-    const until = end - (days - 1 - index) * DAY_MS;
-    const since = until - DAY_MS;
-
-    return restocked
-      .filter((movement) => {
-        const at = Date.parse(movement.bookedAt);
-
-        return at > since && at <= until;
-      })
-      .reduce((sum, movement) => sum + movement.crates, 0);
-  });
-};
-
 const daysUntil = (emptyOn: string | null, now: string): number | null =>
   emptyOn === null
     ? null
     : Math.max(0, (Date.parse(`${emptyOn}T00:00:00.000Z`) - Date.parse(now)) / DAY_MS);
+
+export const listedDrinksOf = (drinks: readonly BeerStockDrink[]): readonly BeerStockDrink[] =>
+  drinks.filter((drink) => !drink.isRetired);
+
+const byEmptyOn = (left: BeerStockDrink, right: BeerStockDrink): number => {
+  const leftOn = left.forecast.projectedEmptyOn;
+  const rightOn = right.forecast.projectedEmptyOn;
+
+  if (leftOn === rightOn) {
+    return 0;
+  }
+  if (leftOn === null) {
+    return 1;
+  }
+  if (rightOn === null) {
+    return -1;
+  }
+
+  return leftOn < rightOn ? -1 : 1;
+};
+
+export const leadDrinkOf = (drinks: readonly BeerStockDrink[]): BeerStockDrink | null =>
+  [...listedDrinksOf(drinks)].sort(
+    (left, right) =>
+      byEmptyOn(left, right) ||
+      left.crates - right.crates ||
+      left.name.localeCompare(right.name, 'de'),
+  )[0] ?? null;
+
+export const outlookOf = (forecast: BeerForecast | null, now: string): BeerOutlook => {
+  const emptyOn = forecast?.projectedEmptyOn ?? null;
+  const daysLeft = daysUntil(emptyOn, now);
+
+  return {
+    emptyOn,
+    daysLeft,
+    warns: daysLeft !== null && daysLeft <= WARN_WITHIN_DAYS,
+    paceWindowDays: forecast?.paceWindowDays ?? DEFAULT_PACE_WINDOW_DAYS,
+  };
+};
+
+const MAX_PER_BOOKING = 20;
+const NO_DRINK = '';
+
+export interface BeerDrinkLimit {
+  beerDrinkId: number;
+  maxCount: number;
+}
+
+export const drinkLimitsOf = (drinks: readonly BeerStockDrink[]): readonly BeerDrinkLimit[] =>
+  listedDrinksOf(drinks)
+    .filter((drink) => drink.crates > 0)
+    .map((drink) => ({
+      beerDrinkId: drink.beerDrinkId,
+      maxCount: Math.min(MAX_PER_BOOKING, drink.crates),
+    }));
+
+const presetOf = (candidates: readonly BeerStockDrink[]): string => {
+  const preferred = candidates.find((drink) => drink.isDefault);
+  const [only] = candidates;
+
+  if (preferred !== undefined) {
+    return String(preferred.beerDrinkId);
+  }
+
+  return candidates.length === 1 && only !== undefined ? String(only.beerDrinkId) : NO_DRINK;
+};
+
+export const initialDrinkOf = (drinks: readonly BeerStockDrink[]): string =>
+  presetOf(listedDrinksOf(drinks).filter((drink) => drink.crates > 0));
+
+export const initialStockDrinkOf = (drinks: readonly BeerStockDrink[]): string =>
+  presetOf(listedDrinksOf(drinks));
+
+export const stockOfDrinks = (drinks: readonly BeerStockDrink[]): number =>
+  listedDrinksOf(drinks).reduce((sum, drink) => sum + drink.crates, 0);
+
+export const drinkTrendsOf = (
+  stock: BeerStockResponse,
+  crates: readonly BeerJournalCrate[],
+  now: string,
+): readonly BeerDrinkTrend[] =>
+  listedDrinksOf(stock.drinks).map((drink) => ({
+    beerDrinkId: drink.beerDrinkId,
+    name: drink.name,
+    stock: drink.crates,
+    series: stockSeriesOf(
+      stock.movements.filter((movement) => movement.beerDrinkId === drink.beerDrinkId),
+      crates.filter((crate) => crate.beerDrinkId === drink.beerDrinkId),
+      now,
+      SPARK_DAYS,
+    ),
+    outlook: outlookOf(drink.forecast, now),
+  }));
 
 export interface BeerSummarySource {
   stock: BeerStockResponse;
@@ -185,21 +272,17 @@ export interface BeerSummarySource {
 }
 
 export const hubSummaryOf = ({ stock, crates, roster, now }: BeerSummarySource): BeerHubSummary => {
-  const emptyOn = stock.forecast.projectedEmptyOn;
-  const daysLeft = daysUntil(emptyOn, now);
+  const lead = leadDrinkOf(stock.drinks);
 
   return {
-    stock: stock.crates,
-    emptyOn,
-    daysLeft,
-    warns: daysLeft !== null && daysLeft <= WARN_WITHIN_DAYS,
+    ...outlookOf(lead?.forecast ?? null, now),
+    stock: stockOfDrinks(stock.drinks),
+    leadName: listedDrinksOf(stock.drinks).length > 1 ? (lead?.name ?? null) : null,
     openCents: rosterCentsOf(roster),
     openTabs: roster.filter((row) => row.openCrates > 0).length,
     overdue: roster.filter((row) => row.state === 'overdue').length,
     enrolled: roster.filter((row) => row.enrollmentId !== null).length,
-    paceWindowDays: stock.forecast.paceWindowDays,
-    series: stockSeriesOf(stock.movements, crates, now, SPARK_DAYS),
-    deliveries: deliveriesOf(stock.movements, now, SPARK_DAYS),
+    drinks: drinkTrendsOf(stock, crates, now),
     seriesFromOn: dayKeyOf(new Date(Date.parse(now) - (SPARK_DAYS - 1) * DAY_MS).toISOString()),
   };
 };
@@ -226,25 +309,101 @@ export const openCentsOf = (crates: readonly BeerJournalCrate[]): number =>
 export const rosterCentsOf = (rows: readonly BeerRosterRow[]): number =>
   rows.reduce((sum, row) => sum + row.openCents, 0);
 
+export interface BeerPaymentDrinkRow {
+  beerDrinkId: number;
+  name: string;
+  open: number;
+}
+
+export interface BeerPaymentDrinkLine extends BeerPaymentDrinkRow {
+  crates: number;
+}
+
 export interface BeerPaymentLine {
   crate: BeerJournalCrate;
   settled: boolean;
 }
 
 export interface BeerPaymentPreview {
+  drinks: readonly BeerPaymentDrinkLine[];
   lines: readonly BeerPaymentLine[];
+  crates: number;
   cents: number;
+  full: boolean;
 }
+
+export const paymentRowsOf = (
+  oldestFirst: readonly BeerJournalCrate[],
+): readonly BeerPaymentDrinkRow[] => {
+  const rows = new Map<number, BeerPaymentDrinkRow>();
+
+  for (const crate of oldestFirst) {
+    const row = rows.get(crate.beerDrinkId);
+    rows.set(crate.beerDrinkId, {
+      beerDrinkId: crate.beerDrinkId,
+      name: crate.drinkName,
+      open: (row?.open ?? 0) + 1,
+    });
+  }
+
+  return [...rows.values()];
+};
+
+const pickedOf = (picks: readonly BeerPaymentPick[], beerDrinkId: number): number =>
+  picks.find((pick) => pick.beerDrinkId === beerDrinkId)?.crates ?? 0;
+
+const clampedOf = (crates: number, open: number): number =>
+  Math.min(Math.max(0, Math.trunc(crates)), open);
+
+export const paidDrinksOf = (
+  rows: readonly BeerPaymentDrinkRow[],
+  picks: readonly BeerPaymentPick[],
+): readonly BeerPaymentPick[] =>
+  rows
+    .map((row) => ({
+      beerDrinkId: row.beerDrinkId,
+      crates: clampedOf(pickedOf(picks, row.beerDrinkId), row.open),
+    }))
+    .filter((pick) => pick.crates > 0);
+
+export const fullPaymentOf = (rows: readonly BeerPaymentDrinkRow[]): readonly BeerPaymentPick[] =>
+  rows.map((row) => ({ beerDrinkId: row.beerDrinkId, crates: row.open }));
+
+export const steppedPaymentOf = (
+  rows: readonly BeerPaymentDrinkRow[],
+  picks: readonly BeerPaymentPick[],
+  beerDrinkId: number,
+  step: number,
+): readonly BeerPaymentPick[] =>
+  rows.map((row) => {
+    const picked = pickedOf(picks, row.beerDrinkId);
+
+    return {
+      beerDrinkId: row.beerDrinkId,
+      crates: clampedOf(row.beerDrinkId === beerDrinkId ? picked + step : picked, row.open),
+    };
+  });
 
 export const paymentPreviewOf = (
   oldestFirst: readonly BeerJournalCrate[],
-  count: number,
+  picks: readonly BeerPaymentPick[],
 ): BeerPaymentPreview => {
-  const settledCount = Math.max(0, count);
+  const rows = paymentRowsOf(oldestFirst);
+  const paid = paidDrinksOf(rows, picks);
+  const seen = new Map<number, number>();
+  const lines = oldestFirst.map((crate) => {
+    const rank = seen.get(crate.beerDrinkId) ?? 0;
+    seen.set(crate.beerDrinkId, rank + 1);
+
+    return { crate, settled: rank < pickedOf(paid, crate.beerDrinkId) };
+  });
 
   return {
-    lines: oldestFirst.map((crate, index) => ({ crate, settled: index < settledCount })),
-    cents: openCentsOf(oldestFirst.slice(0, settledCount)),
+    drinks: rows.map((row) => ({ ...row, crates: pickedOf(paid, row.beerDrinkId) })),
+    lines,
+    crates: paid.reduce((sum, pick) => sum + pick.crates, 0),
+    cents: openCentsOf(lines.filter((line) => line.settled).map((line) => line.crate)),
+    full: rows.length > 0 && rows.every((row) => pickedOf(paid, row.beerDrinkId) === row.open),
   };
 };
 
@@ -308,13 +467,22 @@ export const priceTextOf = (cents: number): string =>
 export const textOrNull = (text: string): string | null =>
   text.trim() === '' ? null : text.trim();
 
+export const EMPTY_DRINK_ROW: BeerDrinkRow = { beerDrinkId: null, name: '', price: '' };
+
+export const priceRowOf = (drink: BeerStockDrink): BeerDrinkRow => ({
+  beerDrinkId: drink.beerDrinkId,
+  name: drink.name,
+  price: priceTextOf(drink.cratePriceCents),
+});
+
 export const potFormOf = (
   person: PersonRef | null,
-  settings: BeerPotSettings | null,
+  paymentLink: string | null,
+  drinks: readonly BeerDrinkRow[],
 ): BeerPotForm => ({
   person,
-  cratePrice: settings === null ? '' : priceTextOf(settings.cratePriceCents),
-  paymentLink: settings?.paymentLink ?? '',
+  paymentLink: paymentLink ?? '',
+  drinks: [...drinks],
 });
 
 export type BeerJournalKind =
@@ -333,6 +501,8 @@ export interface BeerJournalEntry {
   at: string;
   person: PersonRef | null;
   actor: PersonRef | null;
+  drink: string | null;
+  drinks: readonly BeerPaymentDrink[];
   count: number;
   stockDelta: number;
   cents: number | null;
@@ -362,7 +532,7 @@ const crateEntriesOf = (crates: readonly BeerJournalCrate[]): readonly BeerJourn
   const groups = new Map<string, BeerJournalCrate[]>();
 
   for (const crate of crates) {
-    const key = `${crate.person?.personId ?? 0}@${crate.bookedAt}@${crate.enteredBy?.personId ?? 0}@${crate.undoneAt ?? ''}`;
+    const key = `${crate.person?.personId ?? 0}@${crate.beerDrinkId}@${crate.bookedAt}@${crate.enteredBy?.personId ?? 0}@${crate.undoneAt ?? ''}`;
     groups.set(key, [...(groups.get(key) ?? []), crate]);
   }
 
@@ -382,6 +552,8 @@ const crateEntriesOf = (crates: readonly BeerJournalCrate[]): readonly BeerJourn
         at: first.bookedAt,
         person: first.person,
         actor: first.enteredBy,
+        drink: first.drinkName,
+        drinks: [],
         count: group.length,
         stockDelta: undone ? 0 : -group.length,
         cents: group.reduce((sum, crate) => sum + crate.priceCents, 0),
@@ -398,6 +570,8 @@ const movementEntryOf = (movement: BeerMovement): BeerJournalEntry => ({
   at: movement.bookedAt,
   person: null,
   actor: movement.bookedBy,
+  drink: movement.drinkName,
+  drinks: [],
   count: Math.abs(movement.crates),
   stockDelta: movement.crates,
   cents: null,
@@ -417,6 +591,8 @@ const enrollmentEntriesOf = (enrollment: BeerEnrollment): readonly BeerJournalEn
     at: enrollment.startedAt,
     person,
     actor: person,
+    drink: null,
+    drinks: [],
     count: 0,
     stockDelta: 0,
     cents: null,
@@ -460,6 +636,8 @@ export const journalOf = ({
         at: payment.bookedAt,
         person: payment.person,
         actor: payment.bookedBy,
+        drink: null,
+        drinks: payment.drinks,
         count: payment.crates,
         stockDelta: 0,
         cents: payment.amountCents,

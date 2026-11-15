@@ -9,13 +9,21 @@ export type BeerListPerson = z.infer<typeof BeerListPersonSchema>;
 
 const PaymentLinkSchema = z.url({ protocol: /^https$/ }).nullable();
 
+export const BeerPotDrinkSchema = z.object({
+  beerDrinkId: z.int().positive(),
+  name: z.string(),
+  cratePriceCents: z.int().positive(),
+  hasStock: z.boolean(),
+  isDefault: z.boolean(),
+});
+export type BeerPotDrink = z.infer<typeof BeerPotDrinkSchema>;
+
 export const OpenBeerPotSchema = z.object({
   beerPotId: z.int().positive(),
   owner: BeerListPersonSchema.nullable(),
-  cratePriceCents: z.int().positive(),
   paymentLink: PaymentLinkSchema,
   openedAt: z.iso.datetime({ offset: true }),
-  hasStock: z.boolean(),
+  drinks: z.array(BeerPotDrinkSchema),
 });
 export type OpenBeerPot = z.infer<typeof OpenBeerPotSchema>;
 
@@ -24,6 +32,8 @@ export type OpenBeerPotResponse = z.infer<typeof OpenBeerPotResponseSchema>;
 
 export const BeerTabCrateSchema = z.object({
   crateId: z.int().positive(),
+  beerDrinkId: z.int().positive(),
+  drinkName: z.string(),
   priceCents: z.int().nonnegative(),
   bookedAt: z.iso.datetime({ offset: true }),
   enteredBy: BeerListPersonSchema.nullable(),
@@ -48,7 +58,17 @@ export type BeerTabPot = z.infer<typeof BeerTabPotSchema>;
 export const BeerTabSchema = z.object({ pots: z.array(BeerTabPotSchema) });
 export type BeerTab = z.infer<typeof BeerTabSchema>;
 
-export const BeerGiverSchema = BeerListPersonSchema.extend({ crates: z.int().positive() });
+export const BeerGiverDrinkSchema = z.object({
+  beerDrinkId: z.int().positive(),
+  name: z.string(),
+  crates: z.int().positive(),
+});
+export type BeerGiverDrink = z.infer<typeof BeerGiverDrinkSchema>;
+
+export const BeerGiverSchema = BeerListPersonSchema.extend({
+  crates: z.int().positive(),
+  drinks: z.array(BeerGiverDrinkSchema),
+});
 export type BeerGiver = z.infer<typeof BeerGiverSchema>;
 
 export const BeerGiversSchema = z.object({ givers: z.array(BeerGiverSchema) });
