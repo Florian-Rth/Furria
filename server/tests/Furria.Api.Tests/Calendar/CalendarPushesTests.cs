@@ -92,6 +92,69 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_PushEveryMemberButTheScheduler_When_AClubWideEntryNotifiesMembers()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+
+        var entryId = await CreateAsync(ctx, ClubEntry() with { NotifyMembers = true }, ct);
+
+        await _fixture.PushesDrainedAsync(ct);
+        var pushes = PushesAt(_fixture, devices.Chris);
+        Assert.Equal([$"/calendar/{entryId}"], [.. pushes.Select(UrlOf)]);
+        Assert.Equal([ClubMeeting], [.. pushes.Select(TitleOf)]);
+        Assert.Single(PushesAt(_fixture, devices.Mara));
+        Assert.Empty(PushesAt(_fixture, devices.Ilka));
+        Assert.Empty(PushesAt(_fixture, devices.Paula));
+        Assert.Empty(PushesAt(_fixture, devices.Fred));
+    }
+
+    [Fact]
+    public async Task Should_PushOncePerMember_When_ANotifyingEntryAlsoAsksForAResponse()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+
+        await CreateAsync(
+            ctx,
+            ClubEntry() with
+            {
+                NotifyMembers = true,
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
+            },
+            ct
+        );
+
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Single(PushesAt(_fixture, devices.Chris));
+    }
+
+    [Fact]
+    public async Task Should_PushNobody_When_ANotifyingEntryHasAlreadyEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+        var endedAnHourAgo = _fixture.TimeProvider.GetUtcNow().AddHours(-1);
+
+        await CreateAsync(
+            ctx,
+            ClubEntry() with
+            {
+                StartsAt = endedAnHourAgo.AddHours(-3),
+                EndsAt = endedAnHourAgo,
+                NotifyMembers = true,
+            },
+            ct
+        );
+
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Empty(PushesAt(_fixture, devices.Chris));
+    }
+
+    [Fact]
     public async Task Should_PushNobody_When_ANewEntryAskingForAResponseHasAlreadyStarted()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -403,6 +466,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             AudiencePersonIds = [],
             AddOns = [],
             ParticipatingGroupIds = [],
+            NotifyMembers = false,
         };
 
     private static PutCalendarEntryRequest ClubEntryUpdate(int calendarEntryId) =>

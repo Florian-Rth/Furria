@@ -340,7 +340,11 @@ public sealed partial class CalendarService
         if (!saved.IsSuccess)
             return Result<CalendarEntryWriteResult>.Carrying(saved);
 
-        await EnqueueCreatePushesAsync(entry, command.ViewerPersonId, ct);
+        await EnqueueCreatePushesAsync(
+            entry,
+            new CreatePushChoice(command.ViewerPersonId, command.NotifyMembers),
+            ct
+        );
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 

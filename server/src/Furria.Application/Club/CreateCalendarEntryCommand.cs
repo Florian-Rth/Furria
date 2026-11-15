@@ -31,4 +31,6 @@ public sealed record CreateCalendarEntryCommand
     public required IReadOnlyList<CalendarEntryAddOnInput> AddOns { get; init; }
 
     public required IReadOnlyList<int> ParticipatingGroupIds { get; init; }
+
+    public required bool NotifyMembers { get; init; }
 }

@@ -13,4 +13,6 @@ public sealed record CreateAnnouncementCommand
     public required DateOnly? ValidUntil { get; init; }
 
     public required IReadOnlyList<AnnouncementAddOnInput> AddOns { get; init; }
+
+    public required bool NotifyMembers { get; init; }
 }

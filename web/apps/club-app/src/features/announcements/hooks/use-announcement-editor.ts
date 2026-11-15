@@ -37,6 +37,11 @@ export interface AnnouncementBody {
   isEmpty: boolean;
 }
 
+export interface NotifyMembersSwitch {
+  checked: boolean;
+  set: (checked: boolean) => void;
+}
+
 export interface AnnouncementEditorControl {
   form: UseFormReturn<AnnouncementForm>;
   values: AnnouncementForm;
@@ -44,6 +49,7 @@ export interface AnnouncementEditorControl {
   body: AnnouncementBody;
   validUntil: string | null;
   setValidUntil: (value: string | null) => void;
+  notifyMembers: NotifyMembersSwitch | null;
   submit: () => void;
   isDirty: boolean;
   canSubmit: boolean;
@@ -73,6 +79,7 @@ export const useAnnouncementEditor = ({
   });
   const body = useController({ control: write.form.control, name: 'body' });
   const validUntil = useController({ control: write.form.control, name: 'validUntil' });
+  const notifyMembers = useController({ control: write.form.control, name: 'notifyMembers' });
   const text = useRichText({
     text: body.field.value,
     isReadOnly: write.isSaving,
@@ -103,5 +110,9 @@ export const useAnnouncementEditor = ({
     },
     validUntil: validUntil.field.value,
     setValidUntil,
+    notifyMembers:
+      announcementId === null
+        ? { checked: notifyMembers.field.value, set: notifyMembers.field.onChange }
+        : null,
   };
 };

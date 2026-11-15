@@ -113,7 +113,8 @@ public sealed partial class AnnouncementService
         if (!saved.IsSuccess)
             return Result<int>.Carrying(saved);
 
-        await EnqueuePostedPushesAsync(announcement, ct);
+        if (command.NotifyMembers)
+            await EnqueuePostedPushesAsync(announcement, ct);
         await transaction.CommitAsync(ct);
 
         return Result<int>.Success(announcement.Id);

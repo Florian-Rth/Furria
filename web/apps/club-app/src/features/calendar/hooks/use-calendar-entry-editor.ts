@@ -15,7 +15,7 @@ import {
   toChangedSignUpListCards,
   toDetachedCards,
 } from '../calendar-add-ons';
-import type { CalendarOwnerOption } from '../calendar-authoring';
+import type { CalendarOwnerOption, NotifyMembersChoice } from '../calendar-authoring';
 import {
   toAddedEnd,
   toAudienceAfterOwnerChange,
@@ -27,6 +27,7 @@ import {
   toEntryFormValues,
   toEntryLanding,
   toEntryPayload,
+  toNotifyMembersChoice,
   toParticipationKeptForOwner,
   toToggledValue,
 } from '../calendar-authoring';
@@ -53,6 +54,12 @@ interface CalendarEntryEditorInput {
   ownerOptions: readonly CalendarOwnerOption[];
 }
 
+export interface NotifyMembersSwitch {
+  choice: NotifyMembersChoice;
+  checked: boolean;
+  set: (checked: boolean) => void;
+}
+
 export interface CalendarEntryEditorControl extends AddOnCardsEditor {
   form: UseFormReturn<CalendarEntryForm>;
   values: CalendarEntryForm;
@@ -77,6 +84,7 @@ export interface CalendarEntryEditorControl extends AddOnCardsEditor {
   removeEnd: () => void;
   setEndDay: (value: string) => void;
   setEndTime: (value: string) => void;
+  notifyMembers: NotifyMembersSwitch | null;
   isEditing: boolean;
   isDirty: boolean;
   canSubmit: boolean;
@@ -84,6 +92,15 @@ export interface CalendarEntryEditorControl extends AddOnCardsEditor {
   rejection: string | null;
   submit: () => void;
 }
+
+const toNotifyMembersSwitch = (
+  values: CalendarEntryForm,
+  set: (checked: boolean) => void,
+): NotifyMembersSwitch => {
+  const choice = toNotifyMembersChoice(values);
+
+  return { choice, checked: choice === 'alwaysSent' || values.notifyMembers, set };
+};
 
 export const useCalendarEntryEditor = ({
   entry,
@@ -268,6 +285,10 @@ export const useCalendarEntryEditor = ({
     }
   };
 
+  const setNotifyMembers = (checked: boolean): void => {
+    form.setValue('notifyMembers', checked, FIELD_EDIT);
+  };
+
   return {
     form,
     values,
@@ -315,6 +336,7 @@ export const useCalendarEntryEditor = ({
     setEndTime: (value) => {
       form.setValue('endTime', value, FIELD_EDIT);
     },
+    notifyMembers: entry === null ? toNotifyMembersSwitch(values, setNotifyMembers) : null,
     isEditing: entry !== null,
     isDirty: write.isDirty,
     canSubmit: write.canSubmit,

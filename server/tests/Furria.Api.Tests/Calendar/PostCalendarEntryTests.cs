@@ -84,6 +84,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 AudiencePersonIds = [],
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
                 ParticipatingGroupIds = [],
+                NotifyMembers = false,
             }
         );
 
@@ -134,6 +135,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 AudiencePersonIds = [],
                 AddOns = [],
                 ParticipatingGroupIds = [],
+                NotifyMembers = false,
             }
         );
 
@@ -170,6 +172,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 AudiencePersonIds = [],
                 AddOns = [],
                 ParticipatingGroupIds = null!,
+                NotifyMembers = false,
             }
         );
 
@@ -219,6 +222,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 AudiencePersonIds = [],
                 AddOns = [],
                 ParticipatingGroupIds = [],
+                NotifyMembers = false,
             }
         );
 
@@ -259,6 +263,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 AudiencePersonIds = [],
                 AddOns = [],
                 ParticipatingGroupIds = [],
+                NotifyMembers = false,
             }
         );
 
@@ -307,6 +312,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 AudiencePersonIds = [],
                 AddOns = [],
                 ParticipatingGroupIds = [],
+                NotifyMembers = false,
             }
         );
 
@@ -379,6 +385,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 AudiencePersonIds = [],
                 AddOns = [],
                 ParticipatingGroupIds = [],
+                NotifyMembers = false,
             }
         );
 
@@ -425,6 +432,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 AudiencePersonIds = [],
                 AddOns = [],
                 ParticipatingGroupIds = [],
+                NotifyMembers = false,
             }
         );
 
@@ -434,6 +442,29 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             ["Ein archivierter Ort kann nicht mehr gewählt werden."],
             failures[ValidationField]
         );
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_AnEntryNotForTheWholeClubNotifiesMembers()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [ctx.Identity.People.IdOf("chris")],
+                NotifyMembers = true,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -979,6 +1010,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             AudiencePersonIds = [],
             AddOns = [],
             ParticipatingGroupIds = [],
+            NotifyMembers = false,
         };
 
     private static void Club(IdentitySeedBuilder identity) =>

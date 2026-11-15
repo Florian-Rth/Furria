@@ -38,7 +38,7 @@ public sealed class OutboxCalendarPushConfiguration : IEntityTypeConfiguration<O
                 );
                 table.HasCheckConstraint(
                     "ck_outbox_calendar_push_recipients",
-                    $"reason IN ('{nameof(CalendarPushReason.AsksForResponse)}', '{nameof(CalendarPushReason.Reminder)}') OR cardinality(person_ids) > 0"
+                    $"reason IN ('{nameof(CalendarPushReason.AsksForResponse)}', '{nameof(CalendarPushReason.Reminder)}', '{nameof(CalendarPushReason.Announced)}') OR cardinality(person_ids) > 0"
                 );
                 table.HasCheckConstraint(
                     "ck_outbox_calendar_push_reminder_kind",

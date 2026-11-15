@@ -51,6 +51,9 @@ export const CALENDAR_KIND_OPTIONS: readonly KkSelectOption[] = AUTHORED_KINDS.m
   label: CALENDAR_KIND_LABELS[kind],
 }));
 
+export const NOTIFY_MEMBERS_LABEL = 'Mitglieder benachrichtigen';
+export const NOTIFY_MEMBERS_DESCRIPTION = 'Push-Mitteilung an alle Mitglieder';
+
 export const CALENDAR_AUDIENCE_OPTIONS: readonly KkSelectOption[] = AUDIENCE_ORDER.map(
   (audience) => ({ value: audience, label: CALENDAR_AUDIENCE_LABELS[audience] }),
 );
