@@ -23,6 +23,8 @@ public sealed partial class CalendarService
     private const string NoPersonMessage = "Dieser Zugang gehört zu keiner Person.";
     private const string NotYoursMessage = "Auf diesen Kalendereintrag kannst du nicht antworten.";
     private const string NotOwnedMessage = "Diesen Kalendereintrag darfst du nicht pflegen.";
+    private const string ClubPushNotGrantedMessage =
+        "Alle Mitglieder benachrichtigen darfst du nicht.";
     private const string NoResponseWantedMessage = "Dieser Eintrag fragt nicht nach einer Antwort.";
     private const string DuplicateResponseMessage =
         WriteConflictMessages.DuplicateAttendanceResponse;
@@ -272,6 +274,16 @@ public sealed partial class CalendarService
     {
         if (!await MayOwnAsync(command.ActorAccountId, command.OwnerGroupId, ct))
             return Result<CalendarEntryWriteResult>.Forbidden(NotOwnedMessage);
+
+        if (
+            command.NotifyMembers
+            && !await _authorizer.IsGrantedAsync(
+                command.ActorAccountId,
+                FurriaPermissions.PushNotifyClub,
+                ct
+            )
+        )
+            return Result<CalendarEntryWriteResult>.Forbidden(ClubPushNotGrantedMessage);
 
         var participatingGroupIds = ParticipationOf(
             command.ParticipatingGroupIds,

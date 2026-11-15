@@ -79,6 +79,70 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ReturnForbidden_When_ASchedulerWithoutTheMembersPushNotifiesMembers()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await CreateAsGroupAdminAsync(
+            ctx,
+            GroupOwnedClubEntry(ctx) with
+            {
+                NotifyMembers = true,
+            },
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_PushEveryMember_When_AGroupAdminAsksTheWholeClubForAResponse()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+
+        var response = await CreateAsGroupAdminAsync(
+            ctx,
+            GroupOwnedClubEntry(ctx) with
+            {
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
+            },
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Single(PushesAt(_fixture, devices.Chris));
+        Assert.Single(PushesAt(_fixture, devices.Mara));
+    }
+
+    [Fact]
+    public async Task Should_PushTheChosenPeople_When_AGroupAdminAsksThemForAResponse()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+
+        var response = await CreateAsGroupAdminAsync(
+            ctx,
+            GroupOwnedClubEntry(ctx) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [ctx.Identity.People.IdOf("chris")],
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
+            },
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Single(PushesAt(_fixture, devices.Chris));
+        Assert.Empty(PushesAt(_fixture, devices.Mara));
+    }
+
+    [Fact]
     public async Task Should_PushNobody_When_ANewEntryAsksNothing()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -421,6 +485,28 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
         return result.CalendarEntryId;
     }
 
+    private static async Task<HttpResponseMessage> CreateAsGroupAdminAsync(
+        SeededContext ctx,
+        PostCalendarEntryRequest request,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync("fred", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(request);
+
+        return response;
+    }
+
+    private static PostCalendarEntryRequest GroupOwnedClubEntry(SeededContext ctx) =>
+        ClubEntry() with
+        {
+            OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+        };
+
     private static async Task UpdateAsync(
         SeededContext ctx,
         PutCalendarEntryRequest request,
@@ -569,6 +655,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
                         groups
                             .AddGroup("tanzgarde", "Tanzgarde")
                             .AddGroupMembership("fred-tanzgarde", "tanzgarde", "fred", JoinedIn2017)
+                            .AddGroupAdmin("fred-leads-tanzgarde", "tanzgarde", "fred")
                     )
                     .Roles(roles =>
                         roles.AddRoleWithHolder(
@@ -576,7 +663,8 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
                             "ilka-terminpflege",
                             "Terminpflege",
                             "ilka",
-                            FurriaPermissions.CalendarManageClub
+                            FurriaPermissions.CalendarManageClub,
+                            FurriaPermissions.PushNotifyClub
                         )
                     )
                     .Club(club => entries(club.AddVenue("buehnenhaus", "Bühnenhaus"))),

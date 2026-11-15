@@ -8,7 +8,9 @@ import type { RichTextField } from '@/features/rich-text/hooks/use-rich-text';
 import { useRichText } from '@/features/rich-text/hooks/use-rich-text';
 import { mentionTonesOf } from '@/features/rich-text/mention-tones';
 import type { MentionablesSource } from '@/features/rich-text/types';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toAnnouncementFormValues, toAnnouncementPayload } from '../announcement-add-ons';
 import {
   ANNOUNCEMENT_BODY_FIELD_ID,
@@ -64,6 +66,7 @@ export const useAnnouncementEditor = ({
   const create = useCreateAnnouncementMutation();
   const update = useUpdateAnnouncementMutation(announcementId ?? NO_ANNOUNCEMENT);
   const mentionables = useAnnouncementMentionables();
+  const { has } = usePermissions();
 
   const write = useWriteForm({
     schema: AnnouncementFormSchema,
@@ -111,7 +114,7 @@ export const useAnnouncementEditor = ({
     validUntil: validUntil.field.value,
     setValidUntil,
     notifyMembers:
-      announcementId === null
+      announcementId === null && has(PERMISSION_KEYS.pushNotifyClub)
         ? { checked: notifyMembers.field.value, set: notifyMembers.field.onChange }
         : null,
   };

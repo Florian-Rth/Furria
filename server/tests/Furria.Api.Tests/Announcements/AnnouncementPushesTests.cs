@@ -59,6 +59,31 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ReturnForbidden_When_AnAuthorWithoutTheMembersPushNotifiesMembers()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+
+        var (response, _) = await client.POSTAsync<
+            PostAnnouncement,
+            PostAnnouncementRequest,
+            PostAnnouncementResponse
+        >(
+            new()
+            {
+                Title = Title,
+                Body = Body,
+                ValidUntil = null,
+                AddOns = [],
+                NotifyMembers = true,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_SkipTheMember_When_SheMutedAnnouncements()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -187,13 +212,22 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
                             .AddAccount("fred")
                     )
                     .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "aushangwart",
-                            "bea-aushangwart",
-                            "Aushangwart",
-                            "bea",
-                            FurriaPermissions.AnnouncementsPost
-                        )
+                        roles
+                            .AddRoleWithHolder(
+                                "aushangwart",
+                                "bea-aushangwart",
+                                "Aushangwart",
+                                "bea",
+                                FurriaPermissions.AnnouncementsPost,
+                                FurriaPermissions.PushNotifyClub
+                            )
+                            .AddRoleWithHolder(
+                                "schriftfuehrung",
+                                "alice-schriftfuehrung",
+                                "Schriftführung",
+                                "alice",
+                                FurriaPermissions.AnnouncementsPost
+                            )
                     ),
             ct
         );

@@ -139,7 +139,7 @@ export const requestSetUsualTrainingTimes = (
   apiFetch(`/api/groups/${groupId}/usual-training-times`, {
     method: 'PUT',
     body: {
-      usualTimes: usualTimes.map((usualTime) => ({
+      usualTrainingTimes: usualTimes.map((usualTime) => ({
         weekday: usualTime.weekday,
         startsAt: usualTime.startsAt,
         durationMinutes: usualTime.durationMinutes,

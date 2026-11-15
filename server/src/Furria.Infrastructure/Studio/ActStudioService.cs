@@ -134,6 +134,8 @@ public sealed class ActStudioService
             return Result.NotFound(ActStudioGate.UnknownActMessage);
         if (!await _gate.LeadsGroupAsync(accountId, act, ct))
             return Result.Forbidden(NotGroupAdminMessage);
+        if (ActStudioGate.ReadOnlyRefusalOf(act) is { } refused)
+            return refused;
 
         var revoked = await _dbContext
             .ActCoEditors.Where(editor =>
