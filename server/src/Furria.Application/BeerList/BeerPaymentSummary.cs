@@ -8,6 +8,8 @@ public sealed record BeerPaymentSummary
 
     public required int AmountCents { get; init; }
 
+    public required IReadOnlyList<BeerPaymentDrinkSummary> Drinks { get; init; }
+
     public required DateTimeOffset BookedAt { get; init; }
 
     public required BeerListPerson? BookedBy { get; init; }

@@ -6,8 +6,6 @@ public sealed record BeerPotSummary
 
     public required BeerListPerson? Owner { get; init; }
 
-    public required int CratePriceCents { get; init; }
-
     public required DateTimeOffset OpenedAt { get; init; }
 
     public required DateTimeOffset? ClosedAt { get; init; }

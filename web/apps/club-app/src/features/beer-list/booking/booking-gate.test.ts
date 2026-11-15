@@ -11,10 +11,11 @@ describe('bookingGateOf', () => {
       {
         beerPotId: 2,
         owner: null,
-        cratePriceCents: 1800,
         paymentLink: null,
         openedAt: '2026-09-01T10:00:00Z',
-        hasStock: true,
+        drinks: [
+          { beerDrinkId: 1, name: 'Bier', cratePriceCents: 1800, hasStock: true, isDefault: false },
+        ],
       },
       'open',
     ],
@@ -24,10 +25,11 @@ describe('bookingGateOf', () => {
       {
         beerPotId: 2,
         owner: null,
-        cratePriceCents: 1800,
         paymentLink: null,
         openedAt: '2026-09-01T10:00:00Z',
-        hasStock: true,
+        drinks: [
+          { beerDrinkId: 1, name: 'Bier', cratePriceCents: 1800, hasStock: true, isDefault: false },
+        ],
       },
       'keeper',
     ],
@@ -37,10 +39,11 @@ describe('bookingGateOf', () => {
       {
         beerPotId: 2,
         owner: null,
-        cratePriceCents: 1800,
         paymentLink: null,
         openedAt: '2026-09-01T10:00:00Z',
-        hasStock: true,
+        drinks: [
+          { beerDrinkId: 1, name: 'Bier', cratePriceCents: 1800, hasStock: true, isDefault: false },
+        ],
       },
       'enroll',
     ],
@@ -57,10 +60,11 @@ describe('bookingPhaseOf', () => {
       {
         beerPotId: 2,
         owner: null,
-        cratePriceCents: 1800,
         paymentLink: null,
         openedAt: '2026-09-01T10:00:00Z',
-        hasStock: true,
+        drinks: [
+          { beerDrinkId: 1, name: 'Bier', cratePriceCents: 1800, hasStock: true, isDefault: false },
+        ],
       },
       'choose',
     ],
@@ -70,10 +74,56 @@ describe('bookingPhaseOf', () => {
       {
         beerPotId: 2,
         owner: null,
-        cratePriceCents: 1800,
         paymentLink: null,
         openedAt: '2026-09-01T10:00:00Z',
-        hasStock: false,
+        drinks: [
+          {
+            beerDrinkId: 1,
+            name: 'Bier',
+            cratePriceCents: 1800,
+            hasStock: false,
+            isDefault: false,
+          },
+        ],
+      },
+      'empty',
+    ],
+    [
+      'one of several drinks is left',
+      false,
+      {
+        beerPotId: 2,
+        owner: null,
+        paymentLink: null,
+        openedAt: '2026-09-01T10:00:00Z',
+        drinks: [
+          {
+            beerDrinkId: 1,
+            name: 'Veltins',
+            cratePriceCents: 1800,
+            hasStock: false,
+            isDefault: false,
+          },
+          {
+            beerDrinkId: 2,
+            name: 'Radler',
+            cratePriceCents: 1500,
+            hasStock: true,
+            isDefault: false,
+          },
+        ],
+      },
+      'choose',
+    ],
+    [
+      'no drink is listed',
+      false,
+      {
+        beerPotId: 2,
+        owner: null,
+        paymentLink: null,
+        openedAt: '2026-09-01T10:00:00Z',
+        drinks: [],
       },
       'empty',
     ],
@@ -84,10 +134,17 @@ describe('bookingPhaseOf', () => {
       {
         beerPotId: 2,
         owner: null,
-        cratePriceCents: 1800,
         paymentLink: null,
         openedAt: '2026-09-01T10:00:00Z',
-        hasStock: false,
+        drinks: [
+          {
+            beerDrinkId: 1,
+            name: 'Bier',
+            cratePriceCents: 1800,
+            hasStock: false,
+            isDefault: false,
+          },
+        ],
       },
       'undo',
     ],
@@ -97,10 +154,11 @@ describe('bookingPhaseOf', () => {
       {
         beerPotId: 2,
         owner: null,
-        cratePriceCents: 1800,
         paymentLink: null,
         openedAt: '2026-09-01T10:00:00Z',
-        hasStock: true,
+        drinks: [
+          { beerDrinkId: 1, name: 'Bier', cratePriceCents: 1800, hasStock: true, isDefault: false },
+        ],
       },
       'undo',
     ],

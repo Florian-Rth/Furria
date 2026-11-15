@@ -5,6 +5,7 @@ import type { PersonRef } from '@/lib/api/schemas';
 import type { BeerWriteState } from '../form-fields';
 import { touchingChangeOf } from '../form-fields';
 import type { BeerPotForm } from '../schemas';
+import type { DrinkRows } from './use-drink-rows';
 
 type TextChange = ChangeEvent<HTMLInputElement | HTMLTextAreaElement>;
 
@@ -13,9 +14,6 @@ export interface PotFields {
   choosePerson: (person: PersonRef) => void;
   clearPerson: () => void;
   personError: string | undefined;
-  priceText: string;
-  setPriceText: (text: string) => void;
-  priceError: string | undefined;
   link: string;
   changeLink: (event: TextChange) => void;
   touchLink: () => void;
@@ -25,11 +23,14 @@ export interface PotWriteForm extends BeerWriteState {
   fields: PotFields;
 }
 
+export interface PotDrinksWriteForm extends PotWriteForm {
+  drinks: DrinkRows;
+}
+
 export const usePotFields = <TSubmitted>(
   control: Control<BeerPotForm, undefined, TSubmitted>,
 ): PotFields => {
   const personField = useController({ control, name: 'person' });
-  const priceField = useController({ control, name: 'cratePrice' });
   const linkField = useController({ control, name: 'paymentLink' });
 
   return {
@@ -39,9 +40,6 @@ export const usePotFields = <TSubmitted>(
       personField.field.onChange(null);
     },
     personError: personField.fieldState.error?.message,
-    priceText: priceField.field.value,
-    setPriceText: touchingChangeOf(priceField.field),
-    priceError: priceField.fieldState.error?.message,
     link: linkField.field.value,
     changeLink: (event) => {
       linkField.field.onChange(event.target.value);

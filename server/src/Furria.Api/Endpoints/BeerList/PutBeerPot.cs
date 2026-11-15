@@ -24,9 +24,9 @@ public sealed class PutBeerPot : Endpoint<PutBeerPotRequest>
 
     public override async Task HandleAsync(PutBeerPotRequest req, CancellationToken ct)
     {
-        var result = await _beerListService.UpdatePotSettingsAsync(
+        var result = await _beerListService.UpdatePaymentLinkAsync(
             req.BeerPotId,
-            BeerPotSettingsRules.ToSettings(req.CratePriceCents, req.PaymentLink),
+            BeerPotSettingsRules.ToPaymentLink(req.PaymentLink),
             ct
         );
 
@@ -45,8 +45,6 @@ public sealed record PutBeerPotRequest
     [RouteParam]
     public required int BeerPotId { get; init; }
 
-    public required int CratePriceCents { get; init; }
-
     public string? PaymentLink { get; init; }
 }
 
@@ -55,7 +53,6 @@ public sealed class PutBeerPotValidator : Validator<PutBeerPotRequest>
     public PutBeerPotValidator()
     {
         RuleFor(request => request.BeerPotId).GreaterThan(0);
-        RuleFor(request => request.CratePriceCents).CratePrice();
         RuleFor(request => request.PaymentLink).PaymentLink();
     }
 }

@@ -23,6 +23,20 @@ internal static class BeerListSeedMaterializer
             StringComparer.Ordinal
         );
         dbContext.BeerPots.AddRange(pots.Values);
+        var drinks = recorded
+            .PotDrinks.Select(intent => intent.Drink)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                name => name,
+                name => new BeerDrink { Name = name },
+                StringComparer.OrdinalIgnoreCase
+            );
+        dbContext.BeerDrinks.AddRange(drinks.Values);
+        var potDrinks = recorded
+            .PotDrinks.Select(intent => NewPotDrink(intent, pots, drinks))
+            .ToList();
+        dbContext.BeerPotDrinks.AddRange(potDrinks);
+        await dbContext.SaveChangesAsync(ct);
 
         var enrollments = recorded.Enrollments.ToDictionary(
             intent => intent.Alias,
@@ -32,12 +46,25 @@ internal static class BeerListSeedMaterializer
         dbContext.BeerListEnrollments.AddRange(enrollments.Values);
 
         dbContext.BeerStockMovements.AddRange(
-            recorded.StockMovements.Select(intent => NewStockMovement(intent, pots, personIds, now))
+            recorded.StockMovements.Select(intent =>
+                NewStockMovement(
+                    intent,
+                    PotDrinkOf(potDrinks, intent.PotAlias, intent.Drink, pots),
+                    personIds,
+                    now
+                )
+            )
         );
 
         var crates = recorded.Crates.ToDictionary(
             intent => intent.Alias,
-            intent => NewCrate(intent, pots, personIds, now),
+            intent =>
+                NewCrate(
+                    intent,
+                    PotDrinkOf(potDrinks, intent.PotAlias, intent.Drink, pots),
+                    personIds,
+                    now
+                ),
             StringComparer.Ordinal
         );
         dbContext.BeerCrates.AddRange(crates.Values);
@@ -59,7 +86,8 @@ internal static class BeerListSeedMaterializer
             pots.ToDictionary(entry => entry.Key, entry => entry.Value.Id),
             enrollments.ToDictionary(entry => entry.Key, entry => entry.Value.Id),
             crates.ToDictionary(entry => entry.Key, entry => entry.Value.Id),
-            payments.ToDictionary(entry => entry.Key, entry => entry.Value.Id)
+            payments.ToDictionary(entry => entry.Key, entry => entry.Value.Id),
+            drinks.ToDictionary(entry => entry.Key, entry => entry.Value.Id)
         );
     }
 
@@ -71,7 +99,6 @@ internal static class BeerListSeedMaterializer
         new()
         {
             OwnerPersonId = SeedAliases.RequireId(personIds, intent.OwnerAlias, "Person"),
-            CratePriceCents = intent.CratePriceCents,
             PaymentLink = intent.PaymentLink,
             OpenedAt = intent.OpenedAt ?? now - SeededAge,
             ClosedAt = intent.ClosedAt,
@@ -92,19 +119,51 @@ internal static class BeerListSeedMaterializer
                 : SeedAliases.RequireId(personIds, intent.EndedByAlias, "Person"),
         };
 
-    private static BeerCrate NewCrate(
-        BeerListSeedBuilder.BeerCrateIntent intent,
+    private static BeerPotDrink NewPotDrink(
+        BeerListSeedBuilder.BeerPotDrinkIntent intent,
         IReadOnlyDictionary<string, BeerPot> pots,
-        IReadOnlyDictionary<string, int> personIds,
-        DateTimeOffset now
+        IReadOnlyDictionary<string, BeerDrink> drinks
+    ) =>
+        new()
+        {
+            Pot = PotOf(pots, intent.PotAlias),
+            Drink = drinks[intent.Drink],
+            CratePriceCents = intent.CratePriceCents,
+            IsDefault = intent.IsDefault,
+            RetiredAt = intent.RetiredAt,
+            StockWarningSentAt = intent.StockWarningSentAt,
+        };
+
+    private static BeerPotDrink PotDrinkOf(
+        IReadOnlyList<BeerPotDrink> potDrinks,
+        string potAlias,
+        string drink,
+        IReadOnlyDictionary<string, BeerPot> pots
     )
     {
-        var pot = PotOf(pots, intent.PotAlias);
-        return new()
+        var pot = PotOf(pots, potAlias);
+        return potDrinks.SingleOrDefault(potDrink =>
+                potDrink.Pot == pot
+                && string.Equals(potDrink.Drink!.Name, drink, StringComparison.OrdinalIgnoreCase)
+            )
+            ?? throw new InvalidOperationException(
+                $"BeerPot '{potAlias}' does not list the drink '{drink}'."
+            );
+    }
+
+    private static BeerCrate NewCrate(
+        BeerListSeedBuilder.BeerCrateIntent intent,
+        BeerPotDrink potDrink,
+        IReadOnlyDictionary<string, int> personIds,
+        DateTimeOffset now
+    ) =>
+        new()
         {
-            Pot = pot,
+            Pot = potDrink.Pot,
+            BeerPotId = potDrink.BeerPotId,
+            BeerDrinkId = potDrink.BeerDrinkId,
             PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
-            PriceCents = intent.PriceCents ?? pot.CratePriceCents,
+            PriceCents = intent.PriceCents ?? potDrink.CratePriceCents,
             EnteredByPersonId = SeedAliases.RequireId(
                 personIds,
                 intent.EnteredByAlias ?? intent.PersonAlias,
@@ -113,7 +172,6 @@ internal static class BeerListSeedMaterializer
             BookedAt = intent.BookedAt ?? now - SeededStockAge,
             UndoneAt = intent.UndoneAt,
         };
-    }
 
     private static BeerPayment NewPayment(
         BeerListSeedBuilder.BeerPaymentIntent intent,
@@ -130,7 +188,7 @@ internal static class BeerListSeedMaterializer
             Pot = pot,
             PersonId = personId,
             Crates = intent.Crates,
-            AmountCents = intent.Crates * pot.CratePriceCents,
+            AmountCents = intent.Crates * BeerListSeedBuilder.DefaultCratePriceCents,
             BookedByPersonId = intent.BookedByAlias is null
                 ? null
                 : SeedAliases.RequireId(personIds, intent.BookedByAlias, "Person"),
@@ -177,13 +235,14 @@ internal static class BeerListSeedMaterializer
 
     private static BeerStockMovement NewStockMovement(
         BeerListSeedBuilder.BeerStockMovementIntent intent,
-        IReadOnlyDictionary<string, BeerPot> pots,
+        BeerPotDrink potDrink,
         IReadOnlyDictionary<string, int> personIds,
         DateTimeOffset now
     ) =>
         new()
         {
-            Pot = PotOf(pots, intent.PotAlias),
+            BeerPotId = potDrink.BeerPotId,
+            BeerDrinkId = potDrink.BeerDrinkId,
             Kind = intent.Kind,
             Crates = intent.Crates,
             BookedAt = intent.BookedAt ?? now - SeededStockAge,

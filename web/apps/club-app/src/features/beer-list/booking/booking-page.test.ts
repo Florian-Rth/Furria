@@ -59,11 +59,15 @@ describe('bookPageStageOf', () => {
 describe('isBookingDone', () => {
   const booked: BeerBookedCrates = {
     crateIds: [7],
+    beerDrinkId: 1,
+    drinkName: 'Bier',
     priceCents: 1800,
     bookedAt: '2026-11-04T20:00:00Z',
   };
   const earlier: BeerBookedCrates = {
     crateIds: [5],
+    beerDrinkId: 1,
+    drinkName: 'Bier',
     priceCents: 1800,
     bookedAt: '2026-11-04T19:00:00Z',
   };

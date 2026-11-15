@@ -57,8 +57,17 @@ public sealed class GetBeerTabs : Endpoint<GetBeerTabsRequest, GetBeerTabsRespon
             BeerPaymentId = payment.BeerPaymentId,
             Crates = payment.Crates,
             AmountCents = payment.AmountCents,
+            Drinks = [.. payment.Drinks.Select(ToDto)],
             BookedAt = payment.BookedAt,
             BookedBy = payment.BookedBy is { } bookedBy ? ToDto(bookedBy) : null,
+        };
+
+    private static BeerPotTabPaymentDrinkDto ToDto(BeerPaymentDrinkSummary drink) =>
+        new()
+        {
+            BeerDrinkId = drink.BeerDrinkId,
+            Name = drink.Name,
+            Crates = drink.Crates,
         };
 
     private static BeerPotTabPersonDto ToDto(BeerListPerson person) =>
@@ -116,6 +125,8 @@ public sealed record BeerPotTabPaymentDto
 
     public required int AmountCents { get; init; }
 
+    public required IReadOnlyList<BeerPotTabPaymentDrinkDto> Drinks { get; init; }
+
     public required DateTimeOffset BookedAt { get; init; }
 
     public required BeerPotTabPersonDto? BookedBy { get; init; }
@@ -128,4 +139,13 @@ public sealed record BeerPotTabPersonDto
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+}
+
+public sealed record BeerPotTabPaymentDrinkDto
+{
+    public required int BeerDrinkId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required int Crates { get; init; }
 }

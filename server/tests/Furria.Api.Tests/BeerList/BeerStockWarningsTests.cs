@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.BeerList;
 using Furria.Application.Authorization;
@@ -124,7 +125,12 @@ public sealed class BeerStockWarningsTests : IClassFixture<ApiTestFixture>
             {
                 var warden = await ctx.Identity.SignInAgainAsync(Warden, ct);
                 var response = await warden.POSTAsync<PostBeerDelivery, PostBeerDeliveryRequest>(
-                    new() { BeerPotId = ctx.BeerList.Pots.IdOf(Pot), Crates = 3 }
+                    new()
+                    {
+                        BeerPotId = ctx.BeerList.Pots.IdOf(Pot),
+                        BeerDrinkId = BeerListCast.BeerOf(ctx),
+                        Crates = 3,
+                    }
                 );
                 response.EnsureSuccessStatusCode();
             }
@@ -164,7 +170,12 @@ public sealed class BeerStockWarningsTests : IClassFixture<ApiTestFixture>
             {
                 var warden = await ctx.Identity.SignInAgainAsync(Warden, ct);
                 var response = await warden.POSTAsync<PostBeerDelivery, PostBeerDeliveryRequest>(
-                    new() { BeerPotId = ctx.BeerList.Pots.IdOf(Pot), Crates = 3 }
+                    new()
+                    {
+                        BeerPotId = ctx.BeerList.Pots.IdOf(Pot),
+                        BeerDrinkId = BeerListCast.BeerOf(ctx),
+                        Crates = 3,
+                    }
                 );
                 response.EnsureSuccessStatusCode();
             }
@@ -197,6 +208,108 @@ public sealed class BeerStockWarningsTests : IClassFixture<ApiTestFixture>
         Assert.Empty(PushesAt(_fixture, phone));
     }
 
+    [Fact]
+    public async Task Should_NameEveryDrinkRunningLowSoonestFirstInOnePush_When_SeveralRunLow()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var yesterday = NoonTomorrow.AddDays(-1);
+        var taken = CratesADay * 21;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                Operators(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden, openedAt: NoonTomorrow.AddDays(-100))
+                            .AddBeerDrink(Pot, "Radler")
+                            .AddBeerDrink(Pot, "Veltins")
+                            .AddBeerDelivery(Pot, taken + 5, yesterday.AddDays(-30))
+                            .AddBeerDelivery(
+                                Pot,
+                                taken + 1,
+                                yesterday.AddDays(-30),
+                                drink: "Radler"
+                            )
+                            .AddBeerDelivery(
+                                Pot,
+                                taken + 30,
+                                yesterday.AddDays(-30),
+                                drink: "Veltins"
+                            )
+                            .AddBeerCrates(Pot, Drinker, taken, yesterday)
+                            .AddBeerCrates(Pot, Drinker, taken, yesterday, drink: "Radler")
+                            .AddBeerCrates(Pot, Drinker, taken, yesterday, drink: "Veltins")
+                    ),
+            ct
+        );
+        var phone = await SubscribedDeviceAsync(ctx, Warden, "stock-several", ct);
+
+        await WarnAtAsync(NoonTomorrow, ct);
+
+        var body = BodyOf(Assert.Single(PushesAt(_fixture, phone)));
+        Assert.True(
+            body.IndexOf("Radler", StringComparison.Ordinal) is >= 0 and var radlerAt
+                && body.IndexOf("Bier", StringComparison.Ordinal) > radlerAt,
+            body
+        );
+        Assert.DoesNotContain("Veltins", body, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Should_WarnOnlyAboutTheNewlyLowDrink_When_AnotherWasWarnedBefore()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var yesterday = NoonTomorrow.AddDays(-1);
+        var taken = CratesADay * 21;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                Operators(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden, openedAt: NoonTomorrow.AddDays(-100))
+                            .AddBeerDrink(Pot, "Radler")
+                            .AddBeerDelivery(Pot, taken + 2, yesterday.AddDays(-30))
+                            .AddBeerDelivery(
+                                Pot,
+                                taken + 2,
+                                yesterday.AddDays(-30),
+                                drink: "Radler"
+                            )
+                            .AddBeerCrates(Pot, Drinker, taken, yesterday)
+                            .AddBeerCrates(Pot, Drinker, taken, yesterday, drink: "Radler")
+                    ),
+            ct
+        );
+        var phone = await SubscribedDeviceAsync(ctx, Warden, "stock-one-new", ct);
+        await WarnAtAsync(NoonTomorrow, ct);
+        await _fixture.AtInstantAsync(
+            NoonTomorrow + TimeSpan.FromMinutes(30),
+            async () =>
+            {
+                var warden = await ctx.Identity.SignInAgainAsync(Warden, ct);
+                var response = await warden.POSTAsync<PostBeerDelivery, PostBeerDeliveryRequest>(
+                    new()
+                    {
+                        BeerPotId = ctx.BeerList.Pots.IdOf(Pot),
+                        BeerDrinkId = ctx.BeerList.Drinks.IdOf("Radler"),
+                        Crates = 1,
+                    }
+                );
+                response.EnsureSuccessStatusCode();
+            }
+        );
+
+        await WarnAtAsync(NoonTomorrow + TimeSpan.FromHours(1), ct);
+
+        var pushes = PushesAt(_fixture, phone);
+        Assert.Equal(2, pushes.Count);
+        Assert.Equal("Radler wird knapp", TitleOf(pushes[1]));
+        Assert.DoesNotContain("Bier", BodyOf(pushes[1]), StringComparison.Ordinal);
+    }
+
+    private static string TitleOf(JsonElement push) => push.GetProperty("title").GetString() ?? "";
+
+    private static string BodyOf(JsonElement push) => push.GetProperty("body").GetString() ?? "";
+
     private Task WarnAtAsync(DateTimeOffset instant, CancellationToken ct) =>
         _fixture.AtInstantAsync(instant, () => _fixture.WarnOfBeerStockAsync(ct));
 
@@ -214,8 +327,8 @@ public sealed class BeerStockWarningsTests : IClassFixture<ApiTestFixture>
                     {
                         BeerPotId = ctx.BeerList.Pots.IdOf(Pot),
                         SuccessorPersonId = ctx.Identity.People.IdOf(SecondOperator),
-                        CratePriceCents = 15_00,
                         PaymentLink = "https://paypal.me/ottoott",
+                        Drinks = [new() { BeerDrinkId = BeerOf(ctx), CratePriceCents = 15_00 }],
                     }
                 );
                 response.EnsureSuccessStatusCode();

@@ -12,7 +12,7 @@ export const usePotSettingsForm = (pot: OpenBeerPot): PotWriteForm => {
   const saving = useBeerPotSettingsMutation(pot.beerPotId);
   const write = useWriteForm({
     schema: BeerPotSettingsFormSchema,
-    defaults: potFormOf(null, pot),
+    defaults: potFormOf(null, pot.paymentLink, []),
     mutate: (settings) => saving.mutateAsync(settings),
     landing: () => HUB_LANDING,
   });

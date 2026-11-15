@@ -26,5 +26,5 @@ export const bookingPhaseOf = (isUndoOpen: boolean, pot: OpenBeerPot | null): Be
     return 'undo';
   }
 
-  return pot?.hasStock === false ? 'empty' : 'choose';
+  return pot !== null && !pot.drinks.some((drink) => drink.hasStock) ? 'empty' : 'choose';
 };

@@ -78,7 +78,6 @@ public sealed class GetBeerPotsTests : IClassFixture<ApiTestFixture>
                 (
                     ctx.BeerList.Pots.IdOf(Pot),
                     (int?)ctx.Identity.People.IdOf(Successor),
-                    Price,
                     handedOverAt,
                     (DateTimeOffset?)null,
                     1,
@@ -88,7 +87,6 @@ public sealed class GetBeerPotsTests : IClassFixture<ApiTestFixture>
                 (
                     ctx.BeerList.Pots.IdOf(HandedOverPot),
                     ctx.Identity.People.IdOf(Warden),
-                    OldPrice,
                     now.AddDays(-200),
                     handedOverAt,
                     2,
@@ -100,7 +98,6 @@ public sealed class GetBeerPotsTests : IClassFixture<ApiTestFixture>
                 (
                     pot.BeerPotId,
                     pot.Owner?.PersonId,
-                    pot.CratePriceCents,
                     pot.OpenedAt,
                     pot.ClosedAt,
                     pot.OpenTabs,

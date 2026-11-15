@@ -106,6 +106,13 @@ public static class ChangedTables
         [typeof(RunningOrderSuspendedWish)] = [DomainChange.RunningOrder],
         [typeof(BeerListEnrollment)] = [DomainChange.BeerListEnrollment],
         [typeof(BeerPot)] = [DomainChange.BeerPot],
+        [typeof(BeerDrink)] =
+        [
+            DomainChange.BeerPot,
+            DomainChange.BeerStock,
+            DomainChange.BeerCrate,
+        ],
+        [typeof(BeerPotDrink)] = [DomainChange.BeerPot, DomainChange.BeerStock],
         [typeof(BeerStockMovement)] = [DomainChange.BeerStock],
         [typeof(BeerCrate)] = [DomainChange.BeerCrate],
         [typeof(BeerPayment)] = [DomainChange.BeerPayment],

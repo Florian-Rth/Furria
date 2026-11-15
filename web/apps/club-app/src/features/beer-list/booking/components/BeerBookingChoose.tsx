@@ -10,6 +10,7 @@ import {
   countCaption,
   cratesLabel,
   HOLD_HINT,
+  PICK_DRINK_LABEL,
 } from '../booking-copy';
 import { BEER_COUNTS } from '../booking-window';
 import type { BeerBookingChoosing } from '../use-beer-booking';
@@ -33,8 +34,10 @@ interface BeerBookingChooseProps {
 }
 
 export const BeerBookingChoose: FC<BeerBookingChooseProps> = ({ booking, size = 'medium' }) => {
-  const confirm = bookConfirm(booking.count);
-  const holdLabel = bookLabel(booking.count);
+  const drinkName = booking.drink?.name ?? '';
+  const confirm = bookConfirm(booking.count, drinkName);
+  const holdLabel = booking.drink === null ? PICK_DRINK_LABEL : bookLabel(booking.count);
+  const holdDisabled = booking.isBooking || booking.drink === null;
 
   return (
     <Stack direction={DIRECTIONS[size]} sx={{ gap: 1, minWidth: 0 }}>
@@ -51,7 +54,7 @@ export const BeerBookingChoose: FC<BeerBookingChooseProps> = ({ booking, size = 
         hint={HOLD_HINT}
         confirm={confirm}
         size={size}
-        disabled={booking.isBooking}
+        disabled={holdDisabled}
         onCommit={booking.book}
         sx={HOLD_SX}
       />

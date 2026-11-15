@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
+import type { BeerCratesBookingBody } from './requests';
 import {
   requestBeerCratesBooking,
   requestBeerCratesUndo,
@@ -42,8 +43,11 @@ export const useBeerGiversQuery = (enabled = true): UseQueryResult<BeerGivers, E
     ...LIVE_WHILE_VISIBLE,
   });
 
-export const useBeerCratesBooking = (): UseMutationResult<BookedBeerCrates, Error, number> =>
-  useApiMutation({ request: requestBeerCratesBooking, changes: ['beerCrate'] });
+export const useBeerCratesBooking = (): UseMutationResult<
+  BookedBeerCrates,
+  Error,
+  BeerCratesBookingBody
+> => useApiMutation({ request: requestBeerCratesBooking, changes: ['beerCrate'] });
 
 export const useBeerCratesUndo = (): UseMutationResult<void, Error, readonly number[]> =>
   useApiMutation({ request: requestBeerCratesUndo, changes: ['beerCrate'] });

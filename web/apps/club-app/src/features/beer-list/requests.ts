@@ -17,13 +17,18 @@ export const requestMyBeerTab = (accessToken: string): Promise<BeerTab> =>
 export const requestBeerGivers = (accessToken: string): Promise<BeerGivers> =>
   apiFetch('/api/beer-list/givers', { schema: BeerGiversSchema, accessToken });
 
+export interface BeerCratesBookingBody {
+  beerDrinkId: number;
+  count: number;
+}
+
 export const requestBeerCratesBooking = (
-  count: number,
+  body: BeerCratesBookingBody,
   accessToken: string,
 ): Promise<BookedBeerCrates> =>
   apiFetch('/api/beer-list/crates', {
     method: 'POST',
-    body: { count },
+    body: { beerDrinkId: body.beerDrinkId, count: body.count },
     schema: BookedBeerCratesSchema,
     accessToken,
   });

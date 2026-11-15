@@ -215,6 +215,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<BeerTabReminder> BeerTabReminders => Set<BeerTabReminder>();
 
+    public DbSet<BeerDrink> BeerDrinks => Set<BeerDrink>();
+
+    public DbSet<BeerPotDrink> BeerPotDrinks => Set<BeerPotDrink>();
+
     public DbSet<TableType> TableTypes => Set<TableType>();
 
     public DbSet<SeatingStandard> SeatingStandards => Set<SeatingStandard>();

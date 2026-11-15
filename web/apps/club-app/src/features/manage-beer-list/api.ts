@@ -7,6 +7,10 @@ import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   cratesNoticeOf,
+  DRINK_SAVED_NOTICE,
+  drinkAddedNoticeOf,
+  drinkDefaultNoticeOf,
+  drinkRetiredNoticeOf,
   ENDED_NOTICE,
   handoverNoticeOf,
   OPENED_NOTICE,
@@ -16,11 +20,20 @@ import {
   stockNoticeOf,
   UNDONE_CRATE_NOTICE,
 } from './beer-hub-copy';
-import type { BeerCratesForBody } from './requests';
+import type {
+  BeerCratesForBody,
+  BeerHandoverBody,
+  BeerPaymentBody,
+  BeerPotOpeningBody,
+} from './requests';
 import {
   requestBeerCratesFor,
   requestBeerCrateUndo,
   requestBeerDelivery,
+  requestBeerDrinkAddition,
+  requestBeerDrinkChange,
+  requestBeerDrinkDefault,
+  requestBeerDrinkRetirement,
   requestBeerEnrollmentEnd,
   requestBeerEnrollments,
   requestBeerJournal,
@@ -38,6 +51,7 @@ import type {
   BeerEnrollmentsResponse,
   BeerHandover,
   BeerJournalResponse,
+  BeerNewDrink,
   BeerPotSettings,
   BeerPotsResponse,
   BeerStockChange,
@@ -97,15 +111,9 @@ export const useBeerJournalQuery = (
     ...LIVE_WHILE_VISIBLE,
   });
 
-export interface BeerPotOpeningInput {
-  ownerPersonId: number;
-  settings: BeerPotSettings;
-}
-
-export const useOpenBeerPotMutation = (): UseMutationResult<number, Error, BeerPotOpeningInput> =>
+export const useOpenBeerPotMutation = (): UseMutationResult<number, Error, BeerPotOpeningBody> =>
   useApiMutation({
-    request: (input: BeerPotOpeningInput, accessToken) =>
-      requestBeerPotOpening(input.ownerPersonId, input.settings, accessToken),
+    request: requestBeerPotOpening,
     changes: ['beerPot'],
     notice: { success: () => OPENED_NOTICE },
   });
@@ -120,19 +128,75 @@ export const useBeerPotSettingsMutation = (
     notice: { success: () => SETTINGS_NOTICE },
   });
 
+export interface BeerStockInput {
+  beerDrinkId: number;
+  drinkName: string;
+  change: BeerStockChange;
+}
+
 export const useBeerStockMutation = (
   beerPotId: number,
-): UseMutationResult<void, Error, BeerStockChange> =>
+): UseMutationResult<void, Error, BeerStockInput> =>
   useApiMutation({
-    request: (change: BeerStockChange, accessToken) =>
-      change.kind === 'delivery'
-        ? requestBeerDelivery(beerPotId, change.crates, accessToken)
-        : requestBeerStockCorrection(beerPotId, change.crates, accessToken),
+    request: (input: BeerStockInput, accessToken) => {
+      const body = { beerDrinkId: input.beerDrinkId, crates: input.change.crates };
+
+      return input.change.kind === 'delivery'
+        ? requestBeerDelivery(beerPotId, body, accessToken)
+        : requestBeerStockCorrection(beerPotId, body, accessToken);
+    },
     changes: ['beerStock'],
     notice: { success: stockNoticeOf },
   });
 
+export const useBeerDrinkAddMutation = (
+  beerPotId: number,
+): UseMutationResult<number, Error, BeerNewDrink> =>
+  useApiMutation({
+    request: (drink: BeerNewDrink, accessToken) =>
+      requestBeerDrinkAddition(beerPotId, drink, accessToken),
+    changes: ['beerPot', 'beerStock'],
+    notice: { success: (drink) => drinkAddedNoticeOf(drink.name) },
+  });
+
+export const useBeerDrinkChangeMutation = (
+  beerPotId: number,
+  beerDrinkId: number,
+): UseMutationResult<void, Error, BeerNewDrink> =>
+  useApiMutation({
+    request: (drink: BeerNewDrink, accessToken) =>
+      requestBeerDrinkChange(beerPotId, beerDrinkId, drink, accessToken),
+    changes: ['beerPot', 'beerStock', 'beerCrate'],
+    notice: { success: () => DRINK_SAVED_NOTICE },
+  });
+
+export interface BeerDrinkInput {
+  beerDrinkId: number;
+  name: string;
+}
+
+export const useBeerDrinkRetireMutation = (
+  beerPotId: number,
+): UseMutationResult<void, Error, BeerDrinkInput> =>
+  useApiMutation({
+    request: (input: BeerDrinkInput, accessToken) =>
+      requestBeerDrinkRetirement(beerPotId, input.beerDrinkId, accessToken),
+    changes: ['beerPot', 'beerStock'],
+    notice: { success: (input) => drinkRetiredNoticeOf(input.name), ...FAILURE },
+  });
+
+export const useBeerDrinkDefaultMutation = (
+  beerPotId: number,
+): UseMutationResult<void, Error, BeerDrinkInput> =>
+  useApiMutation({
+    request: (input: BeerDrinkInput, accessToken) =>
+      requestBeerDrinkDefault(beerPotId, input.beerDrinkId, accessToken),
+    changes: ['beerPot', 'beerStock'],
+    notice: { success: (input) => drinkDefaultNoticeOf(input.name), ...FAILURE },
+  });
+
 export interface BeerCratesForInput extends BeerCratesForBody {
+  drinkName: string;
   name: string;
 }
 
@@ -143,7 +207,12 @@ export const useBeerCratesForMutation = (
     request: (input: BeerCratesForInput, accessToken) =>
       requestBeerCratesFor(
         beerPotId,
-        { personId: input.personId, count: input.count, paid: input.paid },
+        {
+          personId: input.personId,
+          beerDrinkId: input.beerDrinkId,
+          count: input.count,
+          paid: input.paid,
+        },
         accessToken,
       ),
     changes: ['beerCrate', 'beerPayment'],
@@ -157,9 +226,8 @@ export const useBeerCrateUndoMutation = (): UseMutationResult<void, Error, numbe
     notice: { success: () => UNDONE_CRATE_NOTICE, ...FAILURE },
   });
 
-export interface BeerPaymentInput {
+export interface BeerPaymentInput extends BeerPaymentBody {
   beerPotId: number;
-  personId: number;
   crates: number;
   name: string;
 }
@@ -167,7 +235,11 @@ export interface BeerPaymentInput {
 export const useBeerPaymentMutation = (): UseMutationResult<void, Error, BeerPaymentInput> =>
   useApiMutation({
     request: (input: BeerPaymentInput, accessToken) =>
-      requestBeerPayment(input.beerPotId, input.personId, input.crates, accessToken),
+      requestBeerPayment(
+        input.beerPotId,
+        { personId: input.personId, drinks: input.drinks },
+        accessToken,
+      ),
     changes: ['beerPayment'],
     notice: { success: paymentNoticeOf },
   });
@@ -186,10 +258,8 @@ export const useBeerEnrollmentEndMutation = (): UseMutationResult<void, Error, n
     notice: { success: () => ENDED_NOTICE, ...FAILURE },
   });
 
-export interface BeerHandoverInput {
+export interface BeerHandoverInput extends BeerHandoverBody {
   beerPotId: number;
-  successorPersonId: number;
-  settings: BeerPotSettings;
 }
 
 export const useBeerHandoverMutation = (): UseMutationResult<
@@ -199,7 +269,15 @@ export const useBeerHandoverMutation = (): UseMutationResult<
 > =>
   useApiMutation({
     request: (input: BeerHandoverInput, accessToken) =>
-      requestBeerPotHandover(input.beerPotId, input.successorPersonId, input.settings, accessToken),
+      requestBeerPotHandover(
+        input.beerPotId,
+        {
+          successorPersonId: input.successorPersonId,
+          paymentLink: input.paymentLink,
+          drinks: input.drinks,
+        },
+        accessToken,
+      ),
     changes: ['beerPot', 'beerStock'],
     notice: { success: (_input, result) => handoverNoticeOf(result.carriedCrates) },
   });

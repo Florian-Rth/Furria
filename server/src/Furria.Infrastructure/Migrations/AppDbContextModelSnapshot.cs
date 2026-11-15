@@ -32,6 +32,10 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("BeerDrinkId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beer_drink_id");
+
                     b.Property<int>("BeerPotId")
                         .HasColumnType("integer")
                         .HasColumnName("beer_pot_id");
@@ -76,6 +80,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("UndoneByPersonId")
                         .HasDatabaseName("ix_beer_crate_undone_by_person_id");
 
+                    b.HasIndex("BeerPotId", "BeerDrinkId")
+                        .HasDatabaseName("ix_beer_crate_beer_pot_id_beer_drink_id");
+
                     b.HasIndex("PaidByPaymentId", "BeerPotId")
                         .HasDatabaseName("ix_beer_crate_paid_by_payment_id_beer_pot_id");
 
@@ -83,7 +90,7 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_beer_crate_beer_pot_id_person_id_taken")
                         .HasFilter("undone_at IS NULL");
 
-                    b.HasIndex(new[] { "BookedAt" }, "ix_beer_crate_booked_at_taken")
+                    b.HasIndex(new[] { "BookedAt", "BeerDrinkId" }, "ix_beer_crate_booked_at_taken")
                         .HasDatabaseName("ix_beer_crate_booked_at_taken")
                         .HasFilter("undone_at IS NULL");
 
@@ -98,6 +105,31 @@ namespace Furria.Infrastructure.Migrations
                             t.HasCheckConstraint("ck_beer_crate_price", "price_cents > 0 AND price_cents <= 10000");
 
                             t.HasCheckConstraint("ck_beer_crate_undone", "(undone_at IS NULL AND undone_by_person_id IS NULL) OR (undone_at IS NOT NULL AND undone_at >= booked_at AND paid_by_payment_id IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerDrink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.HasKey("Id")
+                        .HasName("pk_beer_drink");
+
+                    b.ToTable("beer_drink", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_beer_drink_name", "btrim(name) <> ''");
                         });
                 });
 
@@ -243,10 +275,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("closed_at");
 
-                    b.Property<int>("CratePriceCents")
-                        .HasColumnType("integer")
-                        .HasColumnName("crate_price_cents");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -265,10 +293,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
                         .HasColumnName("payment_link");
-
-                    b.Property<DateTimeOffset?>("StockWarningSentAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("stock_warning_sent_at");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -291,9 +315,60 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("beer_pot", null, t =>
                         {
-                            t.HasCheckConstraint("ck_beer_pot_crate_price", "crate_price_cents > 0 AND crate_price_cents <= 10000");
-
                             t.HasCheckConstraint("ck_beer_pot_period", "closed_at IS NULL OR closed_at >= opened_at");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerPotDrink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BeerDrinkId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beer_drink_id");
+
+                    b.Property<int>("BeerPotId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beer_pot_id");
+
+                    b.Property<int>("CratePriceCents")
+                        .HasColumnType("integer")
+                        .HasColumnName("crate_price_cents");
+
+                    b.Property<bool>("IsDefault")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_default");
+
+                    b.Property<DateTimeOffset?>("RetiredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("retired_at");
+
+                    b.Property<DateTimeOffset?>("StockWarningSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("stock_warning_sent_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_beer_pot_drink");
+
+                    b.HasAlternateKey("BeerPotId", "BeerDrinkId")
+                        .HasName("ak_beer_pot_drink_beer_pot_id_beer_drink_id");
+
+                    b.HasIndex("BeerDrinkId")
+                        .HasDatabaseName("ix_beer_pot_drink_beer_drink_id");
+
+                    b.HasIndex("BeerPotId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_beer_pot_drink_beer_pot_id_default")
+                        .HasFilter("is_default");
+
+                    b.ToTable("beer_pot_drink", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_beer_pot_drink_crate_price", "crate_price_cents > 0 AND crate_price_cents <= 10000");
                         });
                 });
 
@@ -305,6 +380,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BeerDrinkId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beer_drink_id");
 
                     b.Property<int>("BeerPotId")
                         .HasColumnType("integer")
@@ -334,14 +413,19 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("BookedByPersonId")
                         .HasDatabaseName("ix_beer_stock_movement_booked_by_person_id");
 
+                    b.HasIndex("BeerPotId", "BeerDrinkId")
+                        .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_beer_drink_id");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("BeerPotId", "BeerDrinkId"), new[] { "Crates" });
+
                     b.HasIndex("BeerPotId", "BookedAt")
                         .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_booked_at");
 
                     NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("BeerPotId", "BookedAt"), new[] { "Crates" });
 
-                    b.HasIndex(new[] { "BeerPotId", "Kind" }, "ix_beer_stock_movement_beer_pot_id_kind_handover")
+                    b.HasIndex(new[] { "BeerPotId", "BeerDrinkId", "Kind" }, "ix_beer_stock_movement_beer_pot_id_beer_drink_id_kind_handover")
                         .IsUnique()
-                        .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_kind_handover")
+                        .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_beer_drink_id_kind_handover")
                         .HasFilter("kind IN ('HandoverCarry', 'HandedOver')");
 
                     b.ToTable("beer_stock_movement", null, t =>
@@ -5843,6 +5927,14 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_beer_crate_person_undone_by_person_id");
 
+                    b.HasOne("Furria.Core.BeerList.BeerPotDrink", "PotDrink")
+                        .WithMany()
+                        .HasForeignKey("BeerPotId", "BeerDrinkId")
+                        .HasPrincipalKey("BeerPotId", "BeerDrinkId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_crate_beer_pot_drink_beer_pot_id_beer_drink_id");
+
                     b.HasOne("Furria.Core.BeerList.BeerPayment", "PaidByPayment")
                         .WithMany()
                         .HasForeignKey("PaidByPaymentId", "BeerPotId")
@@ -5857,6 +5949,8 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
 
                     b.Navigation("Pot");
+
+                    b.Navigation("PotDrink");
 
                     b.Navigation("UndoneBy");
                 });
@@ -5928,6 +6022,27 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("Furria.Core.BeerList.BeerPotDrink", b =>
+                {
+                    b.HasOne("Furria.Core.BeerList.BeerDrink", "Drink")
+                        .WithMany()
+                        .HasForeignKey("BeerDrinkId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_pot_drink_beer_drink_beer_drink_id");
+
+                    b.HasOne("Furria.Core.BeerList.BeerPot", "Pot")
+                        .WithMany()
+                        .HasForeignKey("BeerPotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_pot_drink_beer_pot_beer_pot_id");
+
+                    b.Navigation("Drink");
+
+                    b.Navigation("Pot");
+                });
+
             modelBuilder.Entity("Furria.Core.BeerList.BeerStockMovement", b =>
                 {
                     b.HasOne("Furria.Core.BeerList.BeerPot", "Pot")
@@ -5943,9 +6058,19 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_beer_stock_movement_person_booked_by_person_id");
 
+                    b.HasOne("Furria.Core.BeerList.BeerPotDrink", "PotDrink")
+                        .WithMany()
+                        .HasForeignKey("BeerPotId", "BeerDrinkId")
+                        .HasPrincipalKey("BeerPotId", "BeerDrinkId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_stock_movement_beer_pot_drink_beer_pot_id_beer_drink_id");
+
                     b.Navigation("BookedBy");
 
                     b.Navigation("Pot");
+
+                    b.Navigation("PotDrink");
                 });
 
             modelBuilder.Entity("Furria.Core.BeerList.BeerTabReminder", b =>

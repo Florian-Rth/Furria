@@ -3,6 +3,7 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
+using Furria.Application.BeerList;
 using Furria.Core.BeerList;
 using Furria.Infrastructure.BeerList;
 
@@ -32,7 +33,15 @@ public sealed class PostMyBeerCrates : Endpoint<PostMyBeerCratesRequest, PostMyB
             return;
         }
 
-        var result = await _beerTabService.BookOwnCratesAsync(personId.Value, req.Count, ct);
+        var result = await _beerTabService.BookOwnCratesAsync(
+            new BeerOwnCratesCommand
+            {
+                PersonId = personId.Value,
+                BeerDrinkId = req.BeerDrinkId,
+                Count = req.Count,
+            },
+            ct
+        );
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -52,6 +61,8 @@ public sealed class PostMyBeerCrates : Endpoint<PostMyBeerCratesRequest, PostMyB
 
 public sealed record PostMyBeerCratesRequest
 {
+    public required int BeerDrinkId { get; init; }
+
     public required int Count { get; init; }
 }
 
@@ -62,6 +73,7 @@ public sealed class PostMyBeerCratesValidator : Validator<PostMyBeerCratesReques
 
     public PostMyBeerCratesValidator()
     {
+        RuleFor(request => request.BeerDrinkId).GreaterThan(0);
         RuleFor(request => request.Count)
             .InclusiveBetween(1, BeerCrate.MaxPerOwnBooking)
             .WithMessage(CountMessage);

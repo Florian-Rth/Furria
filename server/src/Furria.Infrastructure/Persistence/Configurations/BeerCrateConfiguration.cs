@@ -14,7 +14,7 @@ public sealed class BeerCrateConfiguration : IEntityTypeConfiguration<BeerCrate>
             {
                 table.HasCheckConstraint(
                     "ck_beer_crate_price",
-                    $"price_cents > 0 AND price_cents <= {BeerPot.MaxCratePriceCents}"
+                    $"price_cents > 0 AND price_cents <= {BeerPotDrink.MaxCratePriceCents}"
                 );
                 table.HasCheckConstraint(
                     "ck_beer_crate_undone",
@@ -31,6 +31,14 @@ public sealed class BeerCrateConfiguration : IEntityTypeConfiguration<BeerCrate>
             .WithMany()
             .HasForeignKey(crate => crate.BeerPotId)
             .HasConstraintName("fk_beer_crate_beer_pot_beer_pot_id")
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .HasOne(crate => crate.PotDrink)
+            .WithMany()
+            .HasForeignKey(crate => new { crate.BeerPotId, crate.BeerDrinkId })
+            .HasPrincipalKey(potDrink => new { potDrink.BeerPotId, potDrink.BeerDrinkId })
+            .HasConstraintName("fk_beer_crate_beer_pot_drink_beer_pot_id_beer_drink_id")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
@@ -71,9 +79,13 @@ public sealed class BeerCrateConfiguration : IEntityTypeConfiguration<BeerCrate>
             .HasFilter("undone_at IS NULL");
         builder.HasIndex(crate => crate.PersonId);
         builder
-            .HasIndex(crate => crate.BookedAt, "ix_beer_crate_booked_at_taken")
+            .HasIndex(
+                crate => new { crate.BookedAt, crate.BeerDrinkId },
+                "ix_beer_crate_booked_at_taken"
+            )
             .HasDatabaseName("ix_beer_crate_booked_at_taken")
             .HasFilter("undone_at IS NULL");
+        builder.HasIndex(crate => new { crate.BeerPotId, crate.BeerDrinkId });
         builder.HasIndex(crate => crate.EnteredByPersonId);
         builder.HasIndex(crate => crate.UndoneByPersonId);
         builder.HasIndex(crate => new { crate.PaidByPaymentId, crate.BeerPotId });

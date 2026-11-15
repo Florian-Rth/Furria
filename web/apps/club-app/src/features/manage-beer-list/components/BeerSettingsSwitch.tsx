@@ -14,6 +14,7 @@ interface SetupPane {
 
 const SETUP_PANES: readonly SetupPane[] = [
   { path: '/beer-list/manage/settings', label: SETUP_SWITCH_LABELS.settings, icon: 'settings' },
+  { path: '/beer-list/manage/drinks', label: SETUP_SWITCH_LABELS.drinks, icon: 'beer' },
   {
     path: '/beer-list/manage/enrollments',
     label: SETUP_SWITCH_LABELS.enrollments,

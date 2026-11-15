@@ -31,30 +31,46 @@ internal static class BeerListPushes
 
     [Pure]
     internal static PushMessage StockWarning(
-        int crates,
-        DateOnly projectedEmptyOn,
+        IReadOnlyList<BeerDrinkRunningLow> drinks,
         DateOnly today
     ) =>
         new()
         {
-            Title = "Das Bier wird knapp",
-            Body = StockWarningBody(crates, projectedEmptyOn, today),
+            Title = drinks.Count == 1 ? $"{drinks[0].Name} wird knapp" : "Getränke werden knapp",
+            Body =
+                drinks.Count == 1
+                    ? StockWarningBody(drinks[0], today)
+                    : string.Join("\n", drinks.Select(drink => StockWarningLine(drink, today))),
             Url = HubStockPanelPath,
             Tag = StockWarningTag,
             TimeToLive = TimeToLive,
         };
 
     [Pure]
-    private static string StockWarningBody(int crates, DateOnly projectedEmptyOn, DateOnly today)
+    private static string StockWarningBody(BeerDrinkRunningLow drink, DateOnly today)
     {
-        if (crates <= 0)
+        if (drink.Crates <= 0)
             return "Keine Kiste mehr da.";
 
-        return projectedEmptyOn <= today
-            ? $"Noch {CratesOf(crates)} da, das reicht nur noch heute."
+        return drink.ProjectedEmptyOn <= today
+            ? $"Noch {CratesOf(drink.Crates)} da, das reicht nur noch heute."
             : string.Create(
                 German,
-                $"Noch {CratesOf(crates)} da, das reicht etwa bis {projectedEmptyOn:dddd, d. MMMM}."
+                $"Noch {CratesOf(drink.Crates)} da, das reicht etwa bis {drink.ProjectedEmptyOn:dddd, d. MMMM}."
+            );
+    }
+
+    [Pure]
+    private static string StockWarningLine(BeerDrinkRunningLow drink, DateOnly today)
+    {
+        if (drink.Crates <= 0)
+            return $"{drink.Name}: keine Kiste mehr da.";
+
+        return drink.ProjectedEmptyOn <= today
+            ? $"{drink.Name}: noch {CratesOf(drink.Crates)}, reicht nur noch heute."
+            : string.Create(
+                German,
+                $"{drink.Name}: noch {CratesOf(drink.Crates)}, reicht etwa bis {drink.ProjectedEmptyOn:dddd, d. MMMM}."
             );
     }
 

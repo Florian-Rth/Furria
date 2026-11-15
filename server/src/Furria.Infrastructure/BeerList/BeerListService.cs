@@ -44,18 +44,28 @@ public sealed partial class BeerListService
         var pot = new BeerPot
         {
             OwnerPersonId = command.OwnerPersonId,
+            PaymentLink = command.PaymentLink,
             OpenedAt = _timeProvider.GetUtcNow(),
         };
-        Apply(command.Settings, pot);
         _dbContext.BeerPots.Add(pot);
+        foreach (var drink in command.Drinks)
+            _dbContext.BeerPotDrinks.Add(
+                new BeerPotDrink
+                {
+                    Pot = pot,
+                    Drink = await BeerDrinkCatalogue.DrinkNamedAsync(_dbContext, drink.Name, ct),
+                    CratePriceCents = drink.CratePriceCents,
+                    IsDefault = ReferenceEquals(drink, command.Drinks[0]),
+                }
+            );
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         return saved.IsSuccess ? Result<int>.Success(pot.Id) : Result<int>.Carrying(saved);
     }
 
-    public async Task<Result> UpdatePotSettingsAsync(
+    public async Task<Result> UpdatePaymentLinkAsync(
         int beerPotId,
-        BeerPotSettings settings,
+        string? paymentLink,
         CancellationToken ct
     )
     {
@@ -63,8 +73,7 @@ public sealed partial class BeerListService
             .BeerPots.Where(pot => pot.Id == beerPotId && pot.ClosedAt == null)
             .ExecuteUpdateAsync(
                 row =>
-                    row.SetProperty(pot => pot.CratePriceCents, settings.CratePriceCents)
-                        .SetProperty(pot => pot.PaymentLink, settings.PaymentLink)
+                    row.SetProperty(pot => pot.PaymentLink, paymentLink)
                         .SetProperty(pot => pot.UpdatedAt, _timeProvider.GetUtcNow()),
                 ct
             );
@@ -76,36 +85,36 @@ public sealed partial class BeerListService
             : Result.NotFound(BeerListMessages.UnknownPot);
     }
 
-    public Task<BeerPotDetails?> GetOpenPotAsync(CancellationToken ct)
+    public async Task<BeerPotDetails?> GetOpenPotAsync(CancellationToken ct)
     {
-        var stockMovements = BeerPotLedger.StockMovements(_dbContext);
-        var takenCrates = BeerPotLedger.TakenCrates(_dbContext);
-
-        return _dbContext
+        var pot = await _dbContext
             .BeerPots.AsNoTracking()
             .Where(pot => pot.ClosedAt == null)
-            .Select(pot => new BeerPotDetails
-            {
-                BeerPotId = pot.Id,
-                Owner =
-                    pot.Owner == null
-                        ? null
-                        : new BeerListPerson
-                        {
-                            PersonId = pot.Owner.Id,
-                            FirstName = pot.Owner.FirstName,
-                            LastName = pot.Owner.LastName,
-                        },
-                CratePriceCents = pot.CratePriceCents,
-                PaymentLink = pot.PaymentLink,
-                OpenedAt = pot.OpenedAt,
-                HasStock =
-                    stockMovements
-                        .Where(movement => movement.BeerPotId == pot.Id)
-                        .Sum(movement => movement.Crates)
-                    > takenCrates.Count(crate => crate.BeerPotId == pot.Id),
-            })
+            .Select(pot => new OpenPotRow(
+                pot.Id,
+                pot.Owner == null
+                    ? null
+                    : new BeerListPerson
+                    {
+                        PersonId = pot.Owner.Id,
+                        FirstName = pot.Owner.FirstName,
+                        LastName = pot.Owner.LastName,
+                    },
+                pot.PaymentLink,
+                pot.OpenedAt
+            ))
             .SingleOrDefaultAsync(ct);
+        if (pot is null)
+            return null;
+
+        return new BeerPotDetails
+        {
+            BeerPotId = pot.BeerPotId,
+            Owner = pot.Owner,
+            PaymentLink = pot.PaymentLink,
+            OpenedAt = pot.OpenedAt,
+            Drinks = await ListedDrinksAsync(pot.BeerPotId, ct),
+        };
     }
 
     public async Task<IReadOnlyList<BeerPotSummary>> GetPotsAsync(CancellationToken ct)
@@ -129,7 +138,6 @@ public sealed partial class BeerListService
                             FirstName = pot.Owner.FirstName,
                             LastName = pot.Owner.LastName,
                         },
-                CratePriceCents = pot.CratePriceCents,
                 OpenedAt = pot.OpenedAt,
                 ClosedAt = pot.ClosedAt,
                 OpenTabs = openCrates
@@ -217,10 +225,37 @@ public sealed partial class BeerListService
             })
             .ToListAsync(ct);
 
-    private static void Apply(BeerPotSettings settings, BeerPot pot)
+    private async Task<IReadOnlyList<BeerPotDrinkSummary>> ListedDrinksAsync(
+        int beerPotId,
+        CancellationToken ct
+    )
     {
-        pot.CratePriceCents = settings.CratePriceCents;
-        pot.PaymentLink = settings.PaymentLink;
+        var stockMovements = BeerPotLedger.StockMovements(_dbContext);
+        var takenCrates = BeerPotLedger.TakenCrates(_dbContext);
+
+        return await _dbContext
+            .BeerPotDrinks.AsNoTracking()
+            .Where(potDrink => potDrink.BeerPotId == beerPotId && potDrink.RetiredAt == null)
+            .OrderBy(potDrink => EF.Functions.Collate(potDrink.Drink!.Name, GermanCollation.Name))
+            .ThenBy(potDrink => potDrink.BeerDrinkId)
+            .Select(potDrink => new BeerPotDrinkSummary
+            {
+                BeerDrinkId = potDrink.BeerDrinkId,
+                Name = potDrink.Drink!.Name,
+                CratePriceCents = potDrink.CratePriceCents,
+                IsDefault = potDrink.IsDefault,
+                HasStock =
+                    stockMovements
+                        .Where(movement =>
+                            movement.BeerPotId == beerPotId
+                            && movement.BeerDrinkId == potDrink.BeerDrinkId
+                        )
+                        .Sum(movement => movement.Crates)
+                    > takenCrates.Count(crate =>
+                        crate.BeerPotId == beerPotId && crate.BeerDrinkId == potDrink.BeerDrinkId
+                    ),
+            })
+            .ToListAsync(ct);
     }
 
     private async Task<bool> EndRunningAsync(
@@ -259,4 +294,11 @@ public sealed partial class BeerListService
                 ClubClock.Today(_timeProvider)
             )
             .AnyAsync(holderId => holderId == personId, ct);
+
+    private sealed record OpenPotRow(
+        int BeerPotId,
+        BeerListPerson? Owner,
+        string? PaymentLink,
+        DateTimeOffset OpenedAt
+    );
 }

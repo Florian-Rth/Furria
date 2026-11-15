@@ -11,6 +11,9 @@ internal static class BeerListCast
 
     private static readonly DateOnly MemberSince2018 = new(2018, 4, 1);
 
+    internal static int BeerOf(SeededContext ctx) =>
+        ctx.BeerList.Drinks.IdOf(BeerListSeedBuilder.DefaultDrink);
+
     internal static SeedContextBuilder WardenAndDrinker(SeedContextBuilder builder) =>
         builder
             .Identity(identity =>

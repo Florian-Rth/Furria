@@ -5,9 +5,11 @@ const NO_PANE_KEY = 'none';
 
 export type BeerPane =
   | { kind: 'stock' }
+  | { kind: 'drink'; beerDrinkId: number }
   | { kind: 'payment'; personId: number | null }
   | { kind: 'crates'; personId: number | null }
   | { kind: 'settings' }
+  | { kind: 'drinks' }
   | { kind: 'enrollments' }
   | { kind: 'handover' }
   | { kind: 'code' }
@@ -33,6 +35,9 @@ const searchPersonOf = (search: object): number | null =>
 const withPersonOf = (personId: number | null): BeerPane | null =>
   personId === null ? null : { kind: 'person', personId };
 
+const withDrinkOf = (beerDrinkId: number | null): BeerPane | null =>
+  beerDrinkId === null ? null : { kind: 'drink', beerDrinkId };
+
 const withPotOf = (beerPotId: number | null): BeerPane | null =>
   beerPotId === null ? null : { kind: 'closedPot', beerPotId };
 
@@ -50,6 +55,8 @@ export const beerPaneOf = (match: BeerPaneMatch | undefined): BeerPane | null =>
       return { kind: 'crates', personId: searchPersonOf(match.search) };
     case 'settings':
       return { kind: 'settings' };
+    case 'drinks':
+      return { kind: 'drinks' };
     case 'enrollments':
       return { kind: 'enrollments' };
     case 'handover':
@@ -60,6 +67,8 @@ export const beerPaneOf = (match: BeerPaneMatch | undefined): BeerPane | null =>
       return { kind: 'pots' };
     case 'persons/$personId':
       return withPersonOf(idOf(match.params.personId));
+    case 'drinks_/$beerDrinkId':
+      return withDrinkOf(idOf(match.params.beerDrinkId));
     case 'pots_/$beerPotId':
       return withPotOf(idOf(match.params.beerPotId));
     default:
@@ -80,6 +89,8 @@ export const beerPaneKeyOf = (pane: BeerPane | null): string => {
       return `${pane.kind}:${pane.personId}`;
     case 'closedPot':
       return `${pane.kind}:${pane.beerPotId}`;
+    case 'drink':
+      return `${pane.kind}:${pane.beerDrinkId}`;
     default:
       return pane.kind;
   }

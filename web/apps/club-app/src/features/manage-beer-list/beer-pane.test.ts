@@ -27,6 +27,13 @@ describe('beerPaneOf', () => {
       { kind: 'closedPot', beerPotId: 4 },
     ],
     ['/_app/beer-list_/manage/pots_/$beerPotId', { beerPotId: '0' }, {}, null],
+    [
+      '/_app/beer-list_/manage/drinks_/$beerDrinkId',
+      { beerDrinkId: '3' },
+      {},
+      { kind: 'drink', beerDrinkId: 3 },
+    ],
+    ['/_app/beer-list_/manage/drinks_/$beerDrinkId', { beerDrinkId: 'x' }, {}, null],
     ['/_app/beer-list_/manage/', {}, {}, null],
   ])('%s %j %j → %j', (routeId, params, search, expected) => {
     expect(beerPaneOf({ routeId, params, search })).toEqual(expected);
@@ -44,6 +51,7 @@ describe('beerPaneKeyOf', () => {
     [{ kind: 'payment', personId: null }, { kind: 'crates', personId: null }, false],
     [{ kind: 'person', personId: 5 }, { kind: 'closedPot', beerPotId: 5 }, false],
     [{ kind: 'stock' }, { kind: 'stock' }, true],
+    [{ kind: 'drink', beerDrinkId: 3 }, { kind: 'drink', beerDrinkId: 4 }, false],
     [{ kind: 'stock' }, null, false],
   ] as const)('%j and %j share a key: %s', (left, right, same) => {
     expect(beerPaneKeyOf(left) === beerPaneKeyOf(right)).toBe(same);

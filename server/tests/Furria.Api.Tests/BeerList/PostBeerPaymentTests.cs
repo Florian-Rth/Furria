@@ -12,6 +12,9 @@ public sealed class PostBeerPaymentTests : IClassFixture<ApiTestFixture>
     private const string FormerWarden = "otto";
     private const int OldPrice = 13_00;
     private const int Price = 15_00;
+    private const int RadlerPrice = 17_00;
+    private const string Radler = "Radler";
+    private const string Cola = "Cola";
 
     private readonly ApiTestFixture _fixture;
 
@@ -65,7 +68,7 @@ public sealed class PostBeerPaymentTests : IClassFixture<ApiTestFixture>
             {
                 BeerPotId = potId,
                 PersonId = ctx.Identity.People.IdOf(Drinker),
-                Crates = 2,
+                Drinks = [new() { BeerDrinkId = BeerOf(ctx), Crates = 2 }],
             }
         );
 
@@ -84,6 +87,155 @@ public sealed class PostBeerPaymentTests : IClassFixture<ApiTestFixture>
             .ToBePaidBy(null)
             .BeerCrate(ctx.BeerList.Crates.IdOf("bezahlt"))
             .ToBePaidBy(ctx.BeerList.Payments.IdOf("frueher"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_SettleTheOldestOpenCratesOfEachNamedDrink_When_ThePaymentNamesSeveralDrinks()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden, Price)
+                            .AddBeerDrink(Pot, Radler, RadlerPrice)
+                            .AddBeerDrink(Pot, Cola)
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                            .AddBeerCrate(
+                                "radler-alt",
+                                Pot,
+                                Drinker,
+                                now.AddDays(-30),
+                                drink: Radler
+                            )
+                            .AddBeerCrate("bier-alt", Pot, Drinker, now.AddDays(-20))
+                            .AddBeerCrate("bier-neu", Pot, Drinker, now.AddDays(-10))
+                            .AddBeerCrate(
+                                "radler-neu",
+                                Pot,
+                                Drinker,
+                                now.AddDays(-5),
+                                drink: Radler
+                            )
+                            .AddBeerCrate("cola", Pot, Drinker, now.AddDays(-40), drink: Cola)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var (response, result) = await client.POSTAsync<
+            PostBeerPayment,
+            PostBeerPaymentRequest,
+            PostBeerPaymentResponse
+        >(
+            new()
+            {
+                BeerPotId = ctx.BeerList.Pots.IdOf(Pot),
+                PersonId = ctx.Identity.People.IdOf(Drinker),
+                Drinks =
+                [
+                    new() { BeerDrinkId = BeerOf(ctx), Crates = 1 },
+                    new() { BeerDrinkId = ctx.BeerList.Drinks.IdOf(Radler), Crates = 2 },
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal((3, Price + 2 * RadlerPrice), (result.Crates, result.AmountCents));
+        await ctx
+            .Expected.BeerCrate(ctx.BeerList.Crates.IdOf("bier-alt"))
+            .ToBePaidBy(result.BeerPaymentId)
+            .BeerCrate(ctx.BeerList.Crates.IdOf("radler-alt"))
+            .ToBePaidBy(result.BeerPaymentId)
+            .BeerCrate(ctx.BeerList.Crates.IdOf("radler-neu"))
+            .ToBePaidBy(result.BeerPaymentId)
+            .BeerCrate(ctx.BeerList.Crates.IdOf("bier-neu"))
+            .ToBePaidBy(null)
+            .BeerCrate(ctx.BeerList.Crates.IdOf("cola"))
+            .ToBePaidBy(null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnConflictAndSettleNothing_When_OneDrinkHasFewerOpenCratesThanNamed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden)
+                            .AddBeerDrink(Pot, Radler)
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                            .AddBeerCrates(Pot, Drinker, 2)
+                            .AddBeerCrates(Pot, Drinker, 1, drink: Radler)
+                    ),
+            ct
+        );
+        var potId = ctx.BeerList.Pots.IdOf(Pot);
+        var drinkerId = ctx.Identity.People.IdOf(Drinker);
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var response = await client.POSTAsync<PostBeerPayment, PostBeerPaymentRequest>(
+            new()
+            {
+                BeerPotId = potId,
+                PersonId = drinkerId,
+                Drinks =
+                [
+                    new() { BeerDrinkId = BeerOf(ctx), Crates = 1 },
+                    new() { BeerDrinkId = ctx.BeerList.Drinks.IdOf(Radler), Crates = 2 },
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await ctx
+            .Expected.BeerTabOf(drinkerId)
+            .ToHaveOpenAndPaidCrates(potId, open: 3, paid: 0)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnValidationAndSettleNothing_When_ADrinkIsNamedTwice()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden)
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                            .AddBeerCrates(Pot, Drinker, 2)
+                    ),
+            ct
+        );
+        var potId = ctx.BeerList.Pots.IdOf(Pot);
+        var drinkerId = ctx.Identity.People.IdOf(Drinker);
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var response = await client.POSTAsync<PostBeerPayment, PostBeerPaymentRequest>(
+            new()
+            {
+                BeerPotId = potId,
+                PersonId = drinkerId,
+                Drinks =
+                [
+                    new() { BeerDrinkId = BeerOf(ctx), Crates = 1 },
+                    new() { BeerDrinkId = BeerOf(ctx), Crates = 1 },
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx
+            .Expected.BeerTabOf(drinkerId)
+            .ToHaveOpenAndPaidCrates(potId, open: 2, paid: 0)
             .AssertAsync(ct);
     }
 
@@ -112,7 +264,7 @@ public sealed class PostBeerPaymentTests : IClassFixture<ApiTestFixture>
             {
                 BeerPotId = potId,
                 PersonId = ctx.Identity.People.IdOf(Drinker),
-                Crates = 3,
+                Drinks = [new() { BeerDrinkId = BeerOf(ctx), Crates = 3 }],
             }
         );
 
@@ -161,7 +313,7 @@ public sealed class PostBeerPaymentTests : IClassFixture<ApiTestFixture>
             {
                 BeerPotId = oldPotId,
                 PersonId = drinkerId,
-                Crates = 2,
+                Drinks = [new() { BeerDrinkId = BeerOf(ctx), Crates = 2 }],
             }
         );
 
@@ -197,7 +349,7 @@ public sealed class PostBeerPaymentTests : IClassFixture<ApiTestFixture>
             {
                 BeerPotId = ctx.BeerList.Pots.IdOf(Pot) + 1000,
                 PersonId = ctx.Identity.People.IdOf(Drinker),
-                Crates = 1,
+                Drinks = [new() { BeerDrinkId = BeerOf(ctx), Crates = 1 }],
             }
         );
 
@@ -227,7 +379,7 @@ public sealed class PostBeerPaymentTests : IClassFixture<ApiTestFixture>
         {
             BeerPotId = potId,
             PersonId = drinkerId,
-            Crates = 2,
+            Drinks = [new() { BeerDrinkId = BeerOf(ctx), Crates = 2 }],
         };
 
         var responses = await _fixture.WhileBeerPotIsLockedAsync(

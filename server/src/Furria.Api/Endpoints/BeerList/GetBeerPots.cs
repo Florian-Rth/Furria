@@ -42,7 +42,6 @@ public sealed class GetBeerPots : EndpointWithoutRequest<GetBeerPotsResponse>
                     LastName = owner.LastName,
                 }
                 : null,
-            CratePriceCents = pot.CratePriceCents,
             OpenedAt = pot.OpenedAt,
             ClosedAt = pot.ClosedAt,
             OpenTabs = pot.OpenTabs,
@@ -61,8 +60,6 @@ public sealed record BeerPotSummaryDto
     public required int BeerPotId { get; init; }
 
     public required BeerPotSummaryOwnerDto? Owner { get; init; }
-
-    public required int CratePriceCents { get; init; }
 
     public required DateTimeOffset OpenedAt { get; init; }
 

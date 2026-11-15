@@ -95,9 +95,10 @@ public sealed class BeerPaymentService
         var tallies = await TalliesAsync(beerPotId, ct);
         var personIds = tallies.Select(tally => tally.Person.PersonId).ToList();
         var enrolled = await RunningEnrolleesAsync(personIds, ct);
+        var drinks = await BeerPotLedger.SettledDrinksAsync(_dbContext, beerPotId, ct);
         var payments = (await StandingPaymentsAsync(beerPotId, ct)).ToLookup(
             payment => payment.PersonId,
-            payment => payment.Summary
+            payment => payment.Summary with { Drinks = [.. drinks[payment.Summary.BeerPaymentId]] }
         );
 
         return Result<IReadOnlyList<BeerPotTabSummary>>.Success([
@@ -110,10 +111,11 @@ public sealed class BeerPaymentService
         CancellationToken ct
     )
     {
-        var settled = await OldestOpenCratesAsync(command, ct);
-        if (settled.Count < command.Crates)
+        var open = await OpenCratesOfNamedDrinksAsync(command, ct);
+        if (!CoversEveryNamedDrink(open, command.Drinks))
             return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
 
+        var settled = OldestOpenCratesPerDrink(open, command.Drinks);
         var payment = NewPayment(command, settled, _timeProvider.GetUtcNow());
         _dbContext.BeerPayments.Add(payment);
         await _dbContext.SaveChangesAsync(ct);
@@ -147,6 +149,28 @@ public sealed class BeerPaymentService
         };
 
     [Pure]
+    private static bool CoversEveryNamedDrink(
+        IReadOnlyList<OpenCrate> open,
+        IReadOnlyList<BeerDrinkCrates> drinks
+    ) =>
+        drinks.All(drink =>
+            open.Count(crate => crate.BeerDrinkId == drink.BeerDrinkId) >= drink.Crates
+        );
+
+    [Pure]
+    private static IReadOnlyList<OpenCrate> OldestOpenCratesPerDrink(
+        IReadOnlyList<OpenCrate> oldestFirst,
+        IReadOnlyList<BeerDrinkCrates> drinks
+    ) =>
+        [
+            .. drinks.SelectMany(drink =>
+                oldestFirst
+                    .Where(crate => crate.BeerDrinkId == drink.BeerDrinkId)
+                    .Take(drink.Crates)
+            ),
+        ];
+
+    [Pure]
     private static BeerPotTabSummary TabOf(
         TabTally tally,
         IReadOnlySet<int> enrolled,
@@ -164,20 +188,24 @@ public sealed class BeerPaymentService
             Payments = [.. payments[tally.Person.PersonId]],
         };
 
-    private async Task<IReadOnlyList<OpenCrate>> OldestOpenCratesAsync(
+    private async Task<IReadOnlyList<OpenCrate>> OpenCratesOfNamedDrinksAsync(
         BeerPaymentCommand command,
         CancellationToken ct
-    ) =>
-        await BeerPotLedger
+    )
+    {
+        var drinkIds = command.Drinks.Select(drink => drink.BeerDrinkId).ToList();
+        return await BeerPotLedger
             .OpenCrates(_dbContext)
             .Where(crate =>
-                crate.BeerPotId == command.BeerPotId && crate.PersonId == command.PersonId
+                crate.BeerPotId == command.BeerPotId
+                && crate.PersonId == command.PersonId
+                && drinkIds.Contains(crate.BeerDrinkId)
             )
             .OrderBy(crate => crate.BookedAt)
             .ThenBy(crate => crate.Id)
-            .Take(command.Crates)
-            .Select(crate => new OpenCrate(crate.Id, crate.PriceCents))
+            .Select(crate => new OpenCrate(crate.Id, crate.BeerDrinkId, crate.PriceCents))
             .ToListAsync(ct);
+    }
 
     private async Task<int> SettleAsync(
         IReadOnlyList<OpenCrate> settled,
@@ -261,6 +289,7 @@ public sealed class BeerPaymentService
                     BeerPaymentId = payment.Id,
                     Crates = payment.Crates,
                     AmountCents = payment.AmountCents,
+                    Drinks = Array.Empty<BeerPaymentDrinkSummary>(),
                     BookedAt = payment.BookedAt,
                     BookedBy =
                         payment.BookedBy == null
@@ -275,7 +304,7 @@ public sealed class BeerPaymentService
             ))
             .ToListAsync(ct);
 
-    private sealed record OpenCrate(int Id, int PriceCents);
+    private sealed record OpenCrate(int Id, int BeerDrinkId, int PriceCents);
 
     private sealed record TabTally(
         BeerListPerson Person,

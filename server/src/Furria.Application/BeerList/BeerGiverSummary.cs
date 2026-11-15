@@ -9,4 +9,6 @@ public sealed record BeerGiverSummary
     public required string LastName { get; init; }
 
     public required int Crates { get; init; }
+
+    public required IReadOnlyList<BeerGiverDrinkSummary> Drinks { get; init; }
 }

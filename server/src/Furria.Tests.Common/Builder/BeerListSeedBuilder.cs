@@ -6,8 +6,10 @@ public sealed class BeerListSeedBuilder
 {
     public const int DefaultCratePriceCents = 15_00;
     public const string DefaultPaymentLink = "https://paypal.me/getraenkewart";
+    public const string DefaultDrink = "Bier";
 
     private readonly List<BeerPotIntent> _pots = [];
+    private readonly List<BeerPotDrinkIntent> _potDrinks = [];
     private readonly List<BeerListEnrollmentIntent> _enrollments = [];
     private readonly List<BeerStockMovementIntent> _stockMovements = [];
     private readonly List<BeerCrateIntent> _crates = [];
@@ -15,6 +17,8 @@ public sealed class BeerListSeedBuilder
     private readonly List<BeerTabReminderIntent> _tabReminders = [];
 
     internal IReadOnlyList<BeerPotIntent> Pots => _pots;
+
+    internal IReadOnlyList<BeerPotDrinkIntent> PotDrinks => _potDrinks;
 
     internal IReadOnlyList<BeerListEnrollmentIntent> Enrollments => _enrollments;
 
@@ -26,17 +30,54 @@ public sealed class BeerListSeedBuilder
 
     internal IReadOnlyList<BeerTabReminderIntent> TabReminders => _tabReminders;
 
+    private void ClearDefaultOf(string potAlias)
+    {
+        for (var index = 0; index < _potDrinks.Count; index++)
+            if (_potDrinks[index].PotAlias == potAlias)
+                _potDrinks[index] = _potDrinks[index] with { IsDefault = false };
+    }
+
     public BeerListSeedBuilder AddBeerPot(
         string alias,
         string ownerAlias,
         int cratePriceCents = DefaultCratePriceCents,
         string? paymentLink = DefaultPaymentLink,
         DateTimeOffset? openedAt = null,
-        DateTimeOffset? closedAt = null
+        DateTimeOffset? closedAt = null,
+        DateTimeOffset? stockWarningSentAt = null
     )
     {
-        _pots.Add(
-            new BeerPotIntent(alias, ownerAlias, cratePriceCents, paymentLink, openedAt, closedAt)
+        _pots.Add(new BeerPotIntent(alias, ownerAlias, paymentLink, openedAt, closedAt));
+        return AddBeerDrink(
+            alias,
+            DefaultDrink,
+            cratePriceCents,
+            stockWarningSentAt: stockWarningSentAt,
+            isDefault: true
+        );
+    }
+
+    public BeerListSeedBuilder AddBeerDrink(
+        string potAlias,
+        string drink,
+        int cratePriceCents = DefaultCratePriceCents,
+        DateTimeOffset? retiredAt = null,
+        DateTimeOffset? stockWarningSentAt = null,
+        bool isDefault = false
+    )
+    {
+        if (isDefault)
+            ClearDefaultOf(potAlias);
+
+        _potDrinks.Add(
+            new BeerPotDrinkIntent(
+                potAlias,
+                drink,
+                cratePriceCents,
+                retiredAt,
+                stockWarningSentAt,
+                isDefault
+            )
         );
         return this;
     }
@@ -59,12 +100,14 @@ public sealed class BeerListSeedBuilder
         string potAlias,
         int crates,
         DateTimeOffset? bookedAt = null,
-        string? bookedByAlias = null
+        string? bookedByAlias = null,
+        string drink = DefaultDrink
     )
     {
         _stockMovements.Add(
             new BeerStockMovementIntent(
                 potAlias,
+                drink,
                 BeerStockMovementKind.Delivery,
                 crates,
                 bookedAt,
@@ -78,12 +121,14 @@ public sealed class BeerListSeedBuilder
         string potAlias,
         int crates,
         DateTimeOffset? bookedAt = null,
-        string? bookedByAlias = null
+        string? bookedByAlias = null,
+        string drink = DefaultDrink
     )
     {
         _stockMovements.Add(
             new BeerStockMovementIntent(
                 potAlias,
+                drink,
                 BeerStockMovementKind.Correction,
                 crates,
                 bookedAt,
@@ -100,13 +145,15 @@ public sealed class BeerListSeedBuilder
         DateTimeOffset? bookedAt = null,
         string? enteredByAlias = null,
         int? priceCents = null,
-        DateTimeOffset? undoneAt = null
+        DateTimeOffset? undoneAt = null,
+        string drink = DefaultDrink
     )
     {
         _crates.Add(
             new BeerCrateIntent(
                 alias,
                 potAlias,
+                drink,
                 personAlias,
                 bookedAt,
                 enteredByAlias,
@@ -121,7 +168,8 @@ public sealed class BeerListSeedBuilder
         string potAlias,
         string personAlias,
         int count,
-        DateTimeOffset? bookedAt = null
+        DateTimeOffset? bookedAt = null,
+        string drink = DefaultDrink
     )
     {
         for (var index = 0; index < count; index++)
@@ -129,7 +177,8 @@ public sealed class BeerListSeedBuilder
                 $"{potAlias}-{personAlias}-{_crates.Count}",
                 potAlias,
                 personAlias,
-                bookedAt
+                bookedAt,
+                drink: drink
             );
 
         return this;
@@ -168,10 +217,18 @@ public sealed class BeerListSeedBuilder
     internal sealed record BeerPotIntent(
         string Alias,
         string OwnerAlias,
-        int CratePriceCents,
         string? PaymentLink,
         DateTimeOffset? OpenedAt,
         DateTimeOffset? ClosedAt
+    );
+
+    internal sealed record BeerPotDrinkIntent(
+        string PotAlias,
+        string Drink,
+        int CratePriceCents,
+        DateTimeOffset? RetiredAt,
+        DateTimeOffset? StockWarningSentAt,
+        bool IsDefault
     );
 
     internal sealed record BeerListEnrollmentIntent(
@@ -184,6 +241,7 @@ public sealed class BeerListSeedBuilder
 
     internal sealed record BeerStockMovementIntent(
         string PotAlias,
+        string Drink,
         BeerStockMovementKind Kind,
         int Crates,
         DateTimeOffset? BookedAt,
@@ -193,6 +251,7 @@ public sealed class BeerListSeedBuilder
     internal sealed record BeerCrateIntent(
         string Alias,
         string PotAlias,
+        string Drink,
         string PersonAlias,
         DateTimeOffset? BookedAt,
         string? EnteredByAlias,

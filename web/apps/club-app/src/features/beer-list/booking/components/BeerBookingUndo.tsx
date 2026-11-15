@@ -12,7 +12,7 @@ interface BeerBookingUndoProps {
 }
 
 export const BeerBookingUndo: FC<BeerBookingUndoProps> = ({ booking, variant = 'strip' }) => {
-  const title = bookedTitle(booking.lastCount);
+  const title = bookedTitle(booking.lastCount, booking.lastDrinkName);
   const detail = bookedDetail(formatEuroCents(booking.lastCents));
 
   return (

@@ -3,6 +3,8 @@ import type { BeerPane } from '../beer-pane';
 import { BeerClosedPotPane } from './BeerClosedPotPane';
 import { BeerCodePane } from './BeerCodePane';
 import { BeerCratesPane } from './BeerCratesPane';
+import { BeerDrinkPane } from './BeerDrinkPane';
+import { BeerDrinksPane } from './BeerDrinksPane';
 import { BeerEnrollmentsPane } from './BeerEnrollmentsPane';
 import { BeerHandoverPane } from './BeerHandoverPane';
 import { BeerPaymentPane } from './BeerPaymentPane';
@@ -19,12 +21,16 @@ export const BeerPaneView: FC<BeerPaneViewProps> = ({ pane }) => {
   switch (pane?.kind) {
     case 'stock':
       return <BeerStockPane />;
+    case 'drink':
+      return <BeerDrinkPane beerDrinkId={pane.beerDrinkId} />;
     case 'payment':
       return <BeerPaymentPane initialPersonId={pane.personId} />;
     case 'crates':
       return <BeerCratesPane initialPersonId={pane.personId} />;
     case 'settings':
       return <BeerSettingsPane />;
+    case 'drinks':
+      return <BeerDrinksPane />;
     case 'enrollments':
       return <BeerEnrollmentsPane />;
     case 'handover':

@@ -49,7 +49,7 @@ export const KkPourTabLine: FC<KkPourTabLineProps> = ({
           ...rowDividerTop,
           ...(marked
             ? {
-                boxShadow: `inset 0.1875rem 0 0 ${(theme.vars ?? theme).palette.primary.main}`,
+                boxShadow: `inset 0.1875rem 0 0 ${(theme.vars ?? theme).palette.info.main}`,
                 pl: 1,
               }
             : {}),

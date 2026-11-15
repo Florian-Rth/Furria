@@ -30,6 +30,7 @@ public sealed class PostBeerDelivery : Endpoint<PostBeerDeliveryRequest>
             new BeerDeliveryCommand
             {
                 BeerPotId = req.BeerPotId,
+                BeerDrinkId = req.BeerDrinkId,
                 Crates = req.Crates,
                 BookedByPersonId = User.PersonId(),
             },
@@ -51,6 +52,8 @@ public sealed record PostBeerDeliveryRequest
     [RouteParam]
     public required int BeerPotId { get; init; }
 
+    public required int BeerDrinkId { get; init; }
+
     public required int Crates { get; init; }
 }
 
@@ -61,6 +64,7 @@ public sealed class PostBeerDeliveryValidator : Validator<PostBeerDeliveryReques
     public PostBeerDeliveryValidator()
     {
         RuleFor(request => request.BeerPotId).GreaterThan(0);
+        RuleFor(request => request.BeerDrinkId).GreaterThan(0);
         RuleFor(request => request.Crates)
             .InclusiveBetween(1, BeerStockMovement.MaxCrates)
             .WithMessage(CratesMessage);

@@ -42,7 +42,7 @@ public sealed class PostMyBeerCratesTests : IClassFixture<ApiTestFixture>
             PostMyBeerCrates,
             PostMyBeerCratesRequest,
             PostMyBeerCratesResponse
-        >(new() { Count = 2 });
+        >(new() { BeerDrinkId = BeerListCast.BeerOf(ctx), Count = 2 });
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(2, result.CrateIds.Count);
@@ -78,7 +78,7 @@ public sealed class PostMyBeerCratesTests : IClassFixture<ApiTestFixture>
 
         var client = await ctx.Identity.ClientForAsync(Drinker, ct);
         var response = await client.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(
-            new() { Count = 2 }
+            new() { BeerDrinkId = BeerListCast.BeerOf(ctx), Count = 2 }
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -108,7 +108,7 @@ public sealed class PostMyBeerCratesTests : IClassFixture<ApiTestFixture>
 
         var client = await ctx.Identity.ClientForAsync(Drinker, ct);
         var response = await client.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(
-            new() { Count = BeerCrate.MaxPerOwnBooking + 1 }
+            new() { BeerDrinkId = BeerListCast.BeerOf(ctx), Count = BeerCrate.MaxPerOwnBooking + 1 }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -142,7 +142,7 @@ public sealed class PostMyBeerCratesTests : IClassFixture<ApiTestFixture>
 
         var client = await ctx.Identity.ClientForAsync(Drinker, ct);
         var response = await client.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(
-            new() { Count = 1 }
+            new() { BeerDrinkId = BeerListCast.BeerOf(ctx), Count = 1 }
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
@@ -182,8 +182,12 @@ public sealed class PostMyBeerCratesTests : IClassFixture<ApiTestFixture>
             waitingSessions: 2,
             () =>
                 Task.WhenAll(
-                    mira.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(new() { Count = 1 }),
-                    jonas.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(new() { Count = 1 })
+                    mira.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(
+                        new() { BeerDrinkId = BeerListCast.BeerOf(ctx), Count = 1 }
+                    ),
+                    jonas.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(
+                        new() { BeerDrinkId = BeerListCast.BeerOf(ctx), Count = 1 }
+                    )
                 ),
             ct
         );
@@ -193,5 +197,35 @@ public sealed class PostMyBeerCratesTests : IClassFixture<ApiTestFixture>
             responses.Select(response => response.StatusCode).Order()
         );
         await ctx.Expected.BeerStockOfPot(potId).ToStandAt(0).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheBooking_When_TheDrinkIsRetiredFromThePot()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden)
+                            .AddBeerDrink(Pot, "Radler", retiredAt: now.AddDays(-1))
+                            .AddBeerDelivery(Pot, 2, drink: "Radler")
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync(Drinker, ct);
+        var response = await client.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(
+            new() { BeerDrinkId = ctx.BeerList.Drinks.IdOf("Radler"), Count = 1 }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await ctx
+            .Expected.BeerTabOf(ctx.Identity.People.IdOf(Drinker))
+            .ToHaveTakenCrates(0)
+            .AssertAsync(ct);
     }
 }

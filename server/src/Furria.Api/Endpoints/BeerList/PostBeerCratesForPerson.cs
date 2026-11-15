@@ -31,6 +31,7 @@ public sealed class PostBeerCratesForPerson
             new BeerCratesForCommand
             {
                 BeerPotId = req.BeerPotId,
+                BeerDrinkId = req.BeerDrinkId,
                 PersonId = req.PersonId,
                 Count = req.Count,
                 EnteredByPersonId = User.PersonId(),
@@ -64,6 +65,8 @@ public sealed record PostBeerCratesForPersonRequest
 
     public required int PersonId { get; init; }
 
+    public required int BeerDrinkId { get; init; }
+
     public required int Count { get; init; }
 
     public bool Paid { get; init; }
@@ -78,6 +81,7 @@ public sealed class PostBeerCratesForPersonValidator : Validator<PostBeerCratesF
     {
         RuleFor(request => request.BeerPotId).GreaterThan(0);
         RuleFor(request => request.PersonId).GreaterThan(0);
+        RuleFor(request => request.BeerDrinkId).GreaterThan(0);
         RuleFor(request => request.Count)
             .InclusiveBetween(1, BeerCrate.MaxPerOperatorBooking)
             .WithMessage(CountMessage);

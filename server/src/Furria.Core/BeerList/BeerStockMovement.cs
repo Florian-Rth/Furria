@@ -10,6 +10,8 @@ public sealed class BeerStockMovement
 
     public int BeerPotId { get; set; }
 
+    public int BeerDrinkId { get; set; }
+
     public BeerStockMovementKind Kind { get; set; }
 
     public int Crates { get; set; }
@@ -19,6 +21,8 @@ public sealed class BeerStockMovement
     public DateTimeOffset BookedAt { get; set; }
 
     public BeerPot? Pot { get; set; }
+
+    public BeerPotDrink? PotDrink { get; set; }
 
     public Person? BookedBy { get; set; }
 }

@@ -1,6 +1,6 @@
 import type { QueryErrorKind } from '@/lib/query-error';
 import { BEER_LIST_TITLE } from './beer-list-copy';
-import { cratesLabel } from './booking/booking-copy';
+import { drinkCratesLabel } from './booking/booking-copy';
 
 export const potLine = (owner: string | null): string =>
   owner === null ? BEER_LIST_TITLE : `${BEER_LIST_TITLE} · ${owner}`;
@@ -21,8 +21,8 @@ export const NO_POT_TITLE = 'Gerade keine Bierliste offen';
 export const NO_POT_TEXT = 'Sag dem Getränkewart Bescheid.';
 
 export const DONE_TITLE = 'Fertig';
-export const doneDetail = (count: number, openTotal: string): string =>
-  `${cratesLabel(count)} gebucht · offen jetzt ${openTotal}`;
+export const doneDetail = (count: number, drinkName: string, openTotal: string): string =>
+  `${drinkCratesLabel(count, drinkName)} gebucht · offen jetzt ${openTotal}`;
 export const BOOK_AGAIN = 'Noch eine buchen';
 
 export const FAILED_TITLE = 'Die Bierliste konnte nicht geladen werden.';

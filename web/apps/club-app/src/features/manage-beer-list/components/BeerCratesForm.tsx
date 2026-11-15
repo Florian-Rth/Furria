@@ -1,4 +1,5 @@
 import { KkButton } from '@furria/ui/KkButton';
+import { KkChoiceChips } from '@furria/ui/KkChoiceChips';
 import { KkNumberField } from '@furria/ui/KkNumberField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
@@ -9,6 +10,7 @@ import {
   bookableLabelOf,
   COUNT_FIELD_LABEL,
   crateButtonOf,
+  DRINK_LABEL,
   firstNameOf,
   PAID_SWITCH_LABEL,
   PERSON_LABEL,
@@ -16,13 +18,15 @@ import {
   stockAfterOf,
 } from '../beer-hub-copy';
 import { useCratesForm } from '../hooks/use-crates-form';
+import type { BeerStockDrink } from '../schemas';
+import { BeerFieldError } from './BeerFieldError';
 import { BeerRejection } from './BeerRejection';
 
 interface BeerCratesFormProps {
   beerPotId: number;
   bookable: readonly BeerBookable[];
+  drinks: readonly BeerStockDrink[];
   initialPersonId: number | null;
-  stock: number;
   landing: WriteLanding;
 }
 
@@ -36,24 +40,25 @@ const personOf = (entry: BeerBookable): BeerBookable['person'] => entry.person;
 export const BeerCratesForm: FC<BeerCratesFormProps> = ({
   beerPotId,
   bookable,
+  drinks,
   initialPersonId,
-  stock,
   landing,
 }) => {
   const form = useCratesForm({
     beerPotId,
     candidates: bookable.map(personOf),
+    drinks,
     initialPersonId,
-    stock,
     landing,
   });
   const options = bookable.map(optionOf);
   const buttonLabel = crateButtonOf(
     form.count,
+    form.drink?.name ?? null,
     form.person === null ? null : firstNameOf(form.person),
     form.paid,
   );
-  const hint = stockAfterOf(stock, -form.count);
+  const hint = form.drink === null ? undefined : stockAfterOf(form.drink.crates, -form.count);
   const personInvalid = form.personError !== undefined;
   const countInvalid = form.countError !== undefined;
 
@@ -69,6 +74,13 @@ export const BeerCratesForm: FC<BeerCratesFormProps> = ({
         error={personInvalid}
         helperText={form.personError}
       />
+      <KkChoiceChips
+        label={DRINK_LABEL}
+        choices={form.drinkChoices}
+        value={form.drinkValue}
+        onChange={form.chooseDrink}
+      />
+      <BeerFieldError message={form.drinkError} />
       <KkNumberField
         name="count"
         label={COUNT_FIELD_LABEL}

@@ -113,7 +113,12 @@ export const CreatedCalendarEntrySchema = z.object({ calendarEntryId: z.number()
 export const CreatedBeerPotSchema = z.object({ beerPotId: z.number().int() });
 
 export const OpenBeerPotSchema = z.object({
-  pot: z.object({ beerPotId: z.number().int() }).nullable(),
+  pot: z
+    .object({
+      beerPotId: z.number().int(),
+      drinks: z.array(z.object({ beerDrinkId: z.number().int(), name: z.string() })),
+    })
+    .nullable(),
 });
 
 export const BeerEnrollmentsSchema = z.object({

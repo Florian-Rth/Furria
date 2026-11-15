@@ -39,14 +39,25 @@ public sealed class GetBeerStock : Endpoint<GetBeerStockRequest, GetBeerStockRes
     private static GetBeerStockResponse ToResponse(BeerStockDetails stock) =>
         new()
         {
-            Crates = stock.Crates,
+            Drinks = [.. stock.Drinks.Select(ToDto)],
+            Movements = [.. stock.Movements.Select(ToDto)],
+        };
+
+    private static BeerDrinkStockDto ToDto(BeerDrinkStockSummary drink) =>
+        new()
+        {
+            BeerDrinkId = drink.BeerDrinkId,
+            Name = drink.Name,
+            CratePriceCents = drink.CratePriceCents,
+            IsDefault = drink.IsDefault,
+            IsRetired = drink.IsRetired,
+            Crates = drink.Crates,
             Forecast = new BeerStockForecastDto
             {
-                PaceWindowDays = stock.Forecast.PaceWindowDays,
-                CratesTakenInPaceWindow = stock.Forecast.CratesTakenInPaceWindow,
-                ProjectedEmptyOn = stock.Forecast.ProjectedEmptyOn,
+                PaceWindowDays = drink.Forecast.PaceWindowDays,
+                CratesTakenInPaceWindow = drink.Forecast.CratesTakenInPaceWindow,
+                ProjectedEmptyOn = drink.Forecast.ProjectedEmptyOn,
             },
-            Movements = [.. stock.Movements.Select(ToDto)],
         };
 
     private static BeerStockMovementSummaryDto ToDto(BeerStockMovementSummary movement) =>
@@ -54,6 +65,8 @@ public sealed class GetBeerStock : Endpoint<GetBeerStockRequest, GetBeerStockRes
         {
             MovementId = movement.MovementId,
             Kind = movement.Kind,
+            BeerDrinkId = movement.BeerDrinkId,
+            DrinkName = movement.DrinkName,
             Crates = movement.Crates,
             BookedAt = movement.BookedAt,
             BookedBy = movement.BookedBy is { } booker
@@ -83,11 +96,26 @@ public sealed class GetBeerStockValidator : Validator<GetBeerStockRequest>
 
 public sealed record GetBeerStockResponse
 {
+    public required IReadOnlyList<BeerDrinkStockDto> Drinks { get; init; }
+
+    public required IReadOnlyList<BeerStockMovementSummaryDto> Movements { get; init; }
+}
+
+public sealed record BeerDrinkStockDto
+{
+    public required int BeerDrinkId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required int CratePriceCents { get; init; }
+
+    public required bool IsDefault { get; init; }
+
+    public required bool IsRetired { get; init; }
+
     public required int Crates { get; init; }
 
     public required BeerStockForecastDto Forecast { get; init; }
-
-    public required IReadOnlyList<BeerStockMovementSummaryDto> Movements { get; init; }
 }
 
 public sealed record BeerStockForecastDto
@@ -104,6 +132,10 @@ public sealed record BeerStockMovementSummaryDto
     public required int MovementId { get; init; }
 
     public required BeerStockMovementKind Kind { get; init; }
+
+    public required int BeerDrinkId { get; init; }
+
+    public required string DrinkName { get; init; }
 
     public required int Crates { get; init; }
 

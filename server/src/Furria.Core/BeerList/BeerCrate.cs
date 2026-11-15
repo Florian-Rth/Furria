@@ -14,6 +14,8 @@ public sealed class BeerCrate
 
     public int BeerPotId { get; set; }
 
+    public int BeerDrinkId { get; set; }
+
     public int? PersonId { get; set; }
 
     public int PriceCents { get; set; }
@@ -29,6 +31,8 @@ public sealed class BeerCrate
     public int? PaidByPaymentId { get; set; }
 
     public BeerPot? Pot { get; set; }
+
+    public BeerPotDrink? PotDrink { get; set; }
 
     public Person? Person { get; set; }
 

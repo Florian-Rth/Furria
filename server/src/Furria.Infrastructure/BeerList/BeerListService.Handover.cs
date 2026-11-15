@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Furria.Application.BeerList;
 using Furria.Application.Results;
 using Furria.Core.BeerList;
@@ -10,6 +11,8 @@ public sealed partial class BeerListService
 {
     private const string PotToHandOverMessage = "Diese Bierliste ist schon übergeben.";
     private const string SuccessorOwnsPotMessage = "Diese Bierliste gehört schon dieser Person.";
+    private const string UnpricedDrinksMessage =
+        "Jedes Getränk der Bierliste braucht genau einen neuen Preis.";
 
     public async Task<Result<BeerPotHandoverDetails>> HandOverAsync(
         BeerPotHandoverCommand command,
@@ -19,12 +22,7 @@ public sealed partial class BeerListService
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var pot = await BeerPotLedger
             .LockedPot(_dbContext, command.BeerPotId)
-            .Select(row => new PotToHandOver(
-                row.Id,
-                row.OwnerPersonId,
-                row.ClosedAt,
-                row.StockWarningSentAt
-            ))
+            .Select(row => new PotToHandOver(row.Id, row.OwnerPersonId, row.ClosedAt))
             .SingleOrDefaultAsync(ct);
         if (pot is null)
             return Result<BeerPotHandoverDetails>.NotFound(BeerListMessages.UnknownPot);
@@ -41,7 +39,11 @@ public sealed partial class BeerListService
         if (pot.OwnerPersonId == command.SuccessorPersonId)
             return Result<BeerPotHandoverDetails>.Validation(SuccessorOwnsPotMessage);
 
-        var handover = await HandOverLockedAsync(pot, command, ct);
+        var drinks = await DrinksToCarryAsync(pot.Id, ct);
+        if (!PricesEveryDrink(command.CarriedDrinkPrices, drinks))
+            return Result<BeerPotHandoverDetails>.Validation(UnpricedDrinksMessage);
+
+        var handover = await HandOverLockedAsync(pot, drinks, command, ct);
         if (!handover.IsSuccess)
             return handover;
 
@@ -49,28 +51,55 @@ public sealed partial class BeerListService
         return handover;
     }
 
+    [Pure]
+    private static bool PricesEveryDrink(
+        IReadOnlyList<BeerDrinkPrice> prices,
+        IReadOnlyList<DrinkToCarry> drinks
+    ) =>
+        prices.Count == drinks.Count
+        && prices
+            .Select(price => price.BeerDrinkId)
+            .ToHashSet()
+            .SetEquals(drinks.Select(drink => drink.BeerDrinkId));
+
     private async Task<Result<BeerPotHandoverDetails>> HandOverLockedAsync(
         PotToHandOver pot,
+        IReadOnlyList<DrinkToCarry> drinks,
         BeerPotHandoverCommand command,
         CancellationToken ct
     )
     {
         var now = _timeProvider.GetUtcNow();
-        var cratesLeft = await BeerPotLedger.StockOfAsync(_dbContext, pot.Id, ct);
         var successorPot = new BeerPot
         {
             OwnerPersonId = command.SuccessorPersonId,
+            PaymentLink = command.SuccessorPaymentLink,
             OpenedAt = now,
-            StockWarningSentAt = await StockWarningCarriedFromAsync(pot, ct),
         };
-        Apply(command.SuccessorSettings, successorPot);
+        var prices = command.CarriedDrinkPrices.ToDictionary(
+            price => price.BeerDrinkId,
+            price => price.CratePriceCents
+        );
 
         await CloseAsync(pot.Id, now, ct);
         _dbContext.BeerPots.Add(successorPot);
-        if (cratesLeft > 0)
-            _dbContext.BeerStockMovements.AddRange(
-                CarryMovements(pot.Id, successorPot, cratesLeft, command.HandedOverByPersonId, now)
+        foreach (var drink in drinks)
+        {
+            _dbContext.BeerPotDrinks.Add(
+                new BeerPotDrink
+                {
+                    Pot = successorPot,
+                    BeerDrinkId = drink.BeerDrinkId,
+                    CratePriceCents = prices[drink.BeerDrinkId],
+                    IsDefault = drink.IsDefault,
+                    StockWarningSentAt = drink.CarriedStockWarningSentAt,
+                }
             );
+            if (drink.CratesLeft > 0)
+                _dbContext.BeerStockMovements.AddRange(
+                    CarryMovements(pot.Id, successorPot, drink, command.HandedOverByPersonId, now)
+                );
+        }
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         return saved.IsSuccess
@@ -78,16 +107,17 @@ public sealed partial class BeerListService
                 new BeerPotHandoverDetails
                 {
                     SuccessorBeerPotId = successorPot.Id,
-                    CarriedCrates = cratesLeft,
+                    CarriedCrates = drinks.Sum(drink => Math.Max(drink.CratesLeft, 0)),
                 }
             )
             : Result<BeerPotHandoverDetails>.Carrying(saved);
     }
 
+    [Pure]
     private static BeerStockMovement[] CarryMovements(
         int handedOverPotId,
         BeerPot successorPot,
-        int crates,
+        DrinkToCarry drink,
         int? bookedByPersonId,
         DateTimeOffset bookedAt
     ) =>
@@ -95,16 +125,18 @@ public sealed partial class BeerListService
             new()
             {
                 BeerPotId = handedOverPotId,
+                BeerDrinkId = drink.BeerDrinkId,
                 Kind = BeerStockMovementKind.HandedOver,
-                Crates = -crates,
+                Crates = -drink.CratesLeft,
                 BookedByPersonId = bookedByPersonId,
                 BookedAt = bookedAt,
             },
             new()
             {
                 Pot = successorPot,
+                BeerDrinkId = drink.BeerDrinkId,
                 Kind = BeerStockMovementKind.HandoverCarry,
-                Crates = crates,
+                Crates = drink.CratesLeft,
                 BookedByPersonId = bookedByPersonId,
                 BookedAt = bookedAt,
             },
@@ -120,31 +152,48 @@ public sealed partial class BeerListService
                 ct
             );
 
-    private async Task<DateTimeOffset?> StockWarningCarriedFromAsync(
-        PotToHandOver pot,
+    private async Task<IReadOnlyList<DrinkToCarry>> DrinksToCarryAsync(
+        int beerPotId,
         CancellationToken ct
     )
     {
-        if (pot.StockWarningSentAt is not { } sentAt)
-            return null;
+        var stockMovements = BeerPotLedger.StockMovements(_dbContext);
+        var takenCrates = BeerPotLedger.TakenCrates(_dbContext);
 
-        var deliveredSinceWarning = await _dbContext
-            .BeerStockMovements.AsNoTracking()
-            .AnyAsync(
-                movement =>
-                    movement.BeerPotId == pot.Id
+        return await _dbContext
+            .BeerPotDrinks.AsNoTracking()
+            .Where(potDrink => potDrink.BeerPotId == beerPotId && potDrink.RetiredAt == null)
+            .OrderBy(potDrink => potDrink.BeerDrinkId)
+            .Select(potDrink => new DrinkToCarry(
+                potDrink.BeerDrinkId,
+                potDrink.IsDefault,
+                stockMovements
+                    .Where(movement =>
+                        movement.BeerPotId == beerPotId
+                        && movement.BeerDrinkId == potDrink.BeerDrinkId
+                    )
+                    .Sum(movement => movement.Crates)
+                    - takenCrates.Count(crate =>
+                        crate.BeerPotId == beerPotId && crate.BeerDrinkId == potDrink.BeerDrinkId
+                    ),
+                stockMovements.Any(movement =>
+                    movement.BeerPotId == beerPotId
+                    && movement.BeerDrinkId == potDrink.BeerDrinkId
                     && movement.Kind == BeerStockMovementKind.Delivery
-                    && movement.BookedAt > sentAt,
-                ct
-            );
-
-        return deliveredSinceWarning ? null : sentAt;
+                    && movement.BookedAt > potDrink.StockWarningSentAt
+                )
+                    ? null
+                    : potDrink.StockWarningSentAt
+            ))
+            .ToListAsync(ct);
     }
 
-    private sealed record PotToHandOver(
-        int Id,
-        int? OwnerPersonId,
-        DateTimeOffset? ClosedAt,
-        DateTimeOffset? StockWarningSentAt
+    private sealed record PotToHandOver(int Id, int? OwnerPersonId, DateTimeOffset? ClosedAt);
+
+    private sealed record DrinkToCarry(
+        int BeerDrinkId,
+        bool IsDefault,
+        int CratesLeft,
+        DateTimeOffset? CarriedStockWarningSentAt
     );
 }

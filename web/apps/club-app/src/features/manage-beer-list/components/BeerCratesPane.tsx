@@ -19,8 +19,8 @@ export const BeerCratesPane: FC<BeerCratesPaneProps> = ({ initialPersonId }) => 
       <BeerCratesForm
         beerPotId={open.pot.beerPotId}
         bookable={bookable}
+        drinks={open.listedDrinks}
         initialPersonId={initialPersonId}
-        stock={open.summary.stock}
         landing={HUB_LANDING}
       />
     );

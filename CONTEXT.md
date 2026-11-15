@@ -1580,7 +1580,7 @@ of its own, never derived from who holds a role: a permission only decides who m
 several people may, but only the owner is owed money. A **handover** closes the owner's pot (open
 crates stay owed to her and stay payable, the remaining crates pass to the successor as a count only
 — no amount in euros, whatever the two settle is private) and the successor opens a new one with her
-own price and optional PayPal link (decided 2026-11-04). Any operator hands over, and only to someone
+own price per carried **drink** and optional PayPal link (decided 2026-11-04, per drink 2026-11-15). Any operator hands over, and only to someone
 else who may operate the pot. The crates carried over leave the old pot's **stock** and enter the
 new one's, so the old pot stands at zero; the forecast's pace carries over, and a stock warning
 already sent is not repeated for the same crates until a delivery re-arms it (built 2026-11-04). A
@@ -1589,14 +1589,26 @@ view on it. Whoever may operate the pot may edit its **stock** freely: book crat
 correct any count (decided 2026-11-04). Members always pay the owner in **cash**; a PayPal link
 is the only other way and is optional — there is no free-text payment hint (decided 2026-11-05). The pot knows only what members owe and pay, never what the
 beer cost the owner — whether she is paid back is her own reckoning, not the app's (decided
-2026-11-04). The only thing on the list is the **crate** of beer: one item, one price, always whole
-crates — no other drinks, no single bottles (decided 2026-11-04). A crate on someone's tab keeps the
+2026-11-04). The list holds several **drinks**, always in whole **crates** — no single bottles
+(decided 2026-11-15, replacing "one item, one price" of 2026-11-04). A crate on someone's tab keeps the
 price it had when it was taken; a price change only reaches crates taken after it. A member books
 crates only for herself; operators may book for anyone, and every crate records who entered it
 (decided 2026-11-04).
 It never appears in the **ledger** or the club's cash report.
 _UI copy_: Bierliste
 _Avoid_: drinks till, Getränkekasse (both suggest club money)
+
+**Drink** (beer list):
+A kind of crate on the **beer list** — Veltins, Oberdorfer Helles, Radler — with a name and, in each
+pot, its own crate price. Drinks form one club-wide catalogue, so a drink stays the same drink
+across a **handover** and its forecast pace carries over. An operator adds a drink to the open pot
+(a known name reuses it), renames it, reprices it (only crates taken afterwards), and retires it
+once its stock is zero; a retired drink is no longer booked or carried over, its history stays.
+Members see each drink's name, price and whether one is left, never the count. A member picks the
+drink and the number of crates and books; an operator may mark one drink as the **default**, which
+the booking page preselects (decided 2026-11-15).
+_UI copy_: Getränk
+_Avoid_: product, item, article, Sorte
 
 **Enrollment** (beer list):
 A person's running opt-in to the **beer list**. Only an enrolled person (or an operator) sees the
@@ -1622,12 +1634,13 @@ _UI copy_: offene Kisten (never "Deckel" in the app)
 _Avoid_: balance, account, Guthaben
 
 **Stock** (beer list):
-The crates on hand. Every booked crate lowers it; a **delivery** raises it and re-arms the stock
+The crates on hand, counted per **drink**. Every booked crate lowers its drink's stock; a **delivery** raises it and re-arms the stock
 warning; when a count disagrees an operator books a **stock correction** — a plain signed count of
 crates, no reason (the app only offers taking crates out; decided 2026-11-05), and the loss is the
 owner's. Stock never goes
-below zero. The app forecasts from the recent pace when the stock will be empty and warns the
-operators when that day comes close; there is no fixed threshold (decided 2026-11-04).
+below zero. The app forecasts per drink from that drink's recent pace when it will be empty and
+warns the operators when that day comes close; there is no fixed threshold (decided 2026-11-04,
+per drink 2026-11-15).
 _UI copy_: Bestand
 _Avoid_: inventory, Lager (that is the storeroom)
 
