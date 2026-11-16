@@ -97,7 +97,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushEveryMember_When_AGroupAdminAsksTheWholeClubForAResponse()
+    public async Task Should_PushTheGroup_When_AGroupAdminAsksHerGroupForAResponse()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -107,6 +107,8 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ctx,
             GroupOwnedClubEntry(ctx) with
             {
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
             },
             ct
@@ -115,7 +117,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await _fixture.PushesDrainedAsync(ct);
         Assert.Single(PushesAt(_fixture, devices.Chris));
-        Assert.Single(PushesAt(_fixture, devices.Mara));
+        Assert.Empty(PushesAt(_fixture, devices.Mara));
     }
 
     [Fact]
@@ -655,6 +657,12 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
                         groups
                             .AddGroup("tanzgarde", "Tanzgarde")
                             .AddGroupMembership("fred-tanzgarde", "tanzgarde", "fred", JoinedIn2017)
+                            .AddGroupMembership(
+                                "chris-tanzgarde",
+                                "tanzgarde",
+                                "chris",
+                                JoinedIn2017
+                            )
                             .AddGroupAdmin("fred-leads-tanzgarde", "tanzgarde", "fred")
                     )
                     .Roles(roles =>

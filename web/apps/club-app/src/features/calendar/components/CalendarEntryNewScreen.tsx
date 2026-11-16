@@ -31,6 +31,7 @@ export const CalendarEntryNewScreen: FC = () => {
       <CalendarEntryEditor
         entry={null}
         ownerOptions={authoring.ownerOptions}
+        audienceReach={authoring.audienceReach}
         clubGroups={supplies.clubGroups}
         clubGroupsReload={supplies.clubGroupsReload}
         venues={supplies.venues}

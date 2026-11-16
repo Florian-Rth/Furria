@@ -40,6 +40,8 @@ public sealed partial class CalendarService
         "Eine archivierte Gruppe kann nicht gewählt werden.";
     private const string UnchoosablePersonMessage = "Diese Person kann nicht ausgewählt werden.";
     private const string NoParticipatingGroupMessage = "Wähle mindestens eine mitwirkende Gruppe.";
+    private const string BeyondOwnGroupsMessage =
+        "Ohne den Vereinskalender planst du nur für deine Gruppen und ihre Mitglieder.";
 
     private static readonly CalendarRights SeesEveryClubEntry = new(
         HoldsClubRead: true,
@@ -310,6 +312,9 @@ public sealed partial class CalendarService
         if (refusal is not null)
             return Result<CalendarEntryWriteResult>.Validation(refusal);
 
+        if (!await MayAddressAsync(command.ActorAccountId, audience, NoHeldAudience, ct))
+            return Result<CalendarEntryWriteResult>.Forbidden(BeyondOwnGroupsMessage);
+
         var entry = new CalendarEntry
         {
             Title = command.Title,
@@ -407,18 +412,22 @@ public sealed partial class CalendarService
             command.AudiencePersonIds
         );
 
+        var heldAudience = HeldAudienceOf(entry);
         var refusal = await PlacementRefusalAsync(
             new Placement(command.OwnerGroupId, command.VenueId, participatingGroupIds, audience),
             new HeldLinks(
                 [.. entry.ParticipatingGroups.Select(link => link.GroupId)],
-                [.. entry.AudienceGroups.Select(link => link.GroupId)],
-                [.. entry.AudiencePeople.Select(link => link.PersonId)]
+                heldAudience.GroupIds,
+                heldAudience.PersonIds
             ),
             ct
         );
 
         if (refusal is not null)
             return Result<CalendarEntryWriteResult>.Validation(refusal);
+
+        if (!await MayAddressAsync(command.ActorAccountId, audience, heldAudience, ct))
+            return Result<CalendarEntryWriteResult>.Forbidden(BeyondOwnGroupsMessage);
 
         var addOnClock = _timeProvider.GetUtcNow();
 

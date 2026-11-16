@@ -50,7 +50,10 @@ new permission, without a design pass. Result:
 Who does not manage the club calendar may set as audience only **groups she administers** or
 **chosen people from their current members** — never *Verein*. Enforced server-side on create and
 update; the editor offers only valid choices. A groups-audience entry stays seen by every member.
-Club-calendar managers keep every audience for any owner.
+Club-calendar managers keep every audience for any owner. `groups.manage` holders administer every
+group, so they may address any group or its members, still never *Verein*. On update only what the
+write adds is checked: an audience the entry already holds (*Verein*, a person who has since left
+the group) stays, as archived groups do.
 
 ### Data
 - Drop `push.notify_club` (constant, checks, web key, role copy) and any role grants of it.
@@ -71,11 +74,11 @@ Goal: the prod bug is gone; `push.notify_club` no longer exists; Aushang behavio
 
 ### Phase 2 — A group admin schedules for her groups only
 Goal: server and editor confine a group admin's audience; existing data conforms.
-- [ ] Tests first: a group admin without club-calendar rights is refused audience *Verein*, a foreign group, or a person outside her groups — on create and on update; a club-calendar manager is not
-- [ ] Server validation in `CalendarService` create/update (audience groups ⊆ administered groups, chosen ⊆ their current members)
-- [ ] Data migration: group-owned entries with audience *Club* → audience *Groups* of the owner group
-- [ ] Web: audience options without *Verein*, group picker limited to administered groups, people picker limited to their current members, for group admins without club-calendar rights
-- [ ] Glossary/UI check: groups-audience entries remain visible to every member
+- [x] Tests first: a group admin without club-calendar rights is refused audience *Verein*, a foreign group, or a person outside her groups — on create and on update; a club-calendar manager is not
+- [x] Server validation in `CalendarService` create/update (audience groups ⊆ administered groups, chosen ⊆ their current members)
+- [x] Data migration: group-owned entries with audience *Club* → audience *Groups* of the owner group
+- [x] Web: audience options without *Verein*, group picker limited to administered groups, people picker limited to their current members, for group admins without club-calendar rights
+- [x] Glossary/UI check: groups-audience entries remain visible to every member
 
 ### Phase 3 — One creation push for every audience
 Goal: the toggle is the only creation push, reaches exactly the audience, with the reach line.

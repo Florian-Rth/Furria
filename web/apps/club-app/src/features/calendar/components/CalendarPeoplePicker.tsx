@@ -7,6 +7,7 @@ import { KkSearchField } from '@furria/ui/KkSearchField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import type { CalendarAudienceReach } from '../calendar-audience-reach';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import { toGroupShortcutOptions, toNoMatchLabel } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
@@ -28,17 +29,19 @@ const NO_GROUP_CHOSEN = '';
 interface CalendarPeoplePickerProps {
   control: CalendarEntryEditorControl;
   held: readonly AudiencePerson[];
-  clubGroups: CalendarParticipantPool;
+  reach: CalendarAudienceReach;
+  reachableGroups: CalendarParticipantPool;
   errorText: string | undefined;
 }
 
 export const CalendarPeoplePicker: FC<CalendarPeoplePickerProps> = ({
   control,
   held,
-  clubGroups,
+  reach,
+  reachableGroups,
   errorText,
 }) => {
-  const picker = useCalendarPeoplePicker(control, held, clubGroups);
+  const picker = useCalendarPeoplePicker(control, held, reach, reachableGroups);
   const groupOptions = toGroupShortcutOptions(picker.shortcuts);
   const noMatchLabel = toNoMatchLabel(picker.query, picker.matches.length, picker.isLoading);
 

@@ -129,12 +129,16 @@ export interface CalendarParticipantChoice extends CalendarParticipantGroup {
   isArchived: boolean;
 }
 
+const isRunningIn = (pool: CalendarParticipantPool, groupId: number): boolean =>
+  pool.state === 'ready' && pool.groups.some((group) => group.groupId === groupId);
+
 export const toGroupChoices = (
   pool: CalendarParticipantPool,
   held: readonly CalendarParticipantGroup[],
   excludedId: string | null,
+  reachable: CalendarParticipantPool = pool,
 ): CalendarParticipantChoice[] => {
-  const running = pool.state === 'ready' ? pool.groups : [];
+  const running = reachable.state === 'ready' ? reachable.groups : [];
   const offered = running
     .filter((group) => toOwnerId(group.groupId) !== excludedId)
     .map((group) => ({ groupId: group.groupId, name: group.name, isArchived: false }));
@@ -144,7 +148,7 @@ export const toGroupChoices = (
     .map((group) => ({
       groupId: group.groupId,
       name: group.name,
-      isArchived: pool.state === 'ready',
+      isArchived: pool.state === 'ready' && !isRunningIn(pool, group.groupId),
     }));
 
   return [...offered, ...kept].sort((left, right) => left.name.localeCompare(right.name, 'de'));
@@ -165,7 +169,8 @@ export const toParticipatingGroupOptions = (
 export const toAudienceGroupOptions = (
   pool: CalendarParticipantPool,
   held: readonly CalendarParticipantGroup[],
-): KkSelectOption[] => toGroupOptions(toGroupChoices(pool, held, null));
+  reachable: CalendarParticipantPool,
+): KkSelectOption[] => toGroupOptions(toGroupChoices(pool, held, null, reachable));
 
 export const toParticipatingGroupIds = (values: readonly string[], ownerId: string): number[] => [
   ...new Set(values.filter((value) => value !== ownerId).map((value) => Number(value))),

@@ -571,6 +571,16 @@ describe('toGroupChoices', () => {
     ]);
   });
 
+  it('keeps a held running group outside the reach without calling it archived', () => {
+    const held = [{ groupId: 3, name: 'Männerballett' }];
+    const reachable = { state: 'ready', groups: [{ groupId: 1, name: 'Tanzgarde' }] } as const;
+
+    expect(toGroupChoices(running, held, null, reachable)).toEqual([
+      { groupId: 3, name: 'Männerballett', isArchived: false },
+      { groupId: 1, name: 'Tanzgarde', isArchived: false },
+    ]);
+  });
+
   it('lists a held group once when it is still in the directory', () => {
     const held = [{ groupId: 1, name: 'Tanzgarde' }];
 

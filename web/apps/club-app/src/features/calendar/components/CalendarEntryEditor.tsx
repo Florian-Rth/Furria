@@ -2,6 +2,7 @@ import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
 import { CALENDAR_ORIGIN } from '@/features/session/app-sections';
 import { WriteScreen } from '@/features/write/WriteScreen';
+import type { CalendarAudienceReach } from '../calendar-audience-reach';
 import type { CalendarOwnerOption, CalendarParticipantPool } from '../calendar-authoring';
 import {
   CALENDAR_ENTRY_CREATE_TITLE,
@@ -30,6 +31,7 @@ const NO_PEOPLE: readonly AudiencePerson[] = [];
 interface CalendarEntryEditorProps {
   entry: CalendarEntry | null;
   ownerOptions: readonly CalendarOwnerOption[];
+  audienceReach: CalendarAudienceReach;
   clubGroups: CalendarParticipantPool;
   clubGroupsReload: CalendarEntryReload;
   venues: readonly RunningVenue[];
@@ -38,6 +40,7 @@ interface CalendarEntryEditorProps {
 export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
   entry,
   ownerOptions,
+  audienceReach,
   clubGroups,
   clubGroupsReload,
   venues,
@@ -49,6 +52,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
   const actionLabel = control.isEditing ? SAVE_LABEL : ADD_LABEL;
   const heldGroups = entry?.audienceGroups ?? NO_GROUPS;
   const heldPeople = entry?.audiencePeople ?? NO_PEOPLE;
+  const heldAudience = entry?.audience ?? null;
   const groupsReload = clubGroups.state === 'failed' ? clubGroupsReload : null;
   const ownerSelectOptions = toOwnerSelectOptions(ownerOptions);
   const venueOptions = toVenueOptions(venues);
@@ -81,6 +85,8 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
       <CalendarEntryAudienceSection
         control={control}
         ownerOptions={ownerSelectOptions}
+        reach={audienceReach}
+        heldAudience={heldAudience}
         heldGroups={heldGroups}
         heldPeople={heldPeople}
         clubGroups={clubGroups}
