@@ -1,7 +1,7 @@
 ---
 rfc: 0008
 title: Notify on creation — one push that follows the audience
-status: draft
+status: in-progress
 github_issue: 91
 branch: feat/rfc-91-notify-on-creation
 created: 2026-11-16
@@ -62,12 +62,12 @@ Club-calendar managers keep every audience for any owner.
 
 ### Phase 1 — Aushang posters notify again, no extra permission
 Goal: the prod bug is gone; `push.notify_club` no longer exists; Aushang behaviour matches the rule.
-- [ ] Test first: an Aushang author with `announcements.post` only may notify (push enqueued), and may post without notifying
-- [ ] Remove the `push.notify_club` check from `AnnouncementService` and `CalendarService` (calendar keeps today's club-only toggle until phase 3, gated by club-calendar management instead)
-- [ ] Remove `FurriaPermissions.PushNotifyClub` and delete stored role grants of `push.notify_club` in a migration
-- [ ] Web: drop `pushNotifyClub` from `PERMISSION_KEYS`, permission denials, role copy and roles hub order
-- [ ] Web: Aushang toggle shown to every author on creation (on by default); calendar toggle shown to club-calendar managers
-- [ ] Adjust `AnnouncementPushesTests`, `CalendarPushesTests` to the new gate
+- [x] Test first: an Aushang author with `announcements.post` only may notify (push enqueued), and may post without notifying
+- [x] Remove the `push.notify_club` check from `AnnouncementService` and `CalendarService` (calendar keeps today's club-only toggle until phase 3, gated by club-calendar management instead)
+- [x] Remove `FurriaPermissions.PushNotifyClub` and delete stored role grants of `push.notify_club` in a migration
+- [x] Web: drop `pushNotifyClub` from `PERMISSION_KEYS`, permission denials, role copy and roles hub order
+- [x] Web: Aushang toggle shown to every author on creation (on by default); calendar toggle shown to club-calendar managers
+- [x] Adjust `AnnouncementPushesTests`, `CalendarPushesTests` to the new gate
 
 ### Phase 2 — A group admin schedules for her groups only
 Goal: server and editor confine a group admin's audience; existing data conforms.

@@ -279,7 +279,7 @@ public sealed partial class CalendarService
             command.NotifyMembers
             && !await _authorizer.IsGrantedAsync(
                 command.ActorAccountId,
-                FurriaPermissions.PushNotifyClub,
+                FurriaPermissions.CalendarManageClub,
                 ct
             )
         )

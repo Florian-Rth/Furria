@@ -79,7 +79,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_ASchedulerWithoutTheMembersPushNotifiesMembers()
+    public async Task Should_ReturnForbidden_When_ASchedulerWithoutTheClubCalendarNotifiesMembers()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -663,8 +663,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
                             "ilka-terminpflege",
                             "Terminpflege",
                             "ilka",
-                            FurriaPermissions.CalendarManageClub,
-                            FurriaPermissions.PushNotifyClub
+                            FurriaPermissions.CalendarManageClub
                         )
                     )
                     .Club(club => entries(club.AddVenue("buehnenhaus", "Bühnenhaus"))),
