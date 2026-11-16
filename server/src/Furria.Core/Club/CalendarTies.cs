@@ -35,6 +35,17 @@ public sealed record CalendarTies
         };
 
     [Pure]
+    public bool IsNotifiedOf(CalendarEntryFacts entry) =>
+        entry.Audience switch
+        {
+            CalendarEntryAudience.People => IsChosenFor(entry),
+            CalendarEntryAudience.Groups => !IsPausedIn(entry.SessionYear)
+                && entry.AudienceGroupIds.Any(MemberGroupIds.Contains),
+            CalendarEntryAudience.Club => IsRunningMemberIn(entry.SessionYear),
+            _ => throw new ArgumentOutOfRangeException(nameof(entry), entry.Audience, null),
+        };
+
+    [Pure]
     public bool IsAskedAsCast(CalendarEntryFacts entry) => entry.AsksTheCastOf(CastSessions);
 
     [Pure]
@@ -81,5 +92,8 @@ public sealed record CalendarTies
 
     [Pure]
     public bool IsRunningMemberIn(int sessionYear) =>
-        HoldsRunningMembership && !Pauses.Any(pause => pause.Contains(sessionYear));
+        HoldsRunningMembership && !IsPausedIn(sessionYear);
+
+    [Pure]
+    private bool IsPausedIn(int sessionYear) => Pauses.Any(pause => pause.Contains(sessionYear));
 }

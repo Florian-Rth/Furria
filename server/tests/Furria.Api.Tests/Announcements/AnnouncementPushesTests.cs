@@ -51,7 +51,7 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         var devices = await DevicesAsync(ctx, ct);
 
-        await PostAsync(ctx, null, notifyMembers: false, ct);
+        await PostAsync(ctx, null, notify: false, ct);
 
         await _fixture.PushesDrainedAsync(ct);
         Assert.Empty(PushesAt(_fixture, devices.Alice));
@@ -122,12 +122,12 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
         SeededContext ctx,
         DateOnly? validUntil,
         CancellationToken ct
-    ) => PostAsync(ctx, validUntil, notifyMembers: true, ct);
+    ) => PostAsync(ctx, validUntil, notify: true, ct);
 
     private static async Task<int> PostAsync(
         SeededContext ctx,
         DateOnly? validUntil,
-        bool notifyMembers,
+        bool notify,
         CancellationToken ct
     )
     {
@@ -143,7 +143,7 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
                 Body = Body,
                 ValidUntil = validUntil,
                 AddOns = [],
-                NotifyMembers = notifyMembers,
+                Notify = notify,
             }
         );
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

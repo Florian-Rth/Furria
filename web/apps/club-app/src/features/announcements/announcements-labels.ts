@@ -1,6 +1,6 @@
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { CALENDAR_ADD_ON_LABELS } from '@/features/calendar/calendar-add-ons';
-import { toCloserName } from '@/features/calendar/calendar-labels';
+import { toCloserName, toNotifyReachLine } from '@/features/calendar/calendar-labels';
 import { ANNOUNCEMENTS_PATH } from '@/features/session/app-sections';
 import { formatPublishedDay } from '@/lib/announcements';
 import { toDayNumberLabel, toTimeLabel } from '@/lib/calendar-days';
@@ -32,8 +32,7 @@ export const ANNOUNCEMENT_VALID_UNTIL_HINT =
   'Ohne Datum bleibt der Aushang sichtbar, bis er gelöscht wird.';
 export const ANNOUNCEMENT_BODY_PLACEHOLDER = 'Text des Aushangs';
 export const ANNOUNCEMENT_CONTENT_SECTION_TITLE = 'Aushang';
-export const ANNOUNCEMENT_NOTIFY_MEMBERS_LABEL = 'Mitglieder benachrichtigen';
-export const ANNOUNCEMENT_NOTIFY_MEMBERS_DESCRIPTION = 'Push-Mitteilung an alle Mitglieder';
+export const ANNOUNCEMENT_NOTIFY_REACH_LINE = toNotifyReachLine({ audience: 'club', asks: false });
 
 export const ADD_ONS_SECTION_TITLE = 'Funktionen';
 export const ADD_ADD_ON_LABEL = 'Funktion hinzufügen';

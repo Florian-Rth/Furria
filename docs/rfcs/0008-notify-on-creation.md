@@ -1,7 +1,7 @@
 ---
 rfc: 0008
 title: Notify on creation — one push that follows the audience
-status: in-progress
+status: implemented
 github_issue: 91
 branch: feat/rfc-91-notify-on-creation
 created: 2026-11-16
@@ -82,12 +82,12 @@ Goal: server and editor confine a group admin's audience; existing data conforms
 
 ### Phase 3 — One creation push for every audience
 Goal: the toggle is the only creation push, reaches exactly the audience, with the reach line.
-- [ ] Tests first: toggle on pushes the audience's people only (groups members, chosen people, all members) and never cast guests or the creator; toggle off pushes nobody even with a Zu-/Absage or chosen people; asking entries push "please answer"; adding people on edit still pushes them
-- [ ] `CalendarService.Pushes`: creation enqueues one push only when notified — `Announced`, or `AsksForResponse` when the entry asks (Zu-/Absage, poll, sign-up list); drop automatic `AsksForResponse`/`Chosen` on creation; keep `Chosen` on update
-- [ ] Delivery: notification reach = audience's people (no cast-guest widening) while *Erinnern* keeps everyone concerned
-- [ ] Web: toggle for every audience, on by default, never locked; label *Benachrichtigen* with the reach line (pure function → tested discriminant)
-- [ ] Aushang editor uses the same label and reach line
-- [ ] Browser check on phone size: create Aushang, club entry, group entry as group admin, chosen-people entry; toggle off/on
+- [x] Tests first: toggle on pushes the audience's people only (groups members, chosen people, all members) and never cast guests or the creator; toggle off pushes nobody even with a Zu-/Absage or chosen people; asking entries push "please answer"; adding people on edit still pushes them
+- [x] `CalendarService.Pushes`: creation enqueues one push only when notified — `Announced`, or `AsksForResponse` when the entry asks (Zu-/Absage, poll, sign-up list); drop automatic `AsksForResponse`/`Chosen` on creation; keep `Chosen` on update
+- [x] Delivery: notification reach = audience's people (no cast-guest widening) while *Erinnern* keeps everyone concerned
+- [x] Web: toggle for every audience, on by default, never locked; label *Benachrichtigen* with the reach line (pure function → tested discriminant)
+- [x] Aushang editor uses the same label and reach line
+- [x] Browser check on phone size: create Aushang, club entry, group entry as group admin, chosen-people entry; toggle off/on
 
 ## Risks & alternatives
 - **Notification fatigue** — toggle on by default for routine trainings; accepted, members can mute

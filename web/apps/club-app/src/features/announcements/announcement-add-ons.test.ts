@@ -211,7 +211,7 @@ describe('toAnnouncementPayload', () => {
         title: 'Saalputz',
         body: 'Samstag',
         validUntil: '2026-11-30',
-        notifyMembers: true,
+        notify: true,
         addOns: [
           {
             key: 'list',
@@ -271,7 +271,7 @@ describe('toAnnouncementPayload', () => {
           borrowed: { calendarEntryId: 9, addOnId: 4 },
         },
       ],
-      notifyMembers: true,
+      notify: true,
     });
   });
 });

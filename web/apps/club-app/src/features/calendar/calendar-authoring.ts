@@ -72,19 +72,7 @@ export type CalendarEntryPayload = {
   audiencePersonIds: number[];
   addOns: CalendarAddOnPayload[];
   participatingGroupIds: number[];
-  notifyMembers: boolean;
-};
-
-export type NotifyMembersChoice = 'unavailable' | 'alwaysSent' | 'optional';
-
-export const toNotifyMembersChoice = (
-  form: Pick<CalendarEntryForm, 'audience' | 'addOns'>,
-): NotifyMembersChoice => {
-  if (form.audience !== 'club') {
-    return 'unavailable';
-  }
-
-  return form.addOns.some((card) => card.kind === 'attendance') ? 'alwaysSent' : 'optional';
+  notify: boolean;
 };
 
 export const toOwnerId = (ownerGroupId: number | null): string =>
@@ -309,7 +297,7 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
     participatingGroupIds: form.addOns.some((card) => card.kind === 'participatingGroups')
       ? toParticipatingGroupIds(form.participatingGroupIds, form.ownerId)
       : [],
-    notifyMembers: form.notifyMembers && toNotifyMembersChoice(form) === 'optional',
+    notify: form.notify,
   };
 };
 
@@ -418,7 +406,7 @@ const toDraftedFormValues = (
     endTime: end.time,
     addOns: [],
     participatingGroupIds: [],
-    notifyMembers: false,
+    notify: true,
   };
 };
 
@@ -450,7 +438,7 @@ export const toEntryFormValues = (
     endTime: end?.time ?? NO_END_TIME,
     addOns: toAddOnCards(entry.addOns),
     participatingGroupIds: entry.participatingGroups.map((group) => toOwnerId(group.groupId)),
-    notifyMembers: false,
+    notify: false,
   };
 };
 

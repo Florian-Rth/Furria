@@ -494,7 +494,7 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
                 Body = body,
                 ValidUntil = null,
                 AddOns = [],
-                NotifyMembers = false,
+                Notify = false,
             }
         );
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

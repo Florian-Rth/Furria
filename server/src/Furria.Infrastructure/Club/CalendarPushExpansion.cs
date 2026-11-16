@@ -124,12 +124,7 @@ public sealed class CalendarPushExpansion
             var ties = tiesByPerson[recipient.PersonId];
             if (
                 CalendarPushRules.MayConcern(push.Reason, entry, ties)
-                && CalendarPushRules.Reaches(
-                    push.Reason,
-                    entry,
-                    ties,
-                    await RightsOfAsync(recipient.AccountId, ct)
-                )
+                && ties.Sees(entry, await RightsOfAsync(recipient.AccountId, ct))
             )
                 outgoing.Add(CalendarPushMessages.For(push, recipient.AccountId, now));
         }

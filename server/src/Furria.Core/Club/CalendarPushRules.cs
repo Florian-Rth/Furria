@@ -57,15 +57,15 @@ public static class CalendarPushRules
         CalendarPushReason reason,
         CalendarEntryFacts entry,
         CalendarTies ties
-    ) => !ReachesEveryoneConcerned(reason) || ties.Concerns(entry);
-
-    [Pure]
-    public static bool Reaches(
-        CalendarPushReason reason,
-        CalendarEntryFacts entry,
-        CalendarTies ties,
-        CalendarRights rights
-    ) => MayConcern(reason, entry, ties) && ties.Sees(entry, rights);
+    ) =>
+        reason switch
+        {
+            CalendarPushReason.Announced or CalendarPushReason.AsksForResponse => ties.IsNotifiedOf(
+                entry
+            ),
+            CalendarPushReason.Reminder => ties.Concerns(entry),
+            _ => true,
+        };
 
     [Pure]
     public static TimeSpan TimeToLive(DateTimeOffset startsAt, DateTimeOffset now) =>

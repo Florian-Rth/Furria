@@ -60,7 +60,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                         Body = Body,
                         ValidUntil = ValidUntilInMarch,
                         AddOns = [],
-                        NotifyMembers = false,
+                        Notify = false,
                     }
                 );
 
@@ -99,7 +99,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Body = Body,
                 ValidUntil = null,
                 AddOns = [],
-                NotifyMembers = false,
+                Notify = false,
             }
         );
 
@@ -128,7 +128,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Body = Body,
                 ValidUntil = null,
                 AddOns = [],
-                NotifyMembers = false,
+                Notify = false,
             }
         );
 
@@ -153,7 +153,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Body = "",
                 ValidUntil = null,
                 AddOns = [],
-                NotifyMembers = false,
+                Notify = false,
             }
         );
 
@@ -188,7 +188,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                     + $" und nochmals @[Alice](person:{aliceId}).",
                 ValidUntil = null,
                 AddOns = [],
-                NotifyMembers = false,
+                Notify = false,
             }
         );
 
@@ -228,7 +228,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Body = body,
                 ValidUntil = null,
                 AddOns = [],
-                NotifyMembers = false,
+                Notify = false,
             }
         );
 
@@ -264,7 +264,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                             AttendanceAddOn(answersUntil),
                             SignUpListAddOn("Wer putzt was?"),
                         ],
-                        NotifyMembers = false,
+                        Notify = false,
                     }
                 );
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -301,7 +301,7 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
                 Body = Body,
                 ValidUntil = null,
                 AddOns = [AttendanceAddOn(null), AttendanceAddOn(null)],
-                NotifyMembers = false,
+                Notify = false,
             }
         );
 

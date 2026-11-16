@@ -61,7 +61,7 @@ public sealed class PostAnnouncement : Endpoint<PostAnnouncementRequest, PostAnn
             Body = req.Body,
             ValidUntil = req.ValidUntil,
             AddOns = [.. req.AddOns.Select(ToInput)],
-            NotifyMembers = req.NotifyMembers,
+            Notify = req.Notify,
         };
 
     private static PostAnnouncementResponse ToResponse(int announcementId) =>
@@ -121,7 +121,7 @@ public sealed record PostAnnouncementRequest
 
     public required IReadOnlyList<PostAnnouncementAddOnDataDto> AddOns { get; init; }
 
-    public required bool NotifyMembers { get; init; }
+    public required bool Notify { get; init; }
 }
 
 public sealed class PostAnnouncementValidator : Validator<PostAnnouncementRequest>

@@ -8,13 +8,10 @@ import type { CalendarAudienceReach } from '../calendar-audience-reach';
 import { toOfferedAudiences, toReachablePool } from '../calendar-audience-reach';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import { toAudienceGroupOptions, toParticipantsEmptyLabel } from '../calendar-authoring';
-import {
-  NOTIFY_MEMBERS_DESCRIPTION,
-  NOTIFY_MEMBERS_LABEL,
-  toAudienceOptions,
-} from '../calendar-labels';
+import { NOTIFY_LABEL, toAudienceOptions, toNotifyReachLine } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
+import { toNotifyReach } from '../notify-reach';
 import type { AudienceGroup, AudiencePerson, CalendarEntryAudience } from '../schemas';
 import { CalendarGroupsReloadButton } from './CalendarGroupsReloadButton';
 import { CalendarPeoplePicker } from './CalendarPeoplePicker';
@@ -86,16 +83,18 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
       />
     ) : null;
 
-  const notify = control.notifyMembers;
+  const notify = control.notify;
+  const notifyReachLine =
+    notify === null ? undefined : toNotifyReachLine(toNotifyReach(control.values, clubGroups));
   const notifySwitch =
-    notify === null || notify.choice === 'unavailable' ? null : (
+    notify === null ? null : (
       <KkSwitchRow
-        label={NOTIFY_MEMBERS_LABEL}
-        description={NOTIFY_MEMBERS_DESCRIPTION}
+        label={NOTIFY_LABEL}
+        description={notifyReachLine}
         checked={notify.checked}
         onChange={notify.set}
         stateChip={false}
-        disabled={notify.choice === 'alwaysSent' || control.isSaving}
+        disabled={control.isSaving}
       />
     );
 
