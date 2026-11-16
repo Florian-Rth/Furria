@@ -19,7 +19,6 @@ import {
   toEntryLink,
   toEntryPayload,
   toGroupChoices,
-  toNotifyMembersChoice,
   toOwnerOptions,
   toParticipatingGroupIds,
   toToggledValue,
@@ -79,7 +78,7 @@ const form = (overrides: Partial<CalendarEntryForm>): CalendarEntryForm => ({
   endTime: '22:15',
   addOns: [],
   participatingGroupIds: [],
-  notifyMembers: false,
+  notify: false,
   ...overrides,
 });
 
@@ -300,42 +299,11 @@ describe('toEntryPayload', () => {
     },
   );
 
-  it.each([
-    ['club', [], true, true],
-    ['club', [], false, false],
-    ['club', ['attendance'], true, false],
-    ['groups', [], true, false],
-    ['people', [], true, false],
-  ] as const)(
-    'sends audience %s with add-ons %j and the switch %s as notifying %s',
-    (audience, kinds, notifyMembers, expected) => {
-      const payload = toEntryPayload(
-        form({ audience, addOns: kinds.map((kind) => ({ key: kind, kind })), notifyMembers }),
-      );
-
-      expect(payload.notifyMembers).toBe(expected);
-    },
-  );
-
   it('writes both ends from the chosen days and times', () => {
     const payload = toEntryPayload(form({ endDay: '2027-01-21', endTime: '02:30' }));
 
     expect(toDayTime(payload.startsAt)).toEqual({ day: '2027-01-20', time: '19:00' });
     expect(toDayTime(payload.endsAt ?? '')).toEqual({ day: '2027-01-21', time: '02:30' });
-  });
-});
-
-describe('toNotifyMembersChoice', () => {
-  it.each([
-    ['club', [], 'optional'],
-    ['club', ['participatingGroups'], 'optional'],
-    ['club', ['attendance'], 'alwaysSent'],
-    ['groups', [], 'unavailable'],
-    ['people', ['attendance'], 'unavailable'],
-  ] as const)('offers audience %s with add-ons %j as %s', (audience, kinds, expected) => {
-    expect(
-      toNotifyMembersChoice({ audience, addOns: kinds.map((kind) => ({ key: kind, kind })) }),
-    ).toBe(expected);
   });
 });
 
@@ -568,6 +536,16 @@ describe('toGroupChoices', () => {
 
     expect(toGroupChoices({ state: 'failed' }, held, 'club')).toEqual([
       { groupId: 9, name: 'Wirbelwinde', isArchived: false },
+    ]);
+  });
+
+  it('keeps a held running group outside the reach without calling it archived', () => {
+    const held = [{ groupId: 3, name: 'Männerballett' }];
+    const reachable = { state: 'ready', groups: [{ groupId: 1, name: 'Tanzgarde' }] } as const;
+
+    expect(toGroupChoices(running, held, null, reachable)).toEqual([
+      { groupId: 3, name: 'Männerballett', isArchived: false },
+      { groupId: 1, name: 'Tanzgarde', isArchived: false },
     ]);
   });
 

@@ -1,5 +1,4 @@
 using System.Diagnostics.Contracts;
-using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
@@ -13,9 +12,6 @@ namespace Furria.Infrastructure.Club;
 
 public sealed partial class AnnouncementService
 {
-    private const string MembersPushNotGrantedMessage =
-        "Alle Mitglieder benachrichtigen darfst du nicht.";
-
     private const string UnknownAnnouncementMessage = "Diesen Aushang gibt es nicht mehr.";
     private const string ForeignAnnouncementMessage =
         "Diesen Aushang hat jemand anderes geschrieben.";
@@ -91,16 +87,6 @@ public sealed partial class AnnouncementService
         if (reading.Refusal is { } refusal)
             return Result<int>.Validation(refusal);
 
-        if (
-            command.NotifyMembers
-            && !await _authorizer.IsGrantedAsync(
-                command.AuthorAccountId,
-                FurriaPermissions.PushNotifyClub,
-                ct
-            )
-        )
-            return Result<int>.Forbidden(MembersPushNotGrantedMessage);
-
         var announcement = new Announcement
         {
             AuthorPersonId = command.AuthorPersonId,
@@ -127,7 +113,7 @@ public sealed partial class AnnouncementService
         if (!saved.IsSuccess)
             return Result<int>.Carrying(saved);
 
-        if (command.NotifyMembers)
+        if (command.Notify)
             await EnqueuePostedPushesAsync(announcement, ct);
         await transaction.CommitAsync(ct);
 

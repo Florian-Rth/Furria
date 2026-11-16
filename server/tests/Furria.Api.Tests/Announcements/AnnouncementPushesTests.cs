@@ -51,36 +51,11 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         var devices = await DevicesAsync(ctx, ct);
 
-        await PostAsync(ctx, null, notifyMembers: false, ct);
+        await PostAsync(ctx, null, notify: false, ct);
 
         await _fixture.PushesDrainedAsync(ct);
         Assert.Empty(PushesAt(_fixture, devices.Alice));
         Assert.Empty(PushesAt(_fixture, devices.Paula));
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_AnAuthorWithoutTheMembersPushNotifiesMembers()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var (response, _) = await client.POSTAsync<
-            PostAnnouncement,
-            PostAnnouncementRequest,
-            PostAnnouncementResponse
-        >(
-            new()
-            {
-                Title = Title,
-                Body = Body,
-                ValidUntil = null,
-                AddOns = [],
-                NotifyMembers = true,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
@@ -147,12 +122,12 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
         SeededContext ctx,
         DateOnly? validUntil,
         CancellationToken ct
-    ) => PostAsync(ctx, validUntil, notifyMembers: true, ct);
+    ) => PostAsync(ctx, validUntil, notify: true, ct);
 
     private static async Task<int> PostAsync(
         SeededContext ctx,
         DateOnly? validUntil,
-        bool notifyMembers,
+        bool notify,
         CancellationToken ct
     )
     {
@@ -168,7 +143,7 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
                 Body = Body,
                 ValidUntil = validUntil,
                 AddOns = [],
-                NotifyMembers = notifyMembers,
+                Notify = notify,
             }
         );
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -212,22 +187,13 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
                             .AddAccount("fred")
                     )
                     .Roles(roles =>
-                        roles
-                            .AddRoleWithHolder(
-                                "aushangwart",
-                                "bea-aushangwart",
-                                "Aushangwart",
-                                "bea",
-                                FurriaPermissions.AnnouncementsPost,
-                                FurriaPermissions.PushNotifyClub
-                            )
-                            .AddRoleWithHolder(
-                                "schriftfuehrung",
-                                "alice-schriftfuehrung",
-                                "Schriftführung",
-                                "alice",
-                                FurriaPermissions.AnnouncementsPost
-                            )
+                        roles.AddRoleWithHolder(
+                            "aushangwart",
+                            "bea-aushangwart",
+                            "Aushangwart",
+                            "bea",
+                            FurriaPermissions.AnnouncementsPost
+                        )
                     ),
             ct
         );

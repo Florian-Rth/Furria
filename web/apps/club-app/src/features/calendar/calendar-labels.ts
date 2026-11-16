@@ -12,12 +12,13 @@ import {
 import { shiftDay, toIsoDay } from '@/lib/day';
 import { CALENDAR_ADD_ON_LABELS } from './calendar-add-ons';
 import type { CalendarOwnerOption } from './calendar-authoring';
-import { AUDIENCE_ORDER, AUTHORED_KINDS, NO_VENUE_ID } from './calendar-authoring';
+import { AUTHORED_KINDS, NO_VENUE_ID } from './calendar-authoring';
 import { isIsoDay } from './calendar-day-schedules';
 import type { CalendarGroupShortcut } from './calendar-people';
 import { toPersonName } from './calendar-people';
 import type { CalendarPollOutcome } from './calendar-polls';
 import type { RemindedAt, ReminderFailure, ReminderMeta } from './calendar-reminders';
+import type { NotifyReach } from './notify-reach';
 import type {
   CalendarAddOnKind,
   CalendarEntry,
@@ -51,12 +52,36 @@ export const CALENDAR_KIND_OPTIONS: readonly KkSelectOption[] = AUTHORED_KINDS.m
   label: CALENDAR_KIND_LABELS[kind],
 }));
 
-export const NOTIFY_MEMBERS_LABEL = 'Mitglieder benachrichtigen';
-export const NOTIFY_MEMBERS_DESCRIPTION = 'Push-Mitteilung an alle Mitglieder';
+export const NOTIFY_LABEL = 'Benachrichtigen';
 
-export const CALENDAR_AUDIENCE_OPTIONS: readonly KkSelectOption[] = AUDIENCE_ORDER.map(
-  (audience) => ({ value: audience, label: CALENDAR_AUDIENCE_LABELS[audience] }),
-);
+const ASKS_FOR_AN_ANSWER = 'mit Bitte um Antwort';
+
+const toChosenPeopleReach = (count: number): string => {
+  if (count === 0) {
+    return 'Ausgewählte Personen';
+  }
+
+  return count === 1 ? '1 ausgewählte Person' : `${count} ausgewählte Personen`;
+};
+
+const toReachedPeople = (reach: NotifyReach): string => {
+  switch (reach.audience) {
+    case 'club':
+      return 'Alle Mitglieder';
+    case 'groups':
+      return reach.groupNames.length === 0
+        ? 'Mitglieder der gewählten Gruppen'
+        : `Mitglieder von ${reach.groupNames.join(', ')}`;
+    case 'people':
+      return toChosenPeopleReach(reach.count);
+  }
+};
+
+export const toNotifyReachLine = (reach: NotifyReach): string =>
+  reach.asks ? `${toReachedPeople(reach)}, ${ASKS_FOR_AN_ANSWER}` : toReachedPeople(reach);
+
+export const toAudienceOptions = (audiences: readonly CalendarEntryAudience[]): KkSelectOption[] =>
+  audiences.map((audience) => ({ value: audience, label: CALENDAR_AUDIENCE_LABELS[audience] }));
 
 export const toVenueOptions = (venues: readonly RunningVenue[]): KkSelectOption[] => [
   { value: NO_VENUE_ID, label: NO_VENUE_LABEL },

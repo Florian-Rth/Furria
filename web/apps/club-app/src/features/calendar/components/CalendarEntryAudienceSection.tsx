@@ -4,16 +4,15 @@ import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
+import type { CalendarAudienceReach } from '../calendar-audience-reach';
+import { toOfferedAudiences, toReachablePool } from '../calendar-audience-reach';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import { toAudienceGroupOptions, toParticipantsEmptyLabel } from '../calendar-authoring';
-import {
-  CALENDAR_AUDIENCE_OPTIONS,
-  NOTIFY_MEMBERS_DESCRIPTION,
-  NOTIFY_MEMBERS_LABEL,
-} from '../calendar-labels';
+import { NOTIFY_LABEL, toAudienceOptions, toNotifyReachLine } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
-import type { AudienceGroup, AudiencePerson } from '../schemas';
+import { toNotifyReach } from '../notify-reach';
+import type { AudienceGroup, AudiencePerson, CalendarEntryAudience } from '../schemas';
 import { CalendarGroupsReloadButton } from './CalendarGroupsReloadButton';
 import { CalendarPeoplePicker } from './CalendarPeoplePicker';
 
@@ -25,6 +24,8 @@ const OWNER_LABEL = 'Eigentümer';
 interface CalendarEntryAudienceSectionProps {
   control: CalendarEntryEditorControl;
   ownerOptions: readonly KkSelectOption[];
+  reach: CalendarAudienceReach;
+  heldAudience: CalendarEntryAudience | null;
   heldGroups: readonly AudienceGroup[];
   heldPeople: readonly AudiencePerson[];
   clubGroups: CalendarParticipantPool;
@@ -34,6 +35,8 @@ interface CalendarEntryAudienceSectionProps {
 export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps> = ({
   control,
   ownerOptions,
+  reach,
+  heldAudience,
   heldGroups,
   heldPeople,
   clubGroups,
@@ -43,8 +46,10 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
   const groupsErrorText = errors.audienceGroupIds?.message;
   const peopleErrorText = errors.audiencePersonIds?.message;
   const audience = control.values.audience;
-  const groupOptions = toAudienceGroupOptions(clubGroups, heldGroups);
-  const groupsEmptyLabel = toParticipantsEmptyLabel(clubGroups);
+  const audienceOptions = toAudienceOptions(toOfferedAudiences(reach, heldAudience));
+  const reachableGroups = toReachablePool(clubGroups, reach);
+  const groupOptions = toAudienceGroupOptions(clubGroups, heldGroups, reachableGroups);
+  const groupsEmptyLabel = toParticipantsEmptyLabel(reachableGroups);
 
   const reloadButton =
     clubGroupsReload === null ? null : <CalendarGroupsReloadButton reload={clubGroupsReload} />;
@@ -72,21 +77,24 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
       <CalendarPeoplePicker
         control={control}
         held={heldPeople}
-        clubGroups={clubGroups}
+        reach={reach}
+        reachableGroups={reachableGroups}
         errorText={peopleErrorText}
       />
     ) : null;
 
-  const notify = control.notifyMembers;
+  const notify = control.notify;
+  const notifyReachLine =
+    notify === null ? undefined : toNotifyReachLine(toNotifyReach(control.values, clubGroups));
   const notifySwitch =
-    notify === null || notify.choice === 'unavailable' ? null : (
+    notify === null ? null : (
       <KkSwitchRow
-        label={NOTIFY_MEMBERS_LABEL}
-        description={NOTIFY_MEMBERS_DESCRIPTION}
+        label={NOTIFY_LABEL}
+        description={notifyReachLine}
         checked={notify.checked}
         onChange={notify.set}
         stateChip={false}
-        disabled={notify.choice === 'alwaysSent' || control.isSaving}
+        disabled={control.isSaving}
       />
     );
 
@@ -109,7 +117,7 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
         label={AUDIENCE_LABEL}
         required
         value={audience}
-        options={CALENDAR_AUDIENCE_OPTIONS}
+        options={audienceOptions}
         onChange={control.setAudience}
         presentation="choices"
       />

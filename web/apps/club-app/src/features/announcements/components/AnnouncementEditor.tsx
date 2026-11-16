@@ -5,6 +5,7 @@ import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import { KkTextField } from '@furria/ui/KkTextField';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
+import { NOTIFY_LABEL } from '@/features/calendar/calendar-labels';
 import { RichTextLinkSheet } from '@/features/rich-text/components/RichTextLinkSheet';
 import { RichTextMentionLayer } from '@/features/rich-text/components/RichTextMentionLayer';
 import { FORMAT_RAIL_LABEL } from '@/features/rich-text/rich-text-copy';
@@ -17,8 +18,7 @@ import {
   ANNOUNCEMENT_CONTENT_SECTION_TITLE,
   ANNOUNCEMENT_CREATE_TITLE,
   ANNOUNCEMENT_EDIT_TITLE,
-  ANNOUNCEMENT_NOTIFY_MEMBERS_DESCRIPTION,
-  ANNOUNCEMENT_NOTIFY_MEMBERS_LABEL,
+  ANNOUNCEMENT_NOTIFY_REACH_LINE,
   ANNOUNCEMENT_SAVE_LABEL,
   ANNOUNCEMENT_TITLE_FIELD_LABEL,
   ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL,
@@ -49,12 +49,12 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
   const bodyHelper = errors.body?.message;
 
   const notifySwitch =
-    control.notifyMembers === null ? null : (
+    control.notify === null ? null : (
       <KkSwitchRow
-        label={ANNOUNCEMENT_NOTIFY_MEMBERS_LABEL}
-        description={ANNOUNCEMENT_NOTIFY_MEMBERS_DESCRIPTION}
-        checked={control.notifyMembers.checked}
-        onChange={control.notifyMembers.set}
+        label={NOTIFY_LABEL}
+        description={ANNOUNCEMENT_NOTIFY_REACH_LINE}
+        checked={control.notify.checked}
+        onChange={control.notify.set}
         stateChip={false}
         disabled={control.isSaving}
       />

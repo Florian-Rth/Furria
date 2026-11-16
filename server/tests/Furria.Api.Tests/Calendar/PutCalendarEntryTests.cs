@@ -265,8 +265,8 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = InsideTheAbendprobe,
                 EndsAt = AfterTheAbendprobe,
                 Kind = CalendarEntryKind.Training,
-                Audience = CalendarEntryAudience.Club,
-                AudienceGroupIds = [],
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
                 AudiencePersonIds = [],
                 AddOns = [],
                 ParticipatingGroupIds = [],
@@ -310,8 +310,8 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = TrainingStart.AddDays(2),
                 EndsAt = null,
                 Kind = CalendarEntryKind.Trip,
-                Audience = CalendarEntryAudience.Club,
-                AudienceGroupIds = [],
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
                 AudiencePersonIds = [],
                 AddOns = [PutAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
                 ParticipatingGroupIds = [ctx.Groups.Groups.IdOf("altgarde")],
@@ -348,8 +348,8 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = TrainingStart.AddDays(2),
                 EndsAt = null,
                 Kind = CalendarEntryKind.Trip,
-                Audience = CalendarEntryAudience.Club,
-                AudienceGroupIds = [],
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
                 AudiencePersonIds = [],
                 AddOns = [PutAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
                 ParticipatingGroupIds =
@@ -389,8 +389,8 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = TrainingStart,
                 EndsAt = TrainingEnd,
                 Kind = CalendarEntryKind.Training,
-                Audience = CalendarEntryAudience.Club,
-                AudienceGroupIds = [],
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
                 AudiencePersonIds = [],
                 AddOns = [],
                 ParticipatingGroupIds = [],
@@ -474,6 +474,149 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         >(ClubOwned(UnknownEntryId, DanceGuardPerformance));
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnForbidden_When_AGroupAdminWidensHerEntryToTheWholeClub()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
+
+        var response = await PutAsGroupAdminAsync(
+            ctx,
+            GardeTraining(ctx, entryId) with
+            {
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+            },
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(entryId)
+            .ToHaveAudience(CalendarEntryAudience.Groups)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnForbidden_When_AGroupAdminAddsAForeignGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
+
+        var response = await PutAsGroupAdminAsync(
+            ctx,
+            GardeTraining(ctx, entryId) with
+            {
+                AudienceGroupIds =
+                [
+                    ctx.Groups.Groups.IdOf("tanzgarde"),
+                    ctx.Groups.Groups.IdOf("kindergarde"),
+                ],
+            },
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnForbidden_When_AGroupAdminChoosesSomeoneOutsideHerGroups()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
+
+        var response = await PutAsGroupAdminAsync(
+            ctx,
+            GardeTraining(ctx, entryId) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [ctx.Identity.People.IdOf("kalle")],
+            },
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheWholeClub_When_TheGroupEntryAlreadyHoldsIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-ball");
+
+        var response = await PutAsGroupAdminAsync(
+            ctx,
+            GardeTraining(ctx, entryId) with
+            {
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+            },
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(entryId)
+            .ToHaveAudience(CalendarEntryAudience.Club)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepAForeignGroup_When_TheGroupEntryAlreadyAddressesIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-joint");
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+        var kindergarde = ctx.Groups.Groups.IdOf("kindergarde");
+
+        var response = await PutAsGroupAdminAsync(
+            ctx,
+            GardeTraining(ctx, entryId) with
+            {
+                AudienceGroupIds = [tanzgarde, kindergarde],
+            },
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(entryId)
+            .ToCarryAudienceGroups(tanzgarde, kindergarde)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ChooseAnyone_When_AClubCalendarManagerEditsAGroupEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
+        var kalle = ctx.Identity.People.IdOf("kalle");
+
+        var client = await ctx.Identity.ClientForAsync("dana", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            GardeTraining(ctx, entryId) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [kalle],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.CalendarEntry(entryId).ToChoosePeople(kalle).AssertAsync(ct);
     }
 
     [Fact]
@@ -1359,6 +1502,40 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         return response;
     }
 
+    private static PutCalendarEntryRequest GardeTraining(SeededContext ctx, int calendarEntryId) =>
+        new()
+        {
+            CalendarEntryId = calendarEntryId,
+            Title = DanceGuardTraining,
+            Description = null,
+            OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+            VenueId = null,
+            StartsAt = TrainingStart,
+            EndsAt = TrainingEnd,
+            Kind = CalendarEntryKind.Training,
+            Audience = CalendarEntryAudience.Groups,
+            AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
+            AudiencePersonIds = [],
+            AddOns = [],
+            ParticipatingGroupIds = [],
+        };
+
+    private static async Task<HttpResponseMessage> PutAsGroupAdminAsync(
+        SeededContext ctx,
+        PutCalendarEntryRequest request,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync("chris", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(request);
+
+        return response;
+    }
+
     private static PutCalendarEntryRequest ClubOwned(int calendarEntryId, string title) =>
         new()
         {
@@ -1393,6 +1570,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                             .AddAccount("dana")
                             .AddMembership("dana-first", "dana", JoinedIn2017)
                             .AddPerson("frieda", "Frieda", "Ehemalig")
+                            .AddPerson("kalle", "Kalle", "Kindergarde")
                     )
                     .Roles(roles =>
                         roles
@@ -1413,6 +1591,13 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 "tanzgarde",
                                 "chris",
                                 "Trainer",
+                                JoinedIn2017
+                            )
+                            .AddGroup("kindergarde", "Kindergarde")
+                            .AddGroupMembership(
+                                "kalle-kindergarde",
+                                "kindergarde",
+                                "kalle",
                                 JoinedIn2017
                             )
                             .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedIn2026)
@@ -1444,6 +1629,20 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 ownerGroupAlias: "tanzgarde",
                                 audience: CalendarEntryAudience.Club,
                                 participatingGroupAliases: ["altgarde"]
+                            )
+                            .AddCalendarEntry(
+                                "garde-joint",
+                                DanceGuardTraining,
+                                TrainingStart.AddDays(5),
+                                ownerGroupAlias: "tanzgarde",
+                                audienceGroupAliases: ["tanzgarde", "kindergarde"]
+                            )
+                            .AddCalendarEntry(
+                                "garde-ball",
+                                DanceGuardTraining,
+                                TrainingStart.AddDays(4),
+                                ownerGroupAlias: "tanzgarde",
+                                audience: CalendarEntryAudience.Club
                             )
                             .AddCalendarEntry(
                                 "abendprobe",

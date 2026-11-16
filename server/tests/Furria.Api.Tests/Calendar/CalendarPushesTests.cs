@@ -31,7 +31,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushEveryoneItConcernsButTheScheduler_When_ANewEntryAsksForAResponse()
+    public async Task Should_PushEveryMemberButTheScheduler_When_ANotifiedEntryAsksForAResponse()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -41,6 +41,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ctx,
             ClubEntry() with
             {
+                Notify = true,
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
             },
             ct
@@ -68,6 +69,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ctx,
             ClubEntry() with
             {
+                Notify = true,
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
             },
             ct
@@ -79,25 +81,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_ASchedulerWithoutTheMembersPushNotifiesMembers()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await CreateAsGroupAdminAsync(
-            ctx,
-            GroupOwnedClubEntry(ctx) with
-            {
-                NotifyMembers = true,
-            },
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_PushEveryMember_When_AGroupAdminAsksTheWholeClubForAResponse()
+    public async Task Should_PushTheGroupsRunningMembersButTheScheduler_When_AGroupAdminNotifiesHerGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -107,6 +91,57 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ctx,
             GroupOwnedClubEntry(ctx) with
             {
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
+                Notify = true,
+            },
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Single(PushesAt(_fixture, devices.Chris));
+        Assert.Empty(PushesAt(_fixture, devices.Mara));
+        Assert.Empty(PushesAt(_fixture, devices.Paula));
+        Assert.Empty(PushesAt(_fixture, devices.Fred));
+    }
+
+    [Fact]
+    public async Task Should_PushNobody_When_AnEntryAskingChosenPeopleIsNotNotified()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+
+        await CreateAsync(
+            ctx,
+            ClubEntry() with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [ctx.Identity.People.IdOf("chris")],
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
+            },
+            ct
+        );
+
+        await _fixture.PushesDrainedAsync(ct);
+        Assert.Empty(PushesAt(_fixture, devices.Chris));
+    }
+
+    [Fact]
+    public async Task Should_PushTheGroup_When_AGroupAdminAsksHerGroupForAResponse()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+
+        var response = await CreateAsGroupAdminAsync(
+            ctx,
+            GroupOwnedClubEntry(ctx) with
+            {
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
+                Notify = true,
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
             },
             ct
@@ -115,7 +150,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await _fixture.PushesDrainedAsync(ct);
         Assert.Single(PushesAt(_fixture, devices.Chris));
-        Assert.Single(PushesAt(_fixture, devices.Mara));
+        Assert.Empty(PushesAt(_fixture, devices.Mara));
     }
 
     [Fact]
@@ -131,6 +166,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             {
                 Audience = CalendarEntryAudience.People,
                 AudiencePersonIds = [ctx.Identity.People.IdOf("chris")],
+                Notify = true,
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
             },
             ct
@@ -143,7 +179,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushNobody_When_ANewEntryAsksNothing()
+    public async Task Should_PushNobody_When_ANewEntryIsNotNotified()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -156,13 +192,13 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushEveryMemberButTheScheduler_When_AClubWideEntryNotifiesMembers()
+    public async Task Should_PushEveryRunningMemberButTheScheduler_When_AClubWideEntryIsNotified()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
         var devices = await DevicesAsync(ctx, ct);
 
-        var entryId = await CreateAsync(ctx, ClubEntry() with { NotifyMembers = true }, ct);
+        var entryId = await CreateAsync(ctx, ClubEntry() with { Notify = true }, ct);
 
         await _fixture.PushesDrainedAsync(ct);
         var pushes = PushesAt(_fixture, devices.Chris);
@@ -185,7 +221,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             ctx,
             ClubEntry() with
             {
-                NotifyMembers = true,
+                Notify = true,
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
             },
             ct
@@ -209,7 +245,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             {
                 StartsAt = endedAnHourAgo.AddHours(-3),
                 EndsAt = endedAnHourAgo,
-                NotifyMembers = true,
+                Notify = true,
             },
             ct
         );
@@ -232,6 +268,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             {
                 StartsAt = startedAnHourAgo,
                 EndsAt = startedAnHourAgo.AddHours(3),
+                Notify = true,
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
             },
             ct
@@ -242,7 +279,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushTheChosenPeopleOnly_When_ANewEntryIsForChosenPeople()
+    public async Task Should_PushTheChosenPeopleOnly_When_AnEntryForChosenPeopleIsNotified()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -254,6 +291,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             {
                 Audience = CalendarEntryAudience.People,
                 AudiencePersonIds = [ctx.Identity.People.IdOf("fred")],
+                Notify = true,
             },
             ct
         );
@@ -276,6 +314,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             {
                 Audience = CalendarEntryAudience.People,
                 AudiencePersonIds = [ctx.Identity.People.IdOf("fred")],
+                Notify = true,
                 AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
             },
             ct
@@ -552,7 +591,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             AudiencePersonIds = [],
             AddOns = [],
             ParticipatingGroupIds = [],
-            NotifyMembers = false,
+            Notify = false,
         };
 
     private static PutCalendarEntryRequest ClubEntryUpdate(int calendarEntryId) =>
@@ -655,6 +694,18 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
                         groups
                             .AddGroup("tanzgarde", "Tanzgarde")
                             .AddGroupMembership("fred-tanzgarde", "tanzgarde", "fred", JoinedIn2017)
+                            .AddGroupMembership(
+                                "chris-tanzgarde",
+                                "tanzgarde",
+                                "chris",
+                                JoinedIn2017
+                            )
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                JoinedIn2017
+                            )
                             .AddGroupAdmin("fred-leads-tanzgarde", "tanzgarde", "fred")
                     )
                     .Roles(roles =>
@@ -663,8 +714,7 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
                             "ilka-terminpflege",
                             "Terminpflege",
                             "ilka",
-                            FurriaPermissions.CalendarManageClub,
-                            FurriaPermissions.PushNotifyClub
+                            FurriaPermissions.CalendarManageClub
                         )
                     )
                     .Club(club => entries(club.AddVenue("buehnenhaus", "Bühnenhaus"))),

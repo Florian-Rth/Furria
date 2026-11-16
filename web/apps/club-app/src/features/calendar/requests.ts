@@ -21,7 +21,7 @@ import {
   WrittenCalendarEntrySchema,
 } from './schemas';
 
-type CalendarEntryUpdateBody = Omit<CalendarEntryPayload, 'notifyMembers'>;
+type CalendarEntryUpdateBody = Omit<CalendarEntryPayload, 'notify'>;
 
 const toEntryBody = (payload: CalendarEntryPayload): CalendarEntryUpdateBody => ({
   title: payload.title,
@@ -40,7 +40,7 @@ const toEntryBody = (payload: CalendarEntryPayload): CalendarEntryUpdateBody => 
 
 const toCreatedEntryBody = (payload: CalendarEntryPayload): CalendarEntryPayload => ({
   ...toEntryBody(payload),
-  notifyMembers: payload.notifyMembers,
+  notify: payload.notify,
 });
 
 export const requestCalendar = (

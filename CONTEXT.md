@@ -1083,9 +1083,29 @@ Made precise when L2 was built (ruled 2026-10-02):
   on one of the act's coming trainings — kids without accounts too. The mark is stored as her
   response, naming who recorded it; the latest answer wins (her own answer replaces a mark), and
   the training's trail shows both. Undoing a mark restores the answer before it.
-- **Push** (ruled 2026-11-10). A phone is pushed when a new entry asks her for an attendance
-  response, when she is chosen for a chosen-people entry, and when an entry she answered *Ja* or
-  *Vielleicht* moves in time or place or is deleted.
+- **Push** (ruled 2026-11-10, creation pushes folded into **notifying** 2026-11-16). A phone is
+  pushed when a new entry is notified to her, when she is added to an existing chosen-people entry,
+  when an organiser reminds her, and when an entry she answered *Ja* or *Vielleicht* moves in time
+  or place or is deleted. Asking for a response, or choosing people when creating, pushes nobody
+  by itself.
+- **Notifying** (*Benachrichtigen*, ruled 2026-11-16). Whoever creates an entry or an
+  **announcement** may notify it: one push, once, to the people it is for — its **audience**
+  (every member for the club, the groups' members for groups, the chosen people), for an
+  announcement every member who can read Aushänge; never the author, and editing never notifies.
+  Who the push reaches always follows the audience; there is no separate list of whom to notify.
+  Precisely, an entry notifies the people its audience names — the club's running members, the
+  groups' current members, the chosen people — never a paused member, and never a guest of the
+  act's cast for being in it.
+  It is the creator's choice each time, offered on creation only and on by default for entries
+  and announcements alike. It is the only push on creation: when the entry asks for something
+  (a Zu-/Absage, a poll, a sign-up list) the one push asks her to answer; left off, nothing is
+  sent and the organiser may still remind later. Whoever may create it may notify it; no separate
+  right to notify exists. A group admin never reaches beyond her groups, because her audience
+  cannot (below).
+- **A group admin's audience** (ruled 2026-11-16). Who does not manage the club calendar schedules
+  for her groups only: the audience is groups she administers or chosen people from their current
+  members, never the club. Seen stays apart: a groups-audience entry is still seen by every member.
+  "For the club" is the club calendar's alone; "for my group, seen by the club" is hers.
 - **Reminder** (*Erinnern*, ruled 2026-11-10). An organiser may push everyone a Zu-/Absage, an
   Umfrage or an Eintragsliste still waits for — the people it concerns who have not answered, not
   herself. Only by hand, at most once per Funktion every six hours, and only while it is open.
@@ -1420,8 +1440,8 @@ It carries a **title**, a **body**, its **author**, its date, an optional **vali
 **news post**'s text — the same subset, the same editor — and may hold **mentions** of any person
 or group a member can look up, a **calendar entry**, an **event**, a published **news post** or an
 **album**; a mention whose target is gone or out of the reader's sight reads as plain text, and
-being mentioned pushes nobody. Posting one pushes every member who can read Aushänge except its
-author, once; editing never pushes. Withdrawing deletes it with its own add-ons and their answers.
+being mentioned pushes nobody. Posting one pushes only when its author **notifies** it
+(2026-11-16; until then posting always pushed); editing never pushes. Withdrawing deletes it with its own add-ons and their answers.
 
 Its add-ons are of two sorts, in one order its author sets:
 - **Own add-ons** — a **Zu-/Absage** (to the announcement itself), **polls** and **sign-up lists**;
@@ -1658,6 +1678,10 @@ _UI copy_: —
 _Avoid_: QR sticker, scan page
 
 ## Flagged ambiguities
+
+- **"Announce" a calendar entry** — never say it: **announcement** is the Aushang. Sending the
+  one push on creation is **notifying** (*Benachrichtigen*), for entries and announcements alike
+  (2026-11-16).
 
 - **"Programme"** (German *Programm*) — **retired 2026-08-13.** The word was overloaded across the
   two apps (website: the season's ticketed events; club app: a per-event running order) and is now

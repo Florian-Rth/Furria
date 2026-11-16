@@ -24,7 +24,7 @@ export const requestAnnouncementMentionables = (
     accessToken,
   });
 
-type AnnouncementUpdateBody = Omit<AnnouncementPayload, 'notifyMembers'>;
+type AnnouncementUpdateBody = Omit<AnnouncementPayload, 'notify'>;
 
 const toAnnouncementBody = (payload: AnnouncementPayload): AnnouncementUpdateBody => ({
   title: payload.title,
@@ -35,7 +35,7 @@ const toAnnouncementBody = (payload: AnnouncementPayload): AnnouncementUpdateBod
 
 const toCreatedAnnouncementBody = (payload: AnnouncementPayload): AnnouncementPayload => ({
   ...toAnnouncementBody(payload),
-  notifyMembers: payload.notifyMembers,
+  notify: payload.notify,
 });
 
 export const requestCreateAnnouncement = (

@@ -3,14 +3,13 @@ import type { KkProseMentionTone } from '@furria/ui/KkProseField';
 import { MENTION_KINDS } from '@furria/ui/rich-text';
 import type { UseFormReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
+import type { NotifySwitch } from '@/features/calendar/notify-reach';
 import { useFormatItems } from '@/features/rich-text/hooks/use-format-items';
 import type { RichTextField } from '@/features/rich-text/hooks/use-rich-text';
 import { useRichText } from '@/features/rich-text/hooks/use-rich-text';
 import { mentionTonesOf } from '@/features/rich-text/mention-tones';
 import type { MentionablesSource } from '@/features/rich-text/types';
-import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
-import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toAnnouncementFormValues, toAnnouncementPayload } from '../announcement-add-ons';
 import {
   ANNOUNCEMENT_BODY_FIELD_ID,
@@ -39,11 +38,6 @@ export interface AnnouncementBody {
   isEmpty: boolean;
 }
 
-export interface NotifyMembersSwitch {
-  checked: boolean;
-  set: (checked: boolean) => void;
-}
-
 export interface AnnouncementEditorControl {
   form: UseFormReturn<AnnouncementForm>;
   values: AnnouncementForm;
@@ -51,7 +45,7 @@ export interface AnnouncementEditorControl {
   body: AnnouncementBody;
   validUntil: string | null;
   setValidUntil: (value: string | null) => void;
-  notifyMembers: NotifyMembersSwitch | null;
+  notify: NotifySwitch | null;
   submit: () => void;
   isDirty: boolean;
   canSubmit: boolean;
@@ -66,7 +60,6 @@ export const useAnnouncementEditor = ({
   const create = useCreateAnnouncementMutation();
   const update = useUpdateAnnouncementMutation(announcementId ?? NO_ANNOUNCEMENT);
   const mentionables = useAnnouncementMentionables();
-  const { has } = usePermissions();
 
   const write = useWriteForm({
     schema: AnnouncementFormSchema,
@@ -82,7 +75,7 @@ export const useAnnouncementEditor = ({
   });
   const body = useController({ control: write.form.control, name: 'body' });
   const validUntil = useController({ control: write.form.control, name: 'validUntil' });
-  const notifyMembers = useController({ control: write.form.control, name: 'notifyMembers' });
+  const notify = useController({ control: write.form.control, name: 'notify' });
   const text = useRichText({
     text: body.field.value,
     isReadOnly: write.isSaving,
@@ -113,9 +106,7 @@ export const useAnnouncementEditor = ({
     },
     validUntil: validUntil.field.value,
     setValidUntil,
-    notifyMembers:
-      announcementId === null && has(PERMISSION_KEYS.pushNotifyClub)
-        ? { checked: notifyMembers.field.value, set: notifyMembers.field.onChange }
-        : null,
+    notify:
+      announcementId === null ? { checked: notify.field.value, set: notify.field.onChange } : null,
   };
 };

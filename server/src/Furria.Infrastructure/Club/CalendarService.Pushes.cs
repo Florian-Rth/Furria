@@ -6,28 +6,24 @@ namespace Furria.Infrastructure.Club;
 
 public sealed partial class CalendarService
 {
-    private async Task EnqueueCreatePushesAsync(
+    private async Task EnqueueNotifyingPushAsync(
         CalendarEntry entry,
-        CreatePushChoice choice,
+        int? actorPersonId,
         CancellationToken ct
-    )
-    {
-        var venueName = await VenueNameAsync(entry.VenueId, ct);
-        var actorPersonId = choice.ActorPersonId;
+    ) =>
+        EnqueuePush(
+            NotifyingReasonOf(entry),
+            entry,
+            [],
+            actorPersonId,
+            await VenueNameAsync(entry.VenueId, ct)
+        );
 
-        if (entry.AsksForResponse)
-            EnqueuePush(CalendarPushReason.AsksForResponse, entry, [], actorPersonId, venueName);
-        else if (choice.NotifyMembers)
-            EnqueuePush(CalendarPushReason.Announced, entry, [], actorPersonId, venueName);
-        else if (entry.Audience == CalendarEntryAudience.People)
-            EnqueuePush(
-                CalendarPushReason.Chosen,
-                entry,
-                ChosenOf(entry),
-                actorPersonId,
-                venueName
-            );
-    }
+    [Pure]
+    private static CalendarPushReason NotifyingReasonOf(CalendarEntry entry) =>
+        entry.AsksForResponse || entry.Polls.Count > 0 || entry.SignUpLists.Count > 0
+            ? CalendarPushReason.AsksForResponse
+            : CalendarPushReason.Announced;
 
     private async Task<PushBaseline> PushBaselineOfAsync(
         CalendarEntry entry,
@@ -157,8 +153,6 @@ public sealed partial class CalendarService
     [Pure]
     private static IReadOnlyList<int> ChosenOf(CalendarEntry entry) =>
         [.. entry.AudiencePeople.Select(link => link.PersonId)];
-
-    private sealed record CreatePushChoice(int? ActorPersonId, bool NotifyMembers);
 
     private sealed record PushBaseline(
         bool Moves,

@@ -72,19 +72,7 @@ export type CalendarEntryPayload = {
   audiencePersonIds: number[];
   addOns: CalendarAddOnPayload[];
   participatingGroupIds: number[];
-  notifyMembers: boolean;
-};
-
-export type NotifyMembersChoice = 'unavailable' | 'alwaysSent' | 'optional';
-
-export const toNotifyMembersChoice = (
-  form: Pick<CalendarEntryForm, 'audience' | 'addOns'>,
-): NotifyMembersChoice => {
-  if (form.audience !== 'club') {
-    return 'unavailable';
-  }
-
-  return form.addOns.some((card) => card.kind === 'attendance') ? 'alwaysSent' : 'optional';
+  notify: boolean;
 };
 
 export const toOwnerId = (ownerGroupId: number | null): string =>
@@ -129,12 +117,16 @@ export interface CalendarParticipantChoice extends CalendarParticipantGroup {
   isArchived: boolean;
 }
 
+const isRunningIn = (pool: CalendarParticipantPool, groupId: number): boolean =>
+  pool.state === 'ready' && pool.groups.some((group) => group.groupId === groupId);
+
 export const toGroupChoices = (
   pool: CalendarParticipantPool,
   held: readonly CalendarParticipantGroup[],
   excludedId: string | null,
+  reachable: CalendarParticipantPool = pool,
 ): CalendarParticipantChoice[] => {
-  const running = pool.state === 'ready' ? pool.groups : [];
+  const running = reachable.state === 'ready' ? reachable.groups : [];
   const offered = running
     .filter((group) => toOwnerId(group.groupId) !== excludedId)
     .map((group) => ({ groupId: group.groupId, name: group.name, isArchived: false }));
@@ -144,7 +136,7 @@ export const toGroupChoices = (
     .map((group) => ({
       groupId: group.groupId,
       name: group.name,
-      isArchived: pool.state === 'ready',
+      isArchived: pool.state === 'ready' && !isRunningIn(pool, group.groupId),
     }));
 
   return [...offered, ...kept].sort((left, right) => left.name.localeCompare(right.name, 'de'));
@@ -165,7 +157,8 @@ export const toParticipatingGroupOptions = (
 export const toAudienceGroupOptions = (
   pool: CalendarParticipantPool,
   held: readonly CalendarParticipantGroup[],
-): KkSelectOption[] => toGroupOptions(toGroupChoices(pool, held, null));
+  reachable: CalendarParticipantPool,
+): KkSelectOption[] => toGroupOptions(toGroupChoices(pool, held, null, reachable));
 
 export const toParticipatingGroupIds = (values: readonly string[], ownerId: string): number[] => [
   ...new Set(values.filter((value) => value !== ownerId).map((value) => Number(value))),
@@ -304,7 +297,7 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
     participatingGroupIds: form.addOns.some((card) => card.kind === 'participatingGroups')
       ? toParticipatingGroupIds(form.participatingGroupIds, form.ownerId)
       : [],
-    notifyMembers: form.notifyMembers && toNotifyMembersChoice(form) === 'optional',
+    notify: form.notify,
   };
 };
 
@@ -413,7 +406,7 @@ const toDraftedFormValues = (
     endTime: end.time,
     addOns: [],
     participatingGroupIds: [],
-    notifyMembers: false,
+    notify: true,
   };
 };
 
@@ -445,7 +438,7 @@ export const toEntryFormValues = (
     endTime: end?.time ?? NO_END_TIME,
     addOns: toAddOnCards(entry.addOns),
     participatingGroupIds: entry.participatingGroups.map((group) => toOwnerId(group.groupId)),
-    notifyMembers: false,
+    notify: false,
   };
 };
 

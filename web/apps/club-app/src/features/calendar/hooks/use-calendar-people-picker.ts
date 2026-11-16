@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useChoosablePeopleQuery } from '../api';
+import type { CalendarAudienceReach } from '../calendar-audience-reach';
+import { toReachablePeople } from '../calendar-audience-reach';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import { toCappedList } from '../calendar-names';
 import type { CalendarGroupShortcut, CalendarPersonName } from '../calendar-people';
@@ -39,14 +41,15 @@ export interface CalendarPeoplePickerControl {
 export const useCalendarPeoplePicker = (
   control: CalendarEntryEditorControl,
   held: readonly AudiencePerson[],
-  clubGroups: CalendarParticipantPool,
+  reach: CalendarAudienceReach,
+  reachableGroups: CalendarParticipantPool,
 ): CalendarPeoplePickerControl => {
   const [query, setQuery] = useState('');
   const [isChosenExpanded, setIsChosenExpanded] = useState(false);
   const peopleQuery = useChoosablePeopleQuery();
-  const people = peopleQuery.data?.people ?? NO_PEOPLE;
+  const people = toReachablePeople(peopleQuery.data?.people ?? NO_PEOPLE, reach);
   const chosenIds = control.values.audiencePersonIds;
-  const groups = clubGroups.state === 'ready' ? clubGroups.groups : [];
+  const groups = reachableGroups.state === 'ready' ? reachableGroups.groups : [];
   const shortcuts = toGroupShortcuts(groups, people, chosenIds);
   const chosen = toCappedList(
     toChosenPeople(chosenIds, people, held),

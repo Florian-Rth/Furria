@@ -52,7 +52,8 @@ internal static class CalendarPushMessages
             CalendarPushReason.Deleted => $"{SlotOf(push)} fällt aus.",
             CalendarPushReason.Reminder => $"{SlotOf(push)}. {ReminderAskOf(push)}",
             _ when push.AsksForResponse => $"{SlotOf(push)}. Bitte sag zu oder ab.",
-            CalendarPushReason.Announced => $"{SlotOf(push)}. Neu im Vereinskalender.",
+            CalendarPushReason.AsksForResponse => $"{SlotOf(push)}. Deine Antwort ist gefragt.",
+            CalendarPushReason.Announced => $"{SlotOf(push)}. Neu im Kalender.",
             _ => $"{SlotOf(push)}. Du bist eingeladen.",
         };
 

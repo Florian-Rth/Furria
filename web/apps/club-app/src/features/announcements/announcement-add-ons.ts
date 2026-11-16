@@ -72,7 +72,7 @@ export type AnnouncementPayload = {
   body: string;
   validUntil: string | null;
   addOns: AnnouncementAddOnPayload[];
-  notifyMembers: boolean;
+  notify: boolean;
 };
 
 const NO_DETAILS = { attendance: null, poll: null, signUpList: null, borrowed: null } as const;
@@ -167,13 +167,13 @@ const toAddOnCard = (addOn: AnnouncementAddOn): AnnouncementAddOnCardForm => {
 
 export const toAnnouncementFormValues = (announcement: Announcement | null): AnnouncementForm =>
   announcement === null
-    ? { title: '', body: '', validUntil: null, addOns: [], notifyMembers: true }
+    ? { title: '', body: '', validUntil: null, addOns: [], notify: true }
     : {
         title: announcement.title,
         body: announcement.body,
         validUntil: announcement.validUntil,
         addOns: announcement.addOns.map(toAddOnCard),
-        notifyMembers: false,
+        notify: false,
       };
 
 export const toAttachedAnnouncementCards = (
@@ -318,7 +318,7 @@ export const toAnnouncementPayload = (form: AnnouncementForm): AnnouncementPaylo
   body: form.body,
   validUntil: form.validUntil,
   addOns: form.addOns.map(toAddOnPayload),
-  notifyMembers: form.notifyMembers,
+  notify: form.notify,
 });
 
 export type AnnouncementAddOnState = 'owed' | 'answered' | 'closed' | 'quiet';

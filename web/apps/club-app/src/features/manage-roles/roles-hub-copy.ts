@@ -192,7 +192,6 @@ export const RIGHT_GROUP_DEFINITIONS: readonly RightGroupDefinition[] = [
       'club.manage',
       'key_holdings.manage',
       'announcements.post',
-      'push.notify_club',
       'calendar.manage_club',
       'group_matcher.manage',
     ],

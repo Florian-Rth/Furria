@@ -5,6 +5,9 @@ namespace Furria.Api.Tests.Calendar;
 
 public sealed class CalendarPushRulesTests
 {
+    private const int Garde = 7;
+    private const int CastGuest = 42;
+
     private static readonly DateTimeOffset Now = new(2027, 1, 10, 12, 0, 0, TimeSpan.Zero);
 
     public static readonly TheoryData<int, TimeSpan> TimesToLive = new()
@@ -65,4 +68,48 @@ public sealed class CalendarPushRulesTests
     {
         Assert.Equal(newlyChosen, CalendarPushRules.NewlyChosen(before, [1, 2], after, [1, 3]));
     }
+
+    [Theory]
+    [InlineData(CalendarPushReason.Announced, false)]
+    [InlineData(CalendarPushReason.AsksForResponse, false)]
+    [InlineData(CalendarPushReason.Reminder, true)]
+    public void Should_ReachACastGuestOnlyWithAReminder_When_HerGroupsTrainingAsksForAResponse(
+        CalendarPushReason reason,
+        bool reaches
+    )
+    {
+        var training = GardeTraining();
+
+        Assert.Equal(
+            reaches,
+            CalendarPushRules.MayConcern(reason, training, CastGuestOf(training))
+        );
+    }
+
+    private static CalendarEntryFacts GardeTraining() =>
+        new()
+        {
+            OwnerGroupId = Garde,
+            ParticipatingGroupIds = [],
+            Audience = CalendarEntryAudience.Groups,
+            AudienceGroupIds = [Garde],
+            AudiencePersonIds = [],
+            Kind = CalendarEntryKind.Training,
+            AsksForResponse = true,
+            StartsAt = Now.AddDays(3),
+        };
+
+    private static CalendarTies CastGuestOf(CalendarEntryFacts training) =>
+        new()
+        {
+            PersonId = CastGuest,
+            HoldsRunningMembership = false,
+            Pauses = [],
+            MemberGroupIds = new HashSet<int>(),
+            AdminFunctions = new Dictionary<int, string?>(),
+            CastSessions = new HashSet<GroupSession>
+            {
+                new(Garde, CastAttendance.SessionYearOf(training.StartsAt)),
+            },
+        };
 }

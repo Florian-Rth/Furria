@@ -14,5 +14,5 @@ public sealed record CreateAnnouncementCommand
 
     public required IReadOnlyList<AnnouncementAddOnInput> AddOns { get; init; }
 
-    public required bool NotifyMembers { get; init; }
+    public required bool Notify { get; init; }
 }

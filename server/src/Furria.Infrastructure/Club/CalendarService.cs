@@ -23,8 +23,6 @@ public sealed partial class CalendarService
     private const string NoPersonMessage = "Dieser Zugang gehört zu keiner Person.";
     private const string NotYoursMessage = "Auf diesen Kalendereintrag kannst du nicht antworten.";
     private const string NotOwnedMessage = "Diesen Kalendereintrag darfst du nicht pflegen.";
-    private const string ClubPushNotGrantedMessage =
-        "Alle Mitglieder benachrichtigen darfst du nicht.";
     private const string NoResponseWantedMessage = "Dieser Eintrag fragt nicht nach einer Antwort.";
     private const string DuplicateResponseMessage =
         WriteConflictMessages.DuplicateAttendanceResponse;
@@ -40,6 +38,8 @@ public sealed partial class CalendarService
         "Eine archivierte Gruppe kann nicht gewählt werden.";
     private const string UnchoosablePersonMessage = "Diese Person kann nicht ausgewählt werden.";
     private const string NoParticipatingGroupMessage = "Wähle mindestens eine mitwirkende Gruppe.";
+    private const string BeyondOwnGroupsMessage =
+        "Ohne den Vereinskalender planst du nur für deine Gruppen und ihre Mitglieder.";
 
     private static readonly CalendarRights SeesEveryClubEntry = new(
         HoldsClubRead: true,
@@ -275,16 +275,6 @@ public sealed partial class CalendarService
         if (!await MayOwnAsync(command.ActorAccountId, command.OwnerGroupId, ct))
             return Result<CalendarEntryWriteResult>.Forbidden(NotOwnedMessage);
 
-        if (
-            command.NotifyMembers
-            && !await _authorizer.IsGrantedAsync(
-                command.ActorAccountId,
-                FurriaPermissions.PushNotifyClub,
-                ct
-            )
-        )
-            return Result<CalendarEntryWriteResult>.Forbidden(ClubPushNotGrantedMessage);
-
         var participatingGroupIds = ParticipationOf(
             command.ParticipatingGroupIds,
             command.OwnerGroupId
@@ -309,6 +299,9 @@ public sealed partial class CalendarService
 
         if (refusal is not null)
             return Result<CalendarEntryWriteResult>.Validation(refusal);
+
+        if (!await MayAddressAsync(command.ActorAccountId, audience, NoHeldAudience, ct))
+            return Result<CalendarEntryWriteResult>.Forbidden(BeyondOwnGroupsMessage);
 
         var entry = new CalendarEntry
         {
@@ -352,11 +345,9 @@ public sealed partial class CalendarService
         if (!saved.IsSuccess)
             return Result<CalendarEntryWriteResult>.Carrying(saved);
 
-        await EnqueueCreatePushesAsync(
-            entry,
-            new CreatePushChoice(command.ViewerPersonId, command.NotifyMembers),
-            ct
-        );
+        if (command.Notify)
+            await EnqueueNotifyingPushAsync(entry, command.ViewerPersonId, ct);
+
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
@@ -407,18 +398,22 @@ public sealed partial class CalendarService
             command.AudiencePersonIds
         );
 
+        var heldAudience = HeldAudienceOf(entry);
         var refusal = await PlacementRefusalAsync(
             new Placement(command.OwnerGroupId, command.VenueId, participatingGroupIds, audience),
             new HeldLinks(
                 [.. entry.ParticipatingGroups.Select(link => link.GroupId)],
-                [.. entry.AudienceGroups.Select(link => link.GroupId)],
-                [.. entry.AudiencePeople.Select(link => link.PersonId)]
+                heldAudience.GroupIds,
+                heldAudience.PersonIds
             ),
             ct
         );
 
         if (refusal is not null)
             return Result<CalendarEntryWriteResult>.Validation(refusal);
+
+        if (!await MayAddressAsync(command.ActorAccountId, audience, heldAudience, ct))
+            return Result<CalendarEntryWriteResult>.Forbidden(BeyondOwnGroupsMessage);
 
         var addOnClock = _timeProvider.GetUtcNow();
 

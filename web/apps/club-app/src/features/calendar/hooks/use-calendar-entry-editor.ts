@@ -2,9 +2,7 @@ import { useSearch } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useFormState } from 'react-hook-form';
-import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
-import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import type { DayTime } from '@/lib/day';
 import { toIsoDay } from '@/lib/day';
 import type { AddOnCardsEditor } from '../add-on-cards-editor';
@@ -17,7 +15,7 @@ import {
   toChangedSignUpListCards,
   toDetachedCards,
 } from '../calendar-add-ons';
-import type { CalendarOwnerOption, NotifyMembersChoice } from '../calendar-authoring';
+import type { CalendarOwnerOption } from '../calendar-authoring';
 import {
   toAddedEnd,
   toAudienceAfterOwnerChange,
@@ -29,7 +27,6 @@ import {
   toEntryFormValues,
   toEntryLanding,
   toEntryPayload,
-  toNotifyMembersChoice,
   toParticipationKeptForOwner,
   toToggledValue,
 } from '../calendar-authoring';
@@ -37,6 +34,7 @@ import type { DayScheduleFieldPath } from '../calendar-day-schedules';
 import { toStepDayPaths } from '../calendar-day-schedules';
 import { toDeadlinePaths } from '../calendar-deadlines';
 import { toFieldError } from '../calendar-field-error';
+import type { NotifySwitch } from '../notify-reach';
 import type {
   CalendarAddOnKind,
   CalendarDayScheduleForm,
@@ -54,12 +52,6 @@ const NO_END: DayTime = { day: '', time: '' };
 interface CalendarEntryEditorInput {
   entry: CalendarEntry | null;
   ownerOptions: readonly CalendarOwnerOption[];
-}
-
-export interface NotifyMembersSwitch {
-  choice: NotifyMembersChoice;
-  checked: boolean;
-  set: (checked: boolean) => void;
 }
 
 export interface CalendarEntryEditorControl extends AddOnCardsEditor {
@@ -86,7 +78,7 @@ export interface CalendarEntryEditorControl extends AddOnCardsEditor {
   removeEnd: () => void;
   setEndDay: (value: string) => void;
   setEndTime: (value: string) => void;
-  notifyMembers: NotifyMembersSwitch | null;
+  notify: NotifySwitch | null;
   isEditing: boolean;
   isDirty: boolean;
   canSubmit: boolean;
@@ -94,15 +86,6 @@ export interface CalendarEntryEditorControl extends AddOnCardsEditor {
   rejection: string | null;
   submit: () => void;
 }
-
-const toNotifyMembersSwitch = (
-  values: CalendarEntryForm,
-  set: (checked: boolean) => void,
-): NotifyMembersSwitch => {
-  const choice = toNotifyMembersChoice(values);
-
-  return { choice, checked: choice === 'alwaysSent' || values.notifyMembers, set };
-};
 
 export const useCalendarEntryEditor = ({
   entry,
@@ -112,8 +95,6 @@ export const useCalendarEntryEditor = ({
   const search = useSearch({ strict: false });
   const { day } = search;
   const draft = toEntryDraft(search);
-  const { has } = usePermissions();
-  const mayNotifyMembers = has(PERMISSION_KEYS.pushNotifyClub);
   const createMutation = useCreateCalendarEntryMutation();
   const updateMutation = useUpdateCalendarEntryMutation();
   const landedDay = useRef(day ?? toIsoDay(today));
@@ -289,8 +270,8 @@ export const useCalendarEntryEditor = ({
     }
   };
 
-  const setNotifyMembers = (checked: boolean): void => {
-    form.setValue('notifyMembers', checked, FIELD_EDIT);
+  const setNotify = (checked: boolean): void => {
+    form.setValue('notify', checked, FIELD_EDIT);
   };
 
   return {
@@ -340,8 +321,7 @@ export const useCalendarEntryEditor = ({
     setEndTime: (value) => {
       form.setValue('endTime', value, FIELD_EDIT);
     },
-    notifyMembers:
-      entry === null && mayNotifyMembers ? toNotifyMembersSwitch(values, setNotifyMembers) : null,
+    notify: entry === null ? { checked: values.notify, set: setNotify } : null,
     isEditing: entry !== null,
     isDirty: write.isDirty,
     canSubmit: write.canSubmit,
