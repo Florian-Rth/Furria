@@ -25,13 +25,7 @@ export const useWeekStrip = (
     return null;
   }
 
-  const entries = entriesOf(board.start);
-
-  if (entries.length === 0) {
-    return null;
-  }
-
-  return toStripDays(entries, board.start.today, board.now).map((day): StripCell => {
+  return toStripDays(entriesOf(board.start), board.start.today, board.now).map((day): StripCell => {
     const target = day.jumpTo;
     const face = toStripDayFace(day);
     const lastIndex = day.shown.length - 1;

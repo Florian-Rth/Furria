@@ -7,7 +7,7 @@ export interface JoinInBandContent {
 
 export const joinInBandContent: JoinInBandContent = {
   kicker: 'MITMACHEN · DAS GANZE JAHR',
-  headline: 'WERD TEIL DER GARDE',
+  headline: 'WERDE TEIL DES FCC',
   body: 'Ob Tanzgarde, Männerballett, Elferrat oder Büttenrede — beim FCC ist immer etwas los. Schau vorbei, lern uns kennen und feier die fünfte Jahreszeit mit uns.',
   ctaLabel: 'Mitglied werden →',
 };

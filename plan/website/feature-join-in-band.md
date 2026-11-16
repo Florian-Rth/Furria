@@ -9,7 +9,7 @@ adrs: []
 
 ## What & Why
 
-The recruit CTA band near the foot of the home page: a bold red block ("WERD TEIL DER GARDE")
+The recruit CTA band near the foot of the home page: a bold red block ("WERDE TEIL DES FCC")
 inviting visitors to join. It is the home page's entry point into the
 [Become a member](feature-membership-funnel.md) funnel — the club's growth hook.
 
@@ -42,7 +42,7 @@ inviting visitors to join. It is the home page's entry point into the
   `KkBroomMark` primitive.
 - **Final copy (static-final):**
   - Kicker: **MITMACHEN · DAS GANZE JAHR**
-  - Headline: **WERD TEIL DER GARDE**
+  - Headline: **WERDE TEIL DES FCC**
   - Body: *Ob Tanzgarde, Männerballett, Elferrat oder Büttenrede — beim FCC ist immer etwas los.
     Schau vorbei, lern uns kennen und feier die fünfte Jahreszeit mit uns.*
   - CTA: **Mitglied werden →**
