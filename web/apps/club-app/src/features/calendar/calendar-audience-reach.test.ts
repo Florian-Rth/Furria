@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { CalendarEntryKind } from '@/features/club/schemas';
 import type { CalendarAudienceReach } from './calendar-audience-reach';
 import {
   toAudienceReach,
@@ -29,13 +30,22 @@ describe('toAudienceReach', () => {
 });
 
 describe('toOfferedAudiences', () => {
-  it.each<[CalendarAudienceReach, CalendarEntryAudience | null, CalendarEntryAudience[]]>([
-    [CLUB, null, ['club', 'groups', 'people']],
-    [TANZGARDE_ONLY, null, ['groups', 'people']],
-    [EVERY_GROUP, 'groups', ['groups', 'people']],
-    [TANZGARDE_ONLY, 'club', ['club', 'groups', 'people']],
-  ])('%o holding %s → %o', (reach, held, expected) => {
-    expect(toOfferedAudiences(reach, held)).toEqual(expected);
+  it.each<
+    [
+      CalendarAudienceReach,
+      CalendarEntryAudience | null,
+      CalendarEntryKind,
+      CalendarEntryAudience[],
+    ]
+  >([
+    [CLUB, null, 'plain', ['club', 'groups', 'people']],
+    [TANZGARDE_ONLY, null, 'plain', ['groups', 'people']],
+    [EVERY_GROUP, 'groups', 'trip', ['groups', 'people']],
+    [TANZGARDE_ONLY, 'club', 'plain', ['club', 'groups', 'people']],
+    [CLUB, null, 'training', ['groups', 'people']],
+    [CLUB, 'club', 'training', ['groups', 'people']],
+  ])('%o holding %s for a %s → %o', (reach, held, kind, expected) => {
+    expect(toOfferedAudiences(reach, held, kind)).toEqual(expected);
   });
 });
 

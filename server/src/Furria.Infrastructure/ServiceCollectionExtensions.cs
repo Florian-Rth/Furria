@@ -124,6 +124,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AnnouncementService>();
         services.AddScoped<AnnouncementMentionTargetsQuery>();
         services.AddScoped<CalendarService>();
+        services.AddScoped<CalendarPushRecipients>();
         services.AddScoped<ChoosablePeopleService>();
         services.AddScoped<EventService>();
         services.AddScoped<ActCatalogue>();

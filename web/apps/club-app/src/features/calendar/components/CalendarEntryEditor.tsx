@@ -3,14 +3,14 @@ import type { FC } from 'react';
 import { CALENDAR_ORIGIN } from '@/features/session/app-sections';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import type { CalendarAudienceReach } from '../calendar-audience-reach';
-import type { CalendarOwnerOption, CalendarParticipantPool } from '../calendar-authoring';
+import type { CalendarParticipantPool } from '../calendar-authoring';
 import {
   CALENDAR_ENTRY_CREATE_TITLE,
   CALENDAR_ENTRY_EDIT_TITLE,
   DELETE_ENTRY_DANGER_LABEL,
-  toOwnerSelectOptions,
   toVenueOptions,
 } from '../calendar-labels';
+import type { CalendarOwnerOption } from '../calendar-owner';
 import { useCalendarEntryEditor } from '../hooks/use-calendar-entry-editor';
 import { useCalendarEntryRemoval } from '../hooks/use-calendar-entry-removal';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
@@ -54,7 +54,6 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
   const heldPeople = entry?.audiencePeople ?? NO_PEOPLE;
   const heldAudience = entry?.audience ?? null;
   const groupsReload = clubGroups.state === 'failed' ? clubGroupsReload : null;
-  const ownerSelectOptions = toOwnerSelectOptions(ownerOptions);
   const venueOptions = toVenueOptions(venues);
 
   const dangerLine =
@@ -81,10 +80,8 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
       }}
     >
       <CalendarEntryBasicsSection control={control} />
-      <CalendarEntryScheduleSection control={control} venueOptions={venueOptions} />
       <CalendarEntryAudienceSection
         control={control}
-        ownerOptions={ownerSelectOptions}
         reach={audienceReach}
         heldAudience={heldAudience}
         heldGroups={heldGroups}
@@ -92,6 +89,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
         clubGroups={clubGroups}
         clubGroupsReload={groupsReload}
       />
+      <CalendarEntryScheduleSection control={control} venueOptions={venueOptions} />
       <CalendarEntryDescriptionSection control={control} />
       <CalendarEntryAddOnsSection
         control={control}

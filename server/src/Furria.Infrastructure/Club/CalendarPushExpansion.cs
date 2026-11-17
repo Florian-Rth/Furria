@@ -1,11 +1,8 @@
 using System.Diagnostics.Contracts;
-using Furria.Application.Authorization;
 using Furria.Core.Club;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Push;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Furria.Infrastructure.Club;
@@ -15,19 +12,19 @@ public sealed class CalendarPushExpansion
     private static readonly IReadOnlySet<int> NobodyAnswered = new HashSet<int>();
 
     private readonly AppDbContext _dbContext;
-    private readonly IServiceScopeFactory _scopeFactory;
+    private readonly CalendarPushRecipients _recipients;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<CalendarPushExpansion> _logger;
 
     public CalendarPushExpansion(
         AppDbContext dbContext,
-        IServiceScopeFactory scopeFactory,
+        CalendarPushRecipients recipients,
         TimeProvider timeProvider,
         ILogger<CalendarPushExpansion> logger
     )
     {
         _dbContext = dbContext;
-        _scopeFactory = scopeFactory;
+        _recipients = recipients;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -102,34 +99,29 @@ public sealed class CalendarPushExpansion
         if (push.Reason != CalendarPushReason.Deleted && !await EntryExistsAsync(push, ct))
             return [];
 
-        var entry = FactsOf(push);
-        var today = ClubClock.DayOf(now);
-        var outgoing = new List<OutboxPush>();
-
         var answered = await AnsweredBeforeReminderAsync(push, ct);
         if (answered is null)
             return [];
 
-        var recipients = (await CandidateAccountsAsync(push, ct))
-            .Where(recipient => !answered.Contains(recipient.PersonId))
-            .ToList();
-        var tiesByPerson = await _dbContext.CalendarTiesOfManyAsync(
-            [.. recipients.Select(recipient => recipient.PersonId)],
-            today,
+        var recipients = await _recipients.ReachedAsync(
+            new CalendarPushReach
+            {
+                Reason = push.Reason,
+                Entry = FactsOf(push),
+                ActorPersonId = push.ActorPersonId,
+                AddressedPersonIds = push.PersonIds,
+                SkippedPersonIds = answered,
+                Today = ClubClock.DayOf(now),
+            },
             ct
         );
 
-        foreach (var recipient in recipients)
-        {
-            var ties = tiesByPerson[recipient.PersonId];
-            if (
-                CalendarPushRules.MayConcern(push.Reason, entry, ties)
-                && ties.Sees(entry, await RightsOfAsync(recipient.AccountId, ct))
-            )
-                outgoing.Add(CalendarPushMessages.For(push, recipient.AccountId, now));
-        }
-
-        return outgoing;
+        return
+        [
+            .. recipients.Select(recipient =>
+                CalendarPushMessages.For(push, recipient.AccountId, now)
+            ),
+        ];
     }
 
     [Pure]
@@ -150,47 +142,6 @@ public sealed class CalendarPushExpansion
 
     private Task<bool> EntryExistsAsync(OutboxCalendarPush push, CancellationToken ct) =>
         _dbContext.CalendarEntries.AnyAsync(entry => entry.Id == push.CalendarEntryId, ct);
-
-    private Task<List<RecipientAccount>> CandidateAccountsAsync(
-        OutboxCalendarPush push,
-        CancellationToken ct
-    )
-    {
-        var accounts = _dbContext.PushableAccounts(CalendarPushRules.TopicOf(push.Reason));
-
-        if (push.ActorPersonId is { } actorPersonId)
-            accounts = accounts.Where(account => account.PersonId != actorPersonId);
-
-        if (!CalendarPushRules.ReachesEveryoneConcerned(push.Reason))
-        {
-            var personIds = push.PersonIds;
-            accounts = accounts.Where(account => personIds.Contains(account.PersonId!.Value));
-        }
-
-        return accounts
-            .OrderBy(account => account.Id)
-            .Select(account => new RecipientAccount(account.Id, account.PersonId!.Value))
-            .ToListAsync(ct);
-    }
-
-    private async Task<CalendarRights> RightsOfAsync(int accountId, CancellationToken ct)
-    {
-        await using var scope = _scopeFactory.CreateAsyncScope();
-        var authorizer = scope.ServiceProvider.GetRequiredService<PermissionAuthorizer>();
-
-        return new CalendarRights(
-            HoldsClubRead: await authorizer.IsGrantedAsync(
-                accountId,
-                FurriaPermissions.ClubRead,
-                ct
-            ),
-            ManagesClubCalendar: await authorizer.IsGrantedAsync(
-                accountId,
-                FurriaPermissions.CalendarManageClub,
-                ct
-            )
-        );
-    }
 
     private async Task RetryOrAbandonAsync(
         OutboxCalendarPush push,
@@ -229,6 +180,4 @@ public sealed class CalendarPushExpansion
             ct
         );
     }
-
-    private sealed record RecipientAccount(int AccountId, int PersonId);
 }

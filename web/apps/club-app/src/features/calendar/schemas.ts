@@ -290,6 +290,9 @@ export type ChoosablePerson = z.infer<typeof ChoosablePersonSchema>;
 export const ChoosablePeopleResponseSchema = z.object({ people: z.array(ChoosablePersonSchema) });
 export type ChoosablePeopleResponse = z.infer<typeof ChoosablePeopleResponseSchema>;
 
+export const NotifyReachResponseSchema = z.object({ people: z.number().int() });
+export type NotifyReachResponse = z.infer<typeof NotifyReachResponseSchema>;
+
 export const CALENDAR_TITLE_MAX_LENGTH = 120;
 export const CALENDAR_DESCRIPTION_MAX_LENGTH = 2000;
 

@@ -11,7 +11,6 @@ import {
 } from '@/lib/calendar-days';
 import { shiftDay, toIsoDay } from '@/lib/day';
 import { CALENDAR_ADD_ON_LABELS } from './calendar-add-ons';
-import type { CalendarOwnerOption } from './calendar-authoring';
 import { AUTHORED_KINDS, NO_VENUE_ID } from './calendar-authoring';
 import { isIsoDay } from './calendar-day-schedules';
 import type { CalendarGroupShortcut } from './calendar-people';
@@ -77,8 +76,28 @@ const toReachedPeople = (reach: NotifyReach): string => {
   }
 };
 
-export const toNotifyReachLine = (reach: NotifyReach): string =>
-  reach.asks ? `${toReachedPeople(reach)}, ${ASKS_FOR_AN_ANSWER}` : toReachedPeople(reach);
+const toCountedPush = (people: number): string => {
+  if (people === 0) {
+    return 'Erreicht gerade niemanden';
+  }
+
+  return people === 1 ? 'Push an 1 Person' : `Push an ${people} Personen`;
+};
+
+export const toNotifyReachLine = (
+  reach: NotifyReach,
+  reachedPeople: number | null = null,
+): string => {
+  const reached = reachedPeople === null ? toReachedPeople(reach) : toCountedPush(reachedPeople);
+
+  return reach.asks ? `${reached}, ${ASKS_FOR_AN_ANSWER}` : reached;
+};
+
+export const AUDIENCE_HINTS: Record<CalendarEntryAudience, string> = {
+  club: 'Für alle Mitglieder, z. B. Versammlung oder Feier.',
+  groups: 'Für diese Gruppen, z. B. Training. Alle sehen den Termin.',
+  people: 'Nur diese Personen sehen den Termin.',
+};
 
 export const toAudienceOptions = (audiences: readonly CalendarEntryAudience[]): KkSelectOption[] =>
   audiences.map((audience) => ({ value: audience, label: CALENDAR_AUDIENCE_LABELS[audience] }));
@@ -87,9 +106,6 @@ export const toVenueOptions = (venues: readonly RunningVenue[]): KkSelectOption[
   { value: NO_VENUE_ID, label: NO_VENUE_LABEL },
   ...venues.map((venue) => ({ value: String(venue.venueId), label: venue.name })),
 ];
-
-export const toOwnerSelectOptions = (options: readonly CalendarOwnerOption[]): KkSelectOption[] =>
-  options.map((option) => ({ value: option.id, label: option.label }));
 
 export const toStartDayQuickChoices = (today: Date): KkDateQuickChoice[] => [
   { label: TODAY_LABEL, value: toIsoDay(today) },

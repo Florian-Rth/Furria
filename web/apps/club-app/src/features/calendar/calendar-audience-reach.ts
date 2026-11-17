@@ -1,6 +1,8 @@
+import type { CalendarEntryKind } from '@/features/club/schemas';
 import type { MyGroupSummary } from '@/features/group-hub/schemas';
 import type { CalendarParticipantGroup, CalendarParticipantPool } from './calendar-authoring';
 import { AUDIENCE_ORDER } from './calendar-authoring';
+import { mayBeForTheClub } from './calendar-owner';
 import type { CalendarEntryAudience, ChoosablePerson } from './schemas';
 
 export type CalendarAudienceReach =
@@ -30,12 +32,19 @@ export const toAudienceReach = (
   };
 };
 
+const offersTheClub = (
+  reach: CalendarAudienceReach,
+  heldAudience: CalendarEntryAudience | null,
+  kind: CalendarEntryKind,
+): boolean => mayBeForTheClub(kind) && (reach.scope === 'club' || heldAudience === 'club');
+
 export const toOfferedAudiences = (
   reach: CalendarAudienceReach,
   heldAudience: CalendarEntryAudience | null,
+  kind: CalendarEntryKind,
 ): CalendarEntryAudience[] =>
   AUDIENCE_ORDER.filter(
-    (audience) => audience !== 'club' || reach.scope === 'club' || heldAudience === 'club',
+    (audience) => audience !== 'club' || offersTheClub(reach, heldAudience, kind),
   );
 
 const reachesGroup = (reach: CalendarAudienceReach, groupId: number): boolean =>

@@ -1,5 +1,6 @@
+import type { CalendarEntryKind } from '@/features/club/schemas';
 import type { CalendarParticipantPool } from './calendar-authoring';
-import type { CalendarAddOnKind, CalendarEntryForm } from './schemas';
+import type { CalendarAddOnKind, CalendarEntryAudience, CalendarEntryForm } from './schemas';
 
 export type NotifyReach =
   | { readonly audience: 'club'; readonly asks: boolean }
@@ -41,3 +42,29 @@ export const toNotifyReach = (
       return { audience: 'people', count: new Set(form.audiencePersonIds).size, asks };
   }
 };
+
+export interface NotifyReachQuery {
+  kind: CalendarEntryKind;
+  audience: CalendarEntryAudience;
+  audienceGroupIds: readonly number[];
+  audiencePersonIds: readonly number[];
+}
+
+const NOTIFY_REACH_ENDPOINT = '/api/calendar/notify-reach';
+
+export const toNotifyReachPath = (query: NotifyReachQuery): string => {
+  const params = new URLSearchParams({ kind: query.kind, audience: query.audience });
+
+  for (const groupId of query.audienceGroupIds) {
+    params.append('audienceGroupIds', String(groupId));
+  }
+  for (const personId of query.audiencePersonIds) {
+    params.append('audiencePersonIds', String(personId));
+  }
+
+  return `${NOTIFY_REACH_ENDPOINT}?${params.toString()}`;
+};
+
+export const isAskableReach = (query: NotifyReachQuery): boolean =>
+  (query.audience !== 'groups' || query.audienceGroupIds.length > 0) &&
+  (query.audience !== 'people' || query.audiencePersonIds.length > 0);

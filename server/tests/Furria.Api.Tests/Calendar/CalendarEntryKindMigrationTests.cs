@@ -92,7 +92,8 @@ public sealed class CalendarEntryKindMigrationTests : IClassFixture<ApiTestFixtu
                         "Gemeinsames Training",
                         SoonOf(today).AddHours(1),
                         kind: CalendarEntryKind.Training,
-                        participatingGroupAliases: [Garde]
+                        participatingGroupAliases: [Garde],
+                        audienceGroupAliases: [Garde]
                     )
                     .AddCalendarEntry(
                         PastGardeTraining,

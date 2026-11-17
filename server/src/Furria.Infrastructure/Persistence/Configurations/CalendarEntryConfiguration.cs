@@ -51,6 +51,10 @@ public sealed class CalendarEntryConfiguration : IEntityTypeConfiguration<Calend
                     "ck_calendar_entry_event_club",
                     "kind <> 'Event' OR (audience = 'Club' AND owner_group_id IS NULL)"
                 );
+                table.HasCheckConstraint(
+                    "ck_calendar_entry_training_not_club",
+                    "kind <> 'Training' OR audience <> 'Club'"
+                );
             }
         );
         builder.HasKey(entry => entry.Id);

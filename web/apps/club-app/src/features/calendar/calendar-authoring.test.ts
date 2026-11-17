@@ -6,11 +6,9 @@ import {
   NO_DRAFT,
   opensEntrySheet,
   toAddedEnd,
-  toAudienceAfterOwnerChange,
   toAudienceGroupIds,
   toAudienceSwitch,
   toCalendarAudience,
-  toDefaultAudience,
   toEndKeptInStep,
   toEndSpanLabel,
   toEntryDraft,
@@ -139,15 +137,6 @@ describe('opensEntrySheet', () => {
   });
 });
 
-describe('toDefaultAudience', () => {
-  it.each([
-    ['club', 'club'],
-    ['7', 'groups'],
-  ] as const)('reads owner %s as audience %s', (ownerId, expected) => {
-    expect(toDefaultAudience(ownerId)).toBe(expected);
-  });
-});
-
 describe('toAudienceSwitch', () => {
   it.each([
     ['7', [], 'groups', ['7']],
@@ -161,25 +150,6 @@ describe('toAudienceSwitch', () => {
         audience,
         audienceGroupIds: expected,
       });
-    },
-  );
-});
-
-describe('toAudienceAfterOwnerChange', () => {
-  it.each([
-    ['club', 'club', [], '7', 'groups', ['7']],
-    ['7', 'club', [], '9', 'club', []],
-    ['7', 'groups', ['7'], '9', 'groups', ['9']],
-    ['7', 'groups', ['7'], 'club', 'groups', ['7']],
-    ['7', 'groups', [], 'club', 'groups', ['7']],
-    ['7', 'groups', ['7', '4'], '9', 'groups', ['7', '4']],
-    ['7', 'people', [], 'club', 'people', []],
-  ] as const)(
-    'moves owner %s with audience %s and groups %j to owner %s as %s %j',
-    (ownerId, audience, held, nextOwnerId, expectedAudience, expectedGroups) => {
-      expect(
-        toAudienceAfterOwnerChange({ ownerId, audience, audienceGroupIds: [...held] }, nextOwnerId),
-      ).toEqual({ audience: expectedAudience, audienceGroupIds: expectedGroups });
     },
   );
 });
@@ -366,12 +336,13 @@ describe('toEntryFormValues', () => {
       values.ownerId,
       values.kind,
       values.audience,
+      values.audienceGroupIds,
       values.startTime,
       values.endDay,
       values.endTime,
       values.venueId,
       values.title.length > 0,
-    ]).toEqual(['7', 'training', 'groups', '19:30', '2027-01-19', '21:00', '2', true]);
+    ]).toEqual(['7', 'training', 'groups', ['7'], '19:30', '2027-01-19', '21:00', '2', true]);
   });
 
   it('starts a new entry without an end unless the draft brings one', () => {
@@ -404,6 +375,40 @@ describe('toEntryFormValues', () => {
     });
 
     expect(values.endDay).toBe('2027-01-20');
+  });
+
+  it.each([
+    [true, 'club', ['9']],
+    [false, '7', ['9']],
+  ] as const)(
+    'preselects the drafted group (club calendar %s) and owns it by %s',
+    (managesClubCalendar, ownerId, audienceGroupIds) => {
+      const values = toEntryFormValues(
+        null,
+        toOwnerOptions([TANZGARDE], managesClubCalendar),
+        '2027-01-19',
+        { ...NO_DRAFT, ownerGroupId: 9, kind: 'training' },
+      );
+
+      expect([values.audience, values.audienceGroupIds, values.ownerId]).toEqual([
+        'groups',
+        audienceGroupIds,
+        ownerId,
+      ]);
+    },
+  );
+
+  it('never drafts a training for the club', () => {
+    const values = toEntryFormValues(null, toOwnerOptions([TANZGARDE], true), '2027-01-19', {
+      ...NO_DRAFT,
+      kind: 'training',
+    });
+
+    expect([values.audience, values.audienceGroupIds, values.ownerId]).toEqual([
+      'groups',
+      [],
+      'club',
+    ]);
   });
 
   it('falls back to the first owner when the drafted group is not hers', () => {
