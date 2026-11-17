@@ -4,12 +4,15 @@ import { toAddOnRouteRoot, toReminderPath } from './add-on-host';
 import type { CalendarEntryPayload } from './calendar-authoring';
 import type { CalendarQuery } from './calendar-query';
 import { toCalendarPath } from './calendar-query';
+import type { NotifyReachQuery } from './notify-reach';
+import { toNotifyReachPath } from './notify-reach';
 import type {
   AddOnHostKind,
   CalendarEntryResponse,
   CalendarReminderTarget,
   CalendarResponse,
   ChoosablePeopleResponse,
+  NotifyReachResponse,
   RunningVenuesResponse,
   WrittenCalendarEntry,
 } from './schemas';
@@ -17,6 +20,7 @@ import {
   CalendarEntryResponseSchema,
   CalendarResponseSchema,
   ChoosablePeopleResponseSchema,
+  NotifyReachResponseSchema,
   RunningVenuesResponseSchema,
   WrittenCalendarEntrySchema,
 } from './schemas';
@@ -66,6 +70,12 @@ export const requestChoosablePeople = (accessToken: string): Promise<ChoosablePe
     schema: ChoosablePeopleResponseSchema,
     accessToken,
   });
+
+export const requestNotifyReach = (
+  query: NotifyReachQuery,
+  accessToken: string,
+): Promise<NotifyReachResponse> =>
+  apiFetch(toNotifyReachPath(query), { schema: NotifyReachResponseSchema, accessToken });
 
 export const requestCalendarEntryCreation = (
   payload: CalendarEntryPayload,

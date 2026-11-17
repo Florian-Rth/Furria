@@ -4,8 +4,9 @@ import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import type { CalendarAudienceReach } from '../calendar-audience-reach';
 import { toAudienceReach } from '../calendar-audience-reach';
-import type { CalendarEntryLink, CalendarOwnerOption } from '../calendar-authoring';
+import type { CalendarEntryLink } from '../calendar-authoring';
 import { mayOwnCalendarEntry, toEntryLink, toOwnerOptions } from '../calendar-authoring';
+import type { CalendarOwnerOption } from '../calendar-owner';
 import type { CalendarEntry } from '../schemas';
 
 export interface CalendarAuthoring {

@@ -174,6 +174,7 @@ public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryReques
     private const string EventsLiveInTheWorkbenchMessage =
         "Eine Veranstaltung wird in den Veranstaltungen gepflegt.";
     private const string UnknownAudienceMessage = "Diese Auswahl für „Für wen“ gibt es nicht.";
+    private const string TrainingForTheClubMessage = "Ein Training ist nie für den ganzen Verein.";
     private const string NoAudienceGroupMessage = "Wähle mindestens eine Gruppe.";
     private const string NoAudiencePersonMessage = "Wähle mindestens eine Person.";
     private const string AudienceMismatchMessage = "Diese Auswahl passt nicht zu „Für wen“.";
@@ -215,6 +216,9 @@ public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryReques
             .NotEqual(CalendarEntryKind.Event)
             .WithMessage(EventsLiveInTheWorkbenchMessage);
         RuleFor(request => request.Audience).IsInEnum().WithMessage(UnknownAudienceMessage);
+        RuleFor(request => request.Audience)
+            .Must((request, audience) => CalendarKindAudience.Admits(request.Kind, audience))
+            .WithMessage(TrainingForTheClubMessage);
         RuleFor(request => request.AudienceGroupIds).NotNull();
         RuleFor(request => request.AudiencePersonIds).NotNull();
         RuleFor(request => request.AudienceGroupIds)

@@ -21,6 +21,7 @@ import {
 } from './calendar-labels';
 import type { CalendarQuery } from './calendar-query';
 import { toReminderFailure } from './calendar-reminders';
+import type { NotifyReachQuery } from './notify-reach';
 import {
   requestCalendar,
   requestCalendarEntry,
@@ -29,6 +30,7 @@ import {
   requestCalendarEntryUpdate,
   requestCalendarReminder,
   requestChoosablePeople,
+  requestNotifyReach,
   requestOwnSignUpLine,
   requestOwnSignUpLineDeletion,
   requestPollClosing,
@@ -44,6 +46,7 @@ import type {
   CalendarReminderTarget,
   CalendarResponse,
   ChoosablePeopleResponse,
+  NotifyReachResponse,
   RunningVenuesResponse,
   WrittenCalendarEntry,
 } from './schemas';
@@ -83,6 +86,18 @@ export const useChoosablePeopleQuery = (): UseQueryResult<ChoosablePeopleRespons
   useQuery({
     queryKey: queryKeys.choosablePeople,
     queryFn: () => withFreshAccessToken((accessToken) => requestChoosablePeople(accessToken)),
+  });
+
+export const useNotifyReachQuery = (
+  query: NotifyReachQuery | null,
+): UseQueryResult<NotifyReachResponse, Error> =>
+  useQuery({
+    queryKey: queryKeys.calendarNotifyReach(query),
+    queryFn:
+      query === null
+        ? skipToken
+        : () => withFreshAccessToken((accessToken) => requestNotifyReach(query, accessToken)),
+    placeholderData: keepPreviousData,
   });
 
 export interface CalendarEntryInput {

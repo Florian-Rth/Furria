@@ -785,7 +785,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "stellprobe",
                                 "Stellprobe",
                                 InBerlin(1, 21, 18, 0),
-                                kind: CalendarEntryKind.Training,
+                                kind: CalendarEntryKind.Plain,
                                 venueAlias: "festhalle",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]

@@ -1100,6 +1100,8 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_calendar_entry_kind", "kind IN ('Plain', 'Training', 'Trip', 'Event')");
 
+                            t.HasCheckConstraint("ck_calendar_entry_training_not_club", "kind <> 'Training' OR audience <> 'Club'");
+
                             t.HasCheckConstraint("ck_calendar_entry_window", "ends_at IS NULL OR ends_at >= starts_at");
                         });
                 });

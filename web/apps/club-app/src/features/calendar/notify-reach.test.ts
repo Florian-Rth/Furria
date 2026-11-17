@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toNotifyReach } from './notify-reach';
+import { isAskableReach, toNotifyReach, toNotifyReachPath } from './notify-reach';
 
 describe('toNotifyReach', () => {
   it.each([
@@ -60,4 +60,41 @@ describe('toNotifyReach', () => {
       ),
     ).toEqual({ audience: 'people', count: 2, asks: false });
   });
+});
+
+describe('toNotifyReachPath', () => {
+  it('repeats each group and person', () => {
+    expect(
+      toNotifyReachPath({
+        kind: 'training',
+        audience: 'groups',
+        audienceGroupIds: [3, 5],
+        audiencePersonIds: [],
+      }),
+    ).toBe(
+      '/api/calendar/notify-reach?kind=training&audience=groups&audienceGroupIds=3&audienceGroupIds=5',
+    );
+  });
+});
+
+describe('isAskableReach', () => {
+  it.each([
+    ['club', [], [], true],
+    ['groups', [], [], false],
+    ['groups', [3], [], true],
+    ['people', [], [], false],
+    ['people', [], [4], true],
+  ] as const)(
+    'asks for %s with groups %j and people %j: %s',
+    (audience, groupIds, personIds, askable) => {
+      expect(
+        isAskableReach({
+          kind: 'plain',
+          audience,
+          audienceGroupIds: groupIds,
+          audiencePersonIds: personIds,
+        }),
+      ).toBe(askable);
+    },
+  );
 });

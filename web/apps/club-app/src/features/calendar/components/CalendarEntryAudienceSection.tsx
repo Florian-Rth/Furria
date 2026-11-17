@@ -1,6 +1,5 @@
 import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkMultiSelectField } from '@furria/ui/KkMultiSelectField';
-import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
@@ -8,9 +7,15 @@ import type { CalendarAudienceReach } from '../calendar-audience-reach';
 import { toOfferedAudiences, toReachablePool } from '../calendar-audience-reach';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import { toAudienceGroupOptions, toParticipantsEmptyLabel } from '../calendar-authoring';
-import { NOTIFY_LABEL, toAudienceOptions, toNotifyReachLine } from '../calendar-labels';
+import {
+  AUDIENCE_HINTS,
+  NOTIFY_LABEL,
+  toAudienceOptions,
+  toNotifyReachLine,
+} from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
+import { useNotifyReachCount } from '../hooks/use-notify-reach-count';
 import { toNotifyReach } from '../notify-reach';
 import type { AudienceGroup, AudiencePerson, CalendarEntryAudience } from '../schemas';
 import { CalendarGroupsReloadButton } from './CalendarGroupsReloadButton';
@@ -19,11 +24,9 @@ import { CalendarPeoplePicker } from './CalendarPeoplePicker';
 const SECTION_TITLE = 'Für wen';
 const AUDIENCE_LABEL = 'Für wen';
 const GROUPS_LABEL = 'Gruppen';
-const OWNER_LABEL = 'Eigentümer';
 
 interface CalendarEntryAudienceSectionProps {
   control: CalendarEntryEditorControl;
-  ownerOptions: readonly KkSelectOption[];
   reach: CalendarAudienceReach;
   heldAudience: CalendarEntryAudience | null;
   heldGroups: readonly AudienceGroup[];
@@ -34,7 +37,6 @@ interface CalendarEntryAudienceSectionProps {
 
 export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps> = ({
   control,
-  ownerOptions,
   reach,
   heldAudience,
   heldGroups,
@@ -46,7 +48,10 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
   const groupsErrorText = errors.audienceGroupIds?.message;
   const peopleErrorText = errors.audiencePersonIds?.message;
   const audience = control.values.audience;
-  const audienceOptions = toAudienceOptions(toOfferedAudiences(reach, heldAudience));
+  const audienceOptions = toAudienceOptions(
+    toOfferedAudiences(reach, heldAudience, control.values.kind),
+  );
+  const audienceHint = AUDIENCE_HINTS[audience];
   const reachableGroups = toReachablePool(clubGroups, reach);
   const groupOptions = toAudienceGroupOptions(clubGroups, heldGroups, reachableGroups);
   const groupsEmptyLabel = toParticipantsEmptyLabel(reachableGroups);
@@ -84,8 +89,11 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
     ) : null;
 
   const notify = control.notify;
+  const reachedPeople = useNotifyReachCount(control.values, notify !== null);
   const notifyReachLine =
-    notify === null ? undefined : toNotifyReachLine(toNotifyReach(control.values, clubGroups));
+    notify === null
+      ? undefined
+      : toNotifyReachLine(toNotifyReach(control.values, clubGroups), reachedPeople);
   const notifySwitch =
     notify === null ? null : (
       <KkSwitchRow
@@ -95,18 +103,6 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
         onChange={notify.set}
         stateChip={false}
         disabled={control.isSaving}
-      />
-    );
-
-  const ownerField =
-    ownerOptions.length < 2 ? null : (
-      <KkSelectField
-        name="ownerId"
-        label={OWNER_LABEL}
-        required
-        value={control.values.ownerId}
-        options={ownerOptions}
-        onChange={control.setOwner}
       />
     );
 
@@ -120,11 +116,11 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
         options={audienceOptions}
         onChange={control.setAudience}
         presentation="choices"
+        hint={audienceHint}
       />
       {groupsPicker}
       {peoplePicker}
       {notifySwitch}
-      {ownerField}
     </KkFormSection>
   );
 };

@@ -7,6 +7,13 @@ import { daysBetween, toDayTime, toInstant, toIsoDay } from '@/lib/day';
 import { toAddOnCards } from './calendar-add-ons';
 import type { CalendarDaySchedulePayload } from './calendar-day-schedules';
 import { toDaySchedulePayload } from './calendar-day-schedules';
+import type { CalendarAudienceChoice, CalendarOwnerOption } from './calendar-owner';
+import {
+  CLUB_OWNER_ID,
+  toChoiceForKind,
+  toDerivedOwnerId,
+  toGroupsOfOwner,
+} from './calendar-owner';
 import type { CalendarPollPayload } from './calendar-polls';
 import { toPollPayload } from './calendar-polls';
 import type { CalendarSignUpListPayload } from './calendar-sign-up-lists';
@@ -20,7 +27,6 @@ import type {
   CalendarEntryForm,
 } from './schemas';
 
-export const CLUB_OWNER_ID = 'club';
 export const NO_VENUE_ID = '';
 
 const CLUB_OWNER_OPTION_LABEL = 'Verein';
@@ -44,12 +50,6 @@ export const AUDIENCE_ORDER: readonly CalendarEntryAudience[] = ['club', 'groups
 export interface CalendarParticipantGroup {
   groupId: number;
   name: string;
-}
-
-export interface CalendarOwnerOption {
-  id: string;
-  ownerGroupId: number | null;
-  label: string;
 }
 
 export type CalendarAddOnPayload = {
@@ -200,43 +200,14 @@ export const mayOwnCalendarEntry = (
 ): boolean =>
   entry.kind !== 'event' && options.some((option) => option.ownerGroupId === entry.ownerGroupId);
 
-export const toDefaultAudience = (ownerId: string): CalendarEntryAudience =>
-  ownerId === CLUB_OWNER_ID ? 'club' : 'groups';
-
 type AudienceChoice = Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds'>;
-
-const ownerGroupIdsOf = (ownerId: string): string[] => (ownerId === CLUB_OWNER_ID ? [] : [ownerId]);
-
-const followsTheOwner = (form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>): boolean =>
-  form.audienceGroupIds.length === 0 ||
-  (form.audienceGroupIds.length === 1 && form.audienceGroupIds[0] === form.ownerId);
-
-export const toAudienceAfterOwnerChange = (
-  form: Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds' | 'ownerId'>,
-  nextOwnerId: string,
-): AudienceChoice => {
-  const kept = { audience: form.audience, audienceGroupIds: form.audienceGroupIds };
-
-  if (form.audience === 'club') {
-    return form.ownerId === CLUB_OWNER_ID && nextOwnerId !== CLUB_OWNER_ID
-      ? { audience: 'groups', audienceGroupIds: [nextOwnerId] }
-      : kept;
-  }
-  if (form.audience !== 'groups' || !followsTheOwner(form)) {
-    return kept;
-  }
-
-  return nextOwnerId === CLUB_OWNER_ID
-    ? { audience: 'groups', audienceGroupIds: ownerGroupIdsOf(form.ownerId) }
-    : { audience: 'groups', audienceGroupIds: [nextOwnerId] };
-};
 
 export const toAudienceSwitch = (
   form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>,
   audience: CalendarEntryAudience,
 ): AudienceChoice =>
   audience === 'groups' && form.audienceGroupIds.length === 0
-    ? { audience, audienceGroupIds: ownerGroupIdsOf(form.ownerId) }
+    ? { audience, audienceGroupIds: toGroupsOfOwner(form.ownerId) }
     : { audience, audienceGroupIds: form.audienceGroupIds };
 
 export const toAudienceGroupIds = (
@@ -377,17 +348,32 @@ const toDraftedEnd = (startDay: string, startTime: string, endTime: string | nul
   return { day: endTime > startTime ? startDay : nextDayOf(startDay), time: endTime };
 };
 
+const toDraftedChoice = (
+  draft: CalendarEntryDraft,
+  preferredOwnerId: string,
+): CalendarAudienceChoice => {
+  if (draft.ownerGroupId !== null) {
+    return {
+      audience: 'groups',
+      audienceGroupIds: [String(draft.ownerGroupId)],
+      audiencePersonIds: [],
+    };
+  }
+
+  return preferredOwnerId === CLUB_OWNER_ID
+    ? { audience: 'club', audienceGroupIds: [], audiencePersonIds: [] }
+    : { audience: 'groups', audienceGroupIds: [preferredOwnerId], audiencePersonIds: [] };
+};
+
 const toDraftedFormValues = (
   options: readonly CalendarOwnerOption[],
   startDay: string,
   draft: CalendarEntryDraft,
 ): CalendarEntryForm => {
-  const owner =
-    options.find(
-      (option) => option.ownerGroupId === draft.ownerGroupId && draft.ownerGroupId !== null,
-    ) ?? options[0];
-  const ownerId = owner?.id ?? CLUB_OWNER_ID;
+  const preferredOwnerId = options[0]?.id ?? CLUB_OWNER_ID;
   const kind = draft.kind ?? 'plain';
+  const choice = toChoiceForKind(toDraftedChoice(draft, preferredOwnerId), kind, preferredOwnerId);
+  const ownerId = toDerivedOwnerId(choice, preferredOwnerId, options, null);
   const startTime = draft.startTime ?? DEFAULT_START_TIME;
   const end = toDraftedEnd(startDay, startTime, draft.endTime);
 
@@ -397,9 +383,7 @@ const toDraftedFormValues = (
     ownerId,
     venueId: draft.venueId === null ? NO_VENUE_ID : String(draft.venueId),
     kind,
-    audience: toDefaultAudience(ownerId),
-    audienceGroupIds: ownerGroupIdsOf(ownerId),
-    audiencePersonIds: [],
+    ...choice,
     startDay,
     startTime,
     endDay: end.day,

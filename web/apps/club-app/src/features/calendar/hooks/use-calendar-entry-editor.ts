@@ -15,10 +15,8 @@ import {
   toChangedSignUpListCards,
   toDetachedCards,
 } from '../calendar-add-ons';
-import type { CalendarOwnerOption } from '../calendar-authoring';
 import {
   toAddedEnd,
-  toAudienceAfterOwnerChange,
   toAudienceSwitch,
   toCalendarAudience,
   toCalendarKind,
@@ -34,6 +32,8 @@ import type { DayScheduleFieldPath } from '../calendar-day-schedules';
 import { toStepDayPaths } from '../calendar-day-schedules';
 import { toDeadlinePaths } from '../calendar-deadlines';
 import { toFieldError } from '../calendar-field-error';
+import type { CalendarAudienceChoice, CalendarOwnerOption } from '../calendar-owner';
+import { toChoiceForKind, toDerivedOwnerId, toHeldOwnership } from '../calendar-owner';
 import type { NotifySwitch } from '../notify-reach';
 import type {
   CalendarAddOnKind,
@@ -58,7 +58,6 @@ export interface CalendarEntryEditorControl extends AddOnCardsEditor {
   form: UseFormReturn<CalendarEntryForm>;
   values: CalendarEntryForm;
   setDescription: (value: string) => void;
-  setOwner: (value: string) => void;
   setVenue: (value: string) => void;
   toggleParticipatingGroup: (value: string) => void;
   setKind: (value: string) => void;
@@ -114,19 +113,30 @@ export const useCalendarEntryEditor = ({
     landing: ({ calendarEntryId }) => toEntryLanding(calendarEntryId, landedDay.current, draft),
   });
   const { form, values } = write;
+  const heldOwnership = toHeldOwnership(entry);
   const addOnsState = useFormState({ control: form.control, name: 'addOns' });
 
-  const setOwner = (value: string): void => {
-    const audience = toAudienceAfterOwnerChange(form.getValues(), value);
+  const deriveOwner = (): void => {
+    const current = form.getValues();
+    const ownerId = toDerivedOwnerId(current, current.ownerId, ownerOptions, heldOwnership);
 
-    form.setValue('ownerId', value, FIELD_EDIT);
-    form.setValue('audience', audience.audience, FIELD_EDIT);
-    form.setValue('audienceGroupIds', audience.audienceGroupIds, FIELD_EDIT);
+    if (ownerId === current.ownerId) {
+      return;
+    }
+
+    form.setValue('ownerId', ownerId, FIELD_EDIT);
     form.setValue(
       'participatingGroupIds',
-      toParticipationKeptForOwner(form.getValues('participatingGroupIds'), value),
+      toParticipationKeptForOwner(current.participatingGroupIds, ownerId),
       FIELD_EDIT,
     );
+  };
+
+  const placeAudience = (choice: CalendarAudienceChoice): void => {
+    form.setValue('audience', choice.audience, FIELD_EDIT);
+    form.setValue('audienceGroupIds', choice.audienceGroupIds, FIELD_EDIT);
+    form.setValue('audiencePersonIds', choice.audiencePersonIds, FIELD_EDIT);
+    deriveOwner();
   };
 
   const toggleParticipatingGroup = (value: string): void => {
@@ -192,7 +202,11 @@ export const useCalendarEntryEditor = ({
   };
 
   const setKind = (value: string): void => {
-    form.setValue('kind', toCalendarKind(value), FIELD_EDIT);
+    const kind = toCalendarKind(value);
+    const current = form.getValues();
+
+    form.setValue('kind', kind, FIELD_EDIT);
+    placeAudience(toChoiceForKind(current, kind, current.ownerId));
   };
 
   const setAudience = (value: string): void => {
@@ -202,18 +216,18 @@ export const useCalendarEntryEditor = ({
       return;
     }
 
-    const choice = toAudienceSwitch(form.getValues(), audience);
+    const current = form.getValues();
 
-    form.setValue('audience', choice.audience, FIELD_EDIT);
-    form.setValue('audienceGroupIds', choice.audienceGroupIds, FIELD_EDIT);
+    placeAudience({ ...current, ...toAudienceSwitch(current, audience) });
   };
 
   const toggleAudienceGroup = (value: string): void => {
-    form.setValue(
-      'audienceGroupIds',
-      toToggledValue(form.getValues('audienceGroupIds'), value),
-      FIELD_EDIT,
-    );
+    const current = form.getValues();
+
+    placeAudience({
+      ...current,
+      audienceGroupIds: toToggledValue(current.audienceGroupIds, value),
+    });
   };
 
   const attachAddOn = (kind: CalendarAddOnKind): void => {
@@ -282,7 +296,6 @@ export const useCalendarEntryEditor = ({
     setDescription: (value) => {
       form.setValue('description', value, FIELD_EDIT);
     },
-    setOwner,
     setVenue: (value) => {
       form.setValue('venueId', value, FIELD_EDIT);
     },
@@ -291,7 +304,7 @@ export const useCalendarEntryEditor = ({
     setAudience,
     toggleAudienceGroup,
     setAudiencePeople: (personIds) => {
-      form.setValue('audiencePersonIds', personIds, FIELD_EDIT);
+      placeAudience({ ...form.getValues(), audiencePersonIds: personIds });
     },
     attachAddOn,
     detachAddOn,

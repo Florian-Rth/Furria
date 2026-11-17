@@ -14,7 +14,7 @@ namespace Furria.Api.Tests.Calendar;
 public sealed class GroupEntryAudienceMigrationTests : IClassFixture<ApiTestFixture>
 {
     private const string BeforeGroupAudience = "20261116102753_DropPushNotifyClub";
-    private const string ClubWideGardeTraining = "club-wide-garde-training";
+    private const string ClubWideGardeEvening = "club-wide-garde-evening";
     private const string GardeOnlyTrip = "garde-only-trip";
     private const string ClubMeeting = "club-meeting";
 
@@ -44,7 +44,7 @@ public sealed class GroupEntryAudienceMigrationTests : IClassFixture<ApiTestFixt
                 (CalendarEntryAudience.Club, ""),
             ],
             await Task.WhenAll(
-                new[] { ClubWideGardeTraining, GardeOnlyTrip, ClubMeeting }.Select(alias =>
+                new[] { ClubWideGardeEvening, GardeOnlyTrip, ClubMeeting }.Select(alias =>
                     AudienceOfAsync(planner, ctx, alias)
                 )
             )
@@ -57,10 +57,9 @@ public sealed class GroupEntryAudienceMigrationTests : IClassFixture<ApiTestFixt
             GardeWithDancers(today)(builder);
             builder.Club(club =>
                 club.AddCalendarEntry(
-                        ClubWideGardeTraining,
-                        "Training",
+                        ClubWideGardeEvening,
+                        "Gardeabend",
                         On(today.AddDays(2)),
-                        kind: CalendarEntryKind.Training,
                         ownerGroupAlias: Garde,
                         audience: CalendarEntryAudience.Club
                     )

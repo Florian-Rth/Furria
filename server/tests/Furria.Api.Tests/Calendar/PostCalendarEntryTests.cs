@@ -13,6 +13,8 @@ namespace Furria.Api.Tests.Calendar;
 public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
 {
     private const string ValidationField = "request";
+    private const string AudienceField = "audience";
+    private const string TrainingForTheClubMessage = "Ein Training ist nie für den ganzen Verein.";
     private const string ClubMeeting = "Vereinssitzung";
     private const string DanceGuardTraining = "Training der Tanzgarde";
     private const string Abendprobe = "Abendprobe";
@@ -247,6 +249,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             ctx,
             DanceGuardTrainingFor(ctx) with
             {
+                Kind = CalendarEntryKind.Plain,
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
             },
@@ -350,7 +353,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = null,
                 StartsAt = TrainingStart,
                 EndsAt = null,
-                Kind = CalendarEntryKind.Training,
+                Kind = CalendarEntryKind.Plain,
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
@@ -559,6 +562,24 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_ATrainingIsForTheWholeClub()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(ClubOwned(DanceGuardTraining) with { Kind = CalendarEntryKind.Training });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal([TrainingForTheClubMessage], failures[AudienceField]);
     }
 
     [Fact]

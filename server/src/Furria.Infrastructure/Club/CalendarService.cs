@@ -58,18 +58,21 @@ public sealed partial class CalendarService
     private readonly PermissionAuthorizer _authorizer;
     private readonly MediaPictures _pictures;
     private readonly TimeProvider _timeProvider;
+    private readonly CalendarPushRecipients _pushRecipients;
 
     public CalendarService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
         MediaPictures pictures,
-        TimeProvider timeProvider
+        TimeProvider timeProvider,
+        CalendarPushRecipients pushRecipients
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
         _pictures = pictures;
         _timeProvider = timeProvider;
+        _pushRecipients = pushRecipients;
     }
 
     public async Task<Result<IReadOnlyList<CalendarEntrySummary>>> GetEntriesAsync(

@@ -1015,12 +1015,17 @@ or one group — who may edit it, and who a running entry summons through the No
 **audience** and its **venue**. The owner is never one person: only whoever manages the club
 calendar (for the club) or a group's admins (for that group) schedule an entry, chosen-people
 entries included — the calendar is the club's, not a private planner (ruled 2026-11-10).
+Nobody picks the owner: it follows from the audience (ruled 2026-11-17). For the club → the club;
+for one group its scheduler may own → that group; otherwise the club when the scheduler manages
+the club calendar, else her own group among the audience (or the one she started from). An edit
+that leaves the audience as saved keeps the owner.
 
 The **audience** (*Für wen*) says who the entry is for, and sight follows from it (ruled
 2026-11-10, calendar grilling — it replaced the chosen **visibility** *Gruppe / Verein /
 Öffentlich*; the **participating groups** of
 [ADR-0015](docs/adr/0015-a-calendar-entry-carries-participating-groups.md) live on as an **add-on**):
-- **Club** (*Verein*) — seen by every member, concerns every member.
+- **Club** (*Verein*) — seen by every member, concerns every member. A **training** is never for
+  the club (ruled 2026-11-17): it is for its groups or chosen people.
 - **Groups** (*Gruppen*, one or more) — seen by every member, concerns the members of those groups.
   A club-owned entry meant for the guard alone (its general rehearsal) has the guard as audience;
   a group that only dances somewhere is a **participating group**, not the audience.
@@ -1110,7 +1115,7 @@ Made precise when L2 was built (ruled 2026-10-02):
   Umfrage or an Eintragsliste still waits for — the people it concerns who have not answered, not
   herself. Only by hand, at most once per Funktion every six hours, and only while it is open.
   Nothing reminds automatically, and day schedules never push.
-_UI copy_: Kalendereintrag; Eigentümer; Für wen (Verein / Gruppen / Ausgewählte Personen);
+_UI copy_: Kalendereintrag; Für wen (Verein / Gruppen / Ausgewählte Personen);
 Zu-/Absage; Erinnern, Erinnert um …
 _Avoid_: **appointment**, **group appointment**, schedule, calling it an event, collapsing the
 audience into the owner, participant (that is one person's attendance response), guest group,

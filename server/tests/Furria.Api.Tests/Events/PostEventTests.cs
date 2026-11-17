@@ -327,7 +327,7 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
                                 "Generalprobe",
                                 AtTheRehearsal,
                                 RehearsalEnds,
-                                kind: CalendarEntryKind.Training,
+                                kind: CalendarEntryKind.Plain,
                                 venueAlias: "buergerhaus"
                             )
                     ),
