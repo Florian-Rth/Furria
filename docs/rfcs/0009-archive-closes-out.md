@@ -1,7 +1,7 @@
 ---
 rfc: 0009
 title: Archiving closes a person out in one act
-status: in-progress
+status: done
 github_issue: 95
 branch: feat/rfc-95-archive-closes-out
 created: 2026-11-19
@@ -103,13 +103,13 @@ Goal: `PUT …/archived` with `lastDay` ends, cuts and deletes in one transactio
 
 ### Phase 2 — Club app: the archive dialog
 Goal: the foot always offers *Person archivieren*; the dialog shows Letzter Tag + end/delete lists and sends `lastDay`.
-- [ ] Check `PersonDetails` carries what the plan needs (ties ahead, ties under archived parents, starts, pauses); extend the person-details response + schema if not
-- [ ] Pure `toArchivePlan(person, todayIsoDay, lastDay)` in `person-archive.ts` → `{ ends, deletes, earliestLastDay, limitingTie }`; unit tests for the derivation (ahead vs begun, pause cut vs delete, earliest day)
-- [ ] `PersonArchiveFoot`: drop the blocked note → always `PersonArchiveLine` (or restore)
-- [ ] `PersonArchiveLine`: `KkConfirmDialog` with a `KkDateField` *Letzter Tag* in `fields` (default yesterday, min/max, *Frühestens …* hint), lists in `consequence`, the restore line; hidden date field / lists per the empty cases
-- [ ] `use-person-archive` + `requests.ts`: send `lastDay`; surface server validation in the dialog's `error`
-- [ ] Remove `toArchiveBlockedLine` and dead copy; adapt `person-archive.test.ts`
-- [ ] `pnpm lint` + club-app typecheck + affected tests; browser check of the dialog (phone 420×740, light/dark) on a seeded person with every tie kind
+- [x] Check `PersonDetails` carries what the plan needs (ties ahead, ties under archived parents, starts, pauses); extend the person-details response + schema if not — added `unendedTiesUnderArchivedParents` (kind, name, sinceOn)
+- [x] Pure `toArchivePlan(person, todayIsoDay, lastDay)` in `person-archive.ts` → `{ ends, deletes, earliestLastDay, limitingTie }`; unit tests for the derivation (ahead vs begun, pause cut vs delete, earliest day)
+- [x] `PersonArchiveFoot`: drop the blocked note → always `PersonArchiveLine` (or restore)
+- [x] `PersonArchiveLine`: `KkConfirmDialog` with a `KkDateField` *Letzter Tag* in `fields` (default yesterday, min/max, *Frühestens …* hint), lists in `consequence`, the restore line; hidden date field / lists per the empty cases
+- [x] `use-person-archive` + `requests.ts`: send `lastDay`; surface server validation in the dialog's `error`
+- [x] Remove `toArchiveBlockedLine` and dead copy; adapt `person-archive.test.ts`
+- [x] `pnpm lint` + club-app typecheck + affected tests; browser check of the dialog (phone 420×740, light/dark) on a seeded person with every tie kind
 
 ## Risks & alternatives
 - **Deleting a membership dated ahead deletes its admission record** with it — accepted: an

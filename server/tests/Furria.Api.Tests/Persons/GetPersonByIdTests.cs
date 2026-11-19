@@ -554,6 +554,142 @@ public sealed class GetPersonByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_NameTheTiesUnderArchivedParents_When_HerGroupRoleAndOfficeAreArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup(
+                                "showtanz",
+                                "Showtanz",
+                                "Aufgeloest.",
+                                isRecruiting: false,
+                                ArchivedIn2024
+                            )
+                            .AddGroupMembership("paula-showtanz", "showtanz", "paula", JoinedIn2017)
+                            .AddGroupMembership(
+                                "paula-showtanz-old",
+                                "showtanz",
+                                "paula",
+                                JoinedIn2017,
+                                LeftIn2020
+                            )
+                            .AddGroupAdmin(
+                                "paula-showtanz-admin",
+                                "showtanz",
+                                "paula",
+                                sinceOn: RejoinedIn2021
+                            )
+                    )
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithDetails(
+                                "schriftfuehrung",
+                                "Schriftfuehrung",
+                                "Aufgeloest.",
+                                ArchivedIn2024
+                            )
+                            .AddRoleHolding(
+                                "paula-schriftfuehrung",
+                                "schriftfuehrung",
+                                "paula",
+                                JoinedIn2017
+                            )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("beisitz", "Beisitz", archivedOn: ArchivedIn2024)
+                            .AddBoardSeat("paula-beisitz", "beisitz", "paula", RejoinedIn2021)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [
+                (ArchivedParentTieKind.Group, "Showtanz", JoinedIn2017),
+                (ArchivedParentTieKind.Role, "Schriftfuehrung", JoinedIn2017),
+                (ArchivedParentTieKind.GroupAdmin, "Showtanz", RejoinedIn2021),
+                (ArchivedParentTieKind.BoardSeat, "Beisitz", RejoinedIn2021),
+            ],
+            result.UnendedTiesUnderArchivedParents.Select(tie => (tie.Kind, tie.Name, tie.SinceOn))
+        );
+    }
+
+    [Fact]
+    public async Task Should_NameTheAheadAndLeaveOutTheEnded_When_TheirParentsAreArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var tomorrow = _fixture.Today.AddDays(1);
+        var nextYear = _fixture.Today.AddYears(1);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup(
+                                "showtanz",
+                                "Showtanz",
+                                "Aufgeloest.",
+                                isRecruiting: false,
+                                ArchivedIn2024
+                            )
+                            .AddGroupMembership("paula-showtanz", "showtanz", "paula", tomorrow)
+                            .AddGroupAdmin(
+                                "paula-showtanz-admin",
+                                "showtanz",
+                                "paula",
+                                sinceOn: JoinedIn2017,
+                                untilOn: LeftIn2020
+                            )
+                    )
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithDetails(
+                                "schriftfuehrung",
+                                "Schriftfuehrung",
+                                "Aufgeloest.",
+                                ArchivedIn2024
+                            )
+                            .AddRoleHolding(
+                                "paula-schriftfuehrung",
+                                "schriftfuehrung",
+                                "paula",
+                                JoinedIn2017,
+                                nextYear
+                            )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("beisitz", "Beisitz", archivedOn: ArchivedIn2024)
+                            .AddBoardSeat(
+                                "paula-beisitz",
+                                "beisitz",
+                                "paula",
+                                JoinedIn2017,
+                                LeftIn2020
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadPersonAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [(ArchivedParentTieKind.Group, tomorrow), (ArchivedParentTieKind.Role, JoinedIn2017)],
+            result.UnendedTiesUnderArchivedParents.Select(tie => (tie.Kind, tie.SinceOn))
+        );
+    }
+
+    [Fact]
     public async Task Should_StillNameTheKey_When_ItsVenueIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -763,6 +899,7 @@ public sealed class GetPersonByIdTests : IClassFixture<ApiTestFixture>
                 "unendedGroupAdminTenures",
                 "unendedBoardSeats",
                 "unendedKeyHoldings",
+                "unendedTiesUnderArchivedParents",
                 "access",
                 "honours",
             ],

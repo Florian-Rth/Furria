@@ -48,4 +48,6 @@ public sealed record ManagedPersonDetails
     public required IReadOnlyList<PersonBoardSeat> UnendedBoardSeats { get; init; }
 
     public required IReadOnlyList<PersonKeyHolding> UnendedKeyHoldings { get; init; }
+
+    public required IReadOnlyList<PersonArchivedParentTie> UnendedTiesUnderArchivedParents { get; init; }
 }
