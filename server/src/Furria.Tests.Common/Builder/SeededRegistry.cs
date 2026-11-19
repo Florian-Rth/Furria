@@ -8,5 +8,6 @@ internal sealed record SeededRegistry(
     SeededGallery Gallery,
     SeededNews News,
     SeededBeerList BeerList,
-    SeededGroupMatcher GroupMatcher
+    SeededGroupMatcher GroupMatcher,
+    SeededIntakes Intakes
 );

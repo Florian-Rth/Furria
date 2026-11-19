@@ -6,6 +6,7 @@ using Furria.Core.GroupMatcher;
 using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
+using Furria.Core.Intakes;
 using Furria.Core.Media;
 using Furria.Core.MembershipApplications;
 using Furria.Core.News;
@@ -149,6 +150,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<Album> Albums => Set<Album>();
 
     public DbSet<UploadLink> UploadLinks => Set<UploadLink>();
+
+    public DbSet<Intake> Intakes => Set<Intake>();
+
+    public DbSet<IntakeGroup> IntakeGroups => Set<IntakeGroup>();
 
     public DbSet<NewsPost> NewsPosts => Set<NewsPost>();
 

@@ -20,6 +20,8 @@ public sealed class SeededContext
 
     public TestGroupMatcher GroupMatcher { get; }
 
+    public TestIntakes Intakes { get; }
+
     public Expected Expected { get; }
 
     internal SeededContext(
@@ -31,6 +33,7 @@ public sealed class SeededContext
         TestNews news,
         TestBeerList beerList,
         TestGroupMatcher groupMatcher,
+        TestIntakes intakes,
         Expected expected
     )
     {
@@ -42,6 +45,7 @@ public sealed class SeededContext
         News = news;
         BeerList = beerList;
         GroupMatcher = groupMatcher;
+        Intakes = intakes;
         Expected = expected;
     }
 }

@@ -11,6 +11,7 @@ using Furria.Infrastructure.GroupMatcher;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Halls;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Intakes;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
@@ -184,6 +185,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<MediaFileReaper>();
         services.AddScoped<GalleryService>();
         services.AddScoped<UploadLinkService>();
+        services.AddScoped<IntakeService>();
         services.AddScoped<NewsService>();
         services.AddScoped<NewsPictures>();
         services.AddScoped<MediaCopier>();

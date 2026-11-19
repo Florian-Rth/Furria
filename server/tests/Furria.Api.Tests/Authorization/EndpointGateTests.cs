@@ -108,6 +108,10 @@ public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
         "/api/push/topics/{topic}",
         "/api/beer-list/tab",
         "/api/changes",
+        "/api/intakes",
+        "/api/intakes/{intakeId}",
+        "/api/intakes/{intakeId}/renew",
+        "/api/intakes/{intakeId}/discard",
     ];
 
     private static readonly string[] InHandlerGatedProbes =

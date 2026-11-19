@@ -1,7 +1,7 @@
 ---
 rfc: 0009
 title: Intake — a new person fills in her own record from a QR
-status: draft
+status: in-progress
 github_issue: 97
 branch: feat/rfc-97-intake
 created: 2026-11-19
@@ -79,21 +79,26 @@ Each phase leaves the system intact and fits a ~120k-token session.
 
 ### Phase 1 — Backend: intake core
 Goal: managers can start, list, view, edit, renew and discard intakes via the API; nothing public yet.
-- [ ] `Intake` entity + EF configuration + migration (starter, decision, label, seed, token hash, created/expires/decided/discarded, resulting person, submitted-data columns, `IntakeGroup` join)
-- [ ] Intake link token: seed + HMAC derivation + hash lookup, reusing the upload-link pattern
-- [ ] Scope rules: `persons.manage` any; group admin own groups only and no membership; visibility filter
-- [ ] Endpoints: start, list (state, label/name, decision, starter), detail (incl. re-derived link while open), edit decision, renew, discard
-- [ ] Integration tests for scope, validation (≥1 affiliation), renew voiding the old token, state derivation
+- [x] `Intake` entity + EF configuration + migration (starter, decision, label, seed, token hash, created/expires/decided/discarded, resulting person, submitted-data columns, `IntakeGroup` join)
+- [x] Intake link token: seed + HMAC derivation + hash lookup, reusing the upload-link pattern
+- [x] Scope rules: `persons.manage` any; group admin own groups only and no membership; visibility filter
+- [x] Endpoints: start, list (state, label/name, decision, starter), detail (incl. re-derived link while open), edit decision, renew, discard
+- [x] Integration tests for scope, validation (≥1 affiliation), renew voiding the old token, state derivation
+
+Done 2026-11-19: `intake` + `intake_group` tables (row-version token, lifecycle checks), endpoints
+`GET/POST /intakes`, `GET/PUT /intakes/{id}`, `POST /intakes/{id}/renew|discard`. Rulings: only an
+account with a person may start one (the starter is the invitation's issuer); edit/renew only while
+*offen*/*abgelaufen*; discard is idempotent and drops her details and the link seed.
 
 ### Phase 2 — Backend: completion, review, invitation
 Goal: a newcomer can complete an intake through the public API end to end.
 - [ ] Public lookup by token (club name, whether address is required, state) + rate limit
 - [ ] Portrait upload by intake token (owned by the intake until completion)
-- [ ] Submit: validation, match check (normalized email, name + birth date), auto-create person + membership (intake provenance) + group memberships, or park as *zu prüfen*
+- [ ] Submit: validation, match check (normalized email, name + birth date; indexes on `person` for both), re-check the groups are still live, auto-create person + membership (intake provenance) + group memberships, or park as *zu prüfen*; race-free against renew/discard via the intake's `Version` token
 - [ ] Review endpoints: candidates, *Das ist sie* (fill gaps, membership unless running, missing groups), *Neue Person*
 - [ ] Invitation on completion with the starter as issuer when email + eligible (ClubRecord age of consent); in-person code returned for *App jetzt einrichten*
-- [ ] Push to the starter on completed / needs review
-- [ ] Purge: submitted data and portrait dropped on decide/discard/expiry
+- [ ] Push to the starter on completed / needs review (starter may be null after her erasure — then nobody is told)
+- [ ] Purge: submitted data, token seed and portrait dropped on decide/discard/expiry
 - [ ] Integration tests for each path (auto, match → both decisions, invitation eligible/ineligible, group-admin intake invites, expired/used token refused)
 
 ### Phase 3 — Club app: manager side

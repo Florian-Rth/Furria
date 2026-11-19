@@ -454,6 +454,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
             new TestNews(seeded.News),
             new TestBeerList(seeded.BeerList),
             new TestGroupMatcher(seeded.GroupMatcher),
+            new TestIntakes(seeded.Intakes),
             new Expected(scopeFactory)
         );
     }
