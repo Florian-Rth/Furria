@@ -45,7 +45,8 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
             + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom scepter "
             + "jesterCap chain viceCrown childCrown laurel medal gavel briefcase quill ledger "
-            + "jingleBell castle diamond handshake child confetti rocket",
+            + "jingleBell castle diamond handshake child confetti rocket fruit singer woodOven "
+            + "chicken pearl seaShell prince",
         [typeof(PersonFunctionKind)] = "boardSeat groupAdmin role",
         [typeof(DayOfWeek)] = "sunday monday tuesday wednesday thursday friday saturday",
         [typeof(EventSalesStatus)] =
