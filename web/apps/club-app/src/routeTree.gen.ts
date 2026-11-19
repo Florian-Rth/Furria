@@ -15,6 +15,7 @@ import { Route as PromoRouteImport } from './routes/promo'
 import { Route as PhotosRouteImport } from './routes/photos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvitationRouteImport } from './routes/invitation'
+import { Route as IntakeRouteImport } from './routes/intake'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ClaimWindowRouteImport } from './routes/claim-window'
 import { Route as AppRouteImport } from './routes/_app'
@@ -200,6 +201,11 @@ const LoginRoute = LoginRouteImport.update({
 const InvitationRoute = InvitationRouteImport.update({
   id: '/invitation',
   path: '/invitation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntakeRoute = IntakeRouteImport.update({
+  id: '/intake',
+  path: '/intake',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -1050,6 +1056,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/claim-window': typeof ClaimWindowRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/intake': typeof IntakeRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
@@ -1210,6 +1217,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/claim-window': typeof ClaimWindowRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/intake': typeof IntakeRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
@@ -1370,6 +1378,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/claim-window': typeof ClaimWindowRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/intake': typeof IntakeRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
@@ -1536,6 +1545,7 @@ export interface FileRouteTypes {
     | '/'
     | '/claim-window'
     | '/forgot-password'
+    | '/intake'
     | '/invitation'
     | '/login'
     | '/photos'
@@ -1696,6 +1706,7 @@ export interface FileRouteTypes {
   to:
     | '/claim-window'
     | '/forgot-password'
+    | '/intake'
     | '/invitation'
     | '/login'
     | '/photos'
@@ -1855,6 +1866,7 @@ export interface FileRouteTypes {
     | '/_app'
     | '/claim-window'
     | '/forgot-password'
+    | '/intake'
     | '/invitation'
     | '/login'
     | '/photos'
@@ -2020,6 +2032,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ClaimWindowRoute: typeof ClaimWindowRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  IntakeRoute: typeof IntakeRoute
   InvitationRoute: typeof InvitationRoute
   LoginRoute: typeof LoginRoute
   PhotosRoute: typeof PhotosRoute
@@ -2072,6 +2085,13 @@ declare module '@tanstack/react-router' {
       path: '/invitation'
       fullPath: '/invitation'
       preLoaderRoute: typeof InvitationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intake': {
+      id: '/intake'
+      path: '/intake'
+      fullPath: '/intake'
+      preLoaderRoute: typeof IntakeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -3557,6 +3577,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ClaimWindowRoute: ClaimWindowRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  IntakeRoute: IntakeRoute,
   InvitationRoute: InvitationRoute,
   LoginRoute: LoginRoute,
   PhotosRoute: PhotosRoute,

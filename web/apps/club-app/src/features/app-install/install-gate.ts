@@ -14,6 +14,7 @@ const TAB_LINK_PATHS = [
   /^\/claim-window\/?$/,
   /^\/request-access\/?$/,
   /^\/photos\/?$/,
+  /^\/intake\/?$/,
   /^\/beer-list\/book\/?$/,
 ];
 

@@ -1,7 +1,6 @@
 import type { UploadLink, UploadLinkState } from './schemas';
 
 export const UPLOAD_PAGE_PATH = '/photos';
-const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 const MS_PER_HOUR = 3_600_000;
 const HOURS_PER_DAY = 24;
 
@@ -32,11 +31,6 @@ export const shareOriginOf = (apiBaseUrl: string, pageOrigin: string): string =>
 
 export const shareUrlOf = (origin: string, token: string): string =>
   `${origin}${UPLOAD_PAGE_PATH}#${token}`;
-
-export const tokenOfHash = (hash: string): string | null => {
-  const token = hash.startsWith('#') ? hash.slice(1) : hash;
-  return TOKEN_PATTERN.test(token) ? token : null;
-};
 
 const NOT_FOUND_STATUSES: readonly number[] = [400, 404];
 

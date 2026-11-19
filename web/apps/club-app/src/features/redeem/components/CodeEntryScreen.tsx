@@ -5,9 +5,9 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { LinkPageFrame } from '@/features/link-page/components/LinkPageFrame';
 import { LOGIN_PATH } from '@/lib/return-to';
 import { useCodeEntry } from '../hooks/use-code-entry';
-import { RedeemFrame } from './RedeemFrame';
 
 const TITLE = 'CODE EINGEBEN';
 const CODE_LABEL = 'Code';
@@ -21,7 +21,7 @@ export const CodeEntryScreen: FC = () => {
   const refusalAlert = hasRefusal ? <KkAlert>{control.refusal}</KkAlert> : null;
 
   return (
-    <RedeemFrame>
+    <LinkPageFrame>
       <Stack sx={{ gap: 2.5, minWidth: 0 }}>
         <KkHeading level={1} component="h1">
           {TITLE}
@@ -52,6 +52,6 @@ export const CodeEntryScreen: FC = () => {
           {LOGIN_LABEL}
         </KkButton>
       </Stack>
-    </RedeemFrame>
+    </LinkPageFrame>
   );
 };

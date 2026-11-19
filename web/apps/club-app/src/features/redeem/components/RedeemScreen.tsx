@@ -1,14 +1,14 @@
 import type { FC } from 'react';
+import { LinkPageFrame } from '@/features/link-page/components/LinkPageFrame';
 import { useRedeemScreen } from '../hooks/use-redeem-screen';
 import { RedeemBody } from './RedeemBody';
-import { RedeemFrame } from './RedeemFrame';
 
 export const RedeemScreen: FC = () => {
   const control = useRedeemScreen();
 
   return (
-    <RedeemFrame>
+    <LinkPageFrame>
       <RedeemBody control={control} />
-    </RedeemFrame>
+    </LinkPageFrame>
   );
 };

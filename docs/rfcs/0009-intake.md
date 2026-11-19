@@ -1,7 +1,7 @@
 ---
 rfc: 0009
 title: Intake — a new person fills in her own record from a QR
-status: in-progress
+status: done
 github_issue: 97
 branch: feat/rfc-97-intake
 created: 2026-11-19
@@ -159,11 +159,27 @@ renews at once; the review screen keeps its data until it has navigated back aft
 
 ### Phase 4 — Club app: newcomer side
 Goal: the full flow works from a phone without the app installed.
-- [ ] Public route `/intake` reading the fragment token, exempt from the install gate
-- [ ] Form via the form kit (address required only for members), portrait pick + crop
-- [ ] States: expired / used / discarded link screens
-- [ ] *Fertig* screen; *App jetzt einrichten* hands over into the existing invitation redemption
-- [ ] Tests for business logic, lint/typecheck, phone screenshots of the whole flow; device check owed
+- [x] Public route `/intake` reading the fragment token, exempt from the install gate
+- [x] Form via the form kit (address required only for members), portrait pick + crop
+- [x] States: expired / used / discarded link screens
+- [x] *Fertig* screen; *App jetzt einrichten* hands over into the existing invitation redemption
+- [x] Tests for business logic, lint/typecheck, phone screenshots of the whole flow; device check owed
+
+Done 2026-11-19: feature `intake` (route `/intake#<token>`), sections *Über dich* (name, birth
+date), *Anschrift* (members only), *Kontakt* (email with *Für deinen Zugang zur App*, phone,
+visibility switch off by default), *Porträt*. Rulings: the portrait is picked and cut on her phone
+only and uploaded (tus, `Intake-Token`) right before the details are submitted — so replace,
+recut and remove stay local and nothing is left on the intake from a half-filled form; a
+portrait already sent is not sent again when only the submit is retried; *Absenden* waits while
+the crop desk is open; a photo the browser cannot preview (HEIC outside Safari) goes uncut with a
+note. A 404/409/410 on submit or upload re-checks the link, so a link voided or used meanwhile
+shows its closed screen; *Fertig* offers *App jetzt einrichten* only when an invitation came back
+(no hint otherwise — she never learns of a match). Shared on the way: `features/link-page`
+(frame, checking, failed — now used by invitation, upload link and intake), `lib/link-token`
+(fragment token), `tokenTusTransport`. Phone flow shot at 420×740 light/dark against the dev
+stack (member + group intake, portrait handed over to the new person); device check owed.
+Known edge: a portrait uploaded before a refused submit stays on the intake even if she then
+removes it locally (only reachable after a failed submit).
 
 ## Risks & alternatives
 
