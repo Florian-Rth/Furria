@@ -7,13 +7,14 @@ using Furria.Application.Intakes;
 using Furria.Application.Results;
 using Furria.Core.Intakes;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure.Intakes;
 
-public sealed class IntakeService
+public sealed partial class IntakeService
 {
     private const string UnknownIntakeMessage = "Diesen Neuzugang gibt es nicht.";
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
@@ -35,18 +36,21 @@ public sealed class IntakeService
 
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
+    private readonly AccountAccessService _accountAccessService;
     private readonly TimeProvider _timeProvider;
     private readonly byte[] _key;
 
     public IntakeService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
+        AccountAccessService accountAccessService,
         IOptions<AccessTokenOptions> options,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
+        _accountAccessService = accountAccessService;
         _timeProvider = timeProvider;
         _key = Encoding.UTF8.GetBytes(options.Value.SigningKey);
     }
@@ -234,12 +238,8 @@ public sealed class IntakeService
             ? IntakeTokens.TokenOf(_key, seed)
             : null;
 
-    private async Task<IntakeActor> ActorAsync(int accountId, CancellationToken ct) =>
-        new(
-            await _authorizer.ActivePersonIdAsync(accountId, ct),
-            await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.PersonsManage, ct),
-            (await _authorizer.AdministeredGroupIdsAsync(accountId, ct)).ToHashSet()
-        );
+    private Task<IntakeActor> ActorAsync(int accountId, CancellationToken ct) =>
+        _authorizer.IntakeActorAsync(accountId, ct);
 
     private async Task<Result<ManagedIntake>> ManagedIntakeAsync(
         int actorAccountId,

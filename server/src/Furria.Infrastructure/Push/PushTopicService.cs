@@ -4,6 +4,7 @@ using Furria.Core.Club;
 using Furria.Core.Push;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Intakes;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -86,7 +87,11 @@ public sealed class PushTopicService
                 FurriaPermissions.BeerListManage,
                 ct
             ),
+            RunsIntakes = await RunsIntakesAsync(accountId, ct),
         };
+
+    private async Task<bool> RunsIntakesAsync(int accountId, CancellationToken ct) =>
+        (await _authorizer.IntakeActorAsync(accountId, ct)).MayRunIntakes;
 
     private Task<bool> IsCalendarAudienceAsync(int personId, CancellationToken ct) =>
         _dbContext

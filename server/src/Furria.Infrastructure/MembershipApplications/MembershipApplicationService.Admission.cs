@@ -5,6 +5,7 @@ using Furria.Application.Registry;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.MembershipApplications;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.MembershipApplications;
@@ -28,6 +29,7 @@ public sealed partial class MembershipApplicationService
             return Result<AdmissionDetails>.Validation(RefusalMessage(refusal, applicant));
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.LockRegistryEntryAsync(ct);
         var admission = await RecordAdmissionAsync(command, applicant, ct);
         if (admission.IsSuccess)
             await transaction.CommitAsync(ct);

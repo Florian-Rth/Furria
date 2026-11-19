@@ -14,6 +14,7 @@ namespace Furria.Api.Tests.Push;
 public sealed class GetMyPushTopicsTests : IClassFixture<ApiTestFixture>
 {
     private const string GroupOnly = "gina";
+    private const string Trainer = "tina";
     private const string Reader = "rolf";
     private const string Outsider = "nora";
     private const string PersonlessLogin = "technik";
@@ -88,6 +89,17 @@ public sealed class GetMyPushTopicsTests : IClassFixture<ApiTestFixture>
         Assert.Equal([PushTopic.BeerStock], [.. topics.Select(setting => setting.Topic)]);
     }
 
+    [Fact]
+    public async Task Should_OfferIntakes_When_ThePersonRunsAGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAsync(ct);
+
+        var topics = await TopicsOfAsync(ctx, Trainer, ct);
+
+        Assert.Contains(PushTopic.Intakes, topics.Select(setting => setting.Topic));
+    }
+
     [Theory]
     [InlineData(Outsider)]
     [InlineData(PersonlessLogin)]
@@ -140,6 +152,8 @@ public sealed class GetMyPushTopicsTests : IClassFixture<ApiTestFixture>
                             .AddPerson(Outsider, "Nora", "Neu")
                             .AddAccount(Outsider)
                             .AddAccount(PersonlessLogin)
+                            .AddPerson(Trainer, "Tina", "Trainerin")
+                            .AddAccount(Trainer)
                     )
                     .Groups(groups =>
                         groups
@@ -150,6 +164,7 @@ public sealed class GetMyPushTopicsTests : IClassFixture<ApiTestFixture>
                                 GroupOnly,
                                 JoinedIn2017
                             )
+                            .AddGroupAdmin("tina-tanzgarde", "tanzgarde", Trainer)
                     )
                     .Roles(roles =>
                         roles.AddRoleWithHolder(

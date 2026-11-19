@@ -2860,6 +2860,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(43)")
                         .HasColumnName("code_hash");
 
+                    b.Property<bool>("ContactEmailUnconfirmed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("contact_email_unconfirmed");
+
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
@@ -2965,6 +2971,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("guardian_consent_confirmed");
 
+                    b.Property<int?>("IntakeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("intake_id");
+
                     b.Property<int>("PersonId")
                         .HasColumnType("integer")
                         .HasColumnName("person_id");
@@ -2985,6 +2995,10 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("AdmittedByPersonId")
                         .HasDatabaseName("ix_membership_admitted_by_person_id");
 
+                    b.HasIndex("IntakeId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_membership_intake_id");
+
                     b.HasIndex("PersonId")
                         .HasDatabaseName("ix_membership_person_id");
 
@@ -2996,6 +3010,8 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("membership", null, t =>
                         {
                             t.HasCheckConstraint("ck_membership_admission", "admitted_at IS NOT NULL OR (admitted_by_person_id IS NULL AND NOT guardian_consent_confirmed)");
+
+                            t.HasCheckConstraint("ck_membership_one_origin", "admitted_at IS NULL OR intake_id IS NULL");
 
                             t.HasCheckConstraint("ck_membership_period", "ended_on IS NULL OR ended_on >= started_on");
                         });
@@ -3143,6 +3159,9 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasIndex("ArchivedByPersonId")
                         .HasDatabaseName("ix_person_archived_by_person_id");
+
+                    b.HasIndex("BirthDate")
+                        .HasDatabaseName("ix_person_birth_date");
 
                     b.HasIndex("ContactChangedByPersonId")
                         .HasDatabaseName("ix_person_contact_changed_by_person_id");
@@ -6937,6 +6956,12 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_membership_person_admitted_by_person_id");
 
+                    b.HasOne("Furria.Core.Intakes.Intake", "Intake")
+                        .WithMany()
+                        .HasForeignKey("IntakeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_membership_intake_intake_id");
+
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany("Memberships")
                         .HasForeignKey("PersonId")
@@ -6945,6 +6970,8 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_membership_person_person_id");
 
                     b.Navigation("AdmittedBy");
+
+                    b.Navigation("Intake");
 
                     b.Navigation("Person");
                 });

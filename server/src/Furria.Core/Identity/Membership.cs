@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Intakes;
 
 namespace Furria.Core.Identity;
 
@@ -18,6 +19,8 @@ public sealed class Membership : ITimestamped
 
     public bool GuardianConsentConfirmed { get; set; }
 
+    public int? IntakeId { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
@@ -25,6 +28,8 @@ public sealed class Membership : ITimestamped
     public Person? Person { get; set; }
 
     public Person? AdmittedBy { get; set; }
+
+    public Intake? Intake { get; set; }
 
     public ICollection<MembershipPause> Pauses { get; set; } = [];
 }

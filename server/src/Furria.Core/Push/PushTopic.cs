@@ -8,4 +8,5 @@ public enum PushTopic
     Announcements = 4,
     BeerTab = 5,
     BeerStock = 6,
+    Intakes = 7,
 }

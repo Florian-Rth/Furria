@@ -56,7 +56,7 @@ newcomer is standing next to the manager with her phone; she should type her own
 - **Invitation** (ADR-0041): on completion, when she gave an email and `AccountEligibilityQuery`
   says eligible (age of consent from `ClubRecord`, nothing hard-coded), issue a mail invitation with
   the **starter** as issuer — also for a group admin's intake. The submit response on the
-  auto-created path carries the in-person redemption code so the *Fertig* screen can offer
+  auto-created path carries that invitation's link so the *Fertig* screen can offer
   **App jetzt einrichten** straight into the existing invitation redemption.
 - **Push** to the starter on *abgeschlossen* and *zu prüfen*.
 - **Data:** her details live on the intake only until decided; afterwards the intake keeps starter,
@@ -90,16 +90,33 @@ Done 2026-11-19: `intake` + `intake_group` tables (row-version token, lifecycle 
 account with a person may start one (the starter is the invitation's issuer); edit/renew only while
 *offen*/*abgelaufen*; discard is idempotent and drops her details and the link seed.
 
-### Phase 2 — Backend: completion, review, invitation
-Goal: a newcomer can complete an intake through the public API end to end.
-- [ ] Public lookup by token (club name, whether address is required, state) + rate limit
-- [ ] Portrait upload by intake token (owned by the intake until completion)
-- [ ] Submit: validation, match check (normalized email, name + birth date; indexes on `person` for both), re-check the groups are still live, auto-create person + membership (intake provenance) + group memberships, or park as *zu prüfen*; race-free against renew/discard via the intake's `Version` token
-- [ ] Review endpoints: candidates, *Das ist sie* (fill gaps, membership unless running, missing groups), *Neue Person*
-- [ ] Invitation on completion with the starter as issuer when email + eligible (ClubRecord age of consent); in-person code returned for *App jetzt einrichten*
-- [ ] Push to the starter on completed / needs review (starter may be null after her erasure — then nobody is told)
-- [ ] Purge: submitted data, token seed and portrait dropped on decide/discard/expiry
-- [ ] Integration tests for each path (auto, match → both decisions, invitation eligible/ineligible, group-admin intake invites, expired/used token refused)
+### Phase 2a — Backend: public completion, invitation, push
+Goal: a newcomer can complete an intake through the public API end to end (portrait and review follow in 2b).
+- [x] Public lookup by token (club name, whether address is required, state) + rate limit
+- [x] Submit: validation, match check (normalized email, name + birth date; indexes on `person` for both), re-check the groups are still live, auto-create person + membership (intake provenance) + group memberships, or park as *zu prüfen*; race-free against renew/discard via the intake's `Version` token
+- [x] Invitation on completion with the starter as issuer when email + eligible (ClubRecord age of consent); invitation link returned for *App jetzt einrichten*
+- [x] Push to the starter on completed / needs review (starter may be null after her erasure — then nobody is told)
+- [x] Purge on decide/discard: submitted data and token seed dropped
+- [x] Integration tests (auto path, match by email and by name + birth date, invitation eligible/ineligible/no email, group-admin intake invites, expired/used/unknown token refused, push + muted topic)
+
+Done 2026-11-19: `POST /public/intakes/lookup|submit` (anonymous, onboarding per-IP limit), new
+push topic *Neuzugänge* (`intakes`, heard by `persons.manage` and group admins),
+`membership.intake_id` records the provenance (never together with an admission). Rulings: the
+*Fertig* screen gets the mail invitation's **link** (she is its invitee) instead of a separate
+in-person code; a group archived since the start is skipped, and if no affiliation is left the
+submission is refused (409) and the intake stays open for the starter to edit; the contact change
+is stamped as her own only when she gave contact details; the link is spent on submit (seed
+dropped) in both outcomes. Review: an intake invitation never counts her typed email as confirmed —
+redeeming it always confirms the email by code (`invitation.contact_email_unconfirmed`); the match
+check and person creation run under one registry advisory lock (shared with admissions); the push
+reaches the starter only while she still runs intakes.
+
+### Phase 2b — Backend: portrait, review, expiry purge
+Goal: the newcomer can add her portrait and a decider can settle *zu prüfen* intakes.
+- [ ] Portrait upload by intake token (tus, new `intake` media owner kind, owned by the intake until completion, handed to the person on completion)
+- [ ] Review endpoints: candidates, *Das ist sie* (fill gaps, membership unless running, missing groups; invitation as on completion), *Neue Person*
+- [ ] Expiry sweep: token seed and an uploaded portrait dropped once an intake expires; portrait dropped on discard
+- [ ] Integration tests (portrait handed over / dropped, both review decisions, review scope)
 
 ### Phase 3 — Club app: manager side
 Goal: managers and group admins run intakes end to end from the app (newcomer side still pending).
@@ -124,6 +141,9 @@ Goal: the full flow works from a phone without the app installed.
   single use, 7 days, discard/renew, the starter's push, and the match check for existing persons.
 - **Typos in the email** — the invitation goes to the wrong inbox; harmless (login email is
   confirmed by code on redemption) and the person can be re-invited.
+- **Match oracle** — whether the submit response carries an invitation link hints whether the
+  registry already holds her email or name + birth date. Accepted: each probe spends one
+  single-use link the starter handed out, and the starter is pushed for every submission.
 - **Rejected:** folding into admission (an intake is no admission and may carry no membership);
   no invitation from a group admin's intake (ADR-0041); auto-matching existing persons.
 

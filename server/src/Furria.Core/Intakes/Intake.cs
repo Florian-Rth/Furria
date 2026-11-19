@@ -71,12 +71,24 @@ public sealed class Intake : ITimestamped
 
     public ICollection<IntakeGroup> Groups { get; set; } = [];
 
+    public bool RequiresAddress => MemberFrom is not null;
+
     [Pure]
     public static DateTimeOffset ExpiryFor(DateTimeOffset issuedAt) => issuedAt + Lifetime;
 
     [Pure]
     public IntakeState StateAt(DateTimeOffset now) =>
         StateOf(DiscardedAt, CompletedAt, SubmittedAt, ExpiresAt, now);
+
+    [Pure]
+    public static IntakeLinkState LinkStateOf(IntakeState state) =>
+        state switch
+        {
+            IntakeState.Open => IntakeLinkState.Open,
+            IntakeState.Expired => IntakeLinkState.Expired,
+            IntakeState.Discarded => IntakeLinkState.Discarded,
+            _ => IntakeLinkState.Used,
+        };
 
     [Pure]
     public static IntakeState StateOf(

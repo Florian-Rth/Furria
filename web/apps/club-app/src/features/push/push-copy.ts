@@ -47,6 +47,10 @@ export const PUSH_TOPIC_COPY: Record<PushTopic, PushTopicCopy> = {
     label: 'Bierbestand',
     description: 'Wenn das Bier bald ausgeht',
   },
+  intakes: {
+    label: 'Neuzugänge',
+    description: 'Wenn ein Neuzugang eingetragen ist oder geprüft werden muss',
+  },
 };
 
 export const PUSH_TOPICS_LABEL = 'Themen';

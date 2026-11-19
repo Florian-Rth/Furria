@@ -63,6 +63,57 @@ public sealed class IntakeExpectations
             }
         );
 
+    public Expected ToBeCompletedAs(int personId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var intake = await SingleAsync(dbContext, ct);
+                Assert.NotNull(intake.CompletedAt);
+                Assert.Equal(personId, intake.PersonId);
+                Assert.Null(intake.TokenSeed);
+                AssertHoldsNothingOfHers(intake);
+            }
+        );
+
+    public Expected ToAwaitReviewHolding(string firstName, string lastName, string? email) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var intake = await SingleAsync(dbContext, ct);
+                Assert.NotNull(intake.SubmittedAt);
+                Assert.Null(intake.CompletedAt);
+                Assert.Null(intake.PersonId);
+                Assert.Null(intake.TokenSeed);
+                Assert.Equal(firstName, intake.FirstName);
+                Assert.Equal(lastName, intake.LastName);
+                Assert.Equal(email, intake.Email);
+            }
+        );
+
+    public Expected ToStayOpen() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var intake = await SingleAsync(dbContext, ct);
+                Assert.Null(intake.SubmittedAt);
+                Assert.NotNull(intake.TokenSeed);
+                AssertHoldsNothingOfHers(intake);
+            }
+        );
+
+    private static void AssertHoldsNothingOfHers(Intake intake)
+    {
+        Assert.Null(intake.FirstName);
+        Assert.Null(intake.LastName);
+        Assert.Null(intake.BirthDate);
+        Assert.Null(intake.Street);
+        Assert.Null(intake.Zip);
+        Assert.Null(intake.City);
+        Assert.Null(intake.Phone);
+        Assert.Null(intake.Email);
+        Assert.False(intake.ContactVisibleToMembers);
+    }
+
     private Task<Intake> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext
             .Intakes.AsNoTracking()

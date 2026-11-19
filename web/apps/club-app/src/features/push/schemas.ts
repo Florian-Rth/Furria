@@ -38,6 +38,7 @@ export const PushTopicSchema = z.enum([
   'announcements',
   'beerTab',
   'beerStock',
+  'intakes',
 ]);
 export type PushTopic = z.infer<typeof PushTopicSchema>;
 

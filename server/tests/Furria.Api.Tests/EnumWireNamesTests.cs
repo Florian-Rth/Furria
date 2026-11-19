@@ -72,6 +72,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "person group gallery newsPost website event act session uploadLink",
         [typeof(UploadLinkState)] = "open expired revoked",
         [typeof(IntakeState)] = "open expired needsReview completed discarded",
+        [typeof(IntakeLinkState)] = "open expired used discarded",
         [typeof(SystemLevel)] = "ok attention broken",
         [typeof(SystemCheck)] = "database workers queue storage media logs services mail",
         [typeof(SystemReasonCode)] =
@@ -122,7 +123,8 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(AdmissionAgeBand)] =
             "underTwelve twelveToThirteen fourteenToFifteen sixteenToSeventeen eighteenPlus",
         [typeof(GroupStatementState)] = "answered open new changed",
-        [typeof(PushTopic)] = "invitations changes reminders announcements beerTab beerStock",
+        [typeof(PushTopic)] =
+            "invitations changes reminders announcements beerTab beerStock intakes",
     };
 
     private readonly ApiTestFixture _fixture;
