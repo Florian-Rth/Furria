@@ -112,6 +112,7 @@ public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
         "/api/intakes/{intakeId}",
         "/api/intakes/{intakeId}/renew",
         "/api/intakes/{intakeId}/discard",
+        "/api/intakes/{intakeId}/resolve",
     ];
 
     private static readonly string[] InHandlerGatedProbes =

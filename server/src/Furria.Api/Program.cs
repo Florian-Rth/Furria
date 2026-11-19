@@ -94,6 +94,7 @@ try
     app.UseRateLimiter();
     app.UseMediaUploads();
     app.UseLinkUploads();
+    app.UseIntakeUploads();
     app.UseFastEndpoints(c =>
     {
         c.Endpoints.RoutePrefix = "api";

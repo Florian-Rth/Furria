@@ -3428,6 +3428,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("owner_group_id");
 
+                    b.Property<int?>("OwnerIntakeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_intake_id");
+
                     b.Property<string>("OwnerKind")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -3510,6 +3514,10 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("OwnerGroupId")
                         .HasDatabaseName("ix_media_item_owner_group_id");
 
+                    b.HasIndex("OwnerIntakeId")
+                        .HasDatabaseName("ix_media_item_owner_intake_id")
+                        .HasFilter("owner_intake_id IS NOT NULL");
+
                     b.HasIndex("OwnerNewsPostId")
                         .HasDatabaseName("ix_media_item_owner_news_post_id");
 
@@ -3554,11 +3562,11 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video', 'Audio')");
 
-                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Act' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Session' AND owner_session_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'UploadLink' AND owner_upload_link_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)");
+                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Act' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Session' AND owner_session_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'UploadLink' AND owner_upload_link_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Intake' AND owner_intake_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)");
 
-                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event', 'Act', 'Session', 'UploadLink')");
+                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event', 'Act', 'Session', 'UploadLink', 'Intake')");
 
-                            t.HasCheckConstraint("ck_media_item_photo_only", "owner_kind NOT IN ('Website', 'Event', 'Session') OR kind = 'Photo'");
+                            t.HasCheckConstraint("ck_media_item_photo_only", "owner_kind NOT IN ('Website', 'Event', 'Session', 'Intake') OR kind = 'Photo'");
 
                             t.HasCheckConstraint("ck_media_item_placed", "(album_id IS NULL) = (placed_at IS NULL)");
 
@@ -7081,6 +7089,12 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_media_item_group_owner_group_id");
 
+                    b.HasOne("Furria.Core.Intakes.Intake", "OwnerIntake")
+                        .WithMany()
+                        .HasForeignKey("OwnerIntakeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_item_intake_owner_intake_id");
+
                     b.HasOne("Furria.Core.News.NewsPost", "OwnerNewsPost")
                         .WithMany()
                         .HasForeignKey("OwnerNewsPostId")
@@ -7192,6 +7206,8 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("OwnerEvent");
 
                     b.Navigation("OwnerGroup");
+
+                    b.Navigation("OwnerIntake");
 
                     b.Navigation("OwnerNewsPost");
 

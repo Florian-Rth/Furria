@@ -8,8 +8,11 @@ using Furria.Application.Results;
 using Furria.Core.Intakes;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure.Intakes;
@@ -37,6 +40,9 @@ public sealed partial class IntakeService
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
     private readonly AccountAccessService _accountAccessService;
+    private readonly PersonService _personService;
+    private readonly MediaPictures _pictures;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly TimeProvider _timeProvider;
     private readonly byte[] _key;
 
@@ -44,6 +50,9 @@ public sealed partial class IntakeService
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
         AccountAccessService accountAccessService,
+        PersonService personService,
+        MediaPictures pictures,
+        IServiceScopeFactory scopeFactory,
         IOptions<AccessTokenOptions> options,
         TimeProvider timeProvider
     )
@@ -51,6 +60,9 @@ public sealed partial class IntakeService
         _dbContext = dbContext;
         _authorizer = authorizer;
         _accountAccessService = accountAccessService;
+        _personService = personService;
+        _pictures = pictures;
+        _scopeFactory = scopeFactory;
         _timeProvider = timeProvider;
         _key = Encoding.UTF8.GetBytes(options.Value.SigningKey);
     }
@@ -136,6 +148,10 @@ public sealed partial class IntakeService
                     summary.CanManage && summary.State == IntakeState.Open
                         ? await LinkTokenAsync(intakeId, ct)
                         : null,
+                Review =
+                    summary.CanManage && summary.State == IntakeState.NeedsReview
+                        ? await ReviewOfAsync(intakeId, ct)
+                        : null,
             }
         );
     }
@@ -211,8 +227,11 @@ public sealed partial class IntakeService
         intake.DiscardedAt = now;
         intake.TokenSeed = null;
         ForgetNewcomer(intake);
+        var saved = await SaveRaceFreeAsync(intake, ct);
+        if (saved.IsSuccess)
+            await DropPortraitsOfAsync(intake.Id, ct);
 
-        return await SaveRaceFreeAsync(intake, ct);
+        return saved;
     }
 
     private async Task<Result> SaveRaceFreeAsync(Intake intake, CancellationToken ct)

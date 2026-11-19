@@ -101,6 +101,11 @@ public sealed class IntakeExpectations
             }
         );
 
+    public Expected ToHaveNoLinkLeft() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).TokenSeed)
+        );
+
     private static void AssertHoldsNothingOfHers(Intake intake)
     {
         Assert.Null(intake.FirstName);

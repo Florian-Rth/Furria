@@ -113,10 +113,26 @@ reaches the starter only while she still runs intakes.
 
 ### Phase 2b — Backend: portrait, review, expiry purge
 Goal: the newcomer can add her portrait and a decider can settle *zu prüfen* intakes.
-- [ ] Portrait upload by intake token (tus, new `intake` media owner kind, owned by the intake until completion, handed to the person on completion)
-- [ ] Review endpoints: candidates, *Das ist sie* (fill gaps, membership unless running, missing groups; invitation as on completion), *Neue Person*
-- [ ] Expiry sweep: token seed and an uploaded portrait dropped once an intake expires; portrait dropped on discard
-- [ ] Integration tests (portrait handed over / dropped, both review decisions, review scope)
+- [x] Portrait upload by intake token (tus, new `intake` media owner kind, owned by the intake until completion, handed to the person on completion)
+- [x] Review endpoints: candidates, *Das ist sie* (fill gaps, membership unless running, missing groups; invitation as on completion), *Neue Person*
+- [x] Expiry sweep: token seed and an uploaded portrait dropped once an intake expires; portrait dropped on discard
+- [x] Integration tests (portrait handed over / dropped, both review decisions, review scope)
+
+Done 2026-11-19: tus mount `/api/media/intake-uploads` (header `Intake-Token`, photos only, crop
+metadata, open intakes only, same per-IP limiter as upload links; nginx streams it), at most one
+portrait per intake (a new upload replaces the last). The review lives on `GET /intakes/{id}`
+(`review`: her held details + portrait, candidates with match kind, member/groups/account,
+portrait) and is decided by `POST /intakes/{id}/resolve` (`personId` = *Das ist sie*, none =
+*Neue Person*), for the starter or `persons.manage`. Rulings: *Das ist sie* fills gaps as her own
+contact change; a membership counts as running while it has not ended before today; a new one
+starts on `MemberFrom` or the day after her last membership ended, whichever is later; her upload
+becomes the portrait only if the person has none (else dropped); the starter is pushed when
+someone else resolves. Background job *Abgelaufene Neuzugänge bereinigen* (every 15 min) drops
+expired links' seeds and portraits of intakes no longer open or awaiting review (1 h grace after
+expiry). Review: adopting an intake portrait takes a share lock on the open intake, so an upload
+finishing after submit/discard is refused; push targeting asks about the starter's rights in its
+own scope. Open for Florian: a group admin who started an intake sees the matching candidates'
+birth date, groups and account state while resolving.
 
 ### Phase 3 — Club app: manager side
 Goal: managers and group admins run intakes end to end from the app (newcomer side still pending).

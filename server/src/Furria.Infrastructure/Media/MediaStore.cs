@@ -99,6 +99,7 @@ public sealed class MediaStore
                     row.OwnerActId,
                     row.OwnerSessionId,
                     row.OwnerUploadLinkId,
+                    row.OwnerIntakeId,
                     row.WebsitePicture == null
                         ? null
                         : new PictureSlotPosition(
@@ -196,9 +197,30 @@ public sealed class MediaStore
         );
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await HoldOwnerAsync(command.Owner, ct);
         await _dbContext.SaveChangesAsync(ct);
         await LinkPictureAsync(command, item.Id, ct);
         await transaction.CommitAsync(ct);
+    }
+
+    private async Task HoldOwnerAsync(MediaOwner owner, CancellationToken ct)
+    {
+        if (owner.Kind != MediaOwnerKind.Intake)
+            return;
+
+        var now = _timeProvider.GetUtcNow();
+        var held = await _dbContext
+            .Database.SqlQuery<int>(
+                $"""
+                SELECT id AS "Value" FROM intake
+                WHERE id = {owner.Id} AND discarded_at IS NULL AND submitted_at IS NULL
+                    AND expires_at > {now}
+                FOR SHARE
+                """
+            )
+            .ToListAsync(ct);
+        if (held.Count == 0)
+            throw new MediaOwnerGoneException();
     }
 
     private async Task<IReadOnlyList<MediaItem>> PicturesOfAsync(
@@ -225,6 +247,11 @@ public sealed class MediaStore
             MediaOwnerKind.Session => await _dbContext
                 .MediaItems.Where(item =>
                     item.OwnerKind == MediaOwnerKind.Session && item.OwnerSessionId == owner.Id
+                )
+                .ToListAsync(ct),
+            MediaOwnerKind.Intake => await _dbContext
+                .MediaItems.Where(item =>
+                    item.OwnerKind == MediaOwnerKind.Intake && item.OwnerIntakeId == owner.Id
                 )
                 .ToListAsync(ct),
             _ => [],
@@ -314,6 +341,7 @@ public sealed class MediaStore
             OwnerSessionId = command.Owner.Kind == MediaOwnerKind.Session ? command.Owner.Id : null,
             OwnerUploadLinkId =
                 command.Owner.Kind == MediaOwnerKind.UploadLink ? command.Owner.Id : null,
+            OwnerIntakeId = command.Owner.Kind == MediaOwnerKind.Intake ? command.Owner.Id : null,
             Kind = command.Format.Kind,
             State = MediaItemState.Processing,
             OriginalFileName = command.OriginalFileName,

@@ -24,6 +24,7 @@ using Furria.Infrastructure.Changes;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Intakes;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Media;
@@ -813,6 +814,9 @@ public sealed class ApiTestFixture : IAsyncLifetime
 
     public Task PurgeGalleryBinAsync(CancellationToken ct = default) =>
         Services.GetServices<IHostedService>().OfType<GalleryBinPurge>().Single().PurgeAsync(ct);
+
+    public Task SweepIntakesAsync(CancellationToken ct = default) =>
+        Services.GetServices<IHostedService>().OfType<IntakeExpirySweep>().Single().SweepAsync(ct);
 
     public string SignedMediaUrl(int mediaItemId, MediaOwner owner, MediaRendition rendition) =>
         Services.GetRequiredService<MediaUrlSigner>().UrlOf(mediaItemId, owner, rendition);

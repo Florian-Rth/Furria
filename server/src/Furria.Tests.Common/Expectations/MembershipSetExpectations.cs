@@ -49,4 +49,16 @@ public sealed class MembershipSetExpectations
                 Assert.Null(membership.AdmittedAt);
             }
         );
+
+    public Expected ToHaveOneFromIntakeSince(int intakeId, DateOnly startedOn) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var membership = await dbContext
+                    .Memberships.AsNoTracking()
+                    .SingleAsync(row => row.PersonId == _personId && row.IntakeId == intakeId, ct);
+                Assert.Equal(startedOn, membership.StartedOn);
+                Assert.Null(membership.EndedOn);
+            }
+        );
 }

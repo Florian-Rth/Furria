@@ -77,6 +77,10 @@ public sealed class Intake : ITimestamped
     public static DateTimeOffset ExpiryFor(DateTimeOffset issuedAt) => issuedAt + Lifetime;
 
     [Pure]
+    public static DateOnly RejoinOn(DateOnly memberFrom, DateOnly? lastEndedOn) =>
+        lastEndedOn is { } endedOn && endedOn >= memberFrom ? endedOn.AddDays(1) : memberFrom;
+
+    [Pure]
     public IntakeState StateAt(DateTimeOffset now) =>
         StateOf(DiscardedAt, CompletedAt, SubmittedAt, ExpiresAt, now);
 

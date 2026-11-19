@@ -205,6 +205,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<PasswordResetMailThrottle>();
         services.AddHostedService<SignedOutMailRequestWorker>();
         services.AddHostedService<UnconfirmedApplicationPurge>();
+        services.AddHostedService<IntakeExpirySweep>();
 
         services.AddSingleton<HostStart>();
         services.AddSingleton<BackgroundRuns>();

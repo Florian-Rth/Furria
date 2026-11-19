@@ -1,6 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Intakes;
 using Furria.Core.Intakes;
@@ -43,6 +44,7 @@ public sealed class GetIntakeById : Endpoint<GetIntakeByIdRequest, GetIntakeById
             {
                 Intake = ToDto(result.Value.Intake),
                 Token = result.Value.Token,
+                Review = ToDto(result.Value.Review),
             },
             cancellation: ct
         );
@@ -71,6 +73,41 @@ public sealed class GetIntakeById : Endpoint<GetIntakeByIdRequest, GetIntakeById
             SubmittedAt = intake.SubmittedAt,
             CompletedAt = intake.CompletedAt,
             DiscardedAt = intake.DiscardedAt,
+        };
+
+    private static GetIntakeByIdReviewDto? ToDto(IntakeReviewDetails? review) =>
+        review is null
+            ? null
+            : new()
+            {
+                Newcomer = new GetIntakeByIdNewcomerDto
+                {
+                    FirstName = review.Newcomer.FirstName,
+                    LastName = review.Newcomer.LastName,
+                    BirthDate = review.Newcomer.BirthDate,
+                    Street = review.Newcomer.Street,
+                    Zip = review.Newcomer.Zip,
+                    City = review.Newcomer.City,
+                    Phone = review.Newcomer.Phone,
+                    Email = review.Newcomer.Email,
+                    ContactVisibleToMembers = review.Newcomer.ContactVisibleToMembers,
+                    Portrait = PictureDto.From(review.Newcomer.Portrait),
+                },
+                Candidates = [.. review.Candidates.Select(ToDto)],
+            };
+
+    private static GetIntakeByIdCandidateDto ToDto(IntakeCandidate candidate) =>
+        new()
+        {
+            PersonId = candidate.PersonId,
+            FirstName = candidate.FirstName,
+            LastName = candidate.LastName,
+            BirthDate = candidate.BirthDate,
+            Match = candidate.Match,
+            IsMember = candidate.IsMember,
+            Groups = candidate.Groups,
+            HasAccount = candidate.HasAccount,
+            Portrait = PictureDto.From(candidate.Portrait),
         };
 
     private static GetIntakeByIdPersonDto? ToDto(IntakePersonName? person) =>
@@ -103,6 +140,59 @@ public sealed record GetIntakeByIdResponse
     public required GetIntakeByIdIntakeDto Intake { get; init; }
 
     public required string? Token { get; init; }
+
+    public required GetIntakeByIdReviewDto? Review { get; init; }
+}
+
+public sealed record GetIntakeByIdReviewDto
+{
+    public required GetIntakeByIdNewcomerDto Newcomer { get; init; }
+
+    public required IReadOnlyList<GetIntakeByIdCandidateDto> Candidates { get; init; }
+}
+
+public sealed record GetIntakeByIdNewcomerDto
+{
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    public required DateOnly BirthDate { get; init; }
+
+    public required string? Street { get; init; }
+
+    public required string? Zip { get; init; }
+
+    public required string? City { get; init; }
+
+    public required string? Phone { get; init; }
+
+    public required string? Email { get; init; }
+
+    public required bool ContactVisibleToMembers { get; init; }
+
+    public required PictureDto? Portrait { get; init; }
+}
+
+public sealed record GetIntakeByIdCandidateDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    public required DateOnly? BirthDate { get; init; }
+
+    public required IntakeMatch Match { get; init; }
+
+    public required bool IsMember { get; init; }
+
+    public required IReadOnlyList<string> Groups { get; init; }
+
+    public required bool HasAccount { get; init; }
+
+    public required PictureDto? Portrait { get; init; }
 }
 
 public sealed record GetIntakeByIdIntakeDto

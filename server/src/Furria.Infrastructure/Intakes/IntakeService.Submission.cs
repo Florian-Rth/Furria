@@ -6,10 +6,12 @@ using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Intakes;
 using Furria.Core.Push;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Push;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Furria.Infrastructure.Intakes;
 
@@ -145,6 +147,18 @@ public sealed partial class IntakeService
         if (!saved.IsSuccess)
             return Result<IntakeSubmission>.Carrying(saved);
 
+        return await SettleNewPersonAsync(intake, person, newcomer, now, ct);
+    }
+
+    private async Task<Result<IntakeSubmission>> SettleNewPersonAsync(
+        Intake intake,
+        Person person,
+        Newcomer newcomer,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        await HandPortraitToAsync(intake.Id, person, ct);
         await StampContactAsHerOwnAsync(person, newcomer, now, ct);
         var invitationLink = await _accountAccessService.InviteIntakeNewcomerAsync(
             person.Id,
@@ -229,8 +243,18 @@ public sealed partial class IntakeService
             .ToListAsync(ct);
 
         foreach (var accountId in accountIds)
-            if ((await _authorizer.IntakeActorAsync(accountId, ct)).MayRunIntakes)
+            if (await RunsIntakesAsync(accountId, ct))
                 _dbContext.OutboxPushes.Add(IntakePushMessages.For(push, accountId, now));
+    }
+
+    private async Task<bool> RunsIntakesAsync(int accountId, CancellationToken ct)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        return (
+            await scope
+                .ServiceProvider.GetRequiredService<PermissionAuthorizer>()
+                .IntakeActorAsync(accountId, ct)
+        ).MayRunIntakes;
     }
 
     private Task<bool> MatchesSomeoneAsync(Newcomer newcomer, CancellationToken ct) =>
@@ -324,6 +348,20 @@ public sealed partial class IntakeService
                 Given(command.Phone),
                 Given(command.Email),
                 command.ContactVisibleToMembers
+            );
+
+        [Pure]
+        public static Newcomer HeldBy(Intake intake) =>
+            new(
+                intake.FirstName!,
+                intake.LastName!,
+                intake.BirthDate!.Value,
+                intake.Street,
+                intake.Zip,
+                intake.City,
+                intake.Phone,
+                intake.Email,
+                intake.ContactVisibleToMembers
             );
 
         [Pure]
