@@ -100,6 +100,7 @@ Goal: `PUT …/archived` with `lastDay` ends, cuts and deletes in one transactio
 - [x] Remove the running-ties refusal + its strings; update `PersonExpectations`/test helpers
 - [x] Integration tests (`PutPersonArchived`): ends all six kinds on the day; archived-parent tie ended; ahead ties + later pauses deleted; open pause cut; fee reduction untouched; lastDay today/after → 400; lastDay before a start → 400; missing lastDay with running tie → 400; nothing running → no lastDay needed; restore reopens nothing; holder of `persons.manage` only can end a board seat/key
 - [x] `dotnet csharpier format .` + `dotnet build` (zero warnings) + the touched test classes
+- [x] Review follow-ups: archive locks the person row (`FOR UPDATE`, one transaction) so concurrent archivers serialise; ties that ended between the last day and today stay untouched (ruling 2026-11-19, tested); tie-adding paths stay unlocked (ruling: rare race, archive side only)
 
 ### Phase 2 — Club app: the archive dialog
 Goal: the foot always offers *Person archivieren*; the dialog shows Letzter Tag + end/delete lists and sends `lastDay`.

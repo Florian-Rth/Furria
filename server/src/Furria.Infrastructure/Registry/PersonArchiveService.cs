@@ -13,8 +13,6 @@ namespace Furria.Infrastructure.Registry;
 
 public sealed class PersonArchiveService
 {
-    public const string LastDayTooLateMessage = "Der letzte Tag ist spätestens gestern.";
-
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string MissingLastDayMessage = "Der letzte Tag fehlt – es läuft noch etwas.";
     private const string MembershipLabel = "Mitgliedschaft";
@@ -23,6 +21,8 @@ public sealed class PersonArchiveService
     private const string GroupAdminLabel = "Gruppen-Admin";
     private const string BoardSeatLabel = "Vorstandssitz";
     private const string KeyHoldingLabel = "Schlüssel";
+
+    public const string LastDayTooLateMessage = "Der letzte Tag ist spätestens gestern.";
 
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
@@ -35,10 +35,21 @@ public sealed class PersonArchiveService
 
     public async Task<Result> SetArchivedAsync(PersonArchiveCommand command, CancellationToken ct)
     {
-        var person = await _dbContext.People.SingleOrDefaultAsync(
-            row => row.Id == command.PersonId,
-            ct
-        );
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var result = await SetArchivedLockedAsync(command, ct);
+
+        if (result.IsSuccess)
+            await transaction.CommitAsync(ct);
+
+        return result;
+    }
+
+    private async Task<Result> SetArchivedLockedAsync(
+        PersonArchiveCommand command,
+        CancellationToken ct
+    )
+    {
+        var person = await LockedPerson(command.PersonId).SingleOrDefaultAsync(ct);
 
         if (person is null)
             return Result.NotFound(UnknownPersonMessage);
@@ -50,6 +61,9 @@ public sealed class PersonArchiveService
             ? await ArchiveAsync(person, command, ct)
             : await RestoreAsync(person, ct);
     }
+
+    private IQueryable<Person> LockedPerson(int personId) =>
+        _dbContext.People.FromSql($"SELECT * FROM person WHERE id = {personId} FOR UPDATE");
 
     private async Task<Result> ArchiveAsync(
         Person person,
@@ -250,7 +264,7 @@ public sealed class PersonArchiveService
         if (lastDay >= today)
             return LastDayTooLateMessage;
 
-        var latest = begun.MaxBy(tie => tie.StartsOn)!;
+        var latest = begun.OrderByDescending(tie => tie.StartsOn).First();
 
         return lastDay < latest.StartsOn ? BeforeStartMessage(latest) : null;
     }

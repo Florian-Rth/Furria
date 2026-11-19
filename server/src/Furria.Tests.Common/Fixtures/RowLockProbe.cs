@@ -4,13 +4,41 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Furria.Tests.Common.Fixtures;
 
-public static class BeerPotLockProbe
+public static class RowLockProbe
 {
     private static readonly TimeSpan QueueTimeout = TimeSpan.FromSeconds(10);
 
-    public static async Task<T> WhileBeerPotIsLockedAsync<T>(
+    public static Task<T> WhileBeerPotIsLockedAsync<T>(
         this ApiTestFixture fixture,
         int beerPotId,
+        int waitingSessions,
+        Func<Task<T>> act,
+        CancellationToken ct
+    ) =>
+        fixture.WhileRowIsLockedAsync(
+            $"SELECT id AS \"Value\" FROM beer_pot WHERE id = {beerPotId} FOR UPDATE",
+            waitingSessions,
+            act,
+            ct
+        );
+
+    public static Task<T> WhilePersonIsLockedAsync<T>(
+        this ApiTestFixture fixture,
+        int personId,
+        int waitingSessions,
+        Func<Task<T>> act,
+        CancellationToken ct
+    ) =>
+        fixture.WhileRowIsLockedAsync(
+            $"SELECT id AS \"Value\" FROM person WHERE id = {personId} FOR UPDATE",
+            waitingSessions,
+            act,
+            ct
+        );
+
+    private static async Task<T> WhileRowIsLockedAsync<T>(
+        this ApiTestFixture fixture,
+        FormattableString lockQuery,
         int waitingSessions,
         Func<Task<T>> act,
         CancellationToken ct
@@ -21,11 +49,7 @@ public static class BeerPotLockProbe
         Task<T> acting;
         await using (var transaction = await dbContext.Database.BeginTransactionAsync(ct))
         {
-            await dbContext
-                .Database.SqlQuery<int>(
-                    $"SELECT id AS \"Value\" FROM beer_pot WHERE id = {beerPotId} FOR UPDATE"
-                )
-                .ToListAsync(ct);
+            await dbContext.Database.SqlQuery<int>(lockQuery).ToListAsync(ct);
             acting = act();
             await Polling.UntilAsync(
                 async probeCt =>
@@ -33,7 +57,7 @@ public static class BeerPotLockProbe
                         ? "queued"
                         : null,
                 QueueTimeout,
-                "The requests never queued behind the beer pot lock",
+                "The requests never queued behind the row lock",
                 ct
             );
             await transaction.CommitAsync(ct);

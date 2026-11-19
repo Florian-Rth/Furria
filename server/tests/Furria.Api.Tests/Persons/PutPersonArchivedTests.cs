@@ -225,7 +225,7 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
                             .AddMembershipPause(
                                 "paula-ahead-pause",
                                 "paula-ahead",
-                                ClubSession.YearOf(aheadMembershipStart)
+                                _fixture.CurrentSessionYear + 1
                             )
                     )
                     .Groups(groups =>
@@ -325,8 +325,8 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
     public async Task Should_CutHerPausesAtTheLastDaysSession_When_SheIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
-        var lastDay = _fixture.Today.AddDays(-1);
-        var lastSession = ClubSession.YearOf(lastDay);
+        var lastSession = _fixture.CurrentSessionYear - 1;
+        var lastDay = new DateOnly(_fixture.CurrentSessionYear, 11, 10);
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Identity(identity =>
@@ -372,8 +372,8 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
     public async Task Should_CutAClosedPauseToo_When_ItReachesPastTheLastDaysSession()
     {
         var ct = TestContext.Current.CancellationToken;
-        var lastDay = _fixture.Today.AddDays(-1);
-        var lastSession = ClubSession.YearOf(lastDay);
+        var lastSession = _fixture.CurrentSessionYear - 1;
+        var lastDay = new DateOnly(_fixture.CurrentSessionYear, 11, 10);
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Identity(identity =>
@@ -567,6 +567,142 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
             .ToHavePeriod(Joined2012, lastDay)
             .KeyHolding(ctx.Club.KeyHoldings.IdOf("paula-lager"))
             .ToHavePeriod(Joined2012, lastDay)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ArchiveHerOnce_When_TwoArchiversConfirmAtTheSameTime()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var lastDay = _fixture.Today.AddDays(-1);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddMembership("paula-running", "paula", Joined2012)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                _fixture.Today.AddDays(5)
+                            )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var paulaId = ctx.Identity.People.IdOf("paula");
+
+        var responses = await _fixture.WhilePersonIsLockedAsync(
+            paulaId,
+            waitingSessions: 2,
+            () =>
+                Task.WhenAll(
+                    SetArchivedAsync(client, paulaId, true, lastDay),
+                    SetArchivedAsync(client, paulaId, true, lastDay)
+                ),
+            ct
+        );
+
+        Assert.Equal(
+            [HttpStatusCode.NoContent, HttpStatusCode.NoContent],
+            responses.Select(response => response.StatusCode)
+        );
+        await ctx
+            .Expected.Person(paulaId)
+            .ToBeArchived(_fixture.Today, null)
+            .Membership(ctx.Identity.Memberships.IdOf("paula-running"))
+            .ToHavePeriod(Joined2012, lastDay)
+            .GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
+            .ToNotExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_LeaveATieAlone_When_ItEndedBetweenTheLastDayAndToday()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var lastDay = _fixture.Today.AddDays(-3);
+        var returnedYesterday = _fixture.Today.AddDays(-1);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddMembership("paula-running", "paula", Joined2012)
+                    )
+                    .Club(club =>
+                        club.AddVenue("lager", "Lager", 2)
+                            .AddKeyHolding(
+                                "paula-lager",
+                                "lager",
+                                "paula",
+                                Joined2012,
+                                returnedYesterday
+                            )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var response = await SetArchivedAsync(
+            client,
+            ctx.Identity.People.IdOf("paula"),
+            true,
+            lastDay
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.KeyHolding(ctx.Club.KeyHoldings.IdOf("paula-lager"))
+            .ToHavePeriod(Joined2012, returnedYesterday)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_EndHerTiesOnTheLatestStart_When_TheLastDayIsThatVeryDay()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var joinedLately = _fixture.Today.AddDays(-10);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddMembership("paula-running", "paula", Joined2012)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership(
+                                "paula-tanzgarde",
+                                "tanzgarde",
+                                "paula",
+                                joinedLately
+                            )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var response = await SetArchivedAsync(
+            client,
+            ctx.Identity.People.IdOf("paula"),
+            true,
+            joinedLately
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
+            .ToHavePeriod(joinedLately, joinedLately)
             .AssertAsync(ct);
     }
 
