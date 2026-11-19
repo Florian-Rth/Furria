@@ -2,7 +2,9 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Registry;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Core.Identity;
+using Furria.Core.Roles;
 using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +13,10 @@ namespace Furria.Infrastructure.Registry;
 
 public sealed class PersonArchiveService
 {
+    public const string LastDayTooLateMessage = "Der letzte Tag ist spätestens gestern.";
+
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
-    private const string RunningLead =
-        "Archivieren geht erst, wenn nichts mehr läuft. Läuft noch: ";
-    private const string RunningSeparator = " · ";
+    private const string MissingLastDayMessage = "Der letzte Tag fehlt – es läuft noch etwas.";
     private const string MembershipLabel = "Mitgliedschaft";
     private const string GroupLabel = "Gruppe";
     private const string RoleLabel = "Rolle";
@@ -45,23 +47,32 @@ public sealed class PersonArchiveService
             return Result.Success();
 
         return command.IsArchived
-            ? await ArchiveAsync(person, command.ActorPersonId, ct)
+            ? await ArchiveAsync(person, command, ct)
             : await RestoreAsync(person, ct);
     }
 
-    private async Task<Result> ArchiveAsync(Person person, int? actorPersonId, CancellationToken ct)
+    private async Task<Result> ArchiveAsync(
+        Person person,
+        PersonArchiveCommand command,
+        CancellationToken ct
+    )
     {
         var today = ClubClock.Today(_timeProvider);
-        var running = await RunningTiesOfAsync(person.Id, today, ct);
+        var ties = await UnendedTiesOfAsync(person.Id, today, ct);
+        var begun = ties.Where(tie => HasBegunBefore(tie, today)).ToList();
+        var ahead = ties.Where(tie => !HasBegunBefore(tie, today)).ToList();
 
-        if (running.Count > 0)
-            return Result.Conflict(RefusalNaming(running));
+        if (LastDayRefusalOf(begun, command.LastDay, today) is { } refusal)
+            return Result.Validation(refusal);
 
+        if (command.LastDay is { } lastDay)
+            EndAll(begun, lastDay);
+
+        DeleteAll(ahead);
         person.ArchivedOn = today;
-        person.ArchivedByPersonId = actorPersonId;
-        await _dbContext.SaveChangesAsync(ct);
+        person.ArchivedByPersonId = command.ActorPersonId;
 
-        return Result.Success();
+        return await _dbContext.SaveOrConflictAsync(ct);
     }
 
     private async Task<Result> RestoreAsync(Person person, CancellationToken ct)
@@ -72,98 +83,189 @@ public sealed class PersonArchiveService
         return Result.Success();
     }
 
-    private async Task<IReadOnlyList<string>> RunningTiesOfAsync(
+    private static void EndAll(IEnumerable<UnendedTie> ties, DateOnly lastDay)
+    {
+        foreach (var tie in ties)
+        {
+            tie.EndOn(lastDay);
+        }
+    }
+
+    private static void DeleteAll(IEnumerable<UnendedTie> ties)
+    {
+        foreach (var tie in ties)
+        {
+            tie.Delete();
+        }
+    }
+
+    private void EndMembership(Membership membership, DateOnly lastDay)
+    {
+        membership.EndedOn = lastDay;
+        _dbContext.MembershipPauses.RemoveRange(
+            MembershipPauseCut.LyingAfter(membership.Pauses, lastDay)
+        );
+        MembershipPauseCut.CutAt(membership.Pauses, lastDay);
+    }
+
+    private async Task<IReadOnlyList<UnendedTie>> UnendedTiesOfAsync(
         int personId,
         DateOnly today,
         CancellationToken ct
-    )
-    {
-        var row = await _dbContext
-            .People.AsNoTracking()
-            .Where(person => person.Id == personId)
-            .Select(person => new UnendedTiesRow(
-                person.Memberships.AsQueryable().Any(RunningOrAhead.Memberships(today)),
-                person
-                    .GroupMemberships.AsQueryable()
-                    .Where(ConferringOrAhead.GroupMemberships(today))
-                    .OrderBy(membership =>
-                        EF.Functions.Collate(membership.Group!.Name, GermanCollation.Name)
-                    )
-                    .ThenBy(membership => membership.GroupId)
-                    .Select(membership => membership.Group!.Name)
-                    .ToList(),
-                person
-                    .RoleHoldings.AsQueryable()
-                    .Where(ConferringOrAhead.RoleHoldings(today))
-                    .OrderBy(holding =>
-                        EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name)
-                    )
-                    .ThenBy(holding => holding.RoleId)
-                    .Select(holding => holding.Role!.Name)
-                    .ToList(),
-                person
-                    .GroupAdminships.AsQueryable()
-                    .Where(ConferringOrAhead.GroupAdmins(today))
-                    .OrderBy(tenure =>
-                        EF.Functions.Collate(tenure.Group!.Name, GermanCollation.Name)
-                    )
-                    .ThenBy(tenure => tenure.GroupId)
-                    .Select(tenure => tenure.Group!.Name)
-                    .ToList(),
-                _dbContext
-                    .BoardSeats.Where(ConferringOrAhead.BoardSeats(today))
-                    .Where(seat => seat.PersonId == person.Id)
-                    .OrderBy(seat => seat.BoardOffice!.SortOrder)
-                    .ThenBy(seat =>
-                        EF.Functions.Collate(seat.BoardOffice!.Name, GermanCollation.Name)
-                    )
-                    .ThenBy(seat => seat.BoardOfficeId)
-                    .Select(seat => seat.BoardOffice!.Name)
-                    .ToList(),
-                _dbContext
-                    .KeyHoldings.Where(RunningOrAhead.KeyHoldings(today))
-                    .Where(holding => holding.PersonId == person.Id)
-                    .OrderBy(holding => holding.Venue!.SortOrder)
-                    .ThenBy(holding =>
-                        EF.Functions.Collate(holding.Venue!.Name, GermanCollation.Name)
-                    )
-                    .ThenBy(holding => holding.VenueId)
-                    .Select(holding => holding.Venue!.Name)
-                    .ToList()
-            ))
-            .SingleAsync(ct);
+    ) =>
+        [
+            .. (await UnendedMembershipsOfAsync(personId, today, ct)).Select(
+                membership => new UnendedTie(
+                    MembershipLabel,
+                    membership.StartedOn,
+                    () => _dbContext.Remove(membership),
+                    lastDay => EndMembership(membership, lastDay)
+                )
+            ),
+            .. (await UnendedGroupMembershipsOfAsync(personId, today, ct)).Select(
+                membership => new UnendedTie(
+                    Labelled(GroupLabel, membership.Group!.Name),
+                    membership.JoinedOn,
+                    () => _dbContext.Remove(membership),
+                    lastDay => membership.LeftOn = lastDay
+                )
+            ),
+            .. (await UnendedRoleHoldingsOfAsync(personId, today, ct)).Select(
+                holding => new UnendedTie(
+                    Labelled(RoleLabel, holding.Role!.Name),
+                    holding.SinceOn,
+                    () => _dbContext.Remove(holding),
+                    lastDay => holding.UntilOn = lastDay
+                )
+            ),
+            .. (await UnendedGroupAdminsOfAsync(personId, today, ct)).Select(
+                tenure => new UnendedTie(
+                    Labelled(GroupAdminLabel, tenure.Group!.Name),
+                    tenure.SinceOn,
+                    () => _dbContext.Remove(tenure),
+                    lastDay => tenure.UntilOn = lastDay
+                )
+            ),
+            .. (await UnendedBoardSeatsOfAsync(personId, today, ct)).Select(seat => new UnendedTie(
+                Labelled(BoardSeatLabel, seat.BoardOffice!.Name),
+                seat.SinceOn,
+                () => _dbContext.Remove(seat),
+                lastDay => seat.UntilOn = lastDay
+            )),
+            .. (await UnendedKeyHoldingsOfAsync(personId, today, ct)).Select(
+                holding => new UnendedTie(
+                    Labelled(KeyHoldingLabel, holding.Venue!.Name),
+                    holding.SinceOn,
+                    () => _dbContext.Remove(holding),
+                    lastDay => holding.UntilOn = lastDay
+                )
+            ),
+        ];
 
-        return RunningTiesOf(row);
-    }
+    private Task<List<Membership>> UnendedMembershipsOfAsync(
+        int personId,
+        DateOnly today,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .Memberships.Include(membership => membership.Pauses)
+            .Where(membership => membership.PersonId == personId)
+            .Where(RunningOrAhead.Memberships(today))
+            .ToListAsync(ct);
+
+    private Task<List<GroupMembership>> UnendedGroupMembershipsOfAsync(
+        int personId,
+        DateOnly today,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .GroupMemberships.Include(membership => membership.Group)
+            .Where(membership => membership.PersonId == personId)
+            .Where(RunningOrAhead.GroupMemberships(today))
+            .ToListAsync(ct);
+
+    private Task<List<RoleHolding>> UnendedRoleHoldingsOfAsync(
+        int personId,
+        DateOnly today,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .RoleHoldings.Include(holding => holding.Role)
+            .Where(holding => holding.PersonId == personId)
+            .Where(RunningOrAhead.RoleHoldings(today))
+            .ToListAsync(ct);
+
+    private Task<List<GroupAdmin>> UnendedGroupAdminsOfAsync(
+        int personId,
+        DateOnly today,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .GroupAdmins.Include(tenure => tenure.Group)
+            .Where(tenure => tenure.PersonId == personId)
+            .Where(RunningOrAhead.GroupAdmins(today))
+            .ToListAsync(ct);
+
+    private Task<List<BoardSeat>> UnendedBoardSeatsOfAsync(
+        int personId,
+        DateOnly today,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .BoardSeats.Include(seat => seat.BoardOffice)
+            .Where(seat => seat.PersonId == personId)
+            .Where(RunningOrAhead.BoardSeats(today))
+            .ToListAsync(ct);
+
+    private Task<List<KeyHolding>> UnendedKeyHoldingsOfAsync(
+        int personId,
+        DateOnly today,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .KeyHoldings.Include(holding => holding.Venue)
+            .Where(holding => holding.PersonId == personId)
+            .Where(RunningOrAhead.KeyHoldings(today))
+            .ToListAsync(ct);
 
     [Pure]
     private static bool IsArchived(Person person) => person.ArchivedOn is not null;
 
     [Pure]
-    private static IReadOnlyList<string> RunningTiesOf(UnendedTiesRow row) =>
-        [
-            .. row.HasUnendedMembership ? [MembershipLabel] : Array.Empty<string>(),
-            .. Labelled(GroupLabel, row.GroupNames),
-            .. Labelled(RoleLabel, row.RoleNames),
-            .. Labelled(GroupAdminLabel, row.GroupAdminNames),
-            .. Labelled(BoardSeatLabel, row.BoardOfficeNames),
-            .. Labelled(KeyHoldingLabel, row.VenueNames),
-        ];
+    private static bool HasBegunBefore(UnendedTie tie, DateOnly today) => tie.StartsOn < today;
 
     [Pure]
-    private static IEnumerable<string> Labelled(string label, IReadOnlyList<string> names) =>
-        names.Distinct(StringComparer.Ordinal).Select(name => $"{label} {name}");
+    private static string? LastDayRefusalOf(
+        IReadOnlyList<UnendedTie> begun,
+        DateOnly? lastDay,
+        DateOnly today
+    )
+    {
+        if (begun.Count == 0)
+            return null;
+
+        if (lastDay is null)
+            return MissingLastDayMessage;
+
+        if (lastDay >= today)
+            return LastDayTooLateMessage;
+
+        var latest = begun.MaxBy(tie => tie.StartsOn)!;
+
+        return lastDay < latest.StartsOn ? BeforeStartMessage(latest) : null;
+    }
 
     [Pure]
-    private static string RefusalNaming(IReadOnlyList<string> running) =>
-        $"{RunningLead}{string.Join(RunningSeparator, running)}.";
+    private static string BeforeStartMessage(UnendedTie tie) =>
+        $"Der letzte Tag liegt vor dem Beginn von {tie.Label}.";
 
-    private sealed record UnendedTiesRow(
-        bool HasUnendedMembership,
-        IReadOnlyList<string> GroupNames,
-        IReadOnlyList<string> RoleNames,
-        IReadOnlyList<string> GroupAdminNames,
-        IReadOnlyList<string> BoardOfficeNames,
-        IReadOnlyList<string> VenueNames
+    [Pure]
+    private static string Labelled(string label, string name) => $"{label} {name}";
+
+    private sealed record UnendedTie(
+        string Label,
+        DateOnly StartsOn,
+        Action Delete,
+        Action<DateOnly> EndOn
     );
 }

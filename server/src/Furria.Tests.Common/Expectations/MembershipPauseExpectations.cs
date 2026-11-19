@@ -14,6 +14,17 @@ public sealed class MembershipPauseExpectations
         _pauseId = pauseId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .MembershipPauses.AsNoTracking()
+                        .AnyAsync(row => row.Id == _pauseId, ct),
+                    $"Expected no MembershipPause with id {_pauseId}."
+                )
+        );
+
     public Expected ToHaveSpan(int firstSessionYear, int? lastSessionYear) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

@@ -16,6 +16,17 @@ public sealed class GroupMembershipExpectations
         _groupMembershipId = groupMembershipId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .GroupMemberships.AsNoTracking()
+                        .AnyAsync(row => row.Id == _groupMembershipId, ct),
+                    $"Expected no GroupMembership with id {_groupMembershipId}."
+                )
+        );
+
     public Expected ToHavePeriod(DateOnly joinedOn, DateOnly? leftOn) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
