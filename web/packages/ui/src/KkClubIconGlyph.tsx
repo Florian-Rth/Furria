@@ -33,15 +33,22 @@ import type { ComponentType, FC } from 'react';
 import type { KkClubIcon } from './internal/club-icon';
 import {
   ChainGlyph,
+  ChickenGlyph,
   ChildCrownGlyph,
   CrownGlyph,
   DrumGlyph,
+  FruitGlyph,
   JesterCapGlyph,
   JingleBellGlyph,
   LaurelGlyph,
+  PearlGlyph,
+  PrinceGlyph,
   QuillGlyph,
   ScepterGlyph,
+  SeaShellGlyph,
+  SingerGlyph,
   ViceCrownGlyph,
+  WoodOvenGlyph,
 } from './internal/club-icon-drawn';
 import { KkBroomMark } from './KkBroomMark';
 import type { KkSx } from './kk-sx';
@@ -93,6 +100,13 @@ const glyphs: Record<KkClubIcon, ComponentType<GlyphProps>> = {
   calendar: CalendarMonthOutlinedIcon,
   whistle: SportsOutlinedIcon,
   broom: KkBroomMark,
+  fruit: FruitGlyph,
+  singer: SingerGlyph,
+  woodOven: WoodOvenGlyph,
+  chicken: ChickenGlyph,
+  pearl: PearlGlyph,
+  seaShell: SeaShellGlyph,
+  prince: PrinceGlyph,
 };
 
 const FILL = { display: 'block', width: '100%', height: '100%', flexShrink: 0 } as const;

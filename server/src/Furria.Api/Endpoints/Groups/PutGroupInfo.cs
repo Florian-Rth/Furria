@@ -2,6 +2,7 @@ using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
+using Furria.Application.Authorization;
 using Furria.Application.Groups;
 using Furria.Core.Club;
 using Furria.Core.Groups;
@@ -35,7 +36,7 @@ public sealed class PutGroupInfo : Endpoint<PutGroupInfoRequest>
             return;
         }
 
-        if (!await _authorizer.CanAdministerGroupAsync(accountId.Value, req.GroupId, ct))
+        if (!await MayWriteAsync(accountId.Value, req, ct))
         {
             await Send.ForbiddenAsync(ct);
             return;
@@ -51,10 +52,22 @@ public sealed class PutGroupInfo : Endpoint<PutGroupInfoRequest>
         await Send.NoContentAsync(ct);
     }
 
+    private async Task<bool> MayWriteAsync(
+        int accountId,
+        PutGroupInfoRequest req,
+        CancellationToken ct
+    ) =>
+        await _authorizer.CanAdministerGroupAsync(accountId, req.GroupId, ct)
+        && (
+            req.Name is null
+            || await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct)
+        );
+
     private static UpdateGroupInfoCommand ToCommand(PutGroupInfoRequest req) =>
         new()
         {
             GroupId = req.GroupId,
+            Name = req.Name,
             Description = req.Description,
             IsRecruiting = req.IsRecruiting,
             GroupKindId = req.GroupKindId,
@@ -68,6 +81,8 @@ public sealed record PutGroupInfoRequest
 {
     [RouteParam]
     public required int GroupId { get; init; }
+
+    public string? Name { get; init; }
 
     public required string Description { get; init; }
 
@@ -90,6 +105,10 @@ public sealed class PutGroupInfoValidator : Validator<PutGroupInfoRequest>
     public PutGroupInfoValidator()
     {
         RuleFor(request => request.GroupId).GreaterThan(0);
+        RuleFor(request => request.Name)
+            .NotEmpty()
+            .MaximumLength(GroupLimits.NameLength)
+            .When(request => request.Name is not null);
         RuleFor(request => request.Description)
             .NotNull()
             .MaximumLength(GroupLimits.DescriptionLength);

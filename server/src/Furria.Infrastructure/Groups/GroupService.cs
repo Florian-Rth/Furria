@@ -463,31 +463,6 @@ public sealed class GroupService
         return Result<int>.Success(group.Id);
     }
 
-    public async Task<Result> UpdateAsync(UpdateGroupCommand command, CancellationToken ct)
-    {
-        var group = await _dbContext.Groups.SingleOrDefaultAsync(
-            row => row.Id == command.GroupId,
-            ct
-        );
-
-        if (group is null)
-            return Result.NotFound(UnknownGroupMessage);
-
-        if (group.ArchivedOn is not null)
-            return Result.Conflict(ArchivedGroupMessage);
-
-        if (await NameIsTakenAsync(command.Name, command.GroupId, ct))
-            return Result.Conflict(DuplicateNameMessage);
-
-        if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
-            return kindRefusal;
-
-        group.Name = command.Name;
-        group.GroupKindId = command.GroupKindId;
-
-        return await _dbContext.SaveOrConflictAsync(ct);
-    }
-
     public async Task<Result> ArchiveAsync(int groupId, CancellationToken ct)
     {
         var group = await _dbContext.Groups.SingleOrDefaultAsync(row => row.Id == groupId, ct);
@@ -542,12 +517,16 @@ public sealed class GroupService
         if (group.ArchivedOn is not null)
             return Result.Conflict(ArchivedGroupMessage);
 
+        if (command.Name is not null && await NameIsTakenAsync(command.Name, command.GroupId, ct))
+            return Result.Conflict(DuplicateNameMessage);
+
         if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
             return kindRefusal;
 
         if (IsInTheFuture(command.FoundedYear, ClubClock.Today(_timeProvider)))
             return Result.Validation(FutureFoundedYearMessage);
 
+        group.Name = command.Name ?? group.Name;
         group.Description = command.Description;
         group.IsRecruiting = command.IsRecruiting;
         group.GroupKindId = command.GroupKindId;

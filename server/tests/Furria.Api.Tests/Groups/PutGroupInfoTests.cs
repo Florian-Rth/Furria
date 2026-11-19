@@ -724,6 +724,165 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
         await ctx.Expected.Group(tanzgarde).ToHaveTone(null).AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_RenameTheGroup_When_TheKeyHolderSendsAName()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde", OldDescription)),
+            ct
+        );
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await PutInfoWithNameAsync(client, tanzgarde, "Große Garde");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Group(tanzgarde)
+            .ToHaveName("Große Garde")
+            .Group(tanzgarde)
+            .ToHaveDescription(NewDescription)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_SaveTheName_When_OnlyItsCaseChanges()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde", OldDescription)),
+            ct
+        );
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await PutInfoWithNameAsync(client, tanzgarde, "TANZGARDE");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.Group(tanzgarde).ToHaveName("TANZGARDE").AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnConflict_When_AnotherActiveGroupCarriesTheName()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroup("tanzgarde", "Tanzgarde", OldDescription)
+                        .AddGroup("elferrat", "Elferrat", OldDescription)
+                ),
+            ct
+        );
+        var elferrat = ctx.Groups.Groups.IdOf("elferrat");
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await PutInfoWithNameAsync(client, elferrat, "tanzgarde");
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(["Eine Gruppe mit diesem Namen gibt es schon."], failures[ConflictField]);
+        await ctx
+            .Expected.Group(elferrat)
+            .ToHaveName("Elferrat")
+            .Group(elferrat)
+            .ToHaveDescription(OldDescription)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_SaveTheName_When_OnlyAnArchivedGroupCarriesIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups
+                        .AddGroup(
+                            "tanzgarde-retired",
+                            "Tanzgarde",
+                            "Die alte Garde.",
+                            isRecruiting: false,
+                            ArchivedIn2021
+                        )
+                        .AddGroup("elferrat", "Elferrat", OldDescription)
+                ),
+            ct
+        );
+        var elferrat = ctx.Groups.Groups.IdOf("elferrat");
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await PutInfoWithNameAsync(client, elferrat, "Tanzgarde");
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Group(elferrat)
+            .ToHaveName("Tanzgarde")
+            .Group(ctx.Groups.Groups.IdOf("tanzgarde-retired"))
+            .ToBeArchivedOn(ArchivedIn2021)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheNameIsEmpty()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde", OldDescription)),
+            ct
+        );
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await PutInfoWithNameAsync(client, tanzgarde, "");
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx.Expected.Group(tanzgarde).ToHaveName("Tanzgarde").AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnForbiddenAndWriteNothing_When_AGroupAdminWithoutGroupsManageSendsAName()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithTanzgardeAdminAsync(ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await PutInfoWithNameAsync(client, tanzgarde, "Große Garde");
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await ctx
+            .Expected.Group(tanzgarde)
+            .ToHaveName("Tanzgarde")
+            .Group(tanzgarde)
+            .ToHaveDescription(OldDescription)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheNameAndSave_When_AGroupAdminSendsNoName()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithTanzgardeAdminAsync(ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await PutInfoWithNameAsync(client, tanzgarde, null);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Group(tanzgarde)
+            .ToHaveName("Tanzgarde")
+            .Group(tanzgarde)
+            .ToHaveDescription(NewDescription)
+            .AssertAsync(ct);
+    }
+
     private Task<SeededContext> BuildWithTanzgardeAdminAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
@@ -737,6 +896,25 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                             .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna", "Trainerin")
                     ),
             ct
+        );
+
+    private static Task<HttpResponseMessage> PutInfoWithNameAsync(
+        HttpClient client,
+        int groupId,
+        string? name
+    ) =>
+        client.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = groupId,
+                Name = name,
+                Description = NewDescription,
+                IsRecruiting = false,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
+                Icon = null,
+            }
         );
 
     private static Task<HttpResponseMessage> PutInfoWithToneAsync(

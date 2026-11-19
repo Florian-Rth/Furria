@@ -5,8 +5,8 @@ import {
   personMetaOf,
   toAdminChainRows,
   toEndQuickChoices,
-  toGroupInfoFormValues,
-  toGroupInfoPayload,
+  toGroupSettingsFormValues,
+  toGroupSettingsPayload,
   toHubOrigin,
   toJoinQuickChoices,
   toMembershipChainRows,
@@ -169,18 +169,23 @@ describe('personMetaOf', () => {
   });
 });
 
-describe('toGroupInfoPayload', () => {
+describe('toGroupSettingsPayload', () => {
   it('turns the empty choices into nulls and the year into a number', () => {
     expect(
-      toGroupInfoPayload({
-        description: 'Die Garde tanzt.',
-        isRecruiting: true,
-        groupKindId: '',
-        foundedYear: '',
-        tone: '',
-        icon: null,
-      }),
+      toGroupSettingsPayload(
+        {
+          name: 'Tanzgarde',
+          description: 'Die Garde tanzt.',
+          isRecruiting: true,
+          groupKindId: '',
+          foundedYear: '',
+          tone: '',
+          icon: null,
+        },
+        false,
+      ),
     ).toEqual({
+      name: null,
       description: 'Die Garde tanzt.',
       isRecruiting: true,
       groupKindId: null,
@@ -190,17 +195,22 @@ describe('toGroupInfoPayload', () => {
     });
   });
 
-  it('carries every filled choice through', () => {
+  it('carries every filled choice and the name of a renaming viewer through', () => {
     expect(
-      toGroupInfoPayload({
-        description: '',
-        isRecruiting: false,
-        groupKindId: '7',
-        foundedYear: '1974',
-        tone: 'teal',
-        icon: 'drum',
-      }),
+      toGroupSettingsPayload(
+        {
+          name: 'Prinzengarde',
+          description: '',
+          isRecruiting: false,
+          groupKindId: '7',
+          foundedYear: '1974',
+          tone: 'teal',
+          icon: 'drum',
+        },
+        true,
+      ),
     ).toEqual({
+      name: 'Prinzengarde',
       description: '',
       isRecruiting: false,
       groupKindId: 7,
@@ -211,11 +221,12 @@ describe('toGroupInfoPayload', () => {
   });
 });
 
-describe('toGroupInfoFormValues', () => {
+describe('toGroupSettingsFormValues', () => {
   it('reads every field off the loaded hub', () => {
     expect(
-      toGroupInfoFormValues(
+      toGroupSettingsFormValues(
         groupHub({
+          name: 'Tanzgarde',
           description: 'Die Garde tanzt.',
           isRecruiting: true,
           groupKindId: 7,
@@ -225,6 +236,7 @@ describe('toGroupInfoFormValues', () => {
         }),
       ),
     ).toEqual({
+      name: 'Tanzgarde',
       description: 'Die Garde tanzt.',
       isRecruiting: true,
       groupKindId: '7',
@@ -236,14 +248,8 @@ describe('toGroupInfoFormValues', () => {
 
   it('turns an unset group kind, founded year and group tone into empty choices', () => {
     expect(
-      toGroupInfoFormValues(groupHub({ groupKindId: null, foundedYear: null, tone: null })),
+      toGroupSettingsFormValues(groupHub({ groupKindId: null, foundedYear: null, tone: null })),
     ).toEqual(expect.objectContaining({ groupKindId: '', foundedYear: '', tone: '' }));
-  });
-
-  it('overrides isRecruiting', () => {
-    expect(
-      toGroupInfoFormValues(groupHub({ isRecruiting: false }), { isRecruiting: true }),
-    ).toEqual(expect.objectContaining({ isRecruiting: true }));
   });
 });
 
