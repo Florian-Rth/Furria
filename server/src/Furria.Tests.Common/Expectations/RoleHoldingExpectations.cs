@@ -16,6 +16,17 @@ public sealed class RoleHoldingExpectations
         _roleHoldingId = roleHoldingId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .RoleHoldings.AsNoTracking()
+                        .AnyAsync(row => row.Id == _roleHoldingId, ct),
+                    $"Expected no RoleHolding with id {_roleHoldingId}."
+                )
+        );
+
     public Expected ToHavePeriod(DateOnly sinceOn, DateOnly? untilOn) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

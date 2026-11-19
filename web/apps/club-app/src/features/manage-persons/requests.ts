@@ -83,11 +83,12 @@ export const requestPersonUpdate = (
 export const requestPersonArchived = (
   personId: number,
   isArchived: boolean,
+  lastDay: string | null,
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`/api/manage/persons/${personId}/archived`, {
     method: 'PUT',
-    body: { isArchived },
+    body: { isArchived, lastDay },
     schema: NoContentSchema,
     accessToken,
   });

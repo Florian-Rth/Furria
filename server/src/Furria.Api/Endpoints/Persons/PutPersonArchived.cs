@@ -4,6 +4,7 @@ using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Registry;
+using Furria.Core.Club;
 using Furria.Infrastructure.Registry;
 
 namespace Furria.Api.Endpoints.Persons;
@@ -30,6 +31,7 @@ public sealed class PutPersonArchived : Endpoint<PutPersonArchivedRequest>
             {
                 PersonId = req.PersonId,
                 IsArchived = req.IsArchived,
+                LastDay = req.LastDay,
                 ActorPersonId = User.PersonId(),
             },
             ct
@@ -50,6 +52,8 @@ public sealed record PutPersonArchivedRequest
     public required int PersonId { get; init; }
 
     public required bool IsArchived { get; init; }
+
+    public DateOnly? LastDay { get; init; }
 }
 
 public sealed class PutPersonArchivedValidator : Validator<PutPersonArchivedRequest>
@@ -57,5 +61,9 @@ public sealed class PutPersonArchivedValidator : Validator<PutPersonArchivedRequ
     public PutPersonArchivedValidator()
     {
         RuleFor(request => request.PersonId).GreaterThan(0);
+        RuleFor(request => request.LastDay)
+            .Must(lastDay => lastDay < ClubClock.Today(Resolve<TimeProvider>()))
+            .When(request => request.IsArchived && request.LastDay is not null)
+            .WithMessage(PersonArchiveService.LastDayTooLateMessage);
     }
 }

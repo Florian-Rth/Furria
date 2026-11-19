@@ -97,6 +97,7 @@ export const useUpdatePersonMutation = (
 
 export interface PersonArchivedInput {
   isArchived: boolean;
+  lastDay: string | null;
   personName: string;
 }
 
@@ -110,7 +111,7 @@ export const useSetPersonArchivedMutation = (
 ): UseMutationResult<void, Error, PersonArchivedInput> =>
   useApiMutation({
     request: (input: PersonArchivedInput, accessToken) =>
-      requestPersonArchived(personId, input.isArchived, accessToken),
+      requestPersonArchived(personId, input.isArchived, input.lastDay, accessToken),
     changes: ['person'],
     notice: { success: toPersonArchivedNotice },
   });

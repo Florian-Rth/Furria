@@ -33,6 +33,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         string
     >
     {
+        [typeof(ArchivedParentTieKind)] = "group role groupAdmin boardSeat",
         [typeof(StartPanelKind)] = "calendar announcements mine groups toDos gallery news beerTab",
         [typeof(StartMineKind)] =
             "newBoardSeat newGroupAdmin newGroupMembership newKey "

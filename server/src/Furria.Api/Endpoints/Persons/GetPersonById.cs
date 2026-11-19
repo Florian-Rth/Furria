@@ -130,6 +130,10 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             UnendedGroupAdminTenures = [.. person.UnendedGroupAdminTenures.Select(ToDto)],
             UnendedBoardSeats = [.. person.UnendedBoardSeats.Select(ToDto)],
             UnendedKeyHoldings = [.. person.UnendedKeyHoldings.Select(ToDto)],
+            UnendedTiesUnderArchivedParents =
+            [
+                .. person.UnendedTiesUnderArchivedParents.Select(ToDto),
+            ],
             Access = ToDto(access, viewer),
             Honours = PersonHonoursDto.From(honours),
         };
@@ -283,6 +287,14 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             UntilOn = tenure.UntilOn,
         };
 
+    private static PersonArchivedParentTieDto ToDto(PersonArchivedParentTie tie) =>
+        new()
+        {
+            Kind = tie.Kind,
+            Name = tie.Name,
+            SinceOn = tie.SinceOn,
+        };
+
     private static PersonBoardSeatDto ToDto(PersonBoardSeat seat) =>
         new()
         {
@@ -363,6 +375,8 @@ public sealed record GetPersonByIdResponse
     public required IReadOnlyList<PersonBoardSeatDto> UnendedBoardSeats { get; init; }
 
     public required IReadOnlyList<PersonKeyHoldingDto> UnendedKeyHoldings { get; init; }
+
+    public required IReadOnlyList<PersonArchivedParentTieDto> UnendedTiesUnderArchivedParents { get; init; }
 
     public required PersonAccessDto Access { get; init; }
 
@@ -553,6 +567,15 @@ public sealed record PersonBoardSeatDto
     public required DateOnly SinceOn { get; init; }
 
     public required DateOnly? UntilOn { get; init; }
+}
+
+public sealed record PersonArchivedParentTieDto
+{
+    public required ArchivedParentTieKind Kind { get; init; }
+
+    public required string Name { get; init; }
+
+    public required DateOnly SinceOn { get; init; }
 }
 
 public sealed record PersonKeyHoldingDto

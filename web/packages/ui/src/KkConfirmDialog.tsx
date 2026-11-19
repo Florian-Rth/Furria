@@ -65,6 +65,7 @@ interface KkConfirmDialogProps {
   consequence?: ReactNode;
   error?: string;
   confirmLabel: string;
+  confirmDisabled?: boolean;
   cancelLabel: string;
   closeLabel: string;
   busy?: boolean;
@@ -83,6 +84,7 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
   consequence,
   error,
   confirmLabel,
+  confirmDisabled,
   cancelLabel,
   closeLabel,
   busy,
@@ -156,7 +158,12 @@ export const KkConfirmDialog: FC<KkConfirmDialogProps> = ({
         <KkButton variant="outlined" disabled={isBusy} onClick={dismiss}>
           {cancelLabel}
         </KkButton>
-        <KkButton tone={confirmButtonTones[tone]} loading={busy} onClick={onConfirm}>
+        <KkButton
+          tone={confirmButtonTones[tone]}
+          loading={busy}
+          disabled={confirmDisabled}
+          onClick={onConfirm}
+        >
           {confirmLabel}
         </KkButton>
       </KkModalFrame.Footer>

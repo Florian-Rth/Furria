@@ -62,6 +62,7 @@ const personDetails = (
   unendedGroupAdminTenures: [],
   unendedBoardSeats: [],
   unendedKeyHoldings: [],
+  unendedTiesUnderArchivedParents: [],
   honours: { sessions: 0, functions: [] },
   access: {
     state: 'noAccess',

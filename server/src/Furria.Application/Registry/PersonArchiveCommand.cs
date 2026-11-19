@@ -6,5 +6,7 @@ public sealed record PersonArchiveCommand
 
     public required bool IsArchived { get; init; }
 
+    public required DateOnly? LastDay { get; init; }
+
     public required int? ActorPersonId { get; init; }
 }
