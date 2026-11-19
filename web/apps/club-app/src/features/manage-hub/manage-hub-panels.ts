@@ -3,6 +3,7 @@ import type { KkIconName } from '@furria/ui/KkIcon';
 export type ManagePanelId =
   | 'persons'
   | 'applications'
+  | 'intakes'
   | 'groups'
   | 'roles'
   | 'board'
@@ -47,6 +48,13 @@ export const MANAGE_PANELS: readonly ManagePanelDefinition[] = [
     title: 'Beitrittsanträge',
     icon: 'mail',
     to: '/manage/applications',
+  },
+  {
+    id: 'intakes',
+    bank: 'belonging',
+    title: 'Neuzugänge',
+    icon: 'qr',
+    to: '/manage/intakes',
   },
   { id: 'groups', bank: 'belonging', title: 'Gruppen', icon: 'group', to: '/manage/groups' },
   {

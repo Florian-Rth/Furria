@@ -3,6 +3,7 @@ import type { FC } from 'react';
 import { GroupHistoryPanel } from '@/features/group-detail/components/GroupHistoryPanel';
 import { toHeldGroupKind } from '@/features/group-kinds/group-kinds-labels';
 import { toGroupTone } from '@/features/groups/group-identity';
+import { mayStartIntakeForGroup } from '@/features/manage-intakes/intake-rules';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
@@ -28,6 +29,10 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
   const people = toHubPeople(hub.members, hub.admins);
   const administers = permissions.has(PERMISSION_KEYS.groupsManage);
+  const canStartIntake = mayStartIntakeForGroup(
+    hub.viewerIsAdmin,
+    permissions.has(PERMISSION_KEYS.personsManage),
+  );
   const seesCalendarEntries = hub.viewerIsMember || hub.viewerMayManage;
   const hasHistory = hub.pastMembers.length > 0 || hub.pastAdmins.length > 0;
 
@@ -75,6 +80,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         groupId={hub.groupId}
         groupName={hub.name}
         canManage={hub.viewerMayManage}
+        canStartIntake={canStartIntake}
         highlightedKey={highlightedKey}
       />
       {history}

@@ -15,6 +15,7 @@ const EMPTY_HUB: ManageHub = {
   accounts: null,
   applications: null,
   groupMatcher: null,
+  intakes: null,
 };
 
 const hubWith = (panels: Partial<ManageHub>): ManageHub => ({ ...EMPTY_HUB, ...panels });
@@ -51,6 +52,7 @@ describe('toManageRows', () => {
     { hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: false } }) },
     { hub: hubWith({ clubRecord: { name: null, missingFactCount: 1 } }) },
     { hub: hubWith({ applications: { undecidedCount: 2, minorCount: 1 } }) },
+    { hub: hubWith({ intakes: { openCount: 0, needsReviewCount: 1 } }) },
     {
       hub: hubWith({
         persons: { personCount: 20, memberCount: 16 },
@@ -96,6 +98,7 @@ describe('toManageRows', () => {
     { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 3, holderCount: 2 } }) },
     { hub: hubWith({ applications: { undecidedCount: 0, minorCount: 0 } }) },
     { hub: hubWith({ groupMatcher: { statementCount: 7 } }) },
+    { hub: hubWith({ intakes: { openCount: 2, needsReviewCount: 0 } }) },
   ])('flags nothing on a settled row', ({ hub }) => {
     expect(onlyRow(hub).status).toBeUndefined();
   });

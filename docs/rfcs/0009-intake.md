@@ -136,12 +136,23 @@ birth date, groups and account state while resolving.
 
 ### Phase 3 — Club app: manager side
 Goal: managers and group admins run intakes end to end from the app (newcomer side still pending).
-- [ ] API client + query/mutation hooks for intakes
-- [ ] *Neuzugang anlegen* form (member toggle + date, group picker scoped to rights, *Für wen?*) with entries in Verein verwalten, `/manage/persons` and the group hub (pre-set group)
-- [ ] QR + copy + share screen
-- [ ] `/manage/intakes` overview (dense rows, state chips: gold for *zu prüfen*) and `/manage/intakes/$intakeId` detail with edit, renew, discard, show link
-- [ ] Review UI: candidates, *Das ist sie* / *Neue Person*
-- [ ] Tests for business logic (state → actions, scope), lint/typecheck, phone screenshots
+- [x] API client + query/mutation hooks for intakes
+- [x] *Neuzugang anlegen* form (member toggle + date, group picker scoped to rights, *Für wen?*) with entries in Verein verwalten, `/manage/persons` and the group hub (pre-set group)
+- [x] QR + copy + share screen
+- [x] `/manage/intakes` overview (dense rows, state chips: gold for *zu prüfen*) and `/manage/intakes/$intakeId` detail with edit, renew, discard, show link
+- [x] Review UI: candidates, *Das ist sie* / *Neue Person*
+- [x] Tests for business logic (state → actions, scope), lint/typecheck, phone screenshots
+
+Done 2026-11-19: feature `manage-intakes`; routes `/manage/intakes`, `/new?group=`, `/$intakeId`,
+`/$intakeId/edit`, `/$intakeId/review`. The QR screen is the detail page of an open intake (QR +
+expiry, action bar *Teilen*/*Link kopieren* + *Neuer Link*), where *Anlegen* lands. Manage hub
+gained an `intakes` panel (`openCount`, `needsReviewCount`; persons.manage only) shown as
+*Neuzugänge* in *Wer dazugehört*; group admins without persons.manage reach the overview from
+*Mehr › Verwaltung*. Entries: *Neuzugang per QR* in the person register and in the group hub's
+people panel (group pre-set). Rulings: a new manager intake defaults to *Wird Mitglied* (today)
+unless started from a group; a group admin never sees the membership toggle and sees chosen groups
+she doesn't run as locked; renewing an open link asks first (it voids the shown QR), an expired one
+renews at once; the review screen keeps its data until it has navigated back after *Übernehmen*.
 
 ### Phase 4 — Club app: newcomer side
 Goal: the full flow works from a phone without the app installed.

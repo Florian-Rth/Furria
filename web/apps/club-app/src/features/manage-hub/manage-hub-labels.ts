@@ -140,6 +140,15 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
           ),
           attention: toUndecided(hub.applications.undecidedCount),
         },
+  intakes: ({ hub }) =>
+    hub.intakes === null
+      ? null
+      : {
+          isEmpty: false,
+          summaryParts: [`${hub.intakes.openCount} offen`],
+          attention:
+            hub.intakes.needsReviewCount > 0 ? `${hub.intakes.needsReviewCount} zu prüfen` : null,
+        },
   groups: ({ hub }) =>
     hub.groups === null
       ? null

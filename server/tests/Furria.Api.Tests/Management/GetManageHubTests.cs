@@ -46,6 +46,7 @@ public sealed class GetManageHubTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(result.Persons);
         Assert.NotNull(result.Accounts);
+        Assert.NotNull(result.Intakes);
         Assert.Null(result.Groups);
         Assert.Null(result.Roles);
         Assert.Null(result.Sessions);
@@ -72,6 +73,7 @@ public sealed class GetManageHubTests : IClassFixture<ApiTestFixture>
         Assert.Null(result.Board);
         Assert.Null(result.ClubRecord);
         Assert.Null(result.Applications);
+        Assert.Null(result.Intakes);
     }
 
     [Fact]
@@ -221,6 +223,44 @@ public sealed class GetManageHubTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_CountTheOpenIntakesAndThoseToReview_When_TheHubIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+
+        var result = await ReadTheHubAsAdminAsync(
+            builder =>
+                builder
+                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde"))
+                    .Intakes(intakes =>
+                        intakes
+                            .AddIntake("open", groupAliases: ["tanzgarde"])
+                            .AddIntake("also-open", memberFrom: _fixture.Today)
+                            .AddIntake(
+                                "expired",
+                                groupAliases: ["tanzgarde"],
+                                expiresAt: now.AddSeconds(-1)
+                            )
+                            .AddIntake(
+                                "review",
+                                groupAliases: ["tanzgarde"],
+                                submittedName: ("Lena", "Neu")
+                            )
+                            .AddIntake(
+                                "gone",
+                                groupAliases: ["tanzgarde"],
+                                discardedAt: now.AddHours(-1)
+                            )
+                    ),
+            ct
+        );
+
+        Assert.NotNull(result.Intakes);
+        Assert.Equal(2, result.Intakes.OpenCount);
+        Assert.Equal(1, result.Intakes.NeedsReviewCount);
+    }
+
+    [Fact]
     public async Task Should_ShowEveryPanel_When_TheManagingLoginOpensTheHub()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -244,6 +284,7 @@ public sealed class GetManageHubTests : IClassFixture<ApiTestFixture>
         Assert.NotNull(result.Board);
         Assert.NotNull(result.ClubRecord);
         Assert.NotNull(result.Applications);
+        Assert.NotNull(result.Intakes);
         Assert.Equal(1, result.Groups.GroupCount);
         Assert.Equal(1, result.Venues.VenueCount);
         Assert.Equal(1, result.Sessions.EntryCount);

@@ -50,6 +50,7 @@ import { Route as AppManageSessionsRouteImport } from './routes/_app/manage.sess
 import { Route as AppManageRolesRouteImport } from './routes/_app/manage.roles'
 import { Route as AppManagePersonsRouteImport } from './routes/_app/manage.persons'
 import { Route as AppManageKeysRouteImport } from './routes/_app/manage.keys'
+import { Route as AppManageIntakesRouteImport } from './routes/_app/manage.intakes'
 import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups'
 import { Route as AppManageGroupMatcherRouteImport } from './routes/_app/manage.group-matcher'
 import { Route as AppManageClubRecordRouteImport } from './routes/_app/manage.club-record'
@@ -85,6 +86,8 @@ import { Route as AppManageRolesNewRouteImport } from './routes/_app/manage.role
 import { Route as AppManageRolesRoleIdRouteImport } from './routes/_app/manage.roles_.$roleId'
 import { Route as AppManagePersonsNewRouteImport } from './routes/_app/manage.persons_.new'
 import { Route as AppManagePersonsPersonIdRouteImport } from './routes/_app/manage.persons_.$personId'
+import { Route as AppManageIntakesNewRouteImport } from './routes/_app/manage.intakes_.new'
+import { Route as AppManageIntakesIntakeIdRouteImport } from './routes/_app/manage.intakes_.$intakeId'
 import { Route as AppManageGroupsNewRouteImport } from './routes/_app/manage.groups_.new'
 import { Route as AppManageClubRecordStageRouteImport } from './routes/_app/manage.club-record_.stage'
 import { Route as AppManageClubRecordIdentityRouteImport } from './routes/_app/manage.club-record_.identity'
@@ -130,6 +133,8 @@ import { Route as AppManageRolesRoleIdEditRouteImport } from './routes/_app/mana
 import { Route as AppManagePersonsPersonIdEditRouteImport } from './routes/_app/manage.persons_.$personId_.edit'
 import { Route as AppManagePersonsPersonIdAccessRecoveryRouteImport } from './routes/_app/manage.persons_.$personId_.access-recovery'
 import { Route as AppManageKeysHoldingsKeyHoldingIdRouteImport } from './routes/_app/manage.keys_.holdings.$keyHoldingId'
+import { Route as AppManageIntakesIntakeIdReviewRouteImport } from './routes/_app/manage.intakes_.$intakeId_.review'
+import { Route as AppManageIntakesIntakeIdEditRouteImport } from './routes/_app/manage.intakes_.$intakeId_.edit'
 import { Route as AppManageGroupsKindsNewRouteImport } from './routes/_app/manage.groups_.kinds.new'
 import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId'
 import { Route as AppManageGroupMatcherStatementsStatementIdRouteImport } from './routes/_app/manage.group-matcher.statements.$statementId'
@@ -369,6 +374,11 @@ const AppManageKeysRoute = AppManageKeysRouteImport.update({
   path: '/manage/keys',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManageIntakesRoute = AppManageIntakesRouteImport.update({
+  id: '/manage/intakes',
+  path: '/manage/intakes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManageGroupsRoute = AppManageGroupsRouteImport.update({
   id: '/manage/groups',
   path: '/manage/groups',
@@ -546,6 +556,17 @@ const AppManagePersonsPersonIdRoute =
   AppManagePersonsPersonIdRouteImport.update({
     id: '/manage/persons_/$personId',
     path: '/manage/persons/$personId',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppManageIntakesNewRoute = AppManageIntakesNewRouteImport.update({
+  id: '/manage/intakes_/new',
+  path: '/manage/intakes/new',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppManageIntakesIntakeIdRoute =
+  AppManageIntakesIntakeIdRouteImport.update({
+    id: '/manage/intakes_/$intakeId',
+    path: '/manage/intakes/$intakeId',
     getParentRoute: () => AppRoute,
   } as any)
 const AppManageGroupsNewRoute = AppManageGroupsNewRouteImport.update({
@@ -796,6 +817,18 @@ const AppManageKeysHoldingsKeyHoldingIdRoute =
   AppManageKeysHoldingsKeyHoldingIdRouteImport.update({
     id: '/manage/keys_/holdings/$keyHoldingId',
     path: '/manage/keys/holdings/$keyHoldingId',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppManageIntakesIntakeIdReviewRoute =
+  AppManageIntakesIntakeIdReviewRouteImport.update({
+    id: '/manage/intakes_/$intakeId_/review',
+    path: '/manage/intakes/$intakeId/review',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppManageIntakesIntakeIdEditRoute =
+  AppManageIntakesIntakeIdEditRouteImport.update({
+    id: '/manage/intakes_/$intakeId_/edit',
+    path: '/manage/intakes/$intakeId/edit',
     getParentRoute: () => AppRoute,
   } as any)
 const AppManageGroupsKindsNewRoute = AppManageGroupsKindsNewRouteImport.update({
@@ -1062,6 +1095,7 @@ export interface FileRoutesByFullPath {
   '/manage/club-record': typeof AppManageClubRecordRoute
   '/manage/group-matcher': typeof AppManageGroupMatcherRouteWithChildren
   '/manage/groups': typeof AppManageGroupsRoute
+  '/manage/intakes': typeof AppManageIntakesRoute
   '/manage/keys': typeof AppManageKeysRoute
   '/manage/persons': typeof AppManagePersonsRoute
   '/manage/roles': typeof AppManageRolesRoute
@@ -1116,6 +1150,8 @@ export interface FileRoutesByFullPath {
   '/manage/club-record/identity': typeof AppManageClubRecordIdentityRoute
   '/manage/club-record/stage': typeof AppManageClubRecordStageRoute
   '/manage/groups/new': typeof AppManageGroupsNewRoute
+  '/manage/intakes/$intakeId': typeof AppManageIntakesIntakeIdRoute
+  '/manage/intakes/new': typeof AppManageIntakesNewRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
   '/manage/persons/new': typeof AppManagePersonsNewRoute
   '/manage/roles/$roleId': typeof AppManageRolesRoleIdRoute
@@ -1146,6 +1182,8 @@ export interface FileRoutesByFullPath {
   '/manage/group-matcher/statements/$statementId': typeof AppManageGroupMatcherStatementsStatementIdRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
+  '/manage/intakes/$intakeId/edit': typeof AppManageIntakesIntakeIdEditRoute
+  '/manage/intakes/$intakeId/review': typeof AppManageIntakesIntakeIdReviewRoute
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
   '/manage/persons/$personId/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/manage/persons/$personId/edit': typeof AppManagePersonsPersonIdEditRoute
@@ -1216,6 +1254,7 @@ export interface FileRoutesByTo {
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
   '/manage/groups': typeof AppManageGroupsRoute
+  '/manage/intakes': typeof AppManageIntakesRoute
   '/manage/keys': typeof AppManageKeysRoute
   '/manage/persons': typeof AppManagePersonsRoute
   '/manage/roles': typeof AppManageRolesRoute
@@ -1269,6 +1308,8 @@ export interface FileRoutesByTo {
   '/manage/club-record/identity': typeof AppManageClubRecordIdentityRoute
   '/manage/club-record/stage': typeof AppManageClubRecordStageRoute
   '/manage/groups/new': typeof AppManageGroupsNewRoute
+  '/manage/intakes/$intakeId': typeof AppManageIntakesIntakeIdRoute
+  '/manage/intakes/new': typeof AppManageIntakesNewRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
   '/manage/persons/new': typeof AppManagePersonsNewRoute
   '/manage/roles/$roleId': typeof AppManageRolesRoleIdRoute
@@ -1299,6 +1340,8 @@ export interface FileRoutesByTo {
   '/manage/group-matcher/statements/$statementId': typeof AppManageGroupMatcherStatementsStatementIdRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
+  '/manage/intakes/$intakeId/edit': typeof AppManageIntakesIntakeIdEditRoute
+  '/manage/intakes/$intakeId/review': typeof AppManageIntakesIntakeIdReviewRoute
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
   '/manage/persons/$personId/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/manage/persons/$personId/edit': typeof AppManagePersonsPersonIdEditRoute
@@ -1375,6 +1418,7 @@ export interface FileRoutesById {
   '/_app/manage/club-record': typeof AppManageClubRecordRoute
   '/_app/manage/group-matcher': typeof AppManageGroupMatcherRouteWithChildren
   '/_app/manage/groups': typeof AppManageGroupsRoute
+  '/_app/manage/intakes': typeof AppManageIntakesRoute
   '/_app/manage/keys': typeof AppManageKeysRoute
   '/_app/manage/persons': typeof AppManagePersonsRoute
   '/_app/manage/roles': typeof AppManageRolesRoute
@@ -1429,6 +1473,8 @@ export interface FileRoutesById {
   '/_app/manage/club-record_/identity': typeof AppManageClubRecordIdentityRoute
   '/_app/manage/club-record_/stage': typeof AppManageClubRecordStageRoute
   '/_app/manage/groups_/new': typeof AppManageGroupsNewRoute
+  '/_app/manage/intakes_/$intakeId': typeof AppManageIntakesIntakeIdRoute
+  '/_app/manage/intakes_/new': typeof AppManageIntakesNewRoute
   '/_app/manage/persons_/$personId': typeof AppManagePersonsPersonIdRoute
   '/_app/manage/persons_/new': typeof AppManagePersonsNewRoute
   '/_app/manage/roles_/$roleId': typeof AppManageRolesRoleIdRoute
@@ -1459,6 +1505,8 @@ export interface FileRoutesById {
   '/_app/manage/group-matcher/statements/$statementId': typeof AppManageGroupMatcherStatementsStatementIdRoute
   '/_app/manage/groups_/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/_app/manage/groups_/kinds/new': typeof AppManageGroupsKindsNewRoute
+  '/_app/manage/intakes_/$intakeId_/edit': typeof AppManageIntakesIntakeIdEditRoute
+  '/_app/manage/intakes_/$intakeId_/review': typeof AppManageIntakesIntakeIdReviewRoute
   '/_app/manage/keys_/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
   '/_app/manage/persons_/$personId_/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/_app/manage/persons_/$personId_/edit': typeof AppManagePersonsPersonIdEditRoute
@@ -1533,6 +1581,7 @@ export interface FileRouteTypes {
     | '/manage/club-record'
     | '/manage/group-matcher'
     | '/manage/groups'
+    | '/manage/intakes'
     | '/manage/keys'
     | '/manage/persons'
     | '/manage/roles'
@@ -1587,6 +1636,8 @@ export interface FileRouteTypes {
     | '/manage/club-record/identity'
     | '/manage/club-record/stage'
     | '/manage/groups/new'
+    | '/manage/intakes/$intakeId'
+    | '/manage/intakes/new'
     | '/manage/persons/$personId'
     | '/manage/persons/new'
     | '/manage/roles/$roleId'
@@ -1617,6 +1668,8 @@ export interface FileRouteTypes {
     | '/manage/group-matcher/statements/$statementId'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
+    | '/manage/intakes/$intakeId/edit'
+    | '/manage/intakes/$intakeId/review'
     | '/manage/keys/holdings/$keyHoldingId'
     | '/manage/persons/$personId/access-recovery'
     | '/manage/persons/$personId/edit'
@@ -1687,6 +1740,7 @@ export interface FileRouteTypes {
     | '/manage/board'
     | '/manage/club-record'
     | '/manage/groups'
+    | '/manage/intakes'
     | '/manage/keys'
     | '/manage/persons'
     | '/manage/roles'
@@ -1740,6 +1794,8 @@ export interface FileRouteTypes {
     | '/manage/club-record/identity'
     | '/manage/club-record/stage'
     | '/manage/groups/new'
+    | '/manage/intakes/$intakeId'
+    | '/manage/intakes/new'
     | '/manage/persons/$personId'
     | '/manage/persons/new'
     | '/manage/roles/$roleId'
@@ -1770,6 +1826,8 @@ export interface FileRouteTypes {
     | '/manage/group-matcher/statements/$statementId'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
+    | '/manage/intakes/$intakeId/edit'
+    | '/manage/intakes/$intakeId/review'
     | '/manage/keys/holdings/$keyHoldingId'
     | '/manage/persons/$personId/access-recovery'
     | '/manage/persons/$personId/edit'
@@ -1845,6 +1903,7 @@ export interface FileRouteTypes {
     | '/_app/manage/club-record'
     | '/_app/manage/group-matcher'
     | '/_app/manage/groups'
+    | '/_app/manage/intakes'
     | '/_app/manage/keys'
     | '/_app/manage/persons'
     | '/_app/manage/roles'
@@ -1899,6 +1958,8 @@ export interface FileRouteTypes {
     | '/_app/manage/club-record_/identity'
     | '/_app/manage/club-record_/stage'
     | '/_app/manage/groups_/new'
+    | '/_app/manage/intakes_/$intakeId'
+    | '/_app/manage/intakes_/new'
     | '/_app/manage/persons_/$personId'
     | '/_app/manage/persons_/new'
     | '/_app/manage/roles_/$roleId'
@@ -1929,6 +1990,8 @@ export interface FileRouteTypes {
     | '/_app/manage/group-matcher/statements/$statementId'
     | '/_app/manage/groups_/kinds/$groupKindId'
     | '/_app/manage/groups_/kinds/new'
+    | '/_app/manage/intakes_/$intakeId_/edit'
+    | '/_app/manage/intakes_/$intakeId_/review'
     | '/_app/manage/keys_/holdings/$keyHoldingId'
     | '/_app/manage/persons_/$personId_/access-recovery'
     | '/_app/manage/persons_/$personId_/edit'
@@ -2256,6 +2319,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageKeysRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/intakes': {
+      id: '/_app/manage/intakes'
+      path: '/manage/intakes'
+      fullPath: '/manage/intakes'
+      preLoaderRoute: typeof AppManageIntakesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/groups': {
       id: '/_app/manage/groups'
       path: '/manage/groups'
@@ -2499,6 +2569,20 @@ declare module '@tanstack/react-router' {
       path: '/manage/persons/$personId'
       fullPath: '/manage/persons/$personId'
       preLoaderRoute: typeof AppManagePersonsPersonIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/intakes_/new': {
+      id: '/_app/manage/intakes_/new'
+      path: '/manage/intakes/new'
+      fullPath: '/manage/intakes/new'
+      preLoaderRoute: typeof AppManageIntakesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/intakes_/$intakeId': {
+      id: '/_app/manage/intakes_/$intakeId'
+      path: '/manage/intakes/$intakeId'
+      fullPath: '/manage/intakes/$intakeId'
+      preLoaderRoute: typeof AppManageIntakesIntakeIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/manage/groups_/new': {
@@ -2814,6 +2898,20 @@ declare module '@tanstack/react-router' {
       path: '/manage/keys/holdings/$keyHoldingId'
       fullPath: '/manage/keys/holdings/$keyHoldingId'
       preLoaderRoute: typeof AppManageKeysHoldingsKeyHoldingIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/intakes_/$intakeId_/review': {
+      id: '/_app/manage/intakes_/$intakeId_/review'
+      path: '/manage/intakes/$intakeId/review'
+      fullPath: '/manage/intakes/$intakeId/review'
+      preLoaderRoute: typeof AppManageIntakesIntakeIdReviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/intakes_/$intakeId_/edit': {
+      id: '/_app/manage/intakes_/$intakeId_/edit'
+      path: '/manage/intakes/$intakeId/edit'
+      fullPath: '/manage/intakes/$intakeId/edit'
+      preLoaderRoute: typeof AppManageIntakesIntakeIdEditRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/manage/groups_/kinds/new': {
@@ -3220,6 +3318,7 @@ interface AppRouteChildren {
   AppManageClubRecordRoute: typeof AppManageClubRecordRoute
   AppManageGroupMatcherRoute: typeof AppManageGroupMatcherRouteWithChildren
   AppManageGroupsRoute: typeof AppManageGroupsRoute
+  AppManageIntakesRoute: typeof AppManageIntakesRoute
   AppManageKeysRoute: typeof AppManageKeysRoute
   AppManagePersonsRoute: typeof AppManagePersonsRoute
   AppManageRolesRoute: typeof AppManageRolesRoute
@@ -3263,6 +3362,8 @@ interface AppRouteChildren {
   AppManageClubRecordIdentityRoute: typeof AppManageClubRecordIdentityRoute
   AppManageClubRecordStageRoute: typeof AppManageClubRecordStageRoute
   AppManageGroupsNewRoute: typeof AppManageGroupsNewRoute
+  AppManageIntakesIntakeIdRoute: typeof AppManageIntakesIntakeIdRoute
+  AppManageIntakesNewRoute: typeof AppManageIntakesNewRoute
   AppManagePersonsPersonIdRoute: typeof AppManagePersonsPersonIdRoute
   AppManagePersonsNewRoute: typeof AppManagePersonsNewRoute
   AppManageRolesRoleIdRoute: typeof AppManageRolesRoleIdRoute
@@ -3283,6 +3384,8 @@ interface AppRouteChildren {
   AppManageBoardBoardOfficeIdEditRoute: typeof AppManageBoardBoardOfficeIdEditRoute
   AppManageGroupsKindsGroupKindIdRoute: typeof AppManageGroupsKindsGroupKindIdRoute
   AppManageGroupsKindsNewRoute: typeof AppManageGroupsKindsNewRoute
+  AppManageIntakesIntakeIdEditRoute: typeof AppManageIntakesIntakeIdEditRoute
+  AppManageIntakesIntakeIdReviewRoute: typeof AppManageIntakesIntakeIdReviewRoute
   AppManageKeysHoldingsKeyHoldingIdRoute: typeof AppManageKeysHoldingsKeyHoldingIdRoute
   AppManagePersonsPersonIdAccessRecoveryRoute: typeof AppManagePersonsPersonIdAccessRecoveryRoute
   AppManagePersonsPersonIdEditRoute: typeof AppManagePersonsPersonIdEditRoute
@@ -3342,6 +3445,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageClubRecordRoute: AppManageClubRecordRoute,
   AppManageGroupMatcherRoute: AppManageGroupMatcherRouteWithChildren,
   AppManageGroupsRoute: AppManageGroupsRoute,
+  AppManageIntakesRoute: AppManageIntakesRoute,
   AppManageKeysRoute: AppManageKeysRoute,
   AppManagePersonsRoute: AppManagePersonsRoute,
   AppManageRolesRoute: AppManageRolesRoute,
@@ -3387,6 +3491,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageClubRecordIdentityRoute: AppManageClubRecordIdentityRoute,
   AppManageClubRecordStageRoute: AppManageClubRecordStageRoute,
   AppManageGroupsNewRoute: AppManageGroupsNewRoute,
+  AppManageIntakesIntakeIdRoute: AppManageIntakesIntakeIdRoute,
+  AppManageIntakesNewRoute: AppManageIntakesNewRoute,
   AppManagePersonsPersonIdRoute: AppManagePersonsPersonIdRoute,
   AppManagePersonsNewRoute: AppManagePersonsNewRoute,
   AppManageRolesRoleIdRoute: AppManageRolesRoleIdRoute,
@@ -3411,6 +3517,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageBoardBoardOfficeIdEditRoute: AppManageBoardBoardOfficeIdEditRoute,
   AppManageGroupsKindsGroupKindIdRoute: AppManageGroupsKindsGroupKindIdRoute,
   AppManageGroupsKindsNewRoute: AppManageGroupsKindsNewRoute,
+  AppManageIntakesIntakeIdEditRoute: AppManageIntakesIntakeIdEditRoute,
+  AppManageIntakesIntakeIdReviewRoute: AppManageIntakesIntakeIdReviewRoute,
   AppManageKeysHoldingsKeyHoldingIdRoute:
     AppManageKeysHoldingsKeyHoldingIdRoute,
   AppManagePersonsPersonIdAccessRecoveryRoute:

@@ -58,6 +58,7 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             Board = hub.Board is null ? null : ToDto(hub.Board),
             ClubRecord = hub.ClubRecord is null ? null : ToDto(hub.ClubRecord),
             Accounts = hub.Accounts is null ? null : ToDto(hub.Accounts),
+            Intakes = hub.Intakes is null ? null : ToDto(hub.Intakes),
             Applications = hub.Applications is null ? null : ToDto(hub.Applications),
             GroupMatcher = hub.GroupMatcher is null ? null : ToDto(hub.GroupMatcher),
         };
@@ -113,6 +114,9 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
     private static ManageHubGroupMatcherDto ToDto(ManageHubGroupMatcher groupMatcher) =>
         new() { StatementCount = groupMatcher.StatementCount };
 
+    private static ManageHubIntakesDto ToDto(ManageHubIntakes intakes) =>
+        new() { OpenCount = intakes.OpenCount, NeedsReviewCount = intakes.NeedsReviewCount };
+
     private static ManageHubApplicationsDto ToDto(ManageHubApplications applications) =>
         new()
         {
@@ -138,6 +142,8 @@ public sealed record GetManageHubResponse
     public required ManageHubBoardDto? Board { get; init; }
 
     public required ManageHubClubRecordDto? ClubRecord { get; init; }
+
+    public required ManageHubIntakesDto? Intakes { get; init; }
 
     public required ManageHubAccountsDto? Accounts { get; init; }
 
@@ -229,4 +235,11 @@ public sealed record ManageHubApplicationsDto
 public sealed record ManageHubGroupMatcherDto
 {
     public required int StatementCount { get; init; }
+}
+
+public sealed record ManageHubIntakesDto
+{
+    public required int OpenCount { get; init; }
+
+    public required int NeedsReviewCount { get; init; }
 }
