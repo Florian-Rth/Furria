@@ -103,17 +103,12 @@ export const GROUP_NAME_MAX_LENGTH = 80;
 export const GROUP_NAME_REQUIRED_MESSAGE = 'Die Gruppe braucht einen Namen.';
 export const GROUP_NAME_TOO_LONG_MESSAGE = `Höchstens ${GROUP_NAME_MAX_LENGTH} Zeichen.`;
 
-export const GroupAdministrationFormSchema = z.object({
+export const GroupSettingsFormSchema = z.object({
   name: z
     .string()
     .trim()
     .min(1, GROUP_NAME_REQUIRED_MESSAGE)
     .max(GROUP_NAME_MAX_LENGTH, GROUP_NAME_TOO_LONG_MESSAGE),
-  groupKindId: z.string(),
-});
-export type GroupAdministrationForm = z.infer<typeof GroupAdministrationFormSchema>;
-
-export const GroupInfoFormSchema = z.object({
   description: z.string().max(DESCRIPTION_MAX_LENGTH, DESCRIPTION_TOO_LONG_MESSAGE),
   isRecruiting: z.boolean(),
   groupKindId: z.string(),
@@ -126,7 +121,7 @@ export const GroupInfoFormSchema = z.object({
   tone: GroupToneSchema.or(z.literal('')),
   icon: ClubIconSchema.nullable(),
 });
-export type GroupInfoForm = z.infer<typeof GroupInfoFormSchema>;
+export type GroupSettingsForm = z.infer<typeof GroupSettingsFormSchema>;
 
 export const AddGroupMembershipFormSchema = z.object({
   personId: z.number().int().positive(),

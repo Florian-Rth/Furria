@@ -94,9 +94,8 @@ import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.boar
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
 import { Route as AppLabWelcomeCaseRouteImport } from './routes/_app/lab_.welcome.$case'
+import { Route as AppGroupsGroupIdSettingsRouteImport } from './routes/_app/groups_.$groupId_.settings'
 import { Route as AppGroupsGroupIdGroupMatcherRouteImport } from './routes/_app/groups_.$groupId_.group-matcher'
-import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
-import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
 import { Route as AppGroupsGroupIdActsRouteImport } from './routes/_app/groups_.$groupId_.acts'
 import { Route as AppGalleryAlbumIdSelectionRouteImport } from './routes/_app/gallery_.$albumId_.selection'
 import { Route as AppGalleryAlbumIdEditRouteImport } from './routes/_app/gallery_.$albumId_.edit'
@@ -599,21 +598,16 @@ const AppLabWelcomeCaseRoute = AppLabWelcomeCaseRouteImport.update({
   path: '/lab/welcome/$case',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGroupsGroupIdSettingsRoute =
+  AppGroupsGroupIdSettingsRouteImport.update({
+    id: '/groups_/$groupId_/settings',
+    path: '/groups/$groupId/settings',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppGroupsGroupIdGroupMatcherRoute =
   AppGroupsGroupIdGroupMatcherRouteImport.update({
     id: '/groups_/$groupId_/group-matcher',
     path: '/groups/$groupId/group-matcher',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppGroupsGroupIdEditRoute = AppGroupsGroupIdEditRouteImport.update({
-  id: '/groups_/$groupId_/edit',
-  path: '/groups/$groupId/edit',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGroupsGroupIdAdministrationRoute =
-  AppGroupsGroupIdAdministrationRouteImport.update({
-    id: '/groups_/$groupId_/administration',
-    path: '/groups/$groupId/administration',
     getParentRoute: () => AppRoute,
   } as any)
 const AppGroupsGroupIdActsRoute = AppGroupsGroupIdActsRouteImport.update({
@@ -1104,9 +1098,8 @@ export interface FileRoutesByFullPath {
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
-  '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
-  '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
+  '/groups/$groupId/settings': typeof AppGroupsGroupIdSettingsRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1257,9 +1250,8 @@ export interface FileRoutesByTo {
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
-  '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
-  '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
+  '/groups/$groupId/settings': typeof AppGroupsGroupIdSettingsRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1417,9 +1409,8 @@ export interface FileRoutesById {
   '/_app/gallery_/$albumId_/edit': typeof AppGalleryAlbumIdEditRoute
   '/_app/gallery_/$albumId_/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/_app/groups_/$groupId_/acts': typeof AppGroupsGroupIdActsRoute
-  '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
-  '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
   '/_app/groups_/$groupId_/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
+  '/_app/groups_/$groupId_/settings': typeof AppGroupsGroupIdSettingsRoute
   '/_app/lab_/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1575,9 +1566,8 @@ export interface FileRouteTypes {
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/acts'
-    | '/groups/$groupId/administration'
-    | '/groups/$groupId/edit'
     | '/groups/$groupId/group-matcher'
+    | '/groups/$groupId/settings'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1728,9 +1718,8 @@ export interface FileRouteTypes {
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/acts'
-    | '/groups/$groupId/administration'
-    | '/groups/$groupId/edit'
     | '/groups/$groupId/group-matcher'
+    | '/groups/$groupId/settings'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1887,9 +1876,8 @@ export interface FileRouteTypes {
     | '/_app/gallery_/$albumId_/edit'
     | '/_app/gallery_/$albumId_/selection'
     | '/_app/groups_/$groupId_/acts'
-    | '/_app/groups_/$groupId_/administration'
-    | '/_app/groups_/$groupId_/edit'
     | '/_app/groups_/$groupId_/group-matcher'
+    | '/_app/groups_/$groupId_/settings'
     | '/_app/lab_/welcome/$case'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/$boardOfficeId'
@@ -2564,25 +2552,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLabWelcomeCaseRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/groups_/$groupId_/settings': {
+      id: '/_app/groups_/$groupId_/settings'
+      path: '/groups/$groupId/settings'
+      fullPath: '/groups/$groupId/settings'
+      preLoaderRoute: typeof AppGroupsGroupIdSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups_/$groupId_/group-matcher': {
       id: '/_app/groups_/$groupId_/group-matcher'
       path: '/groups/$groupId/group-matcher'
       fullPath: '/groups/$groupId/group-matcher'
       preLoaderRoute: typeof AppGroupsGroupIdGroupMatcherRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/groups_/$groupId_/edit': {
-      id: '/_app/groups_/$groupId_/edit'
-      path: '/groups/$groupId/edit'
-      fullPath: '/groups/$groupId/edit'
-      preLoaderRoute: typeof AppGroupsGroupIdEditRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/groups_/$groupId_/administration': {
-      id: '/_app/groups_/$groupId_/administration'
-      path: '/groups/$groupId/administration'
-      fullPath: '/groups/$groupId/administration'
-      preLoaderRoute: typeof AppGroupsGroupIdAdministrationRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/groups_/$groupId_/acts': {
@@ -3251,9 +3232,8 @@ interface AppRouteChildren {
   AppGalleryAlbumIdEditRoute: typeof AppGalleryAlbumIdEditRoute
   AppGalleryAlbumIdSelectionRoute: typeof AppGalleryAlbumIdSelectionRoute
   AppGroupsGroupIdActsRoute: typeof AppGroupsGroupIdActsRoute
-  AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
-  AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
   AppGroupsGroupIdGroupMatcherRoute: typeof AppGroupsGroupIdGroupMatcherRoute
+  AppGroupsGroupIdSettingsRoute: typeof AppGroupsGroupIdSettingsRoute
   AppLabWelcomeCaseRoute: typeof AppLabWelcomeCaseRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardBoardOfficeIdRoute: typeof AppManageBoardBoardOfficeIdRoute
@@ -3374,9 +3354,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppGalleryAlbumIdEditRoute: AppGalleryAlbumIdEditRoute,
   AppGalleryAlbumIdSelectionRoute: AppGalleryAlbumIdSelectionRoute,
   AppGroupsGroupIdActsRoute: AppGroupsGroupIdActsRoute,
-  AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
-  AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
   AppGroupsGroupIdGroupMatcherRoute: AppGroupsGroupIdGroupMatcherRoute,
+  AppGroupsGroupIdSettingsRoute: AppGroupsGroupIdSettingsRoute,
   AppLabWelcomeCaseRoute: AppLabWelcomeCaseRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,

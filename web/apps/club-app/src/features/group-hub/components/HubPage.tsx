@@ -6,6 +6,7 @@ import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useGroupHubQuery } from '../api';
 import { toHubOrigin, toHubTitle } from '../group-hub-labels';
+import { useHubSettingsEntry } from '../hooks/use-hub-settings-entry';
 import { HubBody } from './HubBody';
 import { HubStage } from './HubStage';
 
@@ -16,6 +17,7 @@ export const HubPage: FC = () => {
   const { isAffiliated, isManagingLogin, isUndecided } = usePermissions();
   const id = parsePositiveId(groupId);
   const hub = useGroupHubQuery(id);
+  const actions = useHubSettingsEntry(hub.data);
   const origin = toHubOrigin(isUndecided ? null : isAffiliated, isManagingLogin);
 
   return (
@@ -23,6 +25,7 @@ export const HubPage: FC = () => {
       kind="detail"
       title={toHubTitle(hub.data)}
       origin={origin}
+      actions={actions}
       headerKind="banner"
       header={<HubStage groupId={id} />}
       handover={AREA_HANDOVERS.groups}

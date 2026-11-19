@@ -1,7 +1,6 @@
-import { toGroupKindId } from '@/features/group-kinds/group-kinds-labels';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
-import { toGroupInfoPayload } from './group-hub-labels';
+import { toGroupSettingsPayload } from './group-hub-labels';
 import type {
   AddedGroupAdmin,
   AddedGroupMembership,
@@ -9,10 +8,9 @@ import type {
   AddGroupMembershipForm,
   EndGroupAdminForm,
   EndGroupMembershipForm,
-  GroupAdministrationForm,
   GroupCalendarResponse,
   GroupHub,
-  GroupInfoForm,
+  GroupSettingsForm,
   MyGroupsResponse,
   PersonSearchResponse,
 } from './schemas';
@@ -51,26 +49,15 @@ export const requestPersonSearch = (
     accessToken,
   });
 
-export const requestGroupInfoUpdate = (
+export const requestGroupSettingsUpdate = (
   groupId: number,
-  form: GroupInfoForm,
+  form: GroupSettingsForm,
+  renames: boolean,
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`/api/groups/${groupId}/info`, {
     method: 'PUT',
-    body: toGroupInfoPayload(form),
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestGroupAdministrationUpdate = (
-  groupId: number,
-  form: GroupAdministrationForm,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`/api/manage/groups/${groupId}`, {
-    method: 'PUT',
-    body: { name: form.name, groupKindId: toGroupKindId(form.groupKindId) },
+    body: toGroupSettingsPayload(form, renames),
     schema: NoContentSchema,
     accessToken,
   });

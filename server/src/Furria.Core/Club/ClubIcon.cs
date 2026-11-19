@@ -44,4 +44,11 @@ public enum ClubIcon
     Child = 40,
     Confetti = 41,
     Rocket = 42,
+    Fruit = 43,
+    Singer = 44,
+    WoodOven = 45,
+    Chicken = 46,
+    Pearl = 47,
+    SeaShell = 48,
+    Prince = 49,
 }

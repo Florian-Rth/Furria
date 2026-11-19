@@ -12,7 +12,6 @@ import { KkGroupCardCrest } from './internal/ui/KkGroupCardCrest';
 import { KkGroupCardKind } from './internal/ui/KkGroupCardKind';
 import { KkGroupCardSignal } from './internal/ui/KkGroupCardSignal';
 
-const NAME_LINES = 2;
 const LEAD_LINES = 1;
 const MEMBER_LINES = 1;
 const FALLBACK_ICON: KkClubIcon = 'broom';
@@ -59,7 +58,7 @@ export const KkGroupCard: FC<KkGroupCardProps> = ({
       <KkGroupCardFace component={component} to={to} params={params}>
         <KkGroupCardCrest tone={tone} icon={crestIcon} image={image} />
         <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 0.5, p: BODY_INSET }}>
-          <KkCard.Title clamp={NAME_LINES}>{name}</KkCard.Title>
+          <KkCard.Title>{name}</KkCard.Title>
           {kindLine}
           {signalLine}
           <KkMeta sx={lineClamp(LEAD_LINES)}>{lead}</KkMeta>

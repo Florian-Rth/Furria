@@ -141,3 +141,69 @@ export const JingleBellGlyph = createSvgIcon(
   </g>,
   'KkJingleBellGlyph',
 );
+
+const drawnStroke = {
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: DRAWN_STROKE,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+} as const;
+
+export const FruitGlyph = createSvgIcon(
+  <g {...drawnStroke}>
+    <circle cx="7" cy="17.5" r="3.5" />
+    <circle cx="17" cy="16.5" r="3.5" />
+    <path d="M7 14C8 10 11 6 14 3.5M17 13C16 9 15 6 14 3.5M14 3.5C16.5 2 19.5 2.5 21 5 18.5 6.3 15.8 5.7 14 3.5z" />
+  </g>,
+  'KkFruitGlyph',
+);
+
+export const SingerGlyph = createSvgIcon(
+  <g {...drawnStroke}>
+    <circle cx="8" cy="7" r="3.5" />
+    <circle cx="15.6" cy="8.2" r="1.8" />
+    <path d="M1.5 21c0-4 2.9-7 6.5-7s6.5 3 6.5 7M14.6 9.7 13 12.6M19.1 6q1.4 2.2 0 4.4M21.5 4.4q2.6 3.8 0 7.6" />
+  </g>,
+  'KkSingerGlyph',
+);
+
+export const WoodOvenGlyph = createSvgIcon(
+  <path
+    d="M2.5 20h19M4 20v-4a8 8 0 0 1 16 0v4M8.5 20v-3a3.5 3.5 0 0 1 7 0v3M15 8.6V4h2.5v6.2M6.2 11.5h2.6M15.2 11.5h2.6M4.4 15h2.2M17.4 15h2.2M12 19.6c-1 0-1.7-.7-1.7-1.6 0-1.1 1.7-2 1.7-2.8 0 .8 1.7 1.7 1.7 2.8 0 .9-.7 1.6-1.7 1.6z"
+    {...drawnStroke}
+  />,
+  'KkWoodOvenGlyph',
+);
+
+export const ChickenGlyph = createSvgIcon(
+  <path
+    d="M7 9C7 7 8 5.5 9.5 5.5S12 6.7 12 8.2V10c2 .5 5-.5 7-3.5 2 2.5 2 6.5 0 9-1.5 2-4 3-7 3-3.5 0-6-2.5-6-5.5 0-1.5.5-3 1-4zM7.2 7.6 5 8.5l2 .9M8.5 5.6c-.2-1.4 1-2.1 1.5-1.1.6-1 2-.5 1.5 1.1M10.5 13.5c1.5 2 4.5 2 6-.5M11 18.5V21M15 18v3M9.8 21h2.5M13.8 21h2.5"
+    {...drawnStroke}
+  />,
+  'KkChickenGlyph',
+);
+
+export const PearlGlyph = createSvgIcon(
+  <g {...drawnStroke}>
+    <circle cx="14" cy="10.8" r="2.8" />
+    <path d="M4 15C3 9 7 3.5 13.5 2.5 10.5 6 7 10.5 4 15zM4 15c6-1.4 11.5-1.4 17-.4-2.2 5.4-12 6.4-17 .4zM8.5 18c3 .9 6.6.8 9.6-.5M12.8 10.2a1.4 1.4 0 0 1 1-1M19.6 6q.3 1.1 1.4 1.4-1.1.3-1.4 1.4-.3-1.1-1.4-1.4 1.1-.3 1.4-1.4z" />
+  </g>,
+  'KkPearlGlyph',
+);
+
+export const SeaShellGlyph = createSvgIcon(
+  <path
+    d="M20.5 3.5c-.9 1.3-2.1 1.5-3 1.4-.5 1.3-1.9 1.9-3.2 1.7-1 1.3-2.8 1.5-4.3 1.2-4 .2-6.5 3.2-6.5 6.7 0 4 3 6.5 7 6.5 4.5 0 7.5-3.5 7.3-7.5-.1-2 .7-3.5 1.2-5 .6-1.8 1.2-3.5 1.5-5zM17.5 4.9c.3 1.1.9 1.7 1.9 1.9M14.3 6.6c.5 1.9 2.2 3 4.4 2.8M10 7.8c.8 3 3.8 4.8 7.8 4.8M6.5 18c2.5.5 5.5-1 6.5-4.5-2 1-5 2-6.5 4.5z"
+    {...drawnStroke}
+  />,
+  'KkSeaShellGlyph',
+);
+
+export const PrinceGlyph = createSvgIcon(
+  <g {...drawnStroke}>
+    <circle cx="12" cy="10.2" r="3.4" />
+    <path d="M8.9 6.4 8.4 2.6l1.9 1.6L12 1.9l1.7 2.3 1.9-1.6-.5 3.8M4 21.5c0-3.5 2.2-6 5.2-6.9L12 18l2.8-3.4c3 .9 5.2 3.4 5.2 6.9M9.2 14.6 7.6 13M14.8 14.6l1.6-1.6" />
+  </g>,
+  'KkPrinceGlyph',
+);

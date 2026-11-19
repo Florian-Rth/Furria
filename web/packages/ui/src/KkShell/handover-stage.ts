@@ -2,7 +2,7 @@ import type { ComponentType, PropsWithChildren, ReactNode } from 'react';
 import { createContext, useContext } from 'react';
 import type { KkScreenHeaderKind } from './screen-declaration';
 
-export type KkHandoverName = 'splitFlap' | 'confetti' | 'sway';
+export type KkHandoverName = 'splitFlap' | 'confetti';
 
 export interface KkHandoverSwapProps {
   rest: ReactNode;

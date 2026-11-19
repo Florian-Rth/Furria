@@ -97,3 +97,13 @@ backlog facets, the search, and creating a group.
 group has no screen for its single act to live on. *Zurückholen* stays on the archived row. The
 exception is bounded by the same fact that created it: an archived group carries exactly one
 decision, and a row is enough to carry one.
+
+## Amended — 2026-11-19 (one write for the group)
+
+The hub's two group editors merge into one settings screen, so the group's record is written by
+one endpoint. `PutGroup` (`PUT manage/groups/{groupId}`) is deleted; `PutGroupInfo` takes an
+optional `Name`. The dividing line holds inside the handler: a name is the club's act, so a
+request that carries one also needs `groups.manage`, and a group admin without the key gets 403
+with nothing written. A request without a name keeps the current one, so the group admin's save
+is unchanged. The name rules travel along: unique among active groups ignoring case, an archived
+group's name is free.
