@@ -37,6 +37,7 @@ English rendering anywhere else, so two translations never drift apart.
 | group membership | Zugehörigkeit | `GroupMembership` |
 | group admin / function | Gruppen-Admin / Funktion | `GroupAdmin`, `Function` |
 | membership application / admission | Beitrittsantrag / Aufnahme | `MembershipApplication`, — |
+| intake | Neuzugang | `Intake` |
 | role / permission | Rolle / Berechtigung | `Role`, `RolePermission` |
 | role holding / holder | Inhaberschaft / Inhaber | `RoleHolding` |
 | board / board office / board seat | Vorstand / Vorstandsfunktion / Vorstandssitz | `BoardOffice`, `BoardSeat` |
@@ -503,7 +504,8 @@ eligible at once (**bulk invitation**, *Alle einladen*). A bulk invitation reach
 pressing the button twice never mails the same person twice. A person has **at most one live
 invitation**: a new one, by any channel, voids the one before; each lives as long as its channel
 warrants (a mail for days, a code on a manager's screen for minutes). A **group admin** issues
-none — accounts are the club's business, never a group's (ruled 2026-09-25).
+none — accounts are the club's business, never a group's (ruled 2026-09-25) — except the one an
+**intake** she started sends on its completion (ruled 2026-11-19, ADR-0041).
 **Never invited** means she has never been sent an onboarding invitation at all, by any channel.
 An **offene Einladung** (open invitation) is a live onboarding invitation of a person who still
 has no account — neither redeemed nor voided, **expired or not**: an expired one was issued and
@@ -1519,6 +1521,42 @@ exactly while it sits in its uploader's inbox; placing it in an album takes it o
 the inbox is final. Uploading straight into an album skips it.
 _UI copy_: Eingang
 _Avoid_: unsorted, drafts, uploads, staging
+
+**Intake** (`Intake`):
+The club's way to bring a new person into the registry when the club has **already decided** who
+she is to it: someone with the right starts it with only what the club decides — whether she
+becomes a **member** and from when (today unless said otherwise, past or future allowed), which
+**groups** she joins, and optionally *Für wen?*, a label that only tells open intakes apart — and
+she fills in her own details herself through a secret **intake link**, shown as a QR on the
+starter's screen or shared. It is the reverse of a **membership application**: no decision waits
+on her word, so an intake is never an **admission**, and it needs no membership at all. It needs
+**at least one affiliation** — a membership or a group — or the person it makes would not belong
+in the registry. `persons.manage` starts any intake; a **group admin** starts one for the groups
+she runs, never with a membership — the trainer brings a new dancer in, the club decides on
+members (ruled 2026-11-19).
+She gives her name and birth date always, her address when she becomes a member, and optionally
+phone, email (*für die App*), whether her contact details are shown to members, and her
+**portrait**. The form asks nothing about age and no guardian; the starter has met her. On
+submit the person, her membership and her group memberships are made at once, the membership
+recording that it came from an intake and by whom — unless the registry already holds someone with
+her email or her name and birth date: then the intake waits **zu prüfen**, and whoever may act on
+it decides *Das ist sie* (fills only what the registry lacks, a former member keeps her *Mitglied
+seit*, a running membership is not opened twice) or *Neue Person*. She is never told a match
+exists. Starting the intake is the club's decision to invite her: when she gave an email and is
+**eligible** (the club's **age of consent**), the **invitation** goes out on completion with the
+starter as its issuer — a group admin's intake included
+([ADR-0041](docs/adr/0041-an-intake-invites-on-its-starters-decision.md)) — and her last screen
+offers to set up the app right away.
+The intake link is open **7 days**, used once; the starter or `persons.manage` can show it again,
+**renew** it (new link, the old one void) or **discard** the intake. States: *offen*,
+*abgelaufen*, *zu prüfen*, *abgeschlossen*, *verworfen*. `persons.manage` sees every intake, a
+group admin those of her groups; the starter is told by push when hers is completed or waits for
+review. An intake holds her details only until it is decided — afterwards it keeps who started
+it, when, and what it opened; a discarded or expired one keeps nothing of hers.
+_UI copy_: Neuzugang; *Neuzugang anlegen*; *Neuzugänge*; *Für wen?*; *offen* · *abgelaufen* ·
+*zu prüfen* · *abgeschlossen* · *verworfen*; *Neuzugang verwerfen*; *App jetzt einrichten*
+_Avoid_: onboarding, registration, Anmeldung (sign-in owns that word), Aufnahme (that is the
+admission), auto-matching a found person
 
 **Upload link** (`UploadLink`):
 A secret link someone who manages the **gallery** makes for one occasion and posts into the club's
