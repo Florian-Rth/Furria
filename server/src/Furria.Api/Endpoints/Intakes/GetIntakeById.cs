@@ -186,11 +186,11 @@ public sealed record GetIntakeByIdCandidateDto
 
     public required IntakeMatch Match { get; init; }
 
-    public required bool IsMember { get; init; }
+    public required bool? IsMember { get; init; }
 
-    public required IReadOnlyList<string> Groups { get; init; }
+    public required IReadOnlyList<string>? Groups { get; init; }
 
-    public required bool HasAccount { get; init; }
+    public required bool? HasAccount { get; init; }
 
     public required PictureDto? Portrait { get; init; }
 }

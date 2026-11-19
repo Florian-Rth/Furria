@@ -9,7 +9,8 @@ import { formatIsoDay } from '@/lib/membership-labels';
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import type { HistoryMoment } from './intake-history';
-import type { IntakeSectionId } from './intake-rules';
+import type { IntakeHome, IntakeSectionId } from './intake-rules';
+import { toGroupIntakes } from './intake-rules';
 import type { IntakeCandidate, IntakeMatch, IntakeState, IntakeSummary } from './schemas';
 
 export const INTAKES_TITLE = 'Neuzugänge';
@@ -242,6 +243,14 @@ export const toIntakeOrigin = (intake: IntakeSummary): KkScreenOrigin => ({
   params: { intakeId: String(intake.intakeId) },
 });
 
+export const toHomeOrigin = (home: IntakeHome): KkScreenOrigin =>
+  home.kind === 'overview'
+    ? INTAKES_ORIGIN
+    : { label: home.name, to: '/groups/$groupId', params: { groupId: String(home.groupId) } };
+
+export const toHomePath = (home: IntakeHome): string =>
+  home.kind === 'overview' ? INTAKES_PATH : `/groups/${home.groupId}`;
+
 export const toQrLabel = (intake: IntakeSummary): string => `QR-Code für ${toIntakeName(intake)}`;
 
 export const toExpiryLine = (expiresAt: string, now: Date): string =>
@@ -268,9 +277,9 @@ export const toCandidateDescription = (candidate: IntakeCandidate): string =>
   [
     MATCH_LABELS[candidate.match],
     ...(candidate.birthDate === null ? [] : [`geb. ${formatIsoDay(candidate.birthDate)}`]),
-    ...(candidate.isMember ? ['Mitglied'] : []),
-    ...candidate.groups,
-    ...(candidate.hasAccount ? ['hat die App'] : []),
+    ...(candidate.isMember === true ? ['Mitglied'] : []),
+    ...(candidate.groups ?? []),
+    ...(candidate.hasAccount === true ? ['hat die App'] : []),
   ].join(SEPARATOR);
 
 export const toNewPersonDescription = (firstName: string): string =>
@@ -298,3 +307,24 @@ export const toIntakesErrorMessage = (error: Error | null): string | null =>
 
 export const toIntakeErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, DETAIL_ERROR_MESSAGES);
+
+export interface GroupIntakeRow {
+  intakeId: number;
+  name: string;
+  meta: string;
+  chip: IntakeStateChip;
+  path: string;
+}
+
+export const toGroupIntakeRows = (
+  intakes: readonly IntakeSummary[],
+  groupId: number,
+  now: Date,
+): GroupIntakeRow[] =>
+  toGroupIntakes(intakes, groupId).map((intake) => ({
+    intakeId: intake.intakeId,
+    name: toIntakeName(intake),
+    meta: toIntakeHeaderMeta(intake, now),
+    chip: STATE_CHIPS[intake.state],
+    path: `${INTAKES_PATH}/${intake.intakeId}`,
+  }));

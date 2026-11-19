@@ -169,7 +169,11 @@ public sealed partial class IntakeService
         );
     }
 
-    private async Task<IntakeReviewDetails> ReviewOfAsync(int intakeId, CancellationToken ct)
+    private async Task<IntakeReviewDetails> ReviewOfAsync(
+        int intakeId,
+        bool seesRegister,
+        CancellationToken ct
+    )
     {
         var intake = await _dbContext
             .Intakes.AsNoTracking()
@@ -179,7 +183,7 @@ public sealed partial class IntakeService
         return new IntakeReviewDetails
         {
             Newcomer = await NewcomerDetailsOfAsync(intake, newcomer, ct),
-            Candidates = await CandidatesOfAsync(newcomer, ct),
+            Candidates = await CandidatesOfAsync(newcomer, seesRegister, ct),
         };
     }
 
@@ -219,6 +223,7 @@ public sealed partial class IntakeService
 
     private async Task<IReadOnlyList<IntakeCandidate>> CandidatesOfAsync(
         Newcomer newcomer,
+        bool seesRegister,
         CancellationToken ct
     )
     {
@@ -250,7 +255,11 @@ public sealed partial class IntakeService
             ))
             .ToListAsync(ct);
 
-        return [.. rows.Select(row => CandidateOf(row, newcomer))];
+        return
+        [
+            .. rows.Select(row => CandidateOf(row, newcomer))
+                .Select(candidate => seesRegister ? candidate : RecognisableOnly(candidate)),
+        ];
     }
 
     private IntakeCandidate CandidateOf(CandidateRow row, Newcomer newcomer) =>
@@ -265,6 +274,17 @@ public sealed partial class IntakeService
             Groups = row.Groups,
             HasAccount = row.HasAccount,
             Portrait = _pictures.PortraitOf(row.PersonId, row.PortraitId, row.PortraitRenderedAt),
+        };
+
+    [Pure]
+    private static IntakeCandidate RecognisableOnly(IntakeCandidate candidate) =>
+        candidate with
+        {
+            BirthDate =
+                candidate.Match == IntakeMatch.NameAndBirthDate ? candidate.BirthDate : null,
+            IsMember = null,
+            Groups = null,
+            HasAccount = null,
         };
 
     private IQueryable<Person> MatchingPeople(Newcomer newcomer) =>

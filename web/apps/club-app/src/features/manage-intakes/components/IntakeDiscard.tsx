@@ -15,10 +15,11 @@ import type { IntakeSummary } from '../schemas';
 
 interface IntakeDiscardProps {
   intake: IntakeSummary;
+  homePath: string;
 }
 
-export const IntakeDiscard: FC<IntakeDiscardProps> = ({ intake }) => {
-  const discard = useIntakeDiscard(intake.intakeId);
+export const IntakeDiscard: FC<IntakeDiscardProps> = ({ intake, homePath }) => {
+  const discard = useIntakeDiscard(intake.intakeId, homePath);
   const facts = toIntakeFacts(intake);
   const rejection = discard.rejection ?? undefined;
 

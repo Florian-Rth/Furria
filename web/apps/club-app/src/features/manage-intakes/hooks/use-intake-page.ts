@@ -2,9 +2,12 @@ import type {
   KkScreenActionBar,
   KkScreenActions,
   KkScreenDeed,
+  KkScreenOrigin,
 } from '@furria/ui/screen-declaration';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useIntakeQuery } from '../api';
 import {
   COPY_LABEL,
@@ -14,9 +17,11 @@ import {
   RENEW_LABEL,
   REVIEW_LABEL,
   SHARE_LABEL,
+  toHomeOrigin,
+  toHomePath,
 } from '../intake-labels';
 import type { IntakeActionPlan, IntakeActions } from '../intake-rules';
-import { toIntakeActionPlan, toIntakeActions } from '../intake-rules';
+import { toIntakeActionPlan, toIntakeActions, toIntakeHome } from '../intake-rules';
 import type { IntakeDetails } from '../schemas';
 import type { IntakeRenewalControl } from './use-intake-renewal';
 import { useIntakeRenewal } from './use-intake-renewal';
@@ -30,12 +35,16 @@ export interface IntakePage {
   renewal: IntakeRenewalControl;
   actionBar: KkScreenActionBar | undefined;
   headerActions: KkScreenActions | undefined;
+  origin: KkScreenOrigin;
+  homePath: string;
 }
 
 export const useIntakePage = (intakeId: number | null): IntakePage => {
   const intake = useIntakeQuery(intakeId);
   const navigate = useNavigate();
   const details = intake.data;
+  const { has } = usePermissions();
+  const home = toIntakeHome(details?.intake.groups ?? [], has(PERMISSION_KEYS.personsManage));
   const actions = details === undefined ? null : toIntakeActions(details.intake, details.token);
   const plan: IntakeActionPlan = actions === null ? 'none' : toIntakeActionPlan(actions);
   const share = useIntakeShare(details?.token ?? '');
@@ -84,5 +93,14 @@ export const useIntakePage = (intakeId: number | null): IntakePage => {
       ]
     : undefined;
 
-  return { intake, actions, share, renewal, actionBar: actionBars[plan], headerActions };
+  return {
+    intake,
+    actions,
+    share,
+    renewal,
+    actionBar: actionBars[plan],
+    headerActions,
+    origin: toHomeOrigin(home),
+    homePath: toHomePath(home),
+  };
 };

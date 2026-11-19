@@ -4,12 +4,15 @@ import {
   runsIntakes,
   toGroupChips,
   toGroupChoices,
+  toGroupIntakes,
   toIntakeActionPlan,
   toIntakeActions,
+  toIntakeHome,
   toIntakeScreenGate,
   toIntakeSections,
   toPresetGroupId,
   toResultingPersonPath,
+  toStartHome,
 } from './intake-rules';
 import type { IntakeState, IntakeSummary } from './schemas';
 
@@ -237,5 +240,35 @@ describe('toGroupChips', () => {
         { groupId: 2, name: 'Tanzgarde', isLocked: true },
       ]),
     ).toEqual({ chips: [{ id: '1', label: 'Kindergarde' }], hasLocked: true });
+  });
+});
+
+describe('toIntakeHome', () => {
+  const guard = { groupId: 4, name: 'Kindergarde' };
+
+  it.each([
+    [true, [guard], { kind: 'overview' }],
+    [false, [guard], { kind: 'group', groupId: 4, name: 'Kindergarde' }],
+    [false, [], { kind: 'overview' }],
+  ] as const)('sends a manager (%s) home', (managesPersons, groups, expected) => {
+    expect(toIntakeHome(groups, managesPersons)).toEqual(expected);
+  });
+
+  it('starts from the preset group even for a manager', () => {
+    expect(toStartHome([guard])).toEqual({ kind: 'group', groupId: 4, name: 'Kindergarde' });
+  });
+});
+
+describe('toGroupIntakes', () => {
+  it('keeps the undecided intakes of the group, review first', () => {
+    const guard = [{ groupId: 4, name: 'Kindergarde' }];
+    const intakes = [
+      intakeOf(1, 'open', { groups: guard }),
+      intakeOf(2, 'needsReview', { groups: guard }),
+      intakeOf(3, 'completed', { groups: guard }),
+      intakeOf(4, 'open', { groups: [{ groupId: 5, name: 'Tanzgarde' }] }),
+    ];
+
+    expect(toGroupIntakes(intakes, 4).map((intake) => intake.intakeId)).toEqual([2, 1]);
   });
 });

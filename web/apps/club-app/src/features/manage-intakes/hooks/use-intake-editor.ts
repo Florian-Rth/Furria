@@ -1,3 +1,4 @@
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { UseFormRegisterReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
@@ -5,9 +6,9 @@ import type { WriteLanding } from '@/features/write/landing-target';
 import { toIsoDay } from '@/lib/day';
 import { useEditIntakeMutation, useStartIntakeMutation } from '../api';
 import { toggledGroupIds, toIntakeDecision, toIntakeFormDefaults } from '../intake-decision';
-import { INTAKE_ROUTE } from '../intake-labels';
+import { INTAKE_ROUTE, toHomeOrigin, toIntakeOrigin } from '../intake-labels';
 import type { ChoosableGroup, GroupChips, IntakeRights } from '../intake-rules';
-import { mayDecideMembership, toGroupChips, toGroupChoices } from '../intake-rules';
+import { mayDecideMembership, toGroupChips, toGroupChoices, toStartHome } from '../intake-rules';
 import type { IntakeForm, IntakeSummary } from '../schemas';
 import { IntakeFormSchema } from '../schemas';
 
@@ -19,6 +20,7 @@ export interface IntakeEditorInput {
 }
 
 export interface IntakeEditorControl {
+  origin: KkScreenOrigin;
   decidesMembership: boolean;
   isMember: boolean;
   setIsMember: (isMember: boolean) => void;
@@ -92,7 +94,11 @@ export const useIntakeEditor = ({
     groupIdsField.field.onBlur();
   };
 
+  const presetGroups = groups.filter((group) => group.groupId === presetGroupId);
+  const origin = intake === null ? toHomeOrigin(toStartHome(presetGroups)) : toIntakeOrigin(intake);
+
   return {
+    origin,
     decidesMembership: mayDecideMembership(rights),
     isMember: isMemberField.field.value,
     setIsMember,

@@ -5,7 +5,7 @@ import type { FC } from 'react';
 import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useIntakePage } from '../hooks/use-intake-page';
-import { INTAKE_EYEBROW, INTAKES_ORIGIN, toIntakeName } from '../intake-labels';
+import { INTAKE_EYEBROW, toIntakeName } from '../intake-labels';
 import { IntakeHeader } from './IntakeHeader';
 import { IntakeHold } from './IntakeHold';
 import { IntakeView } from './IntakeView';
@@ -30,6 +30,7 @@ export const IntakePage: FC = () => {
         actions={page.actions}
         share={page.share}
         renewal={page.renewal}
+        homePath={page.homePath}
       />
     );
 
@@ -37,7 +38,7 @@ export const IntakePage: FC = () => {
     <KkScreen
       kind="detail"
       title={title}
-      origin={INTAKES_ORIGIN}
+      origin={page.origin}
       header={header}
       action={page.actionBar}
       actions={page.headerActions}

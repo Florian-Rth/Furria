@@ -21,12 +21,13 @@ interface IntakeViewProps {
   actions: IntakeActions;
   share: IntakeShare;
   renewal: IntakeRenewalControl;
+  homePath: string;
 }
 
-export const IntakeView: FC<IntakeViewProps> = ({ details, actions, share, renewal }) => {
+export const IntakeView: FC<IntakeViewProps> = ({ details, actions, share, renewal, homePath }) => {
   const { intake } = details;
   const link = actions.showsLink ? <IntakeLinkPanel intake={intake} share={share} /> : null;
-  const discard = actions.canDiscard ? <IntakeDiscard intake={intake} /> : null;
+  const discard = actions.canDiscard ? <IntakeDiscard intake={intake} homePath={homePath} /> : null;
 
   return (
     <KkPanelStack>

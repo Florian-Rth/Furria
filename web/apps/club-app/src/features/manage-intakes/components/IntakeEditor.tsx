@@ -8,7 +8,6 @@ import type { IntakeEditorInput } from '../hooks/use-intake-editor';
 import { useIntakeEditor } from '../hooks/use-intake-editor';
 import {
   EDIT_INTAKE_TITLE,
-  INTAKES_ORIGIN,
   IS_MEMBER_LABEL,
   IS_MEMBER_STATE,
   LABEL_FIELD,
@@ -58,7 +57,7 @@ export const IntakeEditor: FC<IntakeEditorInput> = (input) => {
 
   return (
     <WriteScreen
-      origin={INTAKES_ORIGIN}
+      origin={control.origin}
       title={title}
       rejection={rejection}
       isDirty={control.isDirty}

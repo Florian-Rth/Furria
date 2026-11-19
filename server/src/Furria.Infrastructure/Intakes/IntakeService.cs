@@ -150,7 +150,7 @@ public sealed partial class IntakeService
                         : null,
                 Review =
                     summary.CanManage && summary.State == IntakeState.NeedsReview
-                        ? await ReviewOfAsync(intakeId, ct)
+                        ? await ReviewOfAsync(intakeId, actor.ManagesPersons, ct)
                         : null,
             }
         );

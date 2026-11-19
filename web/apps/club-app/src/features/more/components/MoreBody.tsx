@@ -1,6 +1,5 @@
 import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
-import { useIntakesSection } from '@/features/manage-intakes/hooks/use-intakes-section';
 import {
   GALLERY_SECTION,
   MANAGE_SECTIONS,
@@ -15,8 +14,7 @@ import { MoreSectionSkeleton } from './MoreSectionSkeleton';
 
 export const MoreBody: FC = () => {
   const { keys, isManagingLogin, isUndecided } = usePermissions();
-  const intakesSections = useIntakesSection();
-  const manageSections = [...toPermittedSections(MANAGE_SECTIONS, keys), ...intakesSections];
+  const manageSections = toPermittedSections(MANAGE_SECTIONS, keys);
   const gallerySections = toPermittedSections([GALLERY_SECTION], keys);
 
   const managePanel = isUndecided ? (

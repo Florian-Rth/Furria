@@ -69,9 +69,9 @@ export const IntakeCandidateSchema = z.object({
   lastName: z.string(),
   birthDate: z.iso.date().nullable(),
   match: IntakeMatchSchema,
-  isMember: z.boolean(),
-  groups: z.array(z.string()),
-  hasAccount: z.boolean(),
+  isMember: z.boolean().nullable(),
+  groups: z.array(z.string()).nullable(),
+  hasAccount: z.boolean().nullable(),
   portrait: PictureSchema.nullable(),
 });
 export type IntakeCandidate = z.infer<typeof IntakeCandidateSchema>;

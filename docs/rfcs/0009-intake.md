@@ -131,8 +131,9 @@ someone else resolves. Background job *Abgelaufene Neuzugänge bereinigen* (ever
 expired links' seeds and portraits of intakes no longer open or awaiting review (1 h grace after
 expiry). Review: adopting an intake portrait takes a share lock on the open intake, so an upload
 finishing after submit/discard is refused; push targeting asks about the starter's rights in its
-own scope. Open for Florian: a group admin who started an intake sees the matching candidates'
-birth date, groups and account state while resolving.
+own scope. Settled 2026-11-19 with Florian: a group admin resolving her intake sees each candidate's
+name, portrait and match kind only (birth date just when the match was by name + birth date);
+membership, groups and account state stay with `persons.manage`.
 
 ### Phase 3 — Club app: manager side
 Goal: managers and group admins run intakes end to end from the app (newcomer side still pending).
@@ -147,9 +148,11 @@ Done 2026-11-19: feature `manage-intakes`; routes `/manage/intakes`, `/new?group
 `/$intakeId/edit`, `/$intakeId/review`. The QR screen is the detail page of an open intake (QR +
 expiry, action bar *Teilen*/*Link kopieren* + *Neuer Link*), where *Anlegen* lands. Manage hub
 gained an `intakes` panel (`openCount`, `needsReviewCount`; persons.manage only) shown as
-*Neuzugänge* in *Wer dazugehört*; group admins without persons.manage reach the overview from
-*Mehr › Verwaltung*. Entries: *Neuzugang per QR* in the person register and in the group hub's
-people panel (group pre-set). Rulings: a new manager intake defaults to *Wird Mitglied* (today)
+*Neuzugänge* in *Wer dazugehört*. Group admins run intakes from their group hub only (Florian
+2026-11-19: the group is their place, keep it small): the people panel lists the group's undecided
+intakes as compact rows next to *Neuzugang per QR* (group pre-set), and for anyone without
+`persons.manage` the intake screens go back to that group. Managers also start from the person
+register. Rulings: a new manager intake defaults to *Wird Mitglied* (today)
 unless started from a group; a group admin never sees the membership toggle and sees chosen groups
 she doesn't run as locked; renewing an open link asks first (it voids the shown QR), an expired one
 renews at once; the review screen keeps its data until it has navigated back after *Übernehmen*.

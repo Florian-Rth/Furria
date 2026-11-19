@@ -122,6 +122,36 @@ export const toGroupChoices = (
 export const toPresetGroupId = (raw: number | null, rights: IntakeRights): number | null =>
   raw !== null && (rights.managesPersons || rights.administeredGroupIds.includes(raw)) ? raw : null;
 
+export type IntakeHome = { kind: 'overview' } | { kind: 'group'; groupId: number; name: string };
+
+export const toIntakeHome = (
+  groups: readonly ChoosableGroup[],
+  managesPersons: boolean,
+): IntakeHome => {
+  const [firstGroup] = groups;
+
+  return managesPersons || firstGroup === undefined
+    ? { kind: 'overview' }
+    : { kind: 'group', groupId: firstGroup.groupId, name: firstGroup.name };
+};
+
+export const toStartHome = (presetGroups: readonly ChoosableGroup[]): IntakeHome =>
+  toIntakeHome(presetGroups, false);
+
+const AWAITING_STATES: readonly IntakeState[] = ['needsReview', 'open', 'expired'];
+
+export const toGroupIntakes = (
+  intakes: readonly IntakeSummary[],
+  groupId: number,
+): IntakeSummary[] =>
+  toIntakeSections(
+    intakes.filter(
+      (intake) =>
+        AWAITING_STATES.includes(intake.state) &&
+        intake.groups.some((group) => group.groupId === groupId),
+    ),
+  ).flatMap((section) => section.intakes);
+
 export type IntakeActionPlan = 'review' | 'shareAndRenew' | 'renew' | 'none';
 
 export type IntakeScreenNeed = 'edit' | 'resolve';

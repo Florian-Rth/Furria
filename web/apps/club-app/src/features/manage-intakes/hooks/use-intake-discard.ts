@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useDiscardIntakeMutation } from '../api';
-import { INTAKES_PATH } from '../intake-labels';
 
 export interface IntakeDiscardControl {
   isOpen: boolean;
@@ -13,7 +12,7 @@ export interface IntakeDiscardControl {
   isSaving: boolean;
 }
 
-export const useIntakeDiscard = (intakeId: number): IntakeDiscardControl => {
+export const useIntakeDiscard = (intakeId: number, homePath: string): IntakeDiscardControl => {
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useDiscardIntakeMutation();
@@ -33,7 +32,7 @@ export const useIntakeDiscard = (intakeId: number): IntakeDiscardControl => {
     void mutation.mutateAsync(intakeId).then(
       () => {
         setIsOpen(false);
-        void goBackTo({ to: INTAKES_PATH, ignoreBlocker: true });
+        void goBackTo({ to: homePath, ignoreBlocker: true });
       },
       (error: Error) => {
         setRejection(toWriteErrorMessage(error));
