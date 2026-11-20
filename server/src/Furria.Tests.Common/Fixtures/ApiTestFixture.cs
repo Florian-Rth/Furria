@@ -37,6 +37,7 @@ using Furria.MediaWorker.Jobs;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
 using Furria.Tests.Common.Push;
+using Furria.Tests.Common.WhatsApp;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -123,6 +124,10 @@ public sealed class ApiTestFixture : IAsyncLifetime
     public const string VapidPublicKey =
         "BMhR4mFcMj4K9cYVgsAKgKIGevMvrCQLSM-Jy1kqfP4iSDlC7Pa4vNiXYZKmTo4mclU-aq_1BFfX8QuI46dHofQ";
     internal const string VapidPrivateKey = "GzIA-6S4MRXOlB2w1RDWAq_4D_CAYdtmWQCiTovlRZI";
+    internal const string WahaBaseUrl = "http://waha.test";
+    internal const string WahaApiKey = "furria-test-waha-api-key";
+    public const string WhatsAppWebhookHmacKey = "furria-test-whatsapp-webhook-hmac-key";
+    public const string WhatsAppSession = "furria";
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
@@ -146,6 +151,8 @@ public sealed class ApiTestFixture : IAsyncLifetime
     public CapturingLogSink Logs => Host.Logs;
 
     public FakePushService PushService => Host.PushService;
+
+    public FakeWahaService Waha => Host.Waha;
 
     public LogMark HostStarted => Host.Started;
 
@@ -208,6 +215,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
         await ResetDatabaseAsync();
         TimeProvider.SetUtcNow(WholeSecondNow());
         PushService.Forget();
+        Waha.Forget();
         EmptyMediaRoot();
 
         await using var scope = Services.CreateAsyncScope();
@@ -364,6 +372,38 @@ public sealed class ApiTestFixture : IAsyncLifetime
             "The push outboxes still hold pushes",
             ct
         );
+
+    public Task WhatsAppInboxDrainedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                return await db.InboxWhatsAppEvents.AnyAsync(
+                    inboxEvent => inboxEvent.ProcessedAt == null,
+                    token
+                )
+                    ? null
+                    : db;
+            },
+            OutboxDrainTimeout,
+            "The WhatsApp inbox still holds unapplied events",
+            ct
+        );
+
+    public async Task<IReadOnlyList<(string ChatId, int? GroupId)>> LinkedWhatsAppGroupsAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var links = await db
+            .LinkedWhatsAppGroups.AsNoTracking()
+            .OrderBy(link => link.Id)
+            .Select(link => new { link.ChatId, link.GroupId })
+            .ToListAsync(ct);
+        return [.. links.Select(link => (link.ChatId, link.GroupId))];
+    }
 
     public Task OutboxDrainedAsync(CancellationToken ct = default) =>
         Polling.UntilAsync(

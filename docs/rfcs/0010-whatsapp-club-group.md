@@ -1,7 +1,7 @@
 ---
 rfc: 0010
 title: The club group on WhatsApp
-status: draft
+status: in-progress
 github_issue: 100
 branch: feat/rfc-100-whatsapp-club-group
 created: 2026-11-20
@@ -112,12 +112,12 @@ Each phase leaves the system intact (builds, tests green, no half-done migration
 
 ### Phase 1 — WAHA beside the API, the inbox and the session
 Goal: the API talks to a linked WAHA session and stores its webhooks; nothing is posted yet.
-- [ ] Dev compose: WAHA (GOWS) service with persistent session volume, API key and webhook HMAC key; `WhatsAppOptions` (base URL, API key, HMAC key, session) — API starts without it configured (feature off)
-- [ ] `WahaClient` (typed HTTP client): session start/status/QR/pairing code, groups list, send text/image/poll/event, reply, edit, delete, participants add/list, LID lookup
-- [ ] Webhook endpoint: HMAC check, `inbox_whatsapp` row de-duplicated by request id, 200 — tests first
-- [ ] Inbox worker on the background-job registry; `session.status` tracked; admins pushed when the session drops
-- [ ] `LinkedWhatsAppGroup` (chat id, audience club / group id) with a unique club link; service to pick the club group
-- [ ] ADR-0042 and CONTEXT terms committed with the phase
+- [x] Dev compose: WAHA (GOWS) service with persistent session volume, API key and webhook HMAC key; `WhatsAppOptions` (base URL, API key, HMAC key, session) — API starts without it configured (feature off)
+- [x] `WahaClient` (typed HTTP client): session start/status/QR/pairing code, groups list, send text/image/poll/event, reply, edit, delete, participants add/list, LID lookup
+- [x] Webhook endpoint: HMAC check, `inbox_whatsapp` row de-duplicated by request id, 200 — tests first
+- [x] Inbox worker on the background-job registry; `session.status` tracked; admins pushed when the session drops
+- [x] `LinkedWhatsAppGroup` (chat id, audience club / group id) with a unique club link; service to pick the club group
+- [x] ADR-0042 and CONTEXT terms committed with the phase
 
 ### Phase 2 — System → WhatsApp
 Goal: an admin links the bot and picks the club group from the club app.
@@ -166,7 +166,7 @@ Goal: members consent in the app, managers see blocked adds, production runs the
 - [ ] Consent toggle in her profile, a Welcome step and a Neuzugang wizard step; manager toggle for persons without account
 - [ ] Start card *Tritt der Vereinsgruppe bei* with the invite link when her add was refused
 - [ ] System → WhatsApp: Group keeping switch and *Hinzufügen blockiert*
-- [ ] `docs/ops`: WAHA in production, session linking, backup of the session volume, what to do on a ban or logout; production compose edit (with Florian's approval)
+- [ ] `docs/ops`: WAHA in production (the edge never routes `/api/whatsapp/webhook`), session linking, backup of the session volume, what to do on a ban or logout; production compose edit (with Florian's approval)
 - [ ] Device checks on a test group: post, poll, event, vote back, edit/move/close, add with and without privacy block
 
 ## Risks & alternatives

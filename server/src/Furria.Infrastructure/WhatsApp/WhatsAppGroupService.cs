@@ -1,0 +1,75 @@
+using Furria.Application.Results;
+using Furria.Application.WhatsApp;
+using Furria.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+
+namespace Furria.Infrastructure.WhatsApp;
+
+public sealed class WhatsAppGroupService
+{
+    private const string UnknownGroupMessage = "Der Bot ist nicht in dieser WhatsApp-Gruppe.";
+    private const string UnreachableMessage = "WhatsApp ist gerade nicht erreichbar.";
+
+    private readonly AppDbContext _dbContext;
+    private readonly WahaClient _waha;
+    private readonly IOptions<WhatsAppOptions> _options;
+    private readonly TimeProvider _timeProvider;
+
+    public WhatsAppGroupService(
+        AppDbContext dbContext,
+        WahaClient waha,
+        IOptions<WhatsAppOptions> options,
+        TimeProvider timeProvider
+    )
+    {
+        _dbContext = dbContext;
+        _waha = waha;
+        _options = options;
+        _timeProvider = timeProvider;
+    }
+
+    public async Task<Result> PickClubGroupAsync(string chatId, CancellationToken ct)
+    {
+        if (!_options.Value.IsConfigured)
+            return Result.Conflict(WhatsAppMessages.SwitchedOff);
+
+        var botGroups = await BotGroupsAsync(ct);
+        if (botGroups is null)
+            return Result.Conflict(UnreachableMessage);
+        if (!botGroups.Any(group => group.ChatId == chatId))
+            return Result.NotFound(UnknownGroupMessage);
+
+        await LinkClubAsync(chatId, ct);
+        return Result.Success();
+    }
+
+    private async Task<IReadOnlyList<WahaGroup>?> BotGroupsAsync(CancellationToken ct)
+    {
+        try
+        {
+            return await _waha.GroupsAsync(ct);
+        }
+        catch (HttpRequestException)
+        {
+            return null;
+        }
+    }
+
+    private async Task LinkClubAsync(string chatId, CancellationToken ct)
+    {
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.Database.ExecuteSqlAsync(
+            $"LOCK TABLE linked_whatsapp_group IN SHARE ROW EXCLUSIVE MODE",
+            ct
+        );
+        await _dbContext
+            .LinkedWhatsAppGroups.Where(link => link.GroupId == null || link.ChatId == chatId)
+            .ExecuteDeleteAsync(ct);
+        _dbContext.LinkedWhatsAppGroups.Add(
+            new LinkedWhatsAppGroup { ChatId = chatId, LinkedAt = _timeProvider.GetUtcNow() }
+        );
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+    }
+}

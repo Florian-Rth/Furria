@@ -1,6 +1,7 @@
 using Furria.Application.Changes;
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
+using Furria.Application.WhatsApp;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Changes;
@@ -28,6 +29,7 @@ using Furria.Infrastructure.RunningOrders;
 using Furria.Infrastructure.Start;
 using Furria.Infrastructure.Studio;
 using Furria.Infrastructure.Website;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -218,6 +220,20 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CalendarPushExpansion>();
         services.AddScoped<PushOutboxDelivery>();
         services.AddHostedService<PushDispatcher>();
+        services
+            .AddHttpClient<WahaClient>()
+            .ConfigureHttpClient(
+                (serviceProvider, client) =>
+                    WahaConnection.Configure(
+                        client,
+                        serviceProvider.GetRequiredService<IOptions<WhatsAppOptions>>().Value
+                    )
+            );
+        services.AddScoped<WhatsAppInbox>();
+        services.AddScoped<WhatsAppSessionTracker>();
+        services.AddScoped<WhatsAppInboxProcessor>();
+        services.AddScoped<WhatsAppGroupService>();
+        services.AddHostedService<WhatsAppInboxWorker>();
         services.AddSingleton<ChangeFeed>();
         services.AddHostedService<ChangeListener>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
@@ -242,6 +258,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<PushOutboxSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>
             serviceProvider.GetRequiredService<PushOutboxSignal>()
+        );
+        services.AddSingleton<WhatsAppInboxSignal>();
+        services.AddSingleton<OutboxSignal>(serviceProvider =>
+            serviceProvider.GetRequiredService<WhatsAppInboxSignal>()
         );
         services.AddSingleton<MediaFileReaperSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>

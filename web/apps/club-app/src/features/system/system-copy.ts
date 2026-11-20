@@ -158,6 +158,7 @@ export const SERVICE_NAMES: Readonly<Record<string, string>> = {
   beerTabReminders: 'An offene Bierkisten erinnern',
   beerStockWarnings: 'Vor leerem Bierbestand warnen',
   pushDispatcher: 'Mitteilungen versenden',
+  whatsAppInbox: 'WhatsApp-Ereignisse verarbeiten',
 };
 
 export const serviceNameOf = (job: string): string => SERVICE_NAMES[job] ?? job;

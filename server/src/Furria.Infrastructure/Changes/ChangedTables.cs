@@ -22,6 +22,7 @@ using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Push;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -126,6 +127,8 @@ public static class ChangedTables
         [typeof(MatcherStatement)] = [DomainChange.GroupMatcher],
         [typeof(Stance)] = [DomainChange.GroupMatcher],
         [typeof(GroupAdmissionAge)] = [DomainChange.GroupMatcher],
+        [typeof(WhatsAppSession)] = [DomainChange.WhatsApp],
+        [typeof(LinkedWhatsAppGroup)] = [DomainChange.WhatsApp],
     }.ToFrozenDictionary();
 
     private static readonly FrozenSet<Type> Unrelated = new[]
@@ -140,6 +143,7 @@ public static class ChangedTables
         typeof(OutboxMail),
         typeof(OutboxPush),
         typeof(OutboxCalendarPush),
+        typeof(InboxWhatsAppEvent),
         typeof(LogEntry),
         typeof(MediaJob),
         typeof(MediaFileTombstone),

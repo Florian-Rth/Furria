@@ -80,7 +80,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
             + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings "
-            + "pushDispatcher",
+            + "pushDispatcher whatsAppInbox",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",
@@ -114,7 +114,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "clubRecord announcement announcementSeen media newsPost websitePicture act "
             + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
             + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
-            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher",
+            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher whatsApp",
         [typeof(ChangeLineKind)] = "ready changes ping",
         [typeof(StancePosition)] = "yes neutral no",
         [typeof(AdmissionAgeBand)] =
