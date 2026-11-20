@@ -16,6 +16,17 @@ public sealed class GroupAdminExpectations
         _groupAdminId = groupAdminId;
     }
 
+    public Expected ToNotExist() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .GroupAdmins.AsNoTracking()
+                        .AnyAsync(row => row.Id == _groupAdminId, ct),
+                    $"Expected no GroupAdmin with id {_groupAdminId}."
+                )
+        );
+
     public Expected ToHaveFunction(string? function) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

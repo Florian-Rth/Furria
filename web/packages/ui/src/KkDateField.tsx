@@ -26,6 +26,8 @@ interface KkDateFieldProps {
   allowEmpty?: boolean;
   emptyLabel?: string;
   hint?: string;
+  minDay?: string;
+  maxDay?: string;
   required?: boolean;
   disabled?: boolean;
   error?: boolean;
@@ -42,6 +44,8 @@ export const KkDateField: FC<KkDateFieldProps> = ({
   allowEmpty = false,
   emptyLabel,
   hint,
+  minDay,
+  maxDay,
   required,
   disabled,
   error,
@@ -51,6 +55,8 @@ export const KkDateField: FC<KkDateFieldProps> = ({
   const helper = helperText ?? hint;
   const emptyChoiceLabel = allowEmpty ? (emptyLabel ?? null) : null;
   const choices = buildDateChoices(quickChoices, emptyChoiceLabel);
+  const minDate = parseIsoDate(minDay ?? null) ?? undefined;
+  const maxDate = parseIsoDate(maxDay ?? null) ?? undefined;
 
   const change = (date: Date | null): void => {
     const next = readDateChange(date, allowEmpty);
@@ -82,6 +88,8 @@ export const KkDateField: FC<KkDateFieldProps> = ({
         value={parseIsoDate(value)}
         onChange={change}
         format={DISPLAY_FORMAT}
+        minDate={minDate}
+        maxDate={maxDate}
         disabled={disabled}
         slotProps={{
           field: { clearable: allowEmpty },

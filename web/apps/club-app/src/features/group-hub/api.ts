@@ -7,10 +7,9 @@ import { toIsoDay } from '@/lib/day';
 import { queryKeys } from '@/lib/query/reads';
 import type { CalendarEntryWindow } from './group-calendar-entries';
 import {
-  GROUP_INFO_SAVED_MESSAGE,
+  GROUP_SETTINGS_SAVED_MESSAGE,
   toAdminAppointedMessage,
   toAdminEndedMessage,
-  toGroupAdministrationSavedMessage,
   toGroupArchivedFromHubMessage,
   toMemberAddedAdminFailedMessage,
   toMemberAddedAsAdminMessage,
@@ -23,21 +22,19 @@ import {
   requestAddGroupMembership,
   requestEndGroupAdmin,
   requestEndGroupMembership,
-  requestGroupAdministrationUpdate,
   requestGroupArchivalFromHub,
   requestGroupCalendar,
   requestGroupHub,
-  requestGroupInfoUpdate,
+  requestGroupSettingsUpdate,
   requestMyGroups,
   requestPersonSearch,
   requestSetUsualTrainingTimes,
 } from './requests';
 import type {
   AddedGroupAdmin,
-  GroupAdministrationForm,
   GroupCalendarResponse,
   GroupHub,
-  GroupInfoForm,
+  GroupSettingsForm,
   MyGroupsResponse,
   PersonSearchResponse,
 } from './schemas';
@@ -124,24 +121,15 @@ export const usePersonSearchQuery = (
   });
 };
 
-export const useUpdateGroupInfoMutation = (
+export const useUpdateGroupSettingsMutation = (
   groupId: number,
-): UseMutationResult<void, Error, GroupInfoForm> =>
+  renames: boolean,
+): UseMutationResult<void, Error, GroupSettingsForm> =>
   useApiMutation({
-    request: (form: GroupInfoForm, accessToken) =>
-      requestGroupInfoUpdate(groupId, form, accessToken),
+    request: (form: GroupSettingsForm, accessToken) =>
+      requestGroupSettingsUpdate(groupId, form, renames, accessToken),
     changes: ['group'],
-    notice: { success: () => GROUP_INFO_SAVED_MESSAGE },
-  });
-
-export const useUpdateGroupAdministrationMutation = (
-  groupId: number,
-): UseMutationResult<void, Error, GroupAdministrationForm> =>
-  useApiMutation({
-    request: (form: GroupAdministrationForm, accessToken) =>
-      requestGroupAdministrationUpdate(groupId, form, accessToken),
-    changes: ['group'],
-    notice: { success: (form) => toGroupAdministrationSavedMessage(form.name) },
+    notice: { success: () => GROUP_SETTINGS_SAVED_MESSAGE },
   });
 
 export interface ArchiveGroupFromHubInput {

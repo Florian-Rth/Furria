@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { RunningTie } from './person-archive';
-import { toMembershipArchiveEffect, toRunningTies } from './person-archive';
-import type { PersonMembership } from './schemas';
+import type { ArchivePlan, RunningTie } from './person-archive';
+import {
+  toArchivePlan,
+  toLastDayNote,
+  toLastDayVerdict,
+  toMembershipArchiveEffect,
+  toRunningTies,
+} from './person-archive';
+import type { PersonMembership, PersonPause } from './schemas';
 
 const TODAY = '2026-10-07';
 
@@ -96,4 +102,191 @@ describe('toMembershipArchiveEffect', () => {
       expect(toMembershipArchiveEffect(isArchived, endedOn, TODAY)).toBe(expected);
     },
   );
+});
+
+const pause = (firstSessionYear: number, lastSessionYear: number | null): PersonPause => ({
+  pauseId: firstSessionYear,
+  firstSessionYear,
+  lastSessionYear,
+});
+
+const runningMembership = (startedOn: string, pauses: PersonPause[]): PersonMembership => ({
+  membershipId: 2,
+  startedOn,
+  endedOn: null,
+  isRunning: true,
+  isFuture: false,
+  pauses,
+  admission: null,
+});
+
+const unarchived = { ...untied, unendedTiesUnderArchivedParents: [] };
+
+describe('toArchivePlan', () => {
+  it('ends what began before today and deletes what begins today or later', () => {
+    const plan = toArchivePlan(
+      {
+        ...unarchived,
+        memberships: [runningMembership('2019-09-01', [])],
+        groups: [
+          { groupId: 1, name: 'Garde', joinedOn: '2026-10-01', leftOn: null },
+          { groupId: 2, name: 'Prinzengarde', joinedOn: TODAY, leftOn: null },
+          { groupId: 3, name: 'Elferrat', joinedOn: '2010-01-01', leftOn: '2012-01-01' },
+        ],
+        unendedKeyHoldings: [{ venueId: 4, name: 'Lager', sinceOn: '2026-12-01', untilOn: null }],
+        unendedTiesUnderArchivedParents: [
+          { kind: 'role', name: 'Kassenprüfung', sinceOn: '2024-01-01' },
+        ],
+      },
+      TODAY,
+      '2026-10-06',
+    );
+
+    expect(plan.ends).toEqual([
+      { kind: 'membership', name: null, startsOn: '2019-09-01' },
+      { kind: 'group', name: 'Garde', startsOn: '2026-10-01' },
+      { kind: 'role', name: 'Kassenprüfung', startsOn: '2024-01-01' },
+    ]);
+    expect(plan.deletes).toEqual([
+      { kind: 'group', name: 'Prinzengarde', startsOn: TODAY },
+      { kind: 'keyHolding', name: 'Lager', startsOn: '2026-12-01' },
+    ]);
+    expect(plan.earliestLastDay).toBe('2026-10-01');
+    expect(plan.limitingTie).toEqual({ kind: 'group', name: 'Garde', startsOn: '2026-10-01' });
+  });
+
+  it.each<{
+    case: string;
+    pauses: PersonPause[];
+    cut: { firstSessionYear: number; lastSessionYear: number | null }[];
+    deleted: { firstSessionYear: number; lastSessionYear: number | null }[];
+  }>([
+    {
+      case: 'an open pause is cut to the last day session',
+      pauses: [pause(2024, null)],
+      cut: [{ firstSessionYear: 2024, lastSessionYear: 2025 }],
+      deleted: [],
+    },
+    {
+      case: 'a pause ending in the last day session stays',
+      pauses: [pause(2023, 2025)],
+      cut: [],
+      deleted: [],
+    },
+    {
+      case: 'a pause wholly in a later session is deleted',
+      pauses: [pause(2026, 2027)],
+      cut: [],
+      deleted: [{ firstSessionYear: 2026, lastSessionYear: 2027 }],
+    },
+  ])('$case', ({ pauses, cut, deleted }) => {
+    const plan = toArchivePlan(
+      { ...unarchived, memberships: [runningMembership('2019-09-01', pauses)] },
+      TODAY,
+      '2026-10-06',
+    );
+
+    expect(plan.cutPauses).toEqual(cut);
+    expect(plan.deletedPauses).toEqual(deleted);
+  });
+
+  it('deletes a membership dated ahead without touching its pauses', () => {
+    const plan = toArchivePlan(
+      { ...unarchived, memberships: [runningMembership('2026-12-01', [pause(2026, null)])] },
+      TODAY,
+      '2026-10-06',
+    );
+
+    expect(plan.ends).toEqual([]);
+    expect(plan.deletes).toEqual([{ kind: 'membership', name: null, startsOn: '2026-12-01' }]);
+    expect(plan.cutPauses).toEqual([]);
+    expect(plan.deletedPauses).toEqual([]);
+    expect(plan.earliestLastDay).toBeNull();
+  });
+});
+
+describe('toArchivePlan edges', () => {
+  it.each<{ case: string; lastDay: string | null; cut: number; deleted: number }>([
+    { case: 'no last day leaves the pauses alone', lastDay: null, cut: 0, deleted: 0 },
+    {
+      case: 'a last day before 11.11. keeps the next session',
+      lastDay: '2026-11-10',
+      cut: 0,
+      deleted: 1,
+    },
+    {
+      case: 'a last day on 11.11. reaches the next session',
+      lastDay: '2026-11-11',
+      cut: 1,
+      deleted: 0,
+    },
+  ])('$case', ({ lastDay, cut, deleted }) => {
+    const plan = toArchivePlan(
+      { ...unarchived, memberships: [runningMembership('2019-09-01', [pause(2026, null)])] },
+      '2026-11-19',
+      lastDay,
+    );
+
+    expect(plan.cutPauses).toHaveLength(cut);
+    expect(plan.deletedPauses).toHaveLength(deleted);
+  });
+
+  it('ends a tie already ending later and deletes an ahead tie under an archived parent', () => {
+    const plan = toArchivePlan(
+      {
+        ...unarchived,
+        roles: [{ roleId: 1, name: 'Kassenprüfung', sinceOn: '2024-01-01', untilOn: '2027-01-01' }],
+        unendedTiesUnderArchivedParents: [
+          { kind: 'boardSeat', name: 'Beisitz', sinceOn: '2026-12-01' },
+        ],
+      },
+      TODAY,
+      '2026-10-06',
+    );
+
+    expect(plan.ends).toEqual([{ kind: 'role', name: 'Kassenprüfung', startsOn: '2024-01-01' }]);
+    expect(plan.deletes).toEqual([{ kind: 'boardSeat', name: 'Beisitz', startsOn: '2026-12-01' }]);
+  });
+});
+
+describe('toLastDayVerdict', () => {
+  const plan: ArchivePlan = {
+    ends: [{ kind: 'group', name: 'Garde', startsOn: '2026-10-01' }],
+    cutPauses: [],
+    deletes: [],
+    deletedPauses: [],
+    earliestLastDay: '2026-10-01',
+    limitingTie: { kind: 'group', name: 'Garde', startsOn: '2026-10-01' },
+  };
+
+  it.each<{ lastDay: string | null; expected: string }>([
+    { lastDay: null, expected: 'missing' },
+    { lastDay: TODAY, expected: 'tooLate' },
+    { lastDay: '2026-09-30', expected: 'beforeStart' },
+    { lastDay: '2026-10-01', expected: 'fine' },
+    { lastDay: '2026-10-06', expected: 'fine' },
+  ])('answers $expected for $lastDay', ({ lastDay, expected }) => {
+    expect(toLastDayVerdict(lastDay, plan, TODAY)).toBe(expected);
+  });
+});
+
+describe('toLastDayNote', () => {
+  const plan: ArchivePlan = {
+    ends: [{ kind: 'group', name: 'Garde', startsOn: '2026-10-01' }],
+    cutPauses: [],
+    deletes: [],
+    deletedPauses: [],
+    earliestLastDay: '2026-10-01',
+    limitingTie: { kind: 'group', name: 'Garde', startsOn: '2026-10-01' },
+  };
+
+  it.each([
+    { verdict: 'missing', lastDay: null, expected: 'missing' },
+    { verdict: 'tooLate', lastDay: TODAY, expected: 'tooLate' },
+    { verdict: 'beforeStart', lastDay: '2026-09-30', expected: 'earliest' },
+    { verdict: 'fine', lastDay: '2026-10-01', expected: 'earliest' },
+    { verdict: 'fine', lastDay: '2026-10-06', expected: null },
+  ] as const)('notes $expected for $verdict on $lastDay', ({ verdict, lastDay, expected }) => {
+    expect(toLastDayNote(verdict, plan, lastDay)).toBe(expected);
+  });
 });

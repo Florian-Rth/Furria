@@ -105,7 +105,7 @@ public sealed class MembershipService
         membership.EndedOn = command.EndedOn;
 
         if (command.EndedOn is { } endedOn)
-            ClampOpenPauses(membership, endedOn);
+            MembershipPauseCut.CutAt(membership.Pauses, endedOn);
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -127,7 +127,7 @@ public sealed class MembershipService
             return Result.Validation(StrandedPauseMessage(stray));
 
         membership.EndedOn = command.EndedOn;
-        ClampOpenPauses(membership, command.EndedOn);
+        MembershipPauseCut.CutAt(membership.Pauses, command.EndedOn);
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
@@ -300,16 +300,6 @@ public sealed class MembershipService
             return $"{first} – {OpenSpanLabel}";
 
         return lastYear == span.FirstYear ? first : $"{first} – {ClubSession.LabelOf(lastYear)}";
-    }
-
-    private static void ClampOpenPauses(Membership membership, DateOnly endedOn)
-    {
-        var lastSessionYear = ClubSession.YearOf(endedOn);
-
-        foreach (var pause in membership.Pauses.Where(pause => pause.LastSessionYear is null))
-        {
-            pause.LastSessionYear = lastSessionYear;
-        }
     }
 
     private Task<Membership?> TrackedMembershipAsync(

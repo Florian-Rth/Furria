@@ -3,7 +3,9 @@ import { KkFormSection } from '@furria/ui/KkFormSection';
 import type { KkNumberStepLabels } from '@furria/ui/KkNumberField';
 import { KkNumberField } from '@furria/ui/KkNumberField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import { KkTextArea } from '@furria/ui/KkTextArea';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import { useGroupKindsQuery } from '@/features/group-kinds/api';
 import {
@@ -11,24 +13,28 @@ import {
   toGroupKindOptions,
   toHeldGroupKind,
 } from '@/features/group-kinds/group-kinds-labels';
+import { GroupMatcherHubRow } from '@/features/group-matcher/components/GroupMatcherHubRow';
 import { toGroupTone } from '@/features/groups/group-identity';
 import { ClubIconField } from '@/features/write/components/ClubIconField';
 import { WriteScreen } from '@/features/write/WriteScreen';
-import { toHubEditorOrigin } from '../group-hub-labels';
+import { GROUP_SETTINGS_TITLE, toHubEditorOrigin } from '../group-hub-labels';
 import { toEditorChoicesErrorMessage } from '../group-hub-messages';
-import { useGroupInfoEditor } from '../hooks/use-group-info-editor';
+import { useGroupSettingsEditor } from '../hooks/use-group-settings-editor';
 import { useTakenTones } from '../hooks/use-taken-tones';
 import type { GroupHub } from '../schemas';
 import { DESCRIPTION_MAX_LENGTH, EARLIEST_FOUNDED_YEAR, LATEST_FOUNDED_YEAR } from '../schemas';
 import { GroupEditorError } from './GroupEditorError';
 import { GroupEditorSkeleton } from './GroupEditorSkeleton';
 import { GroupPictureSection } from './GroupPictureSection';
+import { HubArchiveAction } from './HubArchiveAction';
 import { HubTonePicker } from './HubTonePicker';
 
-const TITLE = 'Angaben zur Gruppe bearbeiten';
 const SAVE_LABEL = 'Speichern';
 const ABOUT_SECTION = 'Über die Gruppe';
 const FACTS_SECTION = 'Eckdaten';
+const NEWCOMERS_SECTION = 'Neue Mitglieder';
+const NAME_LABEL = 'Name';
+const RECRUITING_LABEL = 'Sucht Verstärkung';
 const DESCRIPTION_LABEL = 'Beschreibung';
 const DESCRIPTION_PLACEHOLDER = 'Kurzbeschreibung der Gruppe';
 const DESCRIPTION_ROWS = 5;
@@ -40,12 +46,13 @@ const FOUNDED_STEP_LABELS: KkNumberStepLabels = {
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
-interface GroupInfoEditorProps {
+interface GroupSettingsEditorProps {
   hub: GroupHub;
+  administers: boolean;
 }
 
-export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
-  const control = useGroupInfoEditor(hub);
+export const GroupSettingsEditor: FC<GroupSettingsEditorProps> = ({ hub, administers }) => {
+  const control = useGroupSettingsEditor(hub, administers);
   const kinds = useGroupKindsQuery();
   const takenTones = useTakenTones(hub.groupId, true);
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
@@ -64,7 +71,7 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
 
     return (
       <GroupEditorError
-        title={TITLE}
+        title={GROUP_SETTINGS_TITLE}
         origin={origin}
         message={kindsErrorMessage}
         onRetry={reloadKinds}
@@ -77,7 +84,7 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
 
     return (
       <GroupEditorError
-        title={TITLE}
+        title={GROUP_SETTINGS_TITLE}
         origin={origin}
         message={tonesErrorMessage}
         onRetry={takenTones.retry}
@@ -92,10 +99,30 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
   const kindOptions = toGroupKindOptions(kinds.data.kinds, heldKind);
   const pictureTone = toGroupTone(hub.groupId, control.tone === '' ? null : control.tone);
 
+  const nameField = administers ? (
+    <KkTextField
+      name={control.name.name}
+      label={NAME_LABEL}
+      required
+      onChange={control.name.onChange}
+      onBlur={control.name.onBlur}
+      inputRef={control.name.ref}
+      error={control.nameError !== undefined}
+      helperText={control.nameError}
+    />
+  ) : null;
+
+  const groupMatcher =
+    hub.groupMatcher === null ? null : (
+      <GroupMatcherHubRow groupId={hub.groupId} status={hub.groupMatcher} />
+    );
+
+  const archive = administers ? <HubArchiveAction hub={hub} /> : null;
+
   return (
     <WriteScreen
       origin={origin}
-      title={TITLE}
+      title={GROUP_SETTINGS_TITLE}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
       action={{
@@ -108,6 +135,7 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
       }}
     >
       <KkFormSection title={ABOUT_SECTION}>
+        {nameField}
         <KkTextArea
           name="description"
           label={DESCRIPTION_LABEL}
@@ -155,6 +183,15 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
         />
         <ClubIconField value={control.icon} onChange={control.setIcon} />
       </KkFormSection>
+      <KkFormSection title={NEWCOMERS_SECTION}>
+        <KkSwitchRow
+          label={RECRUITING_LABEL}
+          checked={control.isRecruiting}
+          onChange={control.setIsRecruiting}
+        />
+        {groupMatcher}
+      </KkFormSection>
+      {archive}
     </WriteScreen>
   );
 };

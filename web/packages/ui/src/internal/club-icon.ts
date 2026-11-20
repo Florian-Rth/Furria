@@ -41,6 +41,13 @@ export const KK_CLUB_ICONS = [
   'child',
   'confetti',
   'rocket',
+  'fruit',
+  'singer',
+  'woodOven',
+  'chicken',
+  'pearl',
+  'seaShell',
+  'prince',
 ] as const;
 
 export type KkClubIcon = (typeof KK_CLUB_ICONS)[number];

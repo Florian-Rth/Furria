@@ -23,7 +23,7 @@ interface PersonRestoreLineProps {
 }
 
 export const PersonRestoreLine: FC<PersonRestoreLineProps> = ({ person, archive }) => {
-  const restore = usePersonArchive(person);
+  const restore = usePersonArchive(person, null);
   const today = formatIsoDay(toIsoDay(new Date()));
 
   return (

@@ -597,9 +597,16 @@ _Avoid_: anonymising, soft delete, archiving (a different act)
 
 **Archived person**:
 A person the club has filed away, record whole — the person-management counterpart of
-**deletion**. Only a person who is not **active in the club**, holds no running **key holding**
-and has nothing of either dated to begin later can be archived: archiving ends nothing, so
-whatever still runs is ended first, each on its own date. She leaves the register's default view
+**deletion**. Archiving **closes her out in one act** (ruled 2026-11-19, reversing "archiving ends
+nothing" of 2026-10-07): every tie still running — membership, group memberships, role holdings,
+group admin tenures, board seats, key holdings — ends on **one last day** the archiver picks
+(default yesterday; never today or later, never before the latest start of a running tie); an
+open **membership pause** is cut at that day. What has **not yet begun** — a tie dated ahead, a
+membership pause in a later session — is **deleted**, the one place it never ran so no history
+is lost. Person management alone suffices for all of it, whatever key a tie otherwise needs;
+**fee reductions** are untouched, they expire on their own. The confirmation names everything it
+ends and everything it deletes, so nothing vanishes unseen. Restoring reopens none of it — a
+returning member gets new periods. She leaves the register's default view
 and every picker that opens a chain, but **admission** matching and the **adoption candidate**
 still find her — a former member who returns is exactly who they are for. Archived and running
 exclude each other: opening any chain on her lifts the archive by itself — so does restoring the
@@ -611,7 +618,8 @@ only the latest archiving is kept, and restoring clears it. Archiving is the clu
 she is done, not a state — *nothing running* is derived, *archived* is chosen — so it happens one
 person at a time on her own screen: never in bulk, never a **to-do** (ruled 2026-10-07).
 _UI copy_: *Archivieren*; *Archiviert* (the register filter); *Archiviert von Anna am 7. Okt.*;
-*Wiederherstellen*
+*Wiederherstellen*; *Letzter Tag*; *Endet am 18. Nov.*; *Wird gelöscht – hat noch nicht begonnen*;
+*Wiederherstellen öffnet nichts davon wieder.*
 _Avoid_: deactivated, inactive (that is **active in the club**, derived), deleting
 
 ### Club app structure

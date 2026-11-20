@@ -51,6 +51,13 @@ const CLUB_ICON_LABELS: Record<KkClubIcon, string> = {
   child: 'Kind',
   confetti: 'Konfetti',
   rocket: 'Rakete',
+  fruit: 'Obst',
+  singer: 'Sänger',
+  woodOven: 'Holzofen',
+  chicken: 'Huhn',
+  pearl: 'Perle',
+  seaShell: 'Muschel',
+  prince: 'Prinz',
 };
 
 export const toClubIconLabel = (icon: KkClubIcon): string => CLUB_ICON_LABELS[icon];
