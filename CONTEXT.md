@@ -37,7 +37,7 @@ English rendering anywhere else, so two translations never drift apart.
 | group membership | Zugehörigkeit | `GroupMembership` |
 | group admin / function | Gruppen-Admin / Funktion | `GroupAdmin`, `Function` |
 | membership application / admission | Beitrittsantrag / Aufnahme | `MembershipApplication`, — |
-| intake | Neuzugang | `Intake` |
+| intake | QR-Anmeldung | `Intake` |
 | role / permission | Rolle / Berechtigung | `Role`, `RolePermission` |
 | role holding / holder | Inhaberschaft / Inhaber | `RoleHolding` |
 | board / board office / board seat | Vorstand / Vorstandsfunktion / Vorstandssitz | `BoardOffice`, `BoardSeat` |
@@ -1553,9 +1553,9 @@ The intake link is open **7 days**, used once; the starter or `persons.manage` c
 group admin those of her groups; the starter is told by push when hers is completed or waits for
 review. An intake holds her details only until it is decided — afterwards it keeps who started
 it, when, and what it opened; a discarded or expired one keeps nothing of hers.
-_UI copy_: Neuzugang; *Neuzugang anlegen*; *Neuzugänge*; *Für wen?*; *offen* · *abgelaufen* ·
-*zu prüfen* · *abgeschlossen* · *verworfen*; *Neuzugang verwerfen*; *App jetzt einrichten*
-_Avoid_: onboarding, registration, Anmeldung (sign-in owns that word), Aufnahme (that is the
+_UI copy_: QR-Anmeldung; *QR-Code erstellen*; *QR-Anmeldungen* (a row in *Personenverwaltung*, no own hub row); *Für wen?*; *offen* · *abgelaufen* ·
+*zu prüfen* · *abgeschlossen* · *verworfen*; *QR-Anmeldung verwerfen*; *App jetzt einrichten*
+_Avoid_: Neuzugang, onboarding, registration, bare Anmeldung (sign-in owns that word — always *QR-Anmeldung*), Aufnahme (that is the
 admission), auto-matching a found person
 
 **Upload link** (`UploadLink`):

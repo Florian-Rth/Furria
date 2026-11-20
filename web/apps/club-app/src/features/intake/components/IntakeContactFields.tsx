@@ -1,16 +1,8 @@
 import { KkFormSection } from '@furria/ui/KkFormSection';
-import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useController } from 'react-hook-form';
-import {
-  CONTACT_SECTION,
-  EMAIL_HINT,
-  EMAIL_LABEL,
-  PHONE_LABEL,
-  VISIBILITY_LABEL,
-} from '../intake-copy';
+import { CONTACT_SECTION, EMAIL_HINT, EMAIL_LABEL, PHONE_LABEL } from '../intake-copy';
 import type { NewcomerForm } from '../schemas';
 
 interface IntakeContactFieldsProps {
@@ -18,7 +10,6 @@ interface IntakeContactFieldsProps {
 }
 
 export const IntakeContactFields: FC<IntakeContactFieldsProps> = ({ form }) => {
-  const contactVisible = useController({ control: form.control, name: 'contactVisibleToMembers' });
   const email = form.register('email');
   const phone = form.register('phone');
   const { errors } = form.formState;
@@ -50,11 +41,6 @@ export const IntakeContactFields: FC<IntakeContactFieldsProps> = ({ form }) => {
         onChange={phone.onChange}
         onBlur={phone.onBlur}
         inputRef={phone.ref}
-      />
-      <KkSwitchRow
-        label={VISIBILITY_LABEL}
-        checked={contactVisible.field.value}
-        onChange={contactVisible.field.onChange}
       />
     </KkFormSection>
   );

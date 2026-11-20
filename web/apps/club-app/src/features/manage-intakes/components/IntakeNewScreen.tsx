@@ -6,7 +6,7 @@ import { runsIntakes, toPresetGroupId } from '../intake-rules';
 import { IntakeEditor } from './IntakeEditor';
 import { IntakeScreenHold } from './IntakeScreenHold';
 
-const ROUTE_ID = '/_app/manage/intakes_/new';
+const ROUTE_ID = '/_app/manage/persons_/intakes_/new';
 
 export const IntakeNewScreen: FC = () => {
   const { group } = useSearch({ from: ROUTE_ID });

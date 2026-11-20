@@ -15,7 +15,6 @@ export const CITY_LABEL = 'Ort';
 export const EMAIL_LABEL = 'E-Mail';
 export const EMAIL_HINT = 'Für deinen Zugang zur App';
 export const PHONE_LABEL = 'Telefon';
-export const VISIBILITY_LABEL = 'Meine Kontaktdaten für Mitglieder sichtbar';
 export const SUBMIT_LABEL = 'Absenden';
 export const PORTRAIT_ALT = 'Dein Porträt';
 export const UNPREVIEWABLE_LINE = 'Foto gewählt – dein Browser kann davon keine Vorschau zeigen.';

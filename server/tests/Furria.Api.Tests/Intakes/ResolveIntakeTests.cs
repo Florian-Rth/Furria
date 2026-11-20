@@ -249,7 +249,7 @@ public sealed class ResolveIntakeTests : IClassFixture<ApiTestFixture>
         await _fixture.PushesDrainedAsync(ct);
         var pushes = PushesAt(_fixture, device);
         Assert.Equal(before + 1, pushes.Count);
-        Assert.Equal("Neuzugang eingetragen", pushes[^1].GetProperty("title").GetString());
+        Assert.Equal("QR-Anmeldung eingetragen", pushes[^1].GetProperty("title").GetString());
     }
 
     private async Task<SeededContext> ParkedAsync(

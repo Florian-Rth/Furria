@@ -25,7 +25,6 @@ internal static class IntakeSubmissions
             City = "Narrenstadt",
             Phone = "0170 1234567",
             Email = email,
-            ContactVisibleToMembers = true,
         };
 
     internal static async Task<int> MadePersonIdAsync(

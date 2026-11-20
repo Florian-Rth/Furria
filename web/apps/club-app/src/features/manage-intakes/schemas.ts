@@ -58,7 +58,6 @@ export const IntakeNewcomerSchema = z.object({
   city: z.string().nullable(),
   phone: z.string().nullable(),
   email: z.string().nullable(),
-  contactVisibleToMembers: z.boolean(),
   portrait: PictureSchema.nullable(),
 });
 export type IntakeNewcomer = z.infer<typeof IntakeNewcomerSchema>;

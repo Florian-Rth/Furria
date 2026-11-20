@@ -6,7 +6,7 @@ import { REVIEW_TITLE } from '../intake-labels';
 import { IntakeReviewEditor } from './IntakeReviewEditor';
 import { IntakeSubScreenHold } from './IntakeSubScreenHold';
 
-const ROUTE_ID = '/_app/manage/intakes_/$intakeId_/review';
+const ROUTE_ID = '/_app/manage/persons_/intakes_/$intakeId_/review';
 
 export const IntakeReviewScreen: FC = () => {
   const { intakeId } = useParams({ from: ROUTE_ID });

@@ -2,7 +2,12 @@ import type { KkIconName } from '@furria/ui/KkIcon';
 import { STATEMENT_LIMIT } from '@/features/manage-group-matcher/schemas';
 import type { ManageBankId, ManagePanelDefinition, ManagePanelId } from './manage-hub-panels';
 import { MANAGE_BANKS, MANAGE_PANELS } from './manage-hub-panels';
-import type { ManageAccountsPanel, ManageHub, ManagePersonsPanel } from './schemas';
+import type {
+  ManageAccountsPanel,
+  ManageHub,
+  ManageIntakesPanel,
+  ManagePersonsPanel,
+} from './schemas';
 
 export const MANAGE_TITLE = 'Verein verwalten';
 export const MANAGE_LOADING_LABEL = 'Die Verwaltung wird geladen';
@@ -98,7 +103,13 @@ const toRegisterParts = (persons: ManagePersonsPanel | null): string[] =>
 const toAppParts = (accounts: ManageAccountsPanel | null): string[] =>
   accounts === null ? [] : [`${accounts.withAccessCount} mit App`];
 
-const toAppAttention = (accounts: ManageAccountsPanel | null): string | null => {
+const toPersonsAttention = (
+  accounts: ManageAccountsPanel | null,
+  intakes: ManageIntakesPanel | null,
+): string | null => {
+  if (intakes !== null && intakes.needsReviewCount > 0) {
+    return toCount(intakes.needsReviewCount, 'QR-Anmeldung zu prüfen', 'QR-Anmeldungen zu prüfen');
+  }
   if (accounts === null) {
     return null;
   }
@@ -115,6 +126,7 @@ const toAppAttention = (accounts: ManageAccountsPanel | null): string | null => 
 const toPersonsFacts = (
   persons: ManagePersonsPanel | null,
   accounts: ManageAccountsPanel | null,
+  intakes: ManageIntakesPanel | null,
 ): ManageRowFacts | null => {
   if (persons === null && accounts === null) {
     return null;
@@ -123,12 +135,12 @@ const toPersonsFacts = (
   return {
     isEmpty: persons?.personCount === 0,
     summaryParts: [...toRegisterParts(persons), ...toAppParts(accounts)],
-    attention: toAppAttention(accounts),
+    attention: toPersonsAttention(accounts, intakes),
   };
 };
 
 const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
-  persons: ({ hub }) => toPersonsFacts(hub.persons, hub.accounts),
+  persons: ({ hub }) => toPersonsFacts(hub.persons, hub.accounts, hub.intakes),
   applications: ({ hub }) =>
     hub.applications === null
       ? null
@@ -139,15 +151,6 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
             hub.applications.minorCount,
           ),
           attention: toUndecided(hub.applications.undecidedCount),
-        },
-  intakes: ({ hub }) =>
-    hub.intakes === null
-      ? null
-      : {
-          isEmpty: false,
-          summaryParts: [`${hub.intakes.openCount} offen`],
-          attention:
-            hub.intakes.needsReviewCount > 0 ? `${hub.intakes.needsReviewCount} zu prüfen` : null,
         },
   groups: ({ hub }) =>
     hub.groups === null

@@ -7,6 +7,7 @@ import {
   toGroupIntakes,
   toIntakeActionPlan,
   toIntakeActions,
+  toIntakeCounts,
   toIntakeHome,
   toIntakeScreenGate,
   toIntakeSections,
@@ -270,5 +271,19 @@ describe('toGroupIntakes', () => {
     ];
 
     expect(toGroupIntakes(intakes, 4).map((intake) => intake.intakeId)).toEqual([2, 1]);
+  });
+});
+
+describe('toIntakeCounts', () => {
+  it('counts the undecided intakes apart from those waiting for review', () => {
+    expect(
+      toIntakeCounts([
+        intakeOf(1, 'open'),
+        intakeOf(2, 'completed'),
+        intakeOf(3, 'needsReview'),
+        intakeOf(4, 'expired'),
+        intakeOf(5, 'discarded'),
+      ]),
+    ).toEqual({ awaitingCount: 2, needsReviewCount: 1 });
   });
 });

@@ -4,7 +4,7 @@ import type { KkPanelAction } from '@furria/ui/panel-action';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { IntakeStartLink } from '@/features/manage-intakes/components/IntakeStartLink';
+import { IntakesLink } from '@/features/manage-intakes/components/IntakesLink';
 import type { PersonsAccess } from '../hooks/use-persons-access';
 import type { PersonsSearch } from '../hooks/use-persons-search';
 import {
@@ -21,7 +21,6 @@ import { PersonsStats } from './PersonsStats';
 
 const VIEW_GAP = 3.5;
 const CREATE_ROUTE = '/manage/persons/new';
-const INTAKE_START_SX = { alignSelf: 'flex-start' } as const;
 
 interface PersonsViewProps {
   search: PersonsSearch;
@@ -40,12 +39,13 @@ const CREATE_ACTION: KkPanelAction = {
 
 export const PersonsView: FC<PersonsViewProps> = ({ search, access, canCreate, canInvite }) => {
   const action = canCreate ? CREATE_ACTION : undefined;
-  const intakeStart = canCreate ? <IntakeStartLink sx={INTAKE_START_SX} /> : null;
+  const intakes =
+    canCreate && access.filter === null && !search.isArchivedView ? <IntakesLink /> : null;
 
   if (search.isRegisterEmpty && access.filter === null && !search.isArchivedView) {
     return (
       <KkPanelSection title={PERSON_DIRECTORY_TITLE} action={action}>
-        {intakeStart}
+        {intakes}
         <KkPanel variant="block">
           <PersonsColdEmpty />
         </KkPanel>
@@ -70,7 +70,6 @@ export const PersonsView: FC<PersonsViewProps> = ({ search, access, canCreate, c
       <PersonsAccessNote filter={access.filter} onClear={access.clear} />
     );
 
-  const activeIntakeStart = search.isArchivedView ? null : intakeStart;
   const rounds =
     canInvite && !search.isArchivedView ? <PersonsInvitationRounds filter={access.filter} /> : null;
 
@@ -82,7 +81,7 @@ export const PersonsView: FC<PersonsViewProps> = ({ search, access, canCreate, c
   return (
     <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
       <KkPanelSection title={PERSON_DIRECTORY_TITLE} action={action}>
-        {activeIntakeStart}
+        {intakes}
         {rounds}
         {accessNote}
         {list}

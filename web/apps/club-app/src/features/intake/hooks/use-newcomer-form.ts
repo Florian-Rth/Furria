@@ -21,7 +21,6 @@ const NEWCOMER_DEFAULTS: NewcomerForm = {
   street: '',
   zip: '',
   city: '',
-  contactVisibleToMembers: false,
 };
 
 export interface NewcomerFormControl {

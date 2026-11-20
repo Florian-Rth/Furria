@@ -23,6 +23,12 @@ public sealed class IntakeExpectations
                 Assert.Equal(personId, (await SingleAsync(dbContext, ct)).StartedByPersonId)
         );
 
+    public Expected ToHaveNoStarter() =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Null((await SingleAsync(dbContext, ct)).StartedByPersonId)
+        );
+
     public Expected ToDecide(DateOnly? memberFrom, params int[] groupIds) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -116,7 +122,6 @@ public sealed class IntakeExpectations
         Assert.Null(intake.City);
         Assert.Null(intake.Phone);
         Assert.Null(intake.Email);
-        Assert.False(intake.ContactVisibleToMembers);
     }
 
     private Task<Intake> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

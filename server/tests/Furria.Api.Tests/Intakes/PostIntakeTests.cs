@@ -123,19 +123,20 @@ public sealed class PostIntakeTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheManagingLoginWithoutAPersonStartsOne()
+    public async Task Should_StartTheIntakeWithoutAStarter_When_TheManagingLoginWithoutAPersonStartsOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(With(), ct);
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
 
-        var (response, _) = await client.POSTAsync<
+        var (response, started) = await client.POSTAsync<
             PostIntake,
             PostIntakeRequest,
             PostIntakeResponse
         >(new() { MemberFrom = _fixture.Today, GroupIds = [] });
 
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.Intake(started.IntakeId).ToHaveNoStarter().AssertAsync(ct);
     }
 
     [Fact]

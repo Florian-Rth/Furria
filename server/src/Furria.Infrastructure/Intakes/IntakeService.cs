@@ -19,23 +19,21 @@ namespace Furria.Infrastructure.Intakes;
 
 public sealed partial class IntakeService
 {
-    private const string UnknownIntakeMessage = "Diesen Neuzugang gibt es nicht.";
+    private const string UnknownIntakeMessage = "Diese QR-Anmeldung gibt es nicht.";
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
     private const string NoIntakeRightsMessage =
-        "Neuzugänge legt an, wer Personen verwaltet oder eine Gruppe leitet.";
+        "QR-Anmeldungen erstellt, wer Personen verwaltet oder eine Gruppe leitet.";
     private const string NotStarterMessage =
-        "Diesen Neuzugang kann nur ändern, wer ihn angelegt hat oder Personen verwaltet.";
+        "Diese QR-Anmeldung kann nur ändern, wer sie erstellt hat oder Personen verwaltet.";
     private const string DecisionBeyondRightsMessage =
         "Über eine Mitgliedschaft entscheidet der Verein; du wählst nur Gruppen, die du leitest.";
     private const string NoAffiliationMessage =
-        "Ein Neuzugang braucht eine Mitgliedschaft oder mindestens eine Gruppe.";
-    private const string AlreadyFilledInMessage = "Dieser Neuzugang ist schon ausgefüllt.";
-    private const string AlreadyCompletedMessage = "Dieser Neuzugang ist schon abgeschlossen.";
-    private const string AlreadyDiscardedMessage = "Dieser Neuzugang ist verworfen.";
-    private const string NoStarterMessage =
-        "Einen Neuzugang legt an, wer selbst als Person im Verein geführt wird.";
+        "Eine QR-Anmeldung braucht eine Mitgliedschaft oder mindestens eine Gruppe.";
+    private const string AlreadyFilledInMessage = "Diese QR-Anmeldung ist schon ausgefüllt.";
+    private const string AlreadyCompletedMessage = "Diese QR-Anmeldung ist schon abgeschlossen.";
+    private const string AlreadyDiscardedMessage = "Diese QR-Anmeldung ist verworfen.";
     private const string ChangedMeanwhileMessage =
-        "Der Neuzugang wurde gerade anderswo geändert. Bitte neu laden.";
+        "Die QR-Anmeldung wurde gerade anderswo geändert. Bitte neu laden.";
 
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
@@ -75,9 +73,6 @@ public sealed partial class IntakeService
         var actor = await ActorAsync(command.ActorAccountId, ct);
         if (!actor.MayRunIntakes)
             return Result<IntakeLinkDetails>.Forbidden(NoIntakeRightsMessage);
-
-        if (actor.PersonId is null)
-            return Result<IntakeLinkDetails>.Forbidden(NoStarterMessage);
 
         var decision = IntakeDecision.Of(command.MemberFrom, command.GroupIds);
         var refusal = await RefusalOfAsync(actor.MayDecide(decision), decision, decision, ct);
@@ -359,7 +354,6 @@ public sealed partial class IntakeService
         intake.City = null;
         intake.Phone = null;
         intake.Email = null;
-        intake.ContactVisibleToMembers = false;
     }
 
     [Pure]

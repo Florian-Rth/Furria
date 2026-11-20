@@ -2,9 +2,11 @@ import type { KkChipTone } from '@furria/ui/KkChip';
 import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
 import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import { PERSONS_ORIGIN } from '@/features/manage-persons/manage-persons-labels';
 import { remainingLabelOf } from '@/features/upload-links/upload-link-copy';
 import { remainingOf } from '@/features/upload-links/upload-link-view';
 import { toIsoDay } from '@/lib/day';
+import { groupInitialsOf, toInitials } from '@/lib/initials';
 import { formatIsoDay } from '@/lib/membership-labels';
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
@@ -13,21 +15,20 @@ import type { IntakeHome, IntakeSectionId } from './intake-rules';
 import { toGroupIntakes } from './intake-rules';
 import type { IntakeCandidate, IntakeMatch, IntakeState, IntakeSummary } from './schemas';
 
-export const INTAKES_TITLE = 'Neuzugänge';
-export const INTAKES_PATH = '/manage/intakes';
-export const INTAKE_ROUTE = '/manage/intakes/$intakeId';
-export const INTAKE_NEW_ROUTE = '/manage/intakes/new';
-export const INTAKE_EDIT_ROUTE = '/manage/intakes/$intakeId/edit';
-export const INTAKE_REVIEW_ROUTE = '/manage/intakes/$intakeId/review';
-export const INTAKES_ORIGIN: KkScreenOrigin = { label: INTAKES_TITLE, to: INTAKES_PATH };
+export const INTAKES_TITLE = 'QR-Anmeldungen';
+export const INTAKES_PATH = '/manage/persons/intakes';
+export const INTAKE_ROUTE = '/manage/persons/intakes/$intakeId';
+export const INTAKE_NEW_ROUTE = '/manage/persons/intakes/new';
+export const INTAKE_EDIT_ROUTE = '/manage/persons/intakes/$intakeId/edit';
+export const INTAKE_REVIEW_ROUTE = '/manage/persons/intakes/$intakeId/review';
 
-export const INTAKE_EYEBROW = 'Neuzugang';
-export const NEW_INTAKE_LABEL = 'Neuzugang anlegen';
-export const NEW_INTAKE_ACTION_LABEL = 'Neuen Neuzugang anlegen';
-export const START_BY_QR_LABEL = 'Neuzugang per QR';
-export const EDIT_INTAKE_TITLE = 'Neuzugang bearbeiten';
+export const INTAKE_EYEBROW = 'QR-Anmeldung';
+export const NEW_INTAKE_LABEL = 'QR-Code erstellen';
+export const NEW_INTAKE_ACTION_LABEL = 'Neue QR-Anmeldung erstellen';
+export const START_BY_QR_LABEL = 'QR-Code erstellen';
+export const EDIT_INTAKE_TITLE = 'QR-Anmeldung bearbeiten';
 export const SAVE_LABEL = 'Speichern';
-export const REVIEW_TITLE = 'Neuzugang prüfen';
+export const REVIEW_TITLE = 'QR-Anmeldung prüfen';
 export const REVIEW_LABEL = 'Prüfen';
 export const RESOLVE_LABEL = 'Übernehmen';
 export const EDIT_LABEL = 'Bearbeiten';
@@ -38,21 +39,21 @@ export const DISCARD_LABEL = 'Verwerfen';
 export const CANCEL_LABEL = 'Abbrechen';
 export const CLOSE_LABEL = 'Schließen';
 export const RETRY_LABEL = 'Erneut laden';
-export const LOADING_LABEL = 'Die Neuzugänge werden geladen';
-export const LIST_ERROR_TITLE = 'NEUZUGÄNGE NICHT GELADEN';
-export const DETAIL_ERROR_TITLE = 'NEUZUGANG NICHT GELADEN';
-export const NOT_FOUND_TITLE = 'DIESEN NEUZUGANG GIBT ES NICHT';
-export const NOT_FOUND_LINE = 'Er wurde gelöscht oder du darfst ihn nicht sehen.';
+export const LOADING_LABEL = 'Die QR-Anmeldungen werden geladen';
+export const LIST_ERROR_TITLE = 'QR-ANMELDUNGEN NICHT GELADEN';
+export const DETAIL_ERROR_TITLE = 'QR-ANMELDUNG NICHT GELADEN';
+export const NOT_FOUND_TITLE = 'DIESE QR-ANMELDUNG GIBT ES NICHT';
+export const NOT_FOUND_LINE = 'Sie wurde gelöscht oder du darfst sie nicht sehen.';
 export const DENIED_MESSAGE =
-  'Neuzugänge legen nur an, wer Personen verwaltet oder eine Gruppe leitet.';
+  'QR-Anmeldungen erstellt nur, wer Personen verwaltet oder eine Gruppe leitet.';
 export const SETTLED_TITLE = 'NICHT MEHR MÖGLICH';
-export const SETTLED_LINE = 'Dieser Neuzugang ist schon weiter.';
+export const SETTLED_LINE = 'Diese QR-Anmeldung ist schon weiter.';
 export const GROUPS_FAILED_MESSAGE = 'Die Gruppen konnten nicht geladen werden.';
 export const GROUPS_FAILED_TITLE = 'GRUPPEN NICHT GELADEN';
-export const DETAIL_LOADING_LABEL = 'Der Neuzugang wird geladen';
+export const DETAIL_LOADING_LABEL = 'Die QR-Anmeldung wird geladen';
 
 export const EMPTY_INTAKES = {
-  title: 'Noch kein Neuzugang',
+  title: 'Noch keine QR-Anmeldung',
   description: 'Leg einen an und zeig ihr den QR-Code.',
 } as const;
 
@@ -118,26 +119,24 @@ export const BIRTH_DATE_FACT = 'Geburtsdatum';
 export const ADDRESS_FACT = 'Adresse';
 export const PHONE_FACT = 'Telefon';
 export const EMAIL_FACT = 'E-Mail';
-export const CONTACT_VISIBLE_FACT = 'Kontakt für Mitglieder';
-export const CONTACT_VISIBLE_VALUES = { true: 'sichtbar', false: 'verborgen' } as const;
 export const NOT_GIVEN = '–';
 export const THIS_IS_HER_CHIP = { label: 'Das ist sie', tone: 'blue', dot: false } as const;
 
 export const RENEW_EYEBROW = 'Neuer Link';
 export const RENEW_QUESTION = 'Neuen Link erzeugen?';
 export const RENEW_EXPLANATION = 'Der bisherige QR-Code und Link gelten dann nicht mehr.';
-export const DISCARD_EYEBROW = 'Neuzugang';
-export const DISCARD_QUESTION = 'Neuzugang verwerfen?';
+export const DISCARD_EYEBROW = 'QR-Anmeldung';
+export const DISCARD_QUESTION = 'QR-Anmeldung verwerfen?';
 export const DISCARD_EXPLANATION =
   'Der Link gilt dann nicht mehr. Was sie schon eingegeben hat, wird gelöscht.';
 
-export const EDITED_NOTICE = 'Neuzugang gespeichert.';
+export const EDITED_NOTICE = 'QR-Anmeldung gespeichert.';
 export const RENEWED_NOTICE = 'Neuer Link erzeugt.';
-export const DISCARDED_NOTICE = 'Neuzugang verworfen.';
+export const DISCARDED_NOTICE = 'QR-Anmeldung verworfen.';
 export const COPIED_NOTICE = 'Link kopiert.';
 export const COPY_FAILED_NOTICE = 'Der Link ließ sich nicht kopieren.';
 
-const FALLBACK_NAME = 'Neuzugang';
+const FALLBACK_NAME = 'QR-Anmeldung';
 const SEPARATOR = ' · ';
 
 const DAY_FORMAT = new Intl.DateTimeFormat('de-DE', {
@@ -207,19 +206,43 @@ const toTimeLine = (intake: IntakeSummary, now: Date): string => {
   }
 };
 
+const settledAtOf = (intake: IntakeSummary): string =>
+  intake.completedAt ?? intake.discardedAt ?? intake.createdAt;
+
 const toLabelParts = (intake: IntakeSummary): string[] =>
   intake.newcomer !== null && intake.label !== null ? [`für ${intake.label}`] : [];
+
+export const toIntakeInitials = (intake: IntakeSummary): string =>
+  intake.newcomer === null
+    ? groupInitialsOf(toIntakeName(intake))
+    : toInitials(intake.newcomer.firstName, intake.newcomer.lastName);
 
 export const toIntakeRowMeta = (intake: IntakeSummary, now: Date): string =>
   [
     ...toLabelParts(intake),
-    toTimeLine(intake, now),
+    toIntakeHeaderMeta(intake, now),
     ...toDecisionParts(intake),
-    `von ${toStarterLine(intake)}`,
+    ...(intake.startedBy === null ? [] : [`von ${nameOf(intake.startedBy)}`]),
   ].join(SEPARATOR);
 
-export const toIntakeHeaderMeta = (intake: IntakeSummary, now: Date): string =>
-  toTimeLine(intake, now);
+export const toIntakeHeaderMeta = (intake: IntakeSummary, now: Date): string => {
+  switch (intake.state) {
+    case 'open':
+    case 'needsReview':
+      return toTimeLine(intake, now);
+    case 'expired':
+      return `am ${formatInstantDay(intake.expiresAt)}`;
+    case 'completed':
+    case 'discarded':
+      return `am ${formatInstantDay(settledAtOf(intake))}`;
+  }
+};
+
+export const toAwaitingIntakesLine = (awaitingCount: number): string | undefined =>
+  awaitingCount === 0 ? undefined : `${awaitingCount} offen`;
+
+export const toNeedsReviewHint = (needsReviewCount: number): string | undefined =>
+  needsReviewCount === 0 ? undefined : `${needsReviewCount} zu prüfen`;
 
 export const toMemberFromQuickChoices = (today: Date): KkDateQuickChoice[] => [
   { label: 'Heute', value: toIsoDay(today) },
@@ -230,7 +253,7 @@ export const toMemberFromQuickChoices = (today: Date): KkDateQuickChoice[] => [
 ];
 
 export const toStartedNotice = (label: string | null): string =>
-  label === null ? 'Neuzugang angelegt.' : `Neuzugang für ${label} angelegt.`;
+  label === null ? 'QR-Code erstellt.' : `QR-Code für ${label} erstellt.`;
 
 export const toResolvedNotice = (newcomerName: string, isExistingPerson: boolean): string =>
   isExistingPerson ? `${newcomerName} ist zugeordnet.` : `${newcomerName} ist jetzt im Register.`;
@@ -245,11 +268,11 @@ export const toIntakeOrigin = (intake: IntakeSummary): KkScreenOrigin => ({
 
 export const toHomeOrigin = (home: IntakeHome): KkScreenOrigin =>
   home.kind === 'overview'
-    ? INTAKES_ORIGIN
+    ? PERSONS_ORIGIN
     : { label: home.name, to: '/groups/$groupId', params: { groupId: String(home.groupId) } };
 
 export const toHomePath = (home: IntakeHome): string =>
-  home.kind === 'overview' ? INTAKES_PATH : `/groups/${home.groupId}`;
+  home.kind === 'overview' ? PERSONS_ORIGIN.to : `/groups/${home.groupId}`;
 
 export const toQrLabel = (intake: IntakeSummary): string => `QR-Code für ${toIntakeName(intake)}`;
 
@@ -292,13 +315,13 @@ export const toResolveConsequence = (firstName: string, isExistingPerson: boolea
 
 const LIST_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
-  unexpected: 'Die Neuzugänge konnten nicht geladen werden.',
+  unexpected: 'Die QR-Anmeldungen konnten nicht geladen werden.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
 };
 
 const DETAIL_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
-  unexpected: 'Der Neuzugang konnte nicht geladen werden.',
+  unexpected: 'Die QR-Anmeldung konnte nicht geladen werden.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
 };
 

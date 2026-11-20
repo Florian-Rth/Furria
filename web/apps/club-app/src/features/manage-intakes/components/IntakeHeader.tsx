@@ -3,22 +3,21 @@ import { KkEyebrow } from '@furria/ui/KkEyebrow';
 import { KkMeta } from '@furria/ui/KkMeta';
 import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
-import { toInitials } from '@/lib/initials';
-import { INTAKE_EYEBROW, toIntakeHeaderMeta, toIntakeName } from '../intake-labels';
+import {
+  INTAKE_EYEBROW,
+  toIntakeHeaderMeta,
+  toIntakeInitials,
+  toIntakeName,
+} from '../intake-labels';
 import type { IntakeSummary } from '../schemas';
 import { IntakeStateChip } from './IntakeStateChip';
-
-const PLACEHOLDER_INITIALS = '?';
 
 interface IntakeHeaderProps {
   intake: IntakeSummary;
 }
 
 export const IntakeHeader: FC<IntakeHeaderProps> = ({ intake }) => {
-  const initials =
-    intake.newcomer === null
-      ? PLACEHOLDER_INITIALS
-      : toInitials(intake.newcomer.firstName, intake.newcomer.lastName);
+  const initials = toIntakeInitials(intake);
   const name = toIntakeName(intake);
   const meta = toIntakeHeaderMeta(intake, new Date());
 

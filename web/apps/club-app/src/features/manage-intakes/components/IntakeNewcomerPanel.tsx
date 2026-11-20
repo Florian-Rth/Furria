@@ -8,8 +8,6 @@ import { toInitials } from '@/lib/initials';
 import { formatIsoDay } from '@/lib/membership-labels';
 import {
   ADDRESS_FACT,
-  CONTACT_VISIBLE_FACT,
-  CONTACT_VISIBLE_VALUES,
   EMAIL_FACT,
   NEWCOMER_SECTION,
   NOT_GIVEN,
@@ -30,7 +28,6 @@ export const IntakeNewcomerPanel: FC<IntakeNewcomerPanelProps> = ({ newcomer }) 
   const address = toAddressLine(newcomer.street, newcomer.zip, newcomer.city);
   const phone = newcomer.phone ?? NOT_GIVEN;
   const email = newcomer.email ?? NOT_GIVEN;
-  const contactVisible = CONTACT_VISIBLE_VALUES[`${newcomer.contactVisibleToMembers}`];
 
   return (
     <KkFormSection title={NEWCOMER_SECTION}>
@@ -39,7 +36,6 @@ export const IntakeNewcomerPanel: FC<IntakeNewcomerPanelProps> = ({ newcomer }) 
         <KkFieldRow label={ADDRESS_FACT} value={address} />
         <KkFieldRow label={PHONE_FACT} value={phone} />
         <KkFieldRow label={EMAIL_FACT} value={email} />
-        <KkFieldRow label={CONTACT_VISIBLE_FACT} value={contactVisible} />
       </KkPanel>
     </KkFormSection>
   );

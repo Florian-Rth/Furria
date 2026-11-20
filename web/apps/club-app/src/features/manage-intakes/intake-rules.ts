@@ -208,3 +208,13 @@ export const toGroupChips = (choices: readonly GroupChoice[]): GroupChips => {
 
 export const mayStartIntakeForGroup = (viewerIsAdmin: boolean, managesPersons: boolean): boolean =>
   viewerIsAdmin || managesPersons;
+
+export interface IntakeCounts {
+  awaitingCount: number;
+  needsReviewCount: number;
+}
+
+export const toIntakeCounts = (intakes: readonly IntakeSummary[]): IntakeCounts => ({
+  awaitingCount: intakes.filter((intake) => UNDECIDED_STATES.includes(intake.state)).length,
+  needsReviewCount: intakes.filter((intake) => intake.state === 'needsReview').length,
+});

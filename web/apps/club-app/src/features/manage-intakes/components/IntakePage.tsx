@@ -10,7 +10,7 @@ import { IntakeHeader } from './IntakeHeader';
 import { IntakeHold } from './IntakeHold';
 import { IntakeView } from './IntakeView';
 
-const ROUTE_ID = '/_app/manage/intakes_/$intakeId';
+const ROUTE_ID = '/_app/manage/persons_/intakes_/$intakeId';
 
 export const IntakePage: FC = () => {
   const { intakeId } = useParams({ from: ROUTE_ID });

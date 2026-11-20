@@ -57,8 +57,6 @@ public sealed class Intake : ITimestamped
 
     public string? Email { get; set; }
 
-    public bool ContactVisibleToMembers { get; set; }
-
     public int Version { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

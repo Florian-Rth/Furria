@@ -20,7 +20,5 @@ public sealed record IntakeNewcomerDetails
 
     public required string? Email { get; init; }
 
-    public required bool ContactVisibleToMembers { get; init; }
-
     public required PictureDetails? Portrait { get; init; }
 }

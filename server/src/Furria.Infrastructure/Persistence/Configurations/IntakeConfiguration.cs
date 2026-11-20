@@ -61,7 +61,6 @@ public sealed class IntakeConfiguration : IEntityTypeConfiguration<Intake>
         builder.Property(intake => intake.City).HasMaxLength(Intake.CityLength);
         builder.Property(intake => intake.Phone).HasMaxLength(Intake.PhoneLength);
         builder.Property(intake => intake.Email).HasMaxLength(Intake.EmailLength);
-        builder.Property(intake => intake.ContactVisibleToMembers).HasDefaultValue(false);
         builder.Property(intake => intake.Version).IsConcurrencyToken();
 
         builder

@@ -60,7 +60,7 @@ public sealed class SubmitIntakeTests : IClassFixture<ApiTestFixture>
                 "Narrenstadt"
             )
             .Person(personId)
-            .ToHaveContactVisible(true)
+            .ToHaveContactVisible(false)
             .Person(personId)
             .ToHaveContactChangedBy(personId, _fixture.TimeProvider.GetUtcNow())
             .MembershipsOfPerson(personId)
@@ -261,8 +261,8 @@ public sealed class SubmitIntakeTests : IClassFixture<ApiTestFixture>
 
         await _fixture.PushesDrainedAsync(ct);
         var push = Assert.Single(PushesAt(_fixture, device));
-        Assert.Equal($"/manage/intakes/{intakeId}", UrlOf(push));
-        Assert.Equal("Neuzugang eingetragen", push.GetProperty("title").GetString());
+        Assert.Equal($"/manage/persons/intakes/{intakeId}", UrlOf(push));
+        Assert.Equal("QR-Anmeldung eingetragen", push.GetProperty("title").GetString());
         Assert.Equal("Lena Neu", push.GetProperty("body").GetString());
     }
 
@@ -288,7 +288,7 @@ public sealed class SubmitIntakeTests : IClassFixture<ApiTestFixture>
 
         await _fixture.PushesDrainedAsync(ct);
         var push = Assert.Single(PushesAt(_fixture, device));
-        Assert.Equal("Neuzugang prüfen", push.GetProperty("title").GetString());
+        Assert.Equal("QR-Anmeldung prüfen", push.GetProperty("title").GetString());
     }
 
     [Fact]

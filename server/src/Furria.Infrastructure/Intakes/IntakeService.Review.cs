@@ -16,11 +16,11 @@ namespace Furria.Infrastructure.Intakes;
 
 public sealed partial class IntakeService
 {
-    private const string NotAwaitingReviewMessage = "Dieser Neuzugang wartet auf keine Prüfung.";
+    private const string NotAwaitingReviewMessage = "Diese QR-Anmeldung wartet auf keine Prüfung.";
     private const string NothingLeftToJoinMessage =
-        "Alle Gruppen dieses Neuzugangs sind inzwischen archiviert, und eine Mitgliedschaft ist nicht vorgesehen. Wähle eine passende Person oder verwirf den Neuzugang.";
+        "Alle Gruppen dieser QR-Anmeldung sind inzwischen archiviert, und eine Mitgliedschaft ist nicht vorgesehen. Wähle eine passende Person oder verwirf die QR-Anmeldung.";
     private const string NotACandidateMessage =
-        "Diese Person passt nicht zum Neuzugang – sie teilt weder die E-Mail-Adresse noch Name und Geburtsdatum.";
+        "Diese Person passt nicht zur QR-Anmeldung – sie teilt weder die E-Mail-Adresse noch Name und Geburtsdatum.";
 
     public async Task<Result<int>> ResolveAsync(ResolveIntakeCommand command, CancellationToken ct)
     {
@@ -212,7 +212,6 @@ public sealed partial class IntakeService
             City = newcomer.City,
             Phone = newcomer.Phone,
             Email = newcomer.Email,
-            ContactVisibleToMembers = newcomer.ContactVisibleToMembers,
             Portrait = _pictures.Of(
                 MediaOwner.Intake(intake.Id),
                 portrait?.Id,

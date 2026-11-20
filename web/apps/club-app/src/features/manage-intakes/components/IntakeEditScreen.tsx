@@ -8,7 +8,7 @@ import { IntakeEditor } from './IntakeEditor';
 import { IntakeScreenHold } from './IntakeScreenHold';
 import { IntakeSubScreenHold } from './IntakeSubScreenHold';
 
-const ROUTE_ID = '/_app/manage/intakes_/$intakeId_/edit';
+const ROUTE_ID = '/_app/manage/persons_/intakes_/$intakeId_/edit';
 
 export const IntakeEditScreen: FC = () => {
   const { intakeId } = useParams({ from: ROUTE_ID });

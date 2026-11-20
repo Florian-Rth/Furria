@@ -90,7 +90,6 @@ public sealed class GetIntakeById : Endpoint<GetIntakeByIdRequest, GetIntakeById
                     City = review.Newcomer.City,
                     Phone = review.Newcomer.Phone,
                     Email = review.Newcomer.Email,
-                    ContactVisibleToMembers = review.Newcomer.ContactVisibleToMembers,
                     Portrait = PictureDto.From(review.Newcomer.Portrait),
                 },
                 Candidates = [.. review.Candidates.Select(ToDto)],
@@ -168,8 +167,6 @@ public sealed record GetIntakeByIdNewcomerDto
     public required string? Phone { get; init; }
 
     public required string? Email { get; init; }
-
-    public required bool ContactVisibleToMembers { get; init; }
 
     public required PictureDto? Portrait { get; init; }
 }

@@ -16,7 +16,7 @@ groups — bring a new person into the registry in seconds: she decides only wha
 (member yes/no and from when, which groups, an optional *Für wen?* label), shows a QR or shares a
 link, and the newcomer types her own details on her phone without installing anything. On submit
 the person, membership and group memberships are created, the invitation goes out when she gave an
-email and is eligible, and the starter is told by push. An overview at `/manage/intakes` lists every
+email and is eligible, and the starter is told by push. An overview at `/manage/persons/intakes` lists every
 intake and its state. Grilled 2026-11-19; the domain rules are the **Intake** entry in `CONTEXT.md`
 and [ADR-0041](../adr/0041-an-intake-invites-on-its-starters-decision.md).
 
@@ -46,8 +46,8 @@ newcomer is standing next to the manager with her phone; she should type her own
   `https://app.<club-domain>/intake#<token>`, sent to the API in a header/body, never in a URL.
   Open 7 days, used once; **renew** issues a new seed (old link void, decision kept).
 - **Newcomer's form:** first/last name and birth date always; street/zip/city when `MemberFrom`
-  is set; phone, email (*für die App*), contact visible to members (default off), portrait —
-  optional. No age or guardian questions.
+  is set; phone, email (*für die App*), portrait — optional. No contact-visibility question (removed
+  2026-11-19: the new person's contact stays hidden; she can show it from her profile). No age or guardian questions.
 - **Completion:** if no person shares her email (normalized) or her name + birth date → create
   person, membership from `MemberFrom` (recording *came from intake, started by X*), group
   memberships from today, contact change stamped as her own. Otherwise → *zu prüfen*; a decider
@@ -68,7 +68,7 @@ newcomer is standing next to the manager with her phone; she should type her own
 
 - Club app, manager: *Neuzugang anlegen* from Verein verwalten, the person register
   (`/manage/persons`) and the group hub (pre-set to that group) → form → QR + copy + share
-  (Web Share API) screen. Overview `/manage/intakes`, detail `/manage/intakes/$intakeId` (QR again,
+  (Web Share API) screen. Overview `/manage/persons/intakes`, detail `/manage/persons/intakes/$intakeId` (QR again,
   edit, renew, discard, review with candidates).
 - Club app, public: `/intake` (fragment token), exempt from the install gate; form, portrait,
   *Fertig* screen (with *App jetzt einrichten* when an invitation was issued on the spot).
@@ -86,8 +86,9 @@ Goal: managers can start, list, view, edit, renew and discard intakes via the AP
 - [x] Integration tests for scope, validation (≥1 affiliation), renew voiding the old token, state derivation
 
 Done 2026-11-19: `intake` + `intake_group` tables (row-version token, lifecycle checks), endpoints
-`GET/POST /intakes`, `GET/PUT /intakes/{id}`, `POST /intakes/{id}/renew|discard`. Rulings: only an
-account with a person may start one (the starter is the invitation's issuer); edit/renew only while
+`GET/POST /intakes`, `GET/PUT /intakes/{id}`, `POST /intakes/{id}/renew|discard`. Rulings: the
+starter is the invitation's issuer — the personless admin login may start one too (no starter, no
+push; reversed 2026-11-19: the admin always holds every right); edit/renew only while
 *offen*/*abgelaufen*; discard is idempotent and drops her details and the link seed.
 
 ### Phase 2a — Backend: public completion, invitation, push
@@ -140,11 +141,11 @@ Goal: managers and group admins run intakes end to end from the app (newcomer si
 - [x] API client + query/mutation hooks for intakes
 - [x] *Neuzugang anlegen* form (member toggle + date, group picker scoped to rights, *Für wen?*) with entries in Verein verwalten, `/manage/persons` and the group hub (pre-set group)
 - [x] QR + copy + share screen
-- [x] `/manage/intakes` overview (dense rows, state chips: gold for *zu prüfen*) and `/manage/intakes/$intakeId` detail with edit, renew, discard, show link
+- [x] `/manage/persons/intakes` overview (dense rows, state chips: gold for *zu prüfen*) and `/manage/persons/intakes/$intakeId` detail with edit, renew, discard, show link
 - [x] Review UI: candidates, *Das ist sie* / *Neue Person*
 - [x] Tests for business logic (state → actions, scope), lint/typecheck, phone screenshots
 
-Done 2026-11-19: feature `manage-intakes`; routes `/manage/intakes`, `/new?group=`, `/$intakeId`,
+Done 2026-11-19: feature `manage-intakes`; routes `/manage/persons/intakes`, `/new?group=`, `/$intakeId`,
 `/$intakeId/edit`, `/$intakeId/review`. The QR screen is the detail page of an open intake (QR +
 expiry, action bar *Teilen*/*Link kopieren* + *Neuer Link*), where *Anlegen* lands. Manage hub
 gained an `intakes` panel (`openCount`, `needsReviewCount`; persons.manage only) shown as
@@ -166,8 +167,7 @@ Goal: the full flow works from a phone without the app installed.
 - [x] Tests for business logic, lint/typecheck, phone screenshots of the whole flow; device check owed
 
 Done 2026-11-19: feature `intake` (route `/intake#<token>`), sections *Über dich* (name, birth
-date), *Anschrift* (members only), *Kontakt* (email with *Für deinen Zugang zur App*, phone,
-visibility switch off by default), *Porträt*. Rulings: the portrait is picked and cut on her phone
+date), *Anschrift* (members only), *Kontakt* (email with *Für deinen Zugang zur App*, phone), *Porträt*. Rulings: the portrait is picked and cut on her phone
 only and uploaded (tus, `Intake-Token`) right before the details are submitted — so replace,
 recut and remove stay local and nothing is left on the intake from a half-filled form; a
 portrait already sent is not sent again when only the submit is retried; *Absenden* waits while
