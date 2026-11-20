@@ -4,7 +4,7 @@ import { KkSplitLayout } from '@furria/ui/KkSplitLayout';
 import type { FC, PropsWithChildren } from 'react';
 import { buildLoginStageMeta } from '@/features/login/stage-meta';
 
-export const RedeemFrame: FC<PropsWithChildren> = ({ children }) => {
+export const LinkPageFrame: FC<PropsWithChildren> = ({ children }) => {
   const stageMeta = buildLoginStageMeta(new Date());
 
   return (

@@ -94,6 +94,15 @@ describe('uploadVia', () => {
       { filename: 'IMG_0001.HEIC' },
     ],
     [
+      'a newcomer portrait cut before it leaves her phone',
+      {
+        file: photo,
+        owner: { kind: 'intake' },
+        crop: { left: 0.2, top: 0.1, width: 0.5, height: 0.6 },
+      },
+      { owner: 'intake', filename: 'IMG_0001.HEIC', crop: '0.2,0.1,0.5,0.6' },
+    ],
+    [
       'a gallery photo into the inbox',
       { file: photo, owner: { kind: 'gallery', albumId: null } },
       { owner: 'gallery', filename: 'IMG_0001.HEIC' },

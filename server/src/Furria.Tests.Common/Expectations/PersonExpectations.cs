@@ -127,6 +127,20 @@ public sealed class PersonExpectations
                 Assert.Equal(createdAt, (await SingleAsync(dbContext, ct)).CreatedAt)
         );
 
+    public Expected ToBeInGroupsSince(DateOnly joinedOn, params int[] groupIds) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var memberships = await dbContext
+                    .GroupMemberships.AsNoTracking()
+                    .Where(row => row.PersonId == _personId)
+                    .ToListAsync(ct);
+                Assert.Equal(groupIds.Order(), memberships.Select(row => row.GroupId).Order());
+                Assert.All(memberships, row => Assert.Equal(joinedOn, row.JoinedOn));
+                Assert.All(memberships, row => Assert.Null(row.LeftOn));
+            }
+        );
+
     private Task<Person> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.People.AsNoTracking().SingleAsync(row => row.Id == _personId, ct);
 }

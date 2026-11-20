@@ -15,6 +15,7 @@ public static class PushTopics
         (PushTopic.Announcements, listener => listener.ReadsAnnouncements),
         (PushTopic.BeerTab, listener => listener.KeepsBeerTab),
         (PushTopic.BeerStock, listener => listener.ManagesBeerList),
+        (PushTopic.Intakes, listener => listener.RunsIntakes),
     ];
 
     [Pure]

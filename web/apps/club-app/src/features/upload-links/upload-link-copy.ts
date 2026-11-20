@@ -86,7 +86,6 @@ export const PICK_LABEL = 'Fotos und Videos auswählen';
 export const PICK_MORE_LABEL = 'Weitere auswählen';
 export const PRIVACY_NOTE = 'Die Bilder sieht nur, wer im Verein die Galerie pflegt.';
 export const KEEP_OPEN_NOTE = 'Lass die Seite offen, bis alles hochgeladen ist.';
-export const CHECKING_LINE = 'Link wird geprüft …';
 export const CLOSED_TITLES = {
   expired: 'DIESER LINK IST ABGELAUFEN',
   revoked: 'DIESER LINK WURDE BEENDET',
@@ -99,5 +98,4 @@ export const CLOSED_LINES = {
   unknown: 'Öffne den Link noch einmal aus der Nachricht.',
   missing: 'Öffne den Link vollständig, mit allem nach dem #.',
 } as const;
-export const FAILED_TITLE = 'Der Link ließ sich gerade nicht prüfen.';
 export const FAILED_LINE = 'Prüf deine Verbindung und versuch es noch einmal.';

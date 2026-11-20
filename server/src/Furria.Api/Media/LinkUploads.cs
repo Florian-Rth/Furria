@@ -34,7 +34,10 @@ public static class LinkUploads
                 http.RequestServices.GetRequiredService<MediaRoot>().StagingPath,
                 DeletePartialFilesOnConcat,
                 TusDiskBufferSize.Default,
-                new LinkUploadIds(LinkUploadPasses.Of(http)?.UploadLinkId ?? 0)
+                new PrefixedUploadIds(
+                    PrefixedUploadIds.UploadLinkPrefix,
+                    LinkUploadPasses.Of(http)?.UploadLinkId ?? 0
+                )
             ),
             MaxAllowedUploadSizeInBytesLong = MediaLimits.MaxVideoBytes,
             Events = new LinkUploadEvents(http).ToEvents(),

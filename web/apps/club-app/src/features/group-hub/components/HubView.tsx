@@ -2,7 +2,10 @@ import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
 import { GroupHistoryPanel } from '@/features/group-detail/components/GroupHistoryPanel';
 import { toGroupTone } from '@/features/groups/group-identity';
+import { mayStartIntakeForGroup } from '@/features/manage-intakes/intake-rules';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useLanding } from '@/features/write/hooks/use-landing';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useHubActsAccess } from '../hooks/use-hub-acts-access';
 import { toHubPeople } from '../hub-people';
 import type { GroupHub } from '../schemas';
@@ -17,10 +20,15 @@ interface HubViewProps {
 }
 
 export const HubView: FC<HubViewProps> = ({ hub }) => {
+  const permissions = usePermissions();
   const actsAccess = useHubActsAccess(hub);
   const { highlightedKey } = useLanding();
   const tone = toGroupTone(hub.groupId, hub.tone);
   const people = toHubPeople(hub.members, hub.admins);
+  const canStartIntake = mayStartIntakeForGroup(
+    hub.viewerIsAdmin,
+    permissions.has(PERMISSION_KEYS.personsManage),
+  );
   const seesCalendarEntries = hub.viewerIsMember || hub.viewerMayManage;
   const hasHistory = hub.pastMembers.length > 0 || hub.pastAdmins.length > 0;
 
@@ -63,6 +71,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         groupId={hub.groupId}
         groupName={hub.name}
         canManage={hub.viewerMayManage}
+        canStartIntake={canStartIntake}
         highlightedKey={highlightedKey}
       />
       {history}

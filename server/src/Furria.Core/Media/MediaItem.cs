@@ -3,6 +3,7 @@ using Furria.Core.Events;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
+using Furria.Core.Intakes;
 using Furria.Core.News;
 using Furria.Core.RunningOrders;
 using Furria.Core.Website;
@@ -37,6 +38,8 @@ public sealed class MediaItem : ITimestamped
     public int? OwnerSessionId { get; set; }
 
     public int? OwnerUploadLinkId { get; set; }
+
+    public int? OwnerIntakeId { get; set; }
 
     public MediaKind Kind { get; set; }
 
@@ -99,6 +102,8 @@ public sealed class MediaItem : ITimestamped
     public Session? OwnerSession { get; set; }
 
     public UploadLink? OwnerUploadLink { get; set; }
+
+    public Intake? OwnerIntake { get; set; }
 
     public Person? UploadedBy { get; set; }
 

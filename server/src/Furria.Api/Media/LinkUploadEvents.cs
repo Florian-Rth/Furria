@@ -52,7 +52,8 @@ public sealed class LinkUploadEvents
             context.FailRequest(HttpStatusCode.BadRequest, ConcatenationRefused);
         else if (
             context.FileId is not null
-            && LinkUploadIds.UploadLinkIdOf(context.FileId) != _pass.UploadLinkId
+            && PrefixedUploadIds.ScopeIdOf(PrefixedUploadIds.UploadLinkPrefix, context.FileId)
+                != _pass.UploadLinkId
         )
             context.FailRequest(HttpStatusCode.NotFound);
         else if (!Admits(_pass.State, context.Intent))

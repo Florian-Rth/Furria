@@ -83,6 +83,15 @@ internal static class SeedMaterializer
             ct
         );
 
+        var intakes = await IntakeSeedMaterializer.InsertAsync(
+            dbContext,
+            recorded.RecordedIntakes,
+            identity.PersonIds,
+            groups.GroupIds,
+            scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow(),
+            ct
+        );
+
         return new SeededRegistry(
             identity,
             groups,
@@ -91,7 +100,8 @@ internal static class SeedMaterializer
             gallery,
             news,
             beerList,
-            groupMatcher
+            groupMatcher,
+            intakes
         );
     }
 }

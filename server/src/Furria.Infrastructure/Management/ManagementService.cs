@@ -76,6 +76,24 @@ public sealed class ManagementService
             GroupMatcher = granted.Contains(FurriaPermissions.GroupMatcherManage)
                 ? await GroupMatcherAsync(ct)
                 : null,
+            Intakes = managesPersons ? await IntakesAsync(ct) : null,
+        };
+    }
+
+    private async Task<ManageHubIntakes> IntakesAsync(CancellationToken ct)
+    {
+        var now = _timeProvider.GetUtcNow();
+        var undecided = _dbContext.Intakes.Where(intake =>
+            intake.DiscardedAt == null && intake.CompletedAt == null
+        );
+
+        return new ManageHubIntakes
+        {
+            OpenCount = await undecided.CountAsync(
+                intake => intake.SubmittedAt == null && intake.ExpiresAt > now,
+                ct
+            ),
+            NeedsReviewCount = await undecided.CountAsync(intake => intake.SubmittedAt != null, ct),
         };
     }
 

@@ -2,9 +2,9 @@ import { KkSkeletonText } from '@furria/ui/KkSkeletonText';
 import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { CHECKING_LINE } from '../upload-link-copy';
+import { CHECKING_LINE } from '../link-page-copy';
 
-export const LinkUploadChecking: FC = () => (
+export const LinkPageChecking: FC = () => (
   <Stack role="status" sx={{ gap: 1.5, minWidth: 0 }}>
     <KkVisuallyHidden>{CHECKING_LINE}</KkVisuallyHidden>
     <KkSkeletonText width="70%" />

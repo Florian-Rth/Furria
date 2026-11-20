@@ -42,6 +42,7 @@ export const KkBannerCropDesk: FC<KkBannerCropDeskProps> = ({
         initialCrop={crop}
         labels={labels.cropFrame}
         onCropChange={actions.onCropChange}
+        onUnreadable={actions.onUnreadable}
       />
       <Stack
         direction="row"

@@ -4,6 +4,7 @@ import type { KkPanelAction } from '@furria/ui/panel-action';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { IntakesLink } from '@/features/manage-intakes/components/IntakesLink';
 import type { PersonsAccess } from '../hooks/use-persons-access';
 import type { PersonsSearch } from '../hooks/use-persons-search';
 import {
@@ -38,10 +39,13 @@ const CREATE_ACTION: KkPanelAction = {
 
 export const PersonsView: FC<PersonsViewProps> = ({ search, access, canCreate, canInvite }) => {
   const action = canCreate ? CREATE_ACTION : undefined;
+  const intakes =
+    canCreate && access.filter === null && !search.isArchivedView ? <IntakesLink /> : null;
 
   if (search.isRegisterEmpty && access.filter === null && !search.isArchivedView) {
     return (
       <KkPanelSection title={PERSON_DIRECTORY_TITLE} action={action}>
+        {intakes}
         <KkPanel variant="block">
           <PersonsColdEmpty />
         </KkPanel>
@@ -77,6 +81,7 @@ export const PersonsView: FC<PersonsViewProps> = ({ search, access, canCreate, c
   return (
     <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
       <KkPanelSection title={PERSON_DIRECTORY_TITLE} action={action}>
+        {intakes}
         {rounds}
         {accessNote}
         {list}

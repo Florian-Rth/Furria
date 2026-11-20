@@ -15,6 +15,7 @@ public readonly record struct MediaOwner
     private const string ActPrefix = "act:";
     private const string SessionPrefix = "session:";
     private const string UploadLinkPrefix = "upload-link:";
+    private const string IntakePrefix = "intake:";
 
     public const double PortraitAspect = 4.0 / 5;
     public const double GroupPictureAspect = 3.0 / 2;
@@ -42,6 +43,7 @@ public readonly record struct MediaOwner
             MediaOwnerKind.Act => $"{ActPrefix}{Id}",
             MediaOwnerKind.Session => $"{SessionPrefix}{Id}",
             MediaOwnerKind.UploadLink => $"{UploadLinkPrefix}{Id}",
+            MediaOwnerKind.Intake => $"{IntakePrefix}{Id}",
             _ => GalleryToken,
         };
 
@@ -62,7 +64,7 @@ public readonly record struct MediaOwner
     public double? PictureAspect =>
         Kind switch
         {
-            MediaOwnerKind.Person => PortraitAspect,
+            MediaOwnerKind.Person or MediaOwnerKind.Intake => PortraitAspect,
             MediaOwnerKind.Group => GroupPictureAspect,
             MediaOwnerKind.NewsPost => NewsPictureAspect,
             MediaOwnerKind.Event => EventPictureAspect,
@@ -96,6 +98,8 @@ public readonly record struct MediaOwner
     public static MediaOwner UploadLink(int uploadLinkId) =>
         new(MediaOwnerKind.UploadLink, uploadLinkId);
 
+    public static MediaOwner Intake(int intakeId) => new(MediaOwnerKind.Intake, intakeId);
+
     public static MediaOwner Of(MediaItem item) =>
         Of(
             item.OwnerKind,
@@ -106,6 +110,7 @@ public readonly record struct MediaOwner
             item.OwnerActId,
             item.OwnerSessionId,
             item.OwnerUploadLinkId,
+            item.OwnerIntakeId,
             item.WebsitePicture is { } picture
                 ? new PictureSlotPosition(picture.SlotKey, picture.Position)
                 : null
@@ -120,6 +125,7 @@ public readonly record struct MediaOwner
         int? actId,
         int? sessionId,
         int? uploadLinkId,
+        int? intakeId,
         PictureSlotPosition? slot
     ) =>
         kind switch
@@ -132,6 +138,7 @@ public readonly record struct MediaOwner
             MediaOwnerKind.Act => Act(actId!.Value),
             MediaOwnerKind.Session => Session(sessionId!.Value),
             MediaOwnerKind.UploadLink => UploadLink(uploadLinkId!.Value),
+            MediaOwnerKind.Intake => Intake(intakeId!.Value),
             _ => Gallery,
         };
 

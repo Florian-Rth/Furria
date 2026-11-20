@@ -23,4 +23,6 @@ public sealed record ManageHubDetails
     public required ManageHubApplications? Applications { get; init; }
 
     public required ManageHubGroupMatcher? GroupMatcher { get; init; }
+
+    public required ManageHubIntakes? Intakes { get; init; }
 }

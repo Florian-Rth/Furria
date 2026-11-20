@@ -9,4 +9,6 @@ public sealed record PushListener
     public required bool KeepsBeerTab { get; init; }
 
     public required bool ManagesBeerList { get; init; }
+
+    public required bool RunsIntakes { get; init; }
 }

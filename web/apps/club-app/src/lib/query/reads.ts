@@ -48,6 +48,7 @@ export const DOMAIN_CHANGES = [
   'seating',
   'claimWindow',
   'groupMatcher',
+  'intake',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -83,6 +84,7 @@ export const READ_NAMES = [
   'galleryDeveloping',
   'uploadLinks',
   'uploadLinkLookup',
+  'intakeLinkLookup',
   'manageHub',
   'invitationRoundPreview',
   'clubRecord',
@@ -138,6 +140,8 @@ export const READ_NAMES = [
   'claimWindowOverview',
   'groupMatcherPage',
   'statementPool',
+  'intakes',
+  'intake',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -173,6 +177,7 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   galleryDeveloping: ['gallery', 'developing'],
   uploadLinks: ['gallery', 'upload-links'],
   uploadLinkLookup: ['upload-link', 'lookup'],
+  intakeLinkLookup: ['intake-link', 'lookup'],
   manageHub: ['manage', 'hub'],
   invitationRoundPreview: ['manage', 'invitations', 'preview'],
   clubRecord: ['manage', 'club-record'],
@@ -228,6 +233,8 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   claimWindowOverview: ['claim-window', 'overview'],
   groupMatcherPage: ['group-matcher', 'group'],
   statementPool: ['group-matcher', 'pool'],
+  intakes: ['manage', 'intakes', 'list'],
+  intake: ['manage', 'intakes', 'detail'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -408,6 +415,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   galleryDeveloping: [],
   uploadLinks: ['media'],
   uploadLinkLookup: [],
+  intakeLinkLookup: [],
   manageHub: [
     'person',
     'membership',
@@ -427,6 +435,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'beerCrate',
     'beerPayment',
     'groupMatcher',
+    'intake',
   ],
   invitationRoundPreview: ['account', 'person', 'membership'],
   clubRecord: ['clubRecord'],
@@ -562,6 +571,8 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   claimWindowOverview: ['claimWindow', 'account', 'person'],
   groupMatcherPage: ['groupMatcher', 'group'],
   statementPool: ['groupMatcher', 'group'],
+  intakes: ['intake', 'group', 'person'],
+  intake: ['intake', 'group', 'person', 'picture', 'membership', 'groupMembership', 'account'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -622,6 +633,7 @@ export const queryKeys = {
   galleryBin: READ_ROOTS.galleryBin,
   uploadLinks: READ_ROOTS.uploadLinks,
   uploadLinkLookup: (token: string): QueryKey => keyOf('uploadLinkLookup', token),
+  intakeLinkLookup: (token: string): QueryKey => keyOf('intakeLinkLookup', token),
   galleryDeveloping: READ_ROOTS.galleryDeveloping,
   manageHub: READ_ROOTS.manageHub,
   invitationRoundPreview: READ_ROOTS.invitationRoundPreview,
@@ -682,4 +694,6 @@ export const queryKeys = {
   claimWindowOverview: READ_ROOTS.claimWindowOverview,
   groupMatcherPage: (groupId: number | null): QueryKey => keyOf('groupMatcherPage', groupId),
   statementPool: READ_ROOTS.statementPool,
+  intakes: READ_ROOTS.intakes,
+  intake: (intakeId: number | null): QueryKey => keyOf('intake', intakeId),
 } as const;

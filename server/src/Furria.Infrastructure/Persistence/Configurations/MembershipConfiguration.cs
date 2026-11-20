@@ -21,6 +21,10 @@ public sealed class MembershipConfiguration : IEntityTypeConfiguration<Membershi
                     "admitted_at IS NOT NULL "
                         + "OR (admitted_by_person_id IS NULL AND NOT guardian_consent_confirmed)"
                 );
+                table.HasCheckConstraint(
+                    "ck_membership_one_origin",
+                    "admitted_at IS NULL OR intake_id IS NULL"
+                );
             }
         );
         builder.HasKey(membership => membership.Id);
@@ -39,7 +43,15 @@ public sealed class MembershipConfiguration : IEntityTypeConfiguration<Membershi
             .HasConstraintName("fk_membership_person_admitted_by_person_id")
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder
+            .HasOne(membership => membership.Intake)
+            .WithMany()
+            .HasForeignKey(membership => membership.IntakeId)
+            .HasConstraintName("fk_membership_intake_intake_id")
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasIndex(membership => membership.PersonId);
+        builder.HasIndex(membership => membership.IntakeId).IsUnique();
         builder.HasIndex(membership => membership.AdmittedByPersonId);
         builder
             .HasIndex(membership => membership.PersonId, "ix_membership_person_id_open")

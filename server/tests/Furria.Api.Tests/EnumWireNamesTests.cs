@@ -16,6 +16,7 @@ using Furria.Core.Gallery;
 using Furria.Core.GroupMatcher;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
+using Furria.Core.Intakes;
 using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.Push;
@@ -70,8 +71,11 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(MediaKind)] = "photo video audio",
         [typeof(EveningChange)] = "cast spots choreography",
         [typeof(MediaOwnerKind)] =
-            "person group gallery newsPost website event act session uploadLink",
+            "person group gallery newsPost website event act session uploadLink intake",
         [typeof(UploadLinkState)] = "open expired revoked",
+        [typeof(IntakeState)] = "open expired needsReview completed discarded",
+        [typeof(IntakeLinkState)] = "open expired used discarded",
+        [typeof(IntakeMatch)] = "email nameAndBirthDate",
         [typeof(SystemLevel)] = "ok attention broken",
         [typeof(SystemCheck)] = "database workers queue storage media logs services mail",
         [typeof(SystemReasonCode)] =
@@ -82,7 +86,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
             + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings "
-            + "pushDispatcher",
+            + "pushDispatcher intakeExpirySweep",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",
@@ -116,13 +120,14 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "clubRecord announcement announcementSeen media newsPost websitePicture act "
             + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
             + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
-            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher",
+            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher intake",
         [typeof(ChangeLineKind)] = "ready changes ping",
         [typeof(StancePosition)] = "yes neutral no",
         [typeof(AdmissionAgeBand)] =
             "underTwelve twelveToThirteen fourteenToFifteen sixteenToSeventeen eighteenPlus",
         [typeof(GroupStatementState)] = "answered open new changed",
-        [typeof(PushTopic)] = "invitations changes reminders announcements beerTab beerStock",
+        [typeof(PushTopic)] =
+            "invitations changes reminders announcements beerTab beerStock intakes",
     };
 
     private readonly ApiTestFixture _fixture;

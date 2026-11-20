@@ -34,6 +34,8 @@ public sealed class Invitation
 
     public bool IsReminder { get; set; }
 
+    public bool ContactEmailUnconfirmed { get; set; }
+
     public Person? Person { get; set; }
 
     public Person? IssuedBy { get; set; }

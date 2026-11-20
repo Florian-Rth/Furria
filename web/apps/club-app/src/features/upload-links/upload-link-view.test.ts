@@ -7,7 +7,6 @@ import {
   remainingOf,
   shareOriginOf,
   shareUrlOf,
-  tokenOfHash,
 } from './upload-link-view';
 
 const TOKEN = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJK_-0123';
@@ -29,18 +28,6 @@ const link = (
   uploadCount: 0,
   inboxPhotos: 0,
   inboxVideos: 0,
-});
-
-describe('tokenOfHash', () => {
-  it.each([
-    { label: 'a token behind the hash sign', hash: `#${TOKEN}`, expected: TOKEN },
-    { label: 'a token without the hash sign', hash: TOKEN, expected: TOKEN },
-    { label: 'an empty hash', hash: '', expected: null },
-    { label: 'a cut-off token', hash: `#${TOKEN.slice(0, 20)}`, expected: null },
-    { label: 'a token with foreign characters', hash: `#${TOKEN.slice(0, 42)}!`, expected: null },
-  ])('reads $label', ({ hash, expected }) => {
-    expect(tokenOfHash(hash)).toBe(expected);
-  });
 });
 
 describe('shareOriginOf', () => {
