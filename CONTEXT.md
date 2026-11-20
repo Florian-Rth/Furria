@@ -1098,6 +1098,9 @@ Made precise when L2 was built (ruled 2026-10-02):
   (every member for the club, the groups' members for groups, the chosen people), for an
   announcement every member who can read Aushänge; never the author, and editing never notifies.
   Who the push reaches always follows the audience; there is no separate list of whom to notify.
+  Notifying is one intent across every channel (ruled 2026-11-20): it also posts once into the
+  **linked WhatsApp group** that stands for the audience — today only the club group, so only an
+  audience of the club reaches WhatsApp. There is no separate WhatsApp switch.
   Precisely, an entry notifies the people its audience names — the club's running members, the
   groups' current members, the chosen people — never a paused member, and never a guest of the
   act's cast for being in it.
@@ -1473,6 +1476,40 @@ last-seen moment (ruled 2026-10-02, L2; "always on Start while current" ruled 20
 _UI copy_: Aushang; Titel, Text, Autor, Gültig bis; Neuer Aushang; Erwähnung
 _Avoid_: notice (that is the shell's live-evening layer), news post (that is public website news),
 message, chat, bulletin board, category, attachment, read receipt, copying an entry's add-ons
+
+**Linked WhatsApp group** (*WhatsApp-Gruppe*):
+An existing WhatsApp group the club's bot belongs to and that stands for one **audience**: the
+**club group** (*Vereinsgruppe*) stands for the club, and each other one for exactly one app
+**group** (ruled 2026-11-20). For now only the club group is linked; per-group links come later.
+_Avoid_: channel, community, chat (an **announcement** is explicitly not a chat)
+
+**WhatsApp post**:
+What notifying puts into a linked WhatsApp group: the post itself, then one message per answerable
+add-on — a calendar entry's Zu-/Absage as a WhatsApp event, an announcement's as a Ja/Nein/
+Vielleicht poll, a named poll as a poll; an anonymous poll and a sign-up list only as a link into
+the app. Moving or deleting the host, or closing an add-on, is answered in the group as a reply;
+answers arriving after closing count for nothing (ruled 2026-11-20). It speaks for the club, with
+a small hint naming its author.
+
+**WhatsApp match**:
+A WhatsApp sender is recognised by the phone of her **contact details** — there is no second
+number (ruled 2026-11-20); the phone field says that it is the number WhatsApp is matched with.
+A sender whose number no single person carries is **unassigned** (*nicht zugeordnet*): her answer
+counts for nobody and is only shown to the add-on's organiser by WhatsApp name; nobody assigns a
+number from it (ruled 2026-11-20).
+_Avoid_: WhatsApp number (as a separate field)
+
+**Group keeping** (*Vereinsgruppe verwalten*):
+The club's switch, off by default, that lets the bot change who is in the club group; while off it
+only posts and reads answers (ruled 2026-11-20). The bot only ever adds; it never removes anyone
+from the group.
+
+**Group consent** (*In die Vereinsgruppe aufnehmen*):
+A person's yes to being added to the club group, no by default — given by herself, or for a
+person without an account by a manager on her word. It only permits adding; withdrawing it removes
+nobody. When her WhatsApp refuses the add, the bot never writes to her directly — the app offers
+her the invite instead, and a manager sees whom to hand it to (ruled 2026-11-20).
+_Avoid_: opt-in, subscription
 
 ### Photos and videos
 

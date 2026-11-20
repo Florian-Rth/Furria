@@ -1,0 +1,191 @@
+---
+rfc: 0010
+title: The club group on WhatsApp
+status: draft
+github_issue: 100
+branch: feat/rfc-100-whatsapp-club-group
+created: 2026-11-20
+---
+
+# RFC 0010: The club group on WhatsApp
+
+## Summary
+Almost every member is in the club's WhatsApp group; far fewer use the club app. A **bot** — a
+dedicated club number driven through a self-hosted **WAHA** container (GOWS engine) — joins that
+group as an admin. **Notifying** (*Benachrichtigen*) an Aushang or a calendar entry for the club
+now also posts it into the group as a **WhatsApp post**, its answerable add-ons as native
+WhatsApp polls and events, and answers given there flow back into the app's add-ons by **WhatsApp
+match** on the contact phone. With **Group keeping** (*Vereinsgruppe verwalten*) switched on, the
+bot also adds active members who gave their **Group consent**. Grilled 2026-11-20; decisions:
+[ADR-0042](../adr/0042-the-club-reaches-whatsapp-through-a-self-hosted-waha-bot.md); terms:
+`CONTEXT.md` → *Linked WhatsApp group*, *WhatsApp post*, *WhatsApp match*, *Group keeping*,
+*Group consent*, *Notifying*.
+
+## Motivation
+Push only reaches members who installed the app. Everything the board writes in the app —
+notices, events, polls, sign-up lists — stays invisible to most of the club unless someone
+copies it into WhatsApp by hand, and answers given there never reach the app. One write in the
+app should reach everyone where they already are, and their answers should land in one place.
+
+## Proposal
+
+### The bot and its connection
+- WAHA (free image, GOWS engine) runs beside the API with no public port; the API calls it
+  internally with an API key, WAHA posts webhooks back internally, HMAC-signed. Its session
+  storage is a persistent volume (a lost session cannot decrypt votes on polls already posted).
+- **System → WhatsApp** (admins only): link the bot by QR or pairing code, see the session state
+  (*verbunden / getrennt*), pick the **club group** from the bot's groups, switch **Group keeping**,
+  see the WhatsApp outbox with failed operations and the list *Hinzufügen blockiert*.
+- When the session drops, admins get a push; operations wait in the outbox until it is back.
+
+### Linked WhatsApp groups
+A linked group stands for one **audience**: the club group for the club, later one per app group.
+The model carries the link from the start (`LinkedWhatsAppGroup`: chat id, audience = club or a
+group id); v1 offers only the club group. Audience *Ausgewählte Personen* never reaches WhatsApp.
+
+### Outbox, post record, inbox (ADR-0042)
+- **WhatsApp outbox** (`outbox_whatsapp`) on the shared `OutboxSignal` / `OutboxWakeUp` machinery:
+  one row per operation (post text, post image, send poll, send event, reply, edit, delete,
+  add participant). A dispatcher sends **strictly one operation at a time per chat** with a
+  jittered gap and its own retry schedule; WhatsApp rate signals (463/475) back off, never re-pair.
+- **Post record** (`WhatsAppMessage`): ties a host (announcement / calendar entry) and each of its
+  add-ons to the WhatsApp message id, and a poll to its posted option texts. Edits, replies,
+  deletes and vote mapping read it. It outlives the outbox row.
+- **Inbox** (`inbox_whatsapp`): the webhook endpoint verifies `X-Webhook-Hmac`, stores the raw
+  event de-duplicated by `X-Webhook-Request-Id`, answers 200; a worker applies it idempotently and
+  order-tolerantly (latest timestamp per voter wins; a vote carries the whole current selection).
+
+### What notifying posts
+Notifying an Aushang, or a calendar entry with audience *Verein*, enqueues besides the push:
+1. **The post** — an image with caption when the host has a picture, else text: bold title, the
+   date line for entries (*Sa 12.6. · 15:00 Uhr · Vereinsheim*), the body translated from the news
+   text subset to WhatsApp formatting, a small author hint, the app deep link. A mentioned person
+   becomes a real @mention when her phone matches, otherwise her name; other mentions become names.
+2. **One message per answerable own add-on**, in the author's order:
+
+| Add-on | In the group | Answers flow back |
+|---|---|---|
+| Zu-/Absage of a calendar entry | WhatsApp event (title, start/end, place) | Going / Not going / Maybe |
+| Zu-/Absage of an Aushang | poll *Ja / Nein / Vielleicht*, single choice | yes |
+| Named poll | poll with the same answers, single/multiple choice | yes |
+| Anonymous poll | line *Anonym abstimmen: link* | app only |
+| Sign-up list | line *Eintragen: link* | app only |
+| Day schedule | text lines in the post | — |
+| Participating groups | one line in the post | — |
+
+Taken-over add-ons are not posted again; the Aushang post names them with the app link. The
+editor's reach line names the group: *Push an 42 · WhatsApp-Gruppe*. Reminders stay push-only.
+
+### Answers coming back
+- The sender's number (resolving a LID through WAHA) is normalised to E.164 (German default) and
+  matched against the contact **phone**; exactly one person must carry it.
+- A matched answer becomes her own answer, marked as given through WhatsApp; the latest answer
+  wins across app and WhatsApp, as everywhere. If she may not answer the add-on (paused, outside
+  the audience) it counts for nothing.
+- An **unassigned** sender's answer counts for nobody; the add-on's organiser sees it by WhatsApp
+  name in the result view. Nothing is applied later when a number appears.
+- Answers after the add-on closed count for nothing; `poll.vote.failed` is logged only.
+- The phone field says it is the number WhatsApp is matched with.
+
+### Keeping the post in step
+| In the app | In the group |
+|---|---|
+| Text edited | edit the post within ~15 min, else nothing |
+| Entry moved in time or place | reply *Verschoben: …* |
+| Entry deleted / Aushang withdrawn | delete for everyone within ~2 days, else reply *Abgesagt* / *Zurückgezogen* |
+| Poll / Zu-/Absage closes | reply with the result (counts) |
+| A poll's answers change (added, or an unchosen one changed/removed) | delete the old poll, post a new one; app votes stay |
+
+### Group keeping and consent
+- Club switch **Group keeping**, off by default, in System → WhatsApp. Off: post and read only.
+- **Group consent** per person, no by default: she sets it in her profile, in Welcome and in the
+  Neuzugang wizard; for a person without an account a manager sets it on her word.
+- While on, the bot adds every active member with consent and a phone who is not in the group, one
+  at a time, spaced. It only ever adds; withdrawing consent removes nobody.
+- When her WhatsApp refuses the add, the bot never writes to her: the app shows her a Start card
+  with the invite link; managers see her in *Hinzufügen blockiert* to hand it over personally.
+- Group membership is read from WAHA (participants, `group.v2.participants` events).
+
+## Phases
+Each phase leaves the system intact (builds, tests green, no half-done migration) and fits a
+~120k-token session.
+
+### Phase 1 — WAHA beside the API, the inbox and the session
+Goal: the API talks to a linked WAHA session and stores its webhooks; nothing is posted yet.
+- [ ] Dev compose: WAHA (GOWS) service with persistent session volume, API key and webhook HMAC key; `WhatsAppOptions` (base URL, API key, HMAC key, session) — API starts without it configured (feature off)
+- [ ] `WahaClient` (typed HTTP client): session start/status/QR/pairing code, groups list, send text/image/poll/event, reply, edit, delete, participants add/list, LID lookup
+- [ ] Webhook endpoint: HMAC check, `inbox_whatsapp` row de-duplicated by request id, 200 — tests first
+- [ ] Inbox worker on the background-job registry; `session.status` tracked; admins pushed when the session drops
+- [ ] `LinkedWhatsAppGroup` (chat id, audience club / group id) with a unique club link; service to pick the club group
+- [ ] ADR-0042 and CONTEXT terms committed with the phase
+
+### Phase 2 — System → WhatsApp
+Goal: an admin links the bot and picks the club group from the club app.
+- [ ] Endpoints the screen needs: session state, start linking (QR / pairing code), the bot's groups, pick club group
+- [ ] Club app route `/manage/system/whatsapp` (child of System): link flow, state, club-group picker
+- [ ] Browser check on phone size against a real WAHA session
+
+### Phase 3 — The WhatsApp outbox and the post
+Goal: notifying a club-audience Aushang or entry posts it into the club group.
+- [ ] `outbox_whatsapp` + dispatcher: one operation per chat at a time, jittered gap, retry schedule, back-off on rate signals; shown on the System page like the mail outbox
+- [ ] `WhatsAppMessage` post record per host
+- [ ] Notifying enqueues the post in the same transaction as the pushes (Aushang; entry with audience club) — tests first
+- [ ] Post rendering (pure, tested): title, date line, news subset → WhatsApp formatting, day schedule and participating groups lines, author hint, deep link; picture → image with caption
+- [ ] Mentions: matched phone → @mention, else name
+- [ ] Web: reach line names the WhatsApp group when the club group is linked
+
+### Phase 4 — Add-ons in the group
+Goal: answerable add-ons follow the post as polls, events and links.
+- [ ] Per add-on message in the author's order: entry Zu-/Absage → event; Aushang Zu-/Absage → Ja/Nein/Vielleicht poll; named poll → poll; anonymous poll / sign-up list → link line — tests first
+- [ ] Post record per add-on with the posted poll option texts
+- [ ] Taken-over add-ons named in the Aushang post, not posted
+
+### Phase 5 — Answers flow back
+Goal: votes and event responses in the group become app answers.
+- [ ] Phone normalisation to E.164 (German default) and single-person match; LID → phone through WAHA — tests first
+- [ ] `poll.vote` → poll votes / Aushang Zu-/Absage; `event.response` → attendance; latest timestamp wins; eligibility and closing respected; answer marked as given through WhatsApp
+- [ ] Unassigned answers stored per add-on with WhatsApp name; organiser's result view shows them
+- [ ] Web: result view lists *nicht zugeordnet*; answer source shown; phone field hint *wird mit WhatsApp abgeglichen*
+
+### Phase 6 — Keeping the post in step
+Goal: changes in the app are told in the group.
+- [ ] Edit within ~15 min; moved → reply; deleted / withdrawn → delete within ~2 days else reply — tests first
+- [ ] Close (by time or by hand) → result reply; reopen posts nothing
+- [ ] Changed poll answers → delete old poll, post new one, re-point the post record
+- [ ] Undelivered operations of a withdrawn host are dropped like its pushes
+
+### Phase 7 — Group keeping (server)
+Goal: with the switch on, the bot adds consenting active members.
+- [ ] Group consent on the person (migration, default no); she sets it, a manager on her word for a person without an account — tests first
+- [ ] Group keeping switch (club-level) and the group's participants read from WAHA + `group.v2.participants`
+- [ ] Add pass: active, consent, phone, not in group → add-participant operation; refused adds recorded as blocked
+- [ ] Endpoints the club app needs: consent, switch, blocked list, invite link for her Start card
+
+### Phase 8 — Group keeping (club app) and rollout
+Goal: members consent in the app, managers see blocked adds, production runs the bot.
+- [ ] Consent toggle in her profile, a Welcome step and a Neuzugang wizard step; manager toggle for persons without account
+- [ ] Start card *Tritt der Vereinsgruppe bei* with the invite link when her add was refused
+- [ ] System → WhatsApp: Group keeping switch and *Hinzufügen blockiert*
+- [ ] `docs/ops`: WAHA in production, session linking, backup of the session volume, what to do on a ban or logout; production compose edit (with Florian's approval)
+- [ ] Device checks on a test group: post, poll, event, vote back, edit/move/close, add with and without privacy block
+
+## Risks & alternatives
+- **Ban of the bot's number** (unofficial linked-device protocol). Mitigated by a dedicated number,
+  posting only into the existing group, spaced sends, no direct messages. Losing the number loses
+  the bot, never a person's account.
+- **Linked device logged out** when the bot's phone stays offline too long (~14 days, to verify);
+  the session-drop push and the outbox make it visible and lossless.
+- **Lost session keys** make votes on earlier polls undecryptable — the session volume must persist
+  and be backed up.
+- **WhatsApp limits**: edits ~15 min, deletes ~2 days, polls immutable, voters never hidden — the
+  design answers each with replies, reposts or app links.
+- **Payloads differ per engine** — GOWS is fixed; it is the only engine with event messages.
+- Rejected: Meta's official Cloud API (no ordinary group with polls and adding members for a small
+  club); one merged outbox table for all channels; a WhatsApp channel/newsletter (one-way, no
+  polls); a separate WhatsApp number per person; a manager's quick action to assign a number.
+
+## Out of scope
+- Linking app groups' own WhatsApp groups (model ready, UI later).
+- Reminders, a weekly digest, read stats in WhatsApp; admin-only writing; a join-request gate.
+- Removing anyone from the group, also on archiving.
+- Direct messages to anyone; reading or answering chat messages.
