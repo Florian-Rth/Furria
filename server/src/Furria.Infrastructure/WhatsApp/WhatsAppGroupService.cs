@@ -9,7 +9,6 @@ namespace Furria.Infrastructure.WhatsApp;
 public sealed class WhatsAppGroupService
 {
     private const string UnknownGroupMessage = "Der Bot ist nicht in dieser WhatsApp-Gruppe.";
-    private const string UnreachableMessage = "WhatsApp ist gerade nicht erreichbar.";
 
     private readonly AppDbContext _dbContext;
     private readonly WahaClient _waha;
@@ -34,26 +33,14 @@ public sealed class WhatsAppGroupService
         if (!_options.Value.IsConfigured)
             return Result.Conflict(WhatsAppMessages.SwitchedOff);
 
-        var botGroups = await BotGroupsAsync(ct);
+        var botGroups = await WahaReach.TryAsync(() => _waha.GroupsAsync(ct), ct);
         if (botGroups is null)
-            return Result.Conflict(UnreachableMessage);
-        if (!botGroups.Any(group => group.ChatId == chatId))
+            return Result.Conflict(WhatsAppMessages.Unreachable);
+        if (!botGroups.Value.Any(group => group.ChatId == chatId))
             return Result.NotFound(UnknownGroupMessage);
 
         await LinkClubAsync(chatId, ct);
         return Result.Success();
-    }
-
-    private async Task<IReadOnlyList<WahaGroup>?> BotGroupsAsync(CancellationToken ct)
-    {
-        try
-        {
-            return await _waha.GroupsAsync(ct);
-        }
-        catch (HttpRequestException)
-        {
-            return null;
-        }
     }
 
     private async Task LinkClubAsync(string chatId, CancellationToken ct)

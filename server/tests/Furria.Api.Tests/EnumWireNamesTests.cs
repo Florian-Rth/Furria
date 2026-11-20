@@ -9,6 +9,7 @@ using Furria.Application.Management;
 using Furria.Application.Operations;
 using Furria.Application.Registry;
 using Furria.Application.Start;
+using Furria.Application.WhatsApp;
 using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
@@ -121,6 +122,8 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "underTwelve twelveToThirteen fourteenToFifteen sixteenToSeventeen eighteenPlus",
         [typeof(GroupStatementState)] = "answered open new changed",
         [typeof(PushTopic)] = "invitations changes reminders announcements beerTab beerStock",
+        [typeof(WhatsAppConnectionState)] =
+            "off unreachable stopped starting scanQrCode working failed",
     };
 
     private readonly ApiTestFixture _fixture;

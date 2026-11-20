@@ -121,9 +121,9 @@ Goal: the API talks to a linked WAHA session and stores its webhooks; nothing is
 
 ### Phase 2 — System → WhatsApp
 Goal: an admin links the bot and picks the club group from the club app.
-- [ ] Endpoints the screen needs: session state, start linking (QR / pairing code), the bot's groups, pick club group
-- [ ] Club app route `/manage/system/whatsapp` (child of System): link flow, state, club-group picker
-- [ ] Browser check on phone size against a real WAHA session
+- [x] Endpoints the screen needs: session state, start linking (QR / pairing code), the bot's groups, pick club group
+- [x] Club app route `/system/whatsapp` (child of System): link flow, state, club-group picker
+- [ ] Browser check on phone size against a real WAHA session — linking flow up to the live QR checked 2026-11-20; scan with the bot's phone, connected state and club-group pick still owed
 
 ### Phase 3 — The WhatsApp outbox and the post
 Goal: notifying a club-audience Aushang or entry posts it into the club group.

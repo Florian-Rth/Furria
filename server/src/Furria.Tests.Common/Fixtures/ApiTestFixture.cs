@@ -467,6 +467,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
     )
     {
         await ResetDatabaseAsync(ct);
+        Waha.Forget();
 
         var recorded = new SeedContextBuilder();
         configure(recorded);

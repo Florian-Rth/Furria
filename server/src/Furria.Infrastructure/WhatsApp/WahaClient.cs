@@ -35,6 +35,9 @@ public sealed class WahaClient
     public Task StartSessionAsync(CancellationToken ct) =>
         PostAsync($"api/sessions/{_sessionSegment}/start", new { }, ct);
 
+    public Task RestartSessionAsync(CancellationToken ct) =>
+        PostAsync($"api/sessions/{_sessionSegment}/restart", new { }, ct);
+
     public async Task<WahaSessionInfo?> SessionAsync(CancellationToken ct)
     {
         using var response = await _http.GetAsync($"api/sessions/{_sessionSegment}", ct);

@@ -48,6 +48,7 @@ export const DOMAIN_CHANGES = [
   'seating',
   'claimWindow',
   'groupMatcher',
+  'whatsApp',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -138,6 +139,8 @@ export const READ_NAMES = [
   'claimWindowOverview',
   'groupMatcherPage',
   'statementPool',
+  'whatsAppOverview',
+  'whatsAppQrCode',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -228,6 +231,8 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   claimWindowOverview: ['claim-window', 'overview'],
   groupMatcherPage: ['group-matcher', 'group'],
   statementPool: ['group-matcher', 'pool'],
+  whatsAppOverview: ['whatsapp', 'overview'],
+  whatsAppQrCode: ['whatsapp', 'qr-code'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -562,6 +567,8 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   claimWindowOverview: ['claimWindow', 'account', 'person'],
   groupMatcherPage: ['groupMatcher', 'group'],
   statementPool: ['groupMatcher', 'group'],
+  whatsAppOverview: ['whatsApp'],
+  whatsAppQrCode: [],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -682,4 +689,6 @@ export const queryKeys = {
   claimWindowOverview: READ_ROOTS.claimWindowOverview,
   groupMatcherPage: (groupId: number | null): QueryKey => keyOf('groupMatcherPage', groupId),
   statementPool: READ_ROOTS.statementPool,
+  whatsAppOverview: READ_ROOTS.whatsAppOverview,
+  whatsAppQrCode: READ_ROOTS.whatsAppQrCode,
 } as const;
