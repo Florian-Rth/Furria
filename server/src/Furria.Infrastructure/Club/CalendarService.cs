@@ -61,6 +61,7 @@ public sealed partial class CalendarService
     private readonly TimeProvider _timeProvider;
     private readonly CalendarPushRecipients _pushRecipients;
     private readonly WhatsAppPosts _whatsAppPosts;
+    private readonly WhatsAppPostUpdates _whatsAppPostUpdates;
 
     public CalendarService(
         AppDbContext dbContext,
@@ -68,7 +69,8 @@ public sealed partial class CalendarService
         MediaPictures pictures,
         TimeProvider timeProvider,
         CalendarPushRecipients pushRecipients,
-        WhatsAppPosts whatsAppPosts
+        WhatsAppPosts whatsAppPosts,
+        WhatsAppPostUpdates whatsAppPostUpdates
     )
     {
         _dbContext = dbContext;
@@ -77,6 +79,7 @@ public sealed partial class CalendarService
         _timeProvider = timeProvider;
         _pushRecipients = pushRecipients;
         _whatsAppPosts = whatsAppPosts;
+        _whatsAppPostUpdates = whatsAppPostUpdates;
     }
 
     public async Task<Result<IReadOnlyList<CalendarEntrySummary>>> GetEntriesAsync(
@@ -468,6 +471,11 @@ public sealed partial class CalendarService
         if (!saved.IsSuccess)
             return Result<CalendarEntryWriteResult>.Carrying(saved);
 
+        await _whatsAppPostUpdates.KeepCalendarEntryInStepAsync(
+            entry,
+            new WhatsAppEntryChange(command.ViewerPersonId, pushBaseline.Moves),
+            ct
+        );
         await transaction.CommitAsync(ct);
         return Result<CalendarEntryWriteResult>.Success(
             await WrittenAsync(entry, command.ViewerPersonId, ct)
@@ -500,6 +508,7 @@ public sealed partial class CalendarService
         );
         _dbContext.CalendarEntries.Remove(entry);
         await _dbContext.SaveChangesAsync(ct);
+        await _whatsAppPostUpdates.CancelCalendarEntryAsync(entry.Id, ct);
         await transaction.CommitAsync(ct);
 
         return Result.Success();

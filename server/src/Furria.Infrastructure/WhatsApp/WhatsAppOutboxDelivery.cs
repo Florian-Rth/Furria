@@ -11,6 +11,7 @@ public sealed class WhatsAppOutboxDelivery
 {
     private const string SendSavepoint = "send";
     private const string EventWithoutStartMessage = "A WhatsApp event operation carries no start.";
+    private const string NoTargetMessage = "A WhatsApp operation on a sent message names none.";
 
     private static readonly TimeSpan FailedKeptFor = TimeSpan.FromDays(30);
 
@@ -65,7 +66,8 @@ public sealed class WhatsAppOutboxDelivery
             return outcome;
         }
 
-        RecordPost(operation, messageId, now);
+        if (!WhatsAppOperations.Targeting.Contains(operation.Operation))
+            await RecordPostAsync(operation, messageId, now, ct);
         _dbContext.OutboxWhatsApps.Remove(operation);
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
@@ -108,13 +110,33 @@ public sealed class WhatsAppOutboxDelivery
             )
             .SingleOrDefaultAsync(ct);
 
-    private Task<string?> SendAsync(OutboxWhatsApp operation, CancellationToken ct) =>
-        operation.Operation switch
+    private async Task<string?> SendAsync(OutboxWhatsApp operation, CancellationToken ct)
+    {
+        switch (operation.Operation)
         {
-            WhatsAppOperation.SendPoll => _waha.SendPollAsync(PollOf(operation), ct),
-            WhatsAppOperation.SendEvent => _waha.SendEventAsync(EventOf(operation), ct),
-            _ => _waha.SendTextAsync(TextOf(operation), ct),
-        };
+            case WhatsAppOperation.SendPoll:
+                return await _waha.SendPollAsync(PollOf(operation), ct);
+            case WhatsAppOperation.SendEvent:
+                return await _waha.SendEventAsync(EventOf(operation), ct);
+            case WhatsAppOperation.EditText:
+                await _waha.EditTextAsync(
+                    operation.ChatId,
+                    TargetOf(operation),
+                    operation.Text,
+                    ct
+                );
+                return null;
+            case WhatsAppOperation.Delete:
+                await _waha.DeleteMessageAsync(operation.ChatId, TargetOf(operation), ct);
+                return null;
+            default:
+                return await _waha.SendTextAsync(TextOf(operation), ct);
+        }
+    }
+
+    [Pure]
+    private static string TargetOf(OutboxWhatsApp operation) =>
+        operation.TargetMessageId ?? throw new InvalidOperationException(NoTargetMessage);
 
     [Pure]
     private static WahaOutgoingText TextOf(OutboxWhatsApp operation) =>
@@ -122,6 +144,7 @@ public sealed class WhatsAppOutboxDelivery
         {
             ChatId = operation.ChatId,
             Text = operation.Text,
+            ReplyTo = operation.TargetMessageId,
             Mentions = operation.Mentions,
         };
 
@@ -148,7 +171,12 @@ public sealed class WhatsAppOutboxDelivery
             Place = operation.EventPlace,
         };
 
-    private void RecordPost(OutboxWhatsApp operation, string? messageId, DateTimeOffset now)
+    private async Task RecordPostAsync(
+        OutboxWhatsApp operation,
+        string? messageId,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
     {
         if (messageId is null)
         {
@@ -159,21 +187,47 @@ public sealed class WhatsAppOutboxDelivery
             return;
         }
 
-        _dbContext.WhatsAppMessages.Add(
-            new WhatsAppMessage
-            {
-                ChatId = operation.ChatId,
-                MessageId = messageId,
-                MessageKey = WahaAnswerEvents.MessageKeyOf(messageId),
-                HostKind = operation.HostKind,
-                HostId = operation.HostId,
-                AddOnKind = operation.AddOnKind,
-                AddOnId = operation.AddOnId,
-                PollOptions = [.. operation.PollOptions],
-                PollOptionIds = [.. operation.PollOptionIds],
-                SentAt = now,
-            }
-        );
+        var record = await RepostedRecordAsync(operation, ct) ?? NewRecordOf(operation);
+        if (record.Id != 0)
+            await _dbContext
+                .WhatsAppAnswers.Where(answer => answer.WhatsAppMessageId == record.Id)
+                .ExecuteDeleteAsync(ct);
+        record.MessageId = messageId;
+        record.MessageKey = WahaAnswerEvents.MessageKeyOf(messageId);
+        record.Text = operation.Text;
+        record.PollOptions = [.. operation.PollOptions];
+        record.PollOptionIds = [.. operation.PollOptionIds];
+        record.SentAt = now;
+        record.ResultToldAt = null;
+    }
+
+    private async Task<WhatsAppMessage?> RepostedRecordAsync(
+        OutboxWhatsApp operation,
+        CancellationToken ct
+    ) =>
+        operation.AddOnKind is { } addOnKind
+            ? await _dbContext.WhatsAppMessages.SingleOrDefaultAsync(
+                record =>
+                    record.HostKind == operation.HostKind
+                    && record.HostId == operation.HostId
+                    && record.AddOnKind == addOnKind
+                    && record.AddOnId == operation.AddOnId,
+                ct
+            )
+            : null;
+
+    private WhatsAppMessage NewRecordOf(OutboxWhatsApp operation)
+    {
+        var record = new WhatsAppMessage
+        {
+            ChatId = operation.ChatId,
+            HostKind = operation.HostKind,
+            HostId = operation.HostId,
+            AddOnKind = operation.AddOnKind,
+            AddOnId = operation.AddOnId,
+        };
+        _dbContext.WhatsAppMessages.Add(record);
+        return record;
     }
 
     private async Task<WhatsAppSendOutcome> RetryOrFailAsync(

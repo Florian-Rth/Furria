@@ -21,9 +21,13 @@ public sealed class WhatsAppMessage
 
     public int? AddOnId { get; set; }
 
+    public string Text { get; set; } = "";
+
     public List<string> PollOptions { get; set; } = [];
 
     public List<int> PollOptionIds { get; set; } = [];
 
     public DateTimeOffset SentAt { get; set; }
+
+    public DateTimeOffset? ResultToldAt { get; set; }
 }

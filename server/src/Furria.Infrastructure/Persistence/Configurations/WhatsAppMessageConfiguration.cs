@@ -68,6 +68,7 @@ public sealed class WhatsAppMessageConfiguration : IEntityTypeConfiguration<What
             .Property(message => message.AddOnKind)
             .HasConversion<string>()
             .HasMaxLength(EnumLength);
+        builder.Property(message => message.Text).IsRequired().HasDefaultValue("");
         builder
             .Property(message => message.PollOptions)
             .IsRequired()
@@ -83,5 +84,21 @@ public sealed class WhatsAppMessageConfiguration : IEntityTypeConfiguration<What
         builder
             .HasIndex(message => new { message.AddOnKind, message.AddOnId })
             .HasFilter("add_on_id IS NOT NULL");
+        builder
+            .HasIndex(message => new
+            {
+                message.HostKind,
+                message.HostId,
+                message.AddOnKind,
+                message.AddOnId,
+            })
+            .HasDatabaseName("ux_whatsapp_message_add_on")
+            .IsUnique()
+            .AreNullsDistinct(false)
+            .HasFilter("add_on_kind IS NOT NULL");
+        builder
+            .HasIndex(message => message.AddOnKind)
+            .HasDatabaseName("ix_whatsapp_message_result_untold")
+            .HasFilter("result_told_at IS NULL AND add_on_kind IN ('Poll', 'Attendance')");
     }
 }

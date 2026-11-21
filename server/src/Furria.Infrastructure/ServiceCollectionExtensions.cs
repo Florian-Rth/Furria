@@ -239,6 +239,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<WhatsAppInboxWorker>();
         services.AddScoped<WhatsAppPosts>();
         services.AddScoped<WhatsAppOutboxDelivery>();
+        services.AddScoped<WhatsAppPostUpdates>();
+        services.AddScoped<WhatsAppResults>();
         services.AddSingleton<WhatsAppPacing>();
         services.AddHostedService<WhatsAppDispatcher>();
         services.AddSingleton<ChangeFeed>();

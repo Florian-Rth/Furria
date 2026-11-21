@@ -23,6 +23,18 @@ public sealed class OutboxWhatsAppConfiguration : IEntityTypeConfiguration<Outbo
         Enum.GetNames<WhatsAppHostKind>().Select(name => $"'{name}'")
     );
 
+    private static readonly string TargetingOperations = string.Join(
+        ", ",
+        WhatsAppOperations.Targeting.Select(operation => $"'{operation}'")
+    );
+
+    private static readonly string AddOnFreeOperations = string.Join(
+        ", ",
+        WhatsAppOperations
+            .Targeting.Prepend(WhatsAppOperation.PostText)
+            .Select(operation => $"'{operation}'")
+    );
+
     public void Configure(EntityTypeBuilder<OutboxWhatsApp> builder)
     {
         builder.ToTable(
@@ -56,7 +68,11 @@ public sealed class OutboxWhatsAppConfiguration : IEntityTypeConfiguration<Outbo
                 );
                 table.HasCheckConstraint(
                     "ck_outbox_whatsapp_add_on_operation",
-                    $"operation = '{nameof(WhatsAppOperation.PostText)}' OR add_on_kind IS NOT NULL"
+                    $"operation IN ({AddOnFreeOperations}) OR add_on_kind IS NOT NULL"
+                );
+                table.HasCheckConstraint(
+                    "ck_outbox_whatsapp_target_message",
+                    $"(operation IN ({TargetingOperations})) = (target_message_id IS NOT NULL)"
                 );
                 table.HasCheckConstraint(
                     "ck_outbox_whatsapp_poll",
@@ -103,6 +119,9 @@ public sealed class OutboxWhatsAppConfiguration : IEntityTypeConfiguration<Outbo
         builder
             .Property(operation => operation.EventPlace)
             .HasMaxLength(VenueConfiguration.NameLength);
+        builder
+            .Property(operation => operation.TargetMessageId)
+            .HasMaxLength(WhatsAppMessage.MessageIdLength);
         builder.Property(operation => operation.LastError).HasMaxLength(OutboxWhatsApp.ErrorLength);
 
         builder

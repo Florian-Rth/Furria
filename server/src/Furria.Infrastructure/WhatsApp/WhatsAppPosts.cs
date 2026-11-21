@@ -38,6 +38,30 @@ public sealed class WhatsAppPosts
         if (await ClubChatIdAsync(ct) is not { } chatId)
             return;
 
+        Stage(chatId, await RenderAnnouncementAsync(announcement, ct));
+        await _dbContext.SaveChangesAsync(ct);
+    }
+
+    public async Task StageCalendarEntryAsync(
+        CalendarEntry entry,
+        int? authorPersonId,
+        CancellationToken ct
+    )
+    {
+        if (entry.Audience != CalendarEntryAudience.Club)
+            return;
+        if (await ClubChatIdAsync(ct) is not { } chatId)
+            return;
+
+        Stage(chatId, await RenderCalendarEntryAsync(entry, authorPersonId, ct));
+        await _dbContext.SaveChangesAsync(ct);
+    }
+
+    public async Task<WhatsAppRenderedPost> RenderAnnouncementAsync(
+        Announcement announcement,
+        CancellationToken ct
+    )
+    {
         var link = LinkOf(AnnouncementPath, announcement.Id);
         var post = WhatsAppPostText.Render(
             new WhatsAppPostDraft
@@ -53,33 +77,30 @@ public sealed class WhatsAppPosts
                 Link = link,
             }
         );
-        Stage(
-            new StagedHost(chatId, WhatsAppHostKind.Announcement, announcement.Id, Now()),
+        return new WhatsAppRenderedPost(
+            new WhatsAppHost(WhatsAppHostKind.Announcement, announcement.Id),
             post,
-            AddOnMessagesOf(
-                new AddOnPositions(
-                    announcement.AttendancePosition,
-                    announcement.Polls,
-                    announcement.SignUpLists
+            [
+                .. AddOnMessagesOf(
+                    new AddOnPositions(
+                        announcement.AttendancePosition,
+                        announcement.Polls,
+                        announcement.SignUpLists
+                    ),
+                    WhatsAppAddOnMessages.AttendancePoll(announcement.Title),
+                    link
                 ),
-                WhatsAppAddOnMessages.AttendancePoll(announcement.Title),
-                link
-            )
+            ],
+            null
         );
-        await _dbContext.SaveChangesAsync(ct);
     }
 
-    public async Task StageCalendarEntryAsync(
+    public async Task<WhatsAppRenderedPost> RenderCalendarEntryAsync(
         CalendarEntry entry,
         int? authorPersonId,
         CancellationToken ct
     )
     {
-        if (entry.Audience != CalendarEntryAudience.Club)
-            return;
-        if (await ClubChatIdAsync(ct) is not { } chatId)
-            return;
-
         var slot = new WhatsAppPostSlot(
             entry.StartsAt,
             entry.EndsAt,
@@ -102,62 +123,28 @@ public sealed class WhatsAppPosts
                 Link = link,
             }
         );
-        Stage(
-            new StagedHost(chatId, WhatsAppHostKind.CalendarEntry, entry.Id, Now()),
+        return new WhatsAppRenderedPost(
+            new WhatsAppHost(WhatsAppHostKind.CalendarEntry, entry.Id),
             post,
-            AddOnMessagesOf(
-                new AddOnPositions(entry.AttendancePosition, entry.Polls, entry.SignUpLists),
-                WhatsAppAddOnMessages.AttendanceEvent(entry.Title, slot),
-                link
-            )
+            [
+                .. AddOnMessagesOf(
+                    new AddOnPositions(entry.AttendancePosition, entry.Polls, entry.SignUpLists),
+                    WhatsAppAddOnMessages.AttendanceEvent(entry.Title, slot),
+                    link
+                ),
+            ],
+            slot
         );
-        await _dbContext.SaveChangesAsync(ct);
     }
 
-    private void Stage(
-        StagedHost host,
-        WhatsAppPostContent post,
-        IEnumerable<WhatsAppAddOnMessage> addOnMessages
-    )
+    private void Stage(string chatId, WhatsAppRenderedPost rendered)
     {
-        _dbContext.OutboxWhatsApps.Add(
-            new OutboxWhatsApp
-            {
-                ChatId = host.ChatId,
-                Operation = WhatsAppOperation.PostText,
-                HostKind = host.Kind,
-                HostId = host.Id,
-                Text = post.Text,
-                Mentions = [.. post.MentionedChatIds],
-                EnqueuedAt = host.EnqueuedAt,
-            }
-        );
+        var addressed = new WhatsAppAddressedHost(chatId, rendered.Host, _timeProvider.GetUtcNow());
+        _dbContext.OutboxWhatsApps.Add(WhatsAppOutboxRows.PostOf(addressed, rendered.Post));
         _dbContext.OutboxWhatsApps.AddRange(
-            addOnMessages.Select(message => OperationOf(host, message))
+            rendered.AddOns.Select(message => WhatsAppOutboxRows.AddOnOf(addressed, message))
         );
     }
-
-    private DateTimeOffset Now() => _timeProvider.GetUtcNow();
-
-    [Pure]
-    private static OutboxWhatsApp OperationOf(StagedHost host, WhatsAppAddOnMessage message) =>
-        new()
-        {
-            ChatId = host.ChatId,
-            Operation = message.Operation,
-            HostKind = host.Kind,
-            HostId = host.Id,
-            Text = message.Text,
-            PollOptions = [.. message.PollOptions],
-            PollOptionIds = [.. message.PollOptionIds],
-            AllowsSeveralAnswers = message.AllowsSeveralAnswers,
-            EventStartsAt = message.EventSlot?.StartsAt,
-            EventEndsAt = message.EventSlot?.EndsAt,
-            EventPlace = message.EventSlot?.VenueName,
-            AddOnKind = message.AddOnKind,
-            AddOnId = message.AddOnId,
-            EnqueuedAt = host.EnqueuedAt,
-        };
 
     [Pure]
     private static IEnumerable<WhatsAppAddOnMessage> AddOnMessagesOf(
@@ -354,13 +341,6 @@ public sealed class WhatsAppPosts
                     ]
                 )),
         ];
-
-    private sealed record StagedHost(
-        string ChatId,
-        WhatsAppHostKind Kind,
-        int Id,
-        DateTimeOffset EnqueuedAt
-    );
 
     private sealed record AddOnPositions(
         int? AttendancePosition,

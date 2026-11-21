@@ -149,6 +149,8 @@ public sealed class FakeWahaService : HttpMessageHandler
                 Route(path),
                 body
             ),
+            ("PUT", "message") => Change("edit", path, TextOf(body)),
+            ("DELETE", "message") => Change("delete", path, ""),
             _ => new HttpResponseMessage(HttpStatusCode.NotFound),
         };
 
@@ -161,6 +163,7 @@ public sealed class FakeWahaService : HttpMessageHandler
             "/api/sendPoll" => "sendPoll",
             "/api/contacts" => "contacts",
             _ when path.Contains("/lids/", StringComparison.Ordinal) => "lids",
+            _ when path.Contains("/messages/", StringComparison.Ordinal) => "message",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)
                     && path.EndsWith("/start", StringComparison.Ordinal) => "start",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)
@@ -221,6 +224,27 @@ public sealed class FakeWahaService : HttpMessageHandler
         return Json(JsonSerializer.Serialize(new { id = messageId }));
     }
 
+    private HttpResponseMessage Change(string kind, string path, string text)
+    {
+        if (_sendRefusal is var (status, refusal))
+            return new HttpResponseMessage(status)
+            {
+                Content = new StringContent(refusal, Encoding.UTF8, "application/json"),
+            };
+
+        var segments = path.Split('/');
+        var chatId = Uri.UnescapeDataString(segments[^3]);
+        var messageId = Uri.UnescapeDataString(segments[^1]);
+        _sent.Enqueue(new FakeWahaSend(kind, chatId, text, [], messageId));
+        return Json("{}");
+    }
+
+    private static string TextOf(string body)
+    {
+        using var document = JsonDocument.Parse(body);
+        return document.RootElement.GetProperty("text").GetString() ?? "";
+    }
+
     private static FakeWahaSend SentOf(
         string kind,
         string chatId,
@@ -239,8 +263,17 @@ public sealed class FakeWahaService : HttpMessageHandler
                 ).GetString() ?? "",
                 MentionsOf(root),
                 messageId
-            ),
+            )
+            {
+                ReplyTo = ReplyToOf(root),
+            },
         };
+
+    private static string? ReplyToOf(JsonElement root) =>
+        root.TryGetProperty("reply_to", out var replyTo)
+        && replyTo.ValueKind == JsonValueKind.String
+            ? replyTo.GetString()
+            : null;
 
     private static FakeWahaSend PollSentOf(string chatId, JsonElement poll, string messageId) =>
         new("sendPoll", chatId, poll.GetProperty("name").GetString() ?? "", [], messageId)

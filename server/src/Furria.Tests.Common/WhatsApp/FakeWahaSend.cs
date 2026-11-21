@@ -17,4 +17,6 @@ public sealed record FakeWahaSend(
     public long? EndTime { get; init; }
 
     public string? Place { get; init; }
+
+    public string? ReplyTo { get; init; }
 }

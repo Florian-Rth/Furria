@@ -468,6 +468,23 @@ public sealed class ApiTestFixture : IAsyncLifetime
         return await db.WhatsAppMessages.AsNoTracking().OrderBy(row => row.Id).ToListAsync(ct);
     }
 
+    public async Task AgeWhatsAppPostsAsync(TimeSpan age, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.WhatsAppMessages.ExecuteUpdateAsync(
+            setters => setters.SetProperty(row => row.SentAt, row => row.SentAt - age),
+            ct
+        );
+    }
+
+    public async Task<int> WhatsAppAnswerCountAsync(CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.WhatsAppAnswers.CountAsync(ct);
+    }
+
     public async Task LinkClubWhatsAppGroupAsync(string chatId, CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();

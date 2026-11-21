@@ -5995,6 +5995,11 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("poll_options")
                         .HasDefaultValueSql("'{}'");
 
+                    b.Property<string>("TargetMessageId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("target_message_id");
+
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasColumnType("text")
@@ -6020,7 +6025,7 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_add_on_kind", "add_on_kind IN ('Attendance', 'Poll', 'SignUpList')");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation = 'PostText' OR add_on_kind IS NOT NULL");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation IN ('PostText', 'EditText', 'Reply', 'Delete') OR add_on_kind IS NOT NULL");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_attempt", "attempt >= 1");
 
@@ -6028,13 +6033,15 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_host_kind", "host_kind IN ('Announcement', 'CalendarEntry')");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent')");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent', 'EditText', 'Reply', 'Delete')");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_poll", "(operation = 'SendPoll') = (cardinality(poll_options) BETWEEN 2 AND 12)");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_poll_option_ids", "cardinality(poll_option_ids) = 0 OR cardinality(poll_option_ids) = cardinality(poll_options)");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_poll_options", "cardinality(poll_options) = 0 OR add_on_kind IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_target_message", "(operation IN ('EditText', 'Reply', 'Delete')) = (target_message_id IS NOT NULL)");
                         });
                 });
 
@@ -6163,12 +6170,27 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("poll_options")
                         .HasDefaultValueSql("'{}'");
 
+                    b.Property<DateTimeOffset?>("ResultToldAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("result_told_at");
+
                     b.Property<DateTimeOffset>("SentAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("sent_at");
 
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("")
+                        .HasColumnName("text");
+
                     b.HasKey("Id")
                         .HasName("pk_whatsapp_message");
+
+                    b.HasIndex("AddOnKind")
+                        .HasDatabaseName("ix_whatsapp_message_result_untold")
+                        .HasFilter("result_told_at IS NULL AND add_on_kind IN ('Poll', 'Attendance')");
 
                     b.HasIndex("MessageKey")
                         .HasDatabaseName("ix_whatsapp_message_message_key");
@@ -6183,6 +6205,13 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasIndex("HostKind", "HostId")
                         .HasDatabaseName("ix_whatsapp_message_host_kind_host_id");
+
+                    b.HasIndex("HostKind", "HostId", "AddOnKind", "AddOnId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_whatsapp_message_add_on")
+                        .HasFilter("add_on_kind IS NOT NULL");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("HostKind", "HostId", "AddOnKind", "AddOnId"), false);
 
                     b.ToTable("whatsapp_message", null, t =>
                         {

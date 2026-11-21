@@ -24,6 +24,7 @@ public sealed partial class AnnouncementService
     private readonly CalendarService _calendarService;
     private readonly PermissionAuthorizer _authorizer;
     private readonly WhatsAppPosts _whatsAppPosts;
+    private readonly WhatsAppPostUpdates _whatsAppPostUpdates;
     private readonly TimeProvider _timeProvider;
 
     public AnnouncementService(
@@ -34,6 +35,7 @@ public sealed partial class AnnouncementService
         CalendarService calendarService,
         PermissionAuthorizer authorizer,
         WhatsAppPosts whatsAppPosts,
+        WhatsAppPostUpdates whatsAppPostUpdates,
         TimeProvider timeProvider
     )
     {
@@ -44,6 +46,7 @@ public sealed partial class AnnouncementService
         _calendarService = calendarService;
         _authorizer = authorizer;
         _whatsAppPosts = whatsAppPosts;
+        _whatsAppPostUpdates = whatsAppPostUpdates;
         _timeProvider = timeProvider;
     }
 
@@ -163,6 +166,7 @@ public sealed partial class AnnouncementService
         if (!saved.IsSuccess)
             return saved;
 
+        await _whatsAppPostUpdates.KeepAnnouncementInStepAsync(announcement, ct);
         await transaction.CommitAsync(ct);
         return Result.Success();
     }
@@ -189,6 +193,7 @@ public sealed partial class AnnouncementService
         _dbContext.Announcements.Remove(announcement);
         await _dbContext.SaveChangesAsync(ct);
         await DropUndeliveredPushesAsync(announcement.Id, ct);
+        await _whatsAppPostUpdates.WithdrawAnnouncementAsync(announcement.Id, ct);
         await transaction.CommitAsync(ct);
 
         return Result.Success();

@@ -62,7 +62,7 @@ public static class WhatsAppPostText
         };
 
     [Pure]
-    private static string DateLineOf(WhatsAppPostSlot slot)
+    public static string DateLineOf(WhatsAppPostSlot slot)
     {
         var starts = ClubClock.WallClockOf(slot.StartsAt);
         var when = slot.EndsAt is { } endsAt

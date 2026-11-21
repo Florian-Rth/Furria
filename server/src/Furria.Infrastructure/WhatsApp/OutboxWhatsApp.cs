@@ -34,6 +34,8 @@ public sealed class OutboxWhatsApp
 
     public int? AddOnId { get; set; }
 
+    public string? TargetMessageId { get; set; }
+
     public DateTimeOffset EnqueuedAt { get; set; }
 
     public int Attempt { get; set; } = 1;

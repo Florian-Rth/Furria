@@ -149,11 +149,11 @@ Goal: votes and event responses in the group become app answers.
 
 ### Phase 6 — Keeping the post in step
 Goal: changes in the app are told in the group.
-- [ ] Edit within ~15 min; moved → reply; deleted / withdrawn → delete within ~2 days else reply — tests first
-- [ ] Close (by time or by hand) → result reply; reopen posts nothing
-- [ ] Changed poll answers → delete old poll, post new one, re-point the post record
-- [ ] Undelivered operations of a withdrawn host are dropped like its pushes
-- [ ] WhatsApp answers (`whatsapp_answer`, incl. unassigned senders' name and phone) go with their host or add-on
+- [x] Edit within ~15 min (14 min with margin; a waiting post is rewritten instead); moved → reply *Verschoben: date line*; deleted / withdrawn → delete within ~2 days else reply *Abgesagt* / *Zurückgezogen* — tests first. An entry's edit renders the editor as author hint (entries carry no author); an entry narrowed away from *Verein* is no longer kept in step
+- [x] Close (by time or by hand) → result reply with counts (native polls and Zu-/Absage only; anonymous and linked polls stay app only), staged by the dispatcher each round; reopen posts nothing, a later close tells again
+- [x] Changed poll answers → delete old poll (else reply *Ersetzt*), post new one, re-point the post record (its WhatsApp answers dropped); a removed add-on's message is deleted (else reply *Zurückgezogen*). Add-ons added after the post are not posted
+- [x] Undelivered operations of a withdrawn host are dropped like its pushes
+- [x] WhatsApp answers (`whatsapp_answer`, incl. unassigned senders' name and phone) go with their host or add-on
 
 ### Phase 7 — Group keeping (server)
 Goal: with the switch on, the bot adds consenting active members.

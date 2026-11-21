@@ -61,8 +61,21 @@ public sealed class WhatsAppDispatcher : BackgroundService
 
     private async Task DispatchAllAsync(CancellationToken ct)
     {
+        await StageResultsAsync(ct);
         while (!_pacing.IsPaused && await SendNextPacedAsync(ct)) { }
         await PurgeWhenDueAsync(ct);
+    }
+
+    private async Task StageResultsAsync(CancellationToken ct)
+    {
+        try
+        {
+            await InScopeAsync<WhatsAppResults>(results => results.StageDueAsync(ct));
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _logger.LogWarning(exception, "WhatsApp results could not be staged");
+        }
     }
 
     private async Task PurgeWhenDueAsync(CancellationToken ct)
@@ -72,11 +85,7 @@ public sealed class WhatsAppDispatcher : BackgroundService
             return;
 
         _purgedAt = now;
-        await InScopeAsync(async delivery =>
-        {
-            await delivery.PurgeFailedAsync(ct);
-            return WhatsAppSendOutcome.Idle;
-        });
+        await InScopeAsync<WhatsAppOutboxDelivery>(delivery => delivery.PurgeFailedAsync(ct));
     }
 
     private async Task<bool> SendNextPacedAsync(CancellationToken ct)
@@ -106,5 +115,13 @@ public sealed class WhatsAppDispatcher : BackgroundService
         await using var scope = _scopeFactory.CreateAsyncScope();
 
         return await step(scope.ServiceProvider.GetRequiredService<WhatsAppOutboxDelivery>());
+    }
+
+    private async Task InScopeAsync<TStep>(Func<TStep, Task> step)
+        where TStep : notnull
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+
+        await step(scope.ServiceProvider.GetRequiredService<TStep>());
     }
 }
