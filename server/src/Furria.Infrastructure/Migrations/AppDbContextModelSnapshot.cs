@@ -5895,6 +5895,19 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
 
+                    b.Property<int?>("AddOnId")
+                        .HasColumnType("integer")
+                        .HasColumnName("add_on_id");
+
+                    b.Property<string>("AddOnKind")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("add_on_kind");
+
+                    b.Property<bool>("AllowsSeveralAnswers")
+                        .HasColumnType("boolean")
+                        .HasColumnName("allows_several_answers");
+
                     b.Property<int>("Attempt")
                         .HasColumnType("integer")
                         .HasColumnName("attempt");
@@ -5908,6 +5921,19 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("EnqueuedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("enqueued_at");
+
+                    b.Property<DateTimeOffset?>("EventEndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("event_ends_at");
+
+                    b.Property<string>("EventPlace")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("event_place");
+
+                    b.Property<DateTimeOffset?>("EventStartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("event_starts_at");
 
                     b.Property<DateTimeOffset?>("FailedAt")
                         .HasColumnType("timestamp with time zone")
@@ -5943,6 +5969,20 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("operation");
 
+                    b.PrimitiveCollection<List<int>>("PollOptionIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("poll_option_ids")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<List<string>>("PollOptions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("poll_options")
+                        .HasDefaultValueSql("'{}'");
+
                     b.Property<string>("Text")
                         .IsRequired()
                         .HasColumnType("text")
@@ -5964,11 +6004,25 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("outbox_whatsapp", null, t =>
                         {
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_id", "(add_on_id IS NULL AND (add_on_kind IS NULL OR add_on_kind = 'Attendance')) OR (add_on_id IS NOT NULL AND add_on_kind IN ('Poll', 'SignUpList'))");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_kind", "add_on_kind IN ('Attendance', 'Poll', 'SignUpList')");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation = 'PostText' OR add_on_kind IS NOT NULL");
+
                             t.HasCheckConstraint("ck_outbox_whatsapp_attempt", "attempt >= 1");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_event", "CASE WHEN operation = 'SendEvent' THEN event_starts_at IS NOT NULL AND (event_ends_at IS NULL OR event_ends_at >= event_starts_at) ELSE event_starts_at IS NULL AND event_ends_at IS NULL AND event_place IS NULL END");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_host_kind", "host_kind IN ('Announcement', 'CalendarEntry')");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText')");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent')");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_poll", "(operation = 'SendPoll') = (cardinality(poll_options) BETWEEN 2 AND 12)");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_poll_option_ids", "cardinality(poll_option_ids) = 0 OR cardinality(poll_option_ids) = cardinality(poll_options)");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_poll_options", "cardinality(poll_options) = 0 OR add_on_kind IS NOT NULL");
                         });
                 });
 
@@ -5980,6 +6034,15 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("id");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("AddOnId")
+                        .HasColumnType("integer")
+                        .HasColumnName("add_on_id");
+
+                    b.Property<string>("AddOnKind")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("add_on_kind");
 
                     b.Property<string>("ChatId")
                         .IsRequired()
@@ -6003,12 +6066,30 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("message_id");
 
+                    b.PrimitiveCollection<List<int>>("PollOptionIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("poll_option_ids")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<List<string>>("PollOptions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("poll_options")
+                        .HasDefaultValueSql("'{}'");
+
                     b.Property<DateTimeOffset>("SentAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("sent_at");
 
                     b.HasKey("Id")
                         .HasName("pk_whatsapp_message");
+
+                    b.HasIndex("AddOnKind", "AddOnId")
+                        .HasDatabaseName("ix_whatsapp_message_add_on_kind_add_on_id")
+                        .HasFilter("add_on_id IS NOT NULL");
 
                     b.HasIndex("ChatId", "MessageId")
                         .IsUnique()
@@ -6019,7 +6100,15 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("whatsapp_message", null, t =>
                         {
+                            t.HasCheckConstraint("ck_whatsapp_message_add_on_id", "(add_on_id IS NULL AND (add_on_kind IS NULL OR add_on_kind = 'Attendance')) OR (add_on_id IS NOT NULL AND add_on_kind IN ('Poll', 'SignUpList'))");
+
+                            t.HasCheckConstraint("ck_whatsapp_message_add_on_kind", "add_on_kind IN ('Attendance', 'Poll', 'SignUpList')");
+
                             t.HasCheckConstraint("ck_whatsapp_message_host_kind", "host_kind IN ('Announcement', 'CalendarEntry')");
+
+                            t.HasCheckConstraint("ck_whatsapp_message_poll_option_ids", "cardinality(poll_option_ids) = 0 OR cardinality(poll_option_ids) = cardinality(poll_options)");
+
+                            t.HasCheckConstraint("ck_whatsapp_message_poll_options", "cardinality(poll_options) = 0 OR add_on_kind IS NOT NULL");
                         });
                 });
 

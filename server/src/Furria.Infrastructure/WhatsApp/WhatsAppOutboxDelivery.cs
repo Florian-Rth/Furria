@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Furria.Application.WhatsApp;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +10,7 @@ namespace Furria.Infrastructure.WhatsApp;
 public sealed class WhatsAppOutboxDelivery
 {
     private const string SendSavepoint = "send";
+    private const string EventWithoutStartMessage = "A WhatsApp event operation carries no start.";
 
     private static readonly TimeSpan FailedKeptFor = TimeSpan.FromDays(30);
 
@@ -107,15 +109,44 @@ public sealed class WhatsAppOutboxDelivery
             .SingleOrDefaultAsync(ct);
 
     private Task<string?> SendAsync(OutboxWhatsApp operation, CancellationToken ct) =>
-        _waha.SendTextAsync(
-            new WahaOutgoingText
-            {
-                ChatId = operation.ChatId,
-                Text = operation.Text,
-                Mentions = operation.Mentions,
-            },
-            ct
-        );
+        operation.Operation switch
+        {
+            WhatsAppOperation.SendPoll => _waha.SendPollAsync(PollOf(operation), ct),
+            WhatsAppOperation.SendEvent => _waha.SendEventAsync(EventOf(operation), ct),
+            _ => _waha.SendTextAsync(TextOf(operation), ct),
+        };
+
+    [Pure]
+    private static WahaOutgoingText TextOf(OutboxWhatsApp operation) =>
+        new()
+        {
+            ChatId = operation.ChatId,
+            Text = operation.Text,
+            Mentions = operation.Mentions,
+        };
+
+    [Pure]
+    private static WahaOutgoingPoll PollOf(OutboxWhatsApp operation) =>
+        new()
+        {
+            ChatId = operation.ChatId,
+            Question = operation.Text,
+            Options = operation.PollOptions,
+            AllowsSeveralAnswers = operation.AllowsSeveralAnswers,
+        };
+
+    [Pure]
+    private static WahaOutgoingEvent EventOf(OutboxWhatsApp operation) =>
+        new()
+        {
+            ChatId = operation.ChatId,
+            Name = operation.Text,
+            StartsAt =
+                operation.EventStartsAt
+                ?? throw new InvalidOperationException(EventWithoutStartMessage),
+            EndsAt = operation.EventEndsAt,
+            Place = operation.EventPlace,
+        };
 
     private void RecordPost(OutboxWhatsApp operation, string? messageId, DateTimeOffset now)
     {
@@ -135,6 +166,10 @@ public sealed class WhatsAppOutboxDelivery
                 MessageId = messageId,
                 HostKind = operation.HostKind,
                 HostId = operation.HostId,
+                AddOnKind = operation.AddOnKind,
+                AddOnId = operation.AddOnId,
+                PollOptions = [.. operation.PollOptions],
+                PollOptionIds = [.. operation.PollOptionIds],
                 SentAt = now,
             }
         );

@@ -204,10 +204,245 @@ public sealed class WhatsAppPostsTests : IClassFixture<ApiTestFixture>
         Assert.Empty(await _fixture.WhatsAppPostRecordsAsync(ct));
     }
 
-    private static async Task<int> PostAnnouncementAsync(
+    [Fact]
+    public async Task Should_FollowThePostWithItsAddOnsInTheAuthorsOrder_When_AnAnnouncementIsNotified()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        await _fixture.LinkClubWhatsAppGroupAsync(ClubChatId, ct);
+
+        var announcementId = await PostAnnouncementAsync(
+            ctx,
+            new PostAnnouncementRequest
+            {
+                Title = Title,
+                Body = "Wer hilft mit?",
+                ValidUntil = null,
+                AddOns =
+                [
+                    AnnouncementPoll("Welche Uhrzeit?", true, false, "10 Uhr", "14 Uhr"),
+                    AnnouncementAttendance(),
+                    AnnouncementSignUpList("Mitbringliste"),
+                    AnnouncementPoll("Wer putzt die Küche?", false, true, "Ich", "Du"),
+                ],
+                Notify = true,
+            },
+            ct
+        );
+
+        await _fixture.WhatsAppOutboxDrainedAsync(ct);
+        var link = $"{ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}";
+        Assert.Equal(
+            [
+                ("sendText", $"*{Title}*\n\nWer hilft mit?\n\n_Bea Aushang_\n{link}"),
+                ("sendPoll", "Welche Uhrzeit?"),
+                ("sendPoll", Title),
+                ("sendText", $"Eintragen: *Mitbringliste*\n{link}"),
+                ("sendText", $"Anonym abstimmen: *Wer putzt die Küche?*\n{link}"),
+            ],
+            _fixture.Waha.Sent.Select(sent => (sent.Kind, sent.Text))
+        );
+        Assert.Equal(
+            [("10 Uhr|14 Uhr", true), ("Ja|Nein|Vielleicht", false)],
+            _fixture
+                .Waha.Sent.Where(sent => sent.Kind == "sendPoll")
+                .Select(sent => (string.Join('|', sent.Options), sent.AllowsSeveralAnswers))
+        );
+
+        var polls = await _fixture.PollIdsByQuestionAsync(ct);
+        var lists = await _fixture.SignUpListIdsByTitleAsync(ct);
+        var records = await _fixture.WhatsAppPostRecordsAsync(ct);
+        Assert.Equal(
+            [
+                (null, null, ""),
+                (WhatsAppAddOnKind.Poll, polls["Welche Uhrzeit?"], "10 Uhr|14 Uhr"),
+                (WhatsAppAddOnKind.Attendance, null, "Ja|Nein|Vielleicht"),
+                (WhatsAppAddOnKind.SignUpList, lists["Mitbringliste"], ""),
+                (WhatsAppAddOnKind.Poll, polls["Wer putzt die Küche?"], ""),
+            ],
+            records.Select(record =>
+                (record.AddOnKind, record.AddOnId, string.Join('|', record.PollOptions))
+            )
+        );
+        Assert.All(
+            records,
+            record =>
+                Assert.Equal(
+                    (WhatsAppHostKind.Announcement, announcementId),
+                    (record.HostKind, record.HostId)
+                )
+        );
+        Assert.Equal(
+            _fixture.Waha.Sent.Select(sent => sent.MessageId),
+            records.Select(record => record.MessageId)
+        );
+        Assert.Equal(
+            await _fixture.PollOptionIdsAsync(polls["Welche Uhrzeit?"] ?? 0, ct),
+            records[1].PollOptionIds
+        );
+        Assert.Empty(records[2].PollOptionIds);
+    }
+
+    [Fact]
+    public async Task Should_LinkThePollInstead_When_ItHasMoreAnswersThanAWhatsAppPollHolds()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        await _fixture.LinkClubWhatsAppGroupAsync(ClubChatId, ct);
+        string[] thirteenDates = [.. Enumerable.Range(1, 13).Select(day => $"{day}. Mai")];
+
+        var announcementId = await PostAnnouncementAsync(
+            ctx,
+            new PostAnnouncementRequest
+            {
+                Title = Title,
+                Body = "Termin gesucht.",
+                ValidUntil = null,
+                AddOns = [AnnouncementPoll("Welcher Tag?", true, false, thirteenDates)],
+                Notify = true,
+            },
+            ct
+        );
+
+        await _fixture.WhatsAppOutboxDrainedAsync(ct);
+        Assert.Equal(["sendText", "sendText"], _fixture.Waha.Sent.Select(sent => sent.Kind));
+        Assert.Equal(
+            $"Abstimmen: *Welcher Tag?*\n{ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}",
+            _fixture.Waha.Sent[1].Text
+        );
+    }
+
+    [Fact]
+    public async Task Should_PostTheEntrysZuAbsageAsAWhatsAppEvent_When_AClubEntryAsksForAnswers()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        await _fixture.LinkClubWhatsAppGroupAsync(ClubChatId, ct);
+
+        var entryId = await CreateEntryAsync(
+            ctx,
+            ClubEntry(ctx) with
+            {
+                AddOns =
+                [
+                    CalendarPoll("Wer bringt Kuchen?", "Ich", "Nicht ich"),
+                    new()
+                    {
+                        Kind = CalendarEntryAddOnKind.Attendance,
+                        Poll = null,
+                        SignUpList = null,
+                        DaySchedule = null,
+                    },
+                ],
+            },
+            ct
+        );
+
+        await _fixture.WhatsAppOutboxDrainedAsync(ct);
+        Assert.Equal(
+            ["sendText", "sendPoll", "sendEvent"],
+            _fixture.Waha.Sent.Select(sent => sent.Kind)
+        );
+        var sentEvent = _fixture.Waha.Sent[2];
+        Assert.Equal(
+            (
+                ClubMeeting,
+                MeetingStart.ToUnixTimeSeconds(),
+                (long?)MeetingEnd.ToUnixTimeSeconds(),
+                "Bühnenhaus"
+            ),
+            (sentEvent.Text, sentEvent.StartTime, sentEvent.EndTime, sentEvent.Place)
+        );
+        var records = await _fixture.WhatsAppPostRecordsAsync(ct);
+        Assert.Equal(
+            [null, WhatsAppAddOnKind.Poll, WhatsAppAddOnKind.Attendance],
+            records.Select(record => record.AddOnKind)
+        );
+        Assert.All(
+            records,
+            record =>
+                Assert.Equal(
+                    (WhatsAppHostKind.CalendarEntry, entryId),
+                    (record.HostKind, record.HostId)
+                )
+        );
+    }
+
+    [Fact]
+    public async Task Should_NameTakenOverAddOnsInThePostWithoutPostingThem_When_AnAnnouncementBorrows()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = await CreateEntryAsync(
+            ctx,
+            ClubEntry(ctx) with
+            {
+                Notify = false,
+                AddOns =
+                [
+                    new()
+                    {
+                        Kind = CalendarEntryAddOnKind.Attendance,
+                        Poll = null,
+                        SignUpList = null,
+                        DaySchedule = null,
+                    },
+                    CalendarPoll("Wer bringt Kuchen?", "Ich", "Nicht ich"),
+                ],
+            },
+            ct
+        );
+        var pollId = (await _fixture.PollIdsByQuestionAsync(ct))["Wer bringt Kuchen?"];
+        await _fixture.LinkClubWhatsAppGroupAsync(ClubChatId, ct);
+
+        var announcementId = await PostAnnouncementAsync(
+            ctx,
+            new PostAnnouncementRequest
+            {
+                Title = Title,
+                Body = "Siehe Kalender.",
+                ValidUntil = null,
+                AddOns =
+                [
+                    Borrowed(AnnouncementAddOnKind.Poll, entryId, pollId),
+                    Borrowed(AnnouncementAddOnKind.Attendance, entryId, null),
+                ],
+                Notify = true,
+            },
+            ct
+        );
+
+        await _fixture.WhatsAppOutboxDrainedAsync(ct);
+        var sent = Assert.Single(_fixture.Waha.Sent);
+        var entryLink = $"{ApiTestFixture.ClubAppBaseUrl}/calendar/{entryId}";
+        Assert.Equal(
+            $"*{Title}*\n\nSiehe Kalender.\n\nAbstimmen: *Wer bringt Kuchen?*\n{entryLink}\n\nZu-/Absage: *{ClubMeeting}*\n{entryLink}\n\n_Bea Aushang_\n{ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}",
+            sent.Text
+        );
+    }
+
+    private static Task<int> PostAnnouncementAsync(
         SeededContext ctx,
         string body,
         bool notify,
+        CancellationToken ct
+    ) =>
+        PostAnnouncementAsync(
+            ctx,
+            new PostAnnouncementRequest
+            {
+                Title = Title,
+                Body = body,
+                ValidUntil = null,
+                AddOns = [],
+                Notify = notify,
+            },
+            ct
+        );
+
+    private static async Task<int> PostAnnouncementAsync(
+        SeededContext ctx,
+        PostAnnouncementRequest request,
         CancellationToken ct
     )
     {
@@ -216,20 +451,108 @@ public sealed class WhatsAppPostsTests : IClassFixture<ApiTestFixture>
             PostAnnouncement,
             PostAnnouncementRequest,
             PostAnnouncementResponse
-        >(
-            new()
-            {
-                Title = Title,
-                Body = body,
-                ValidUntil = null,
-                AddOns = [],
-                Notify = notify,
-            }
-        );
+        >(request);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         return result.AnnouncementId;
     }
+
+    private static PostAnnouncementAddOnDataDto AnnouncementAttendance() =>
+        new()
+        {
+            Kind = AnnouncementAddOnKind.Attendance,
+            Attendance = new() { AnswersUntil = null },
+            Poll = null,
+            SignUpList = null,
+            Borrowed = null,
+        };
+
+    private static PostAnnouncementAddOnDataDto AnnouncementPoll(
+        string question,
+        bool allowsMultipleChoices,
+        bool isAnonymous,
+        params string[] labels
+    ) =>
+        new()
+        {
+            Kind = AnnouncementAddOnKind.Poll,
+            Attendance = null,
+            Poll = new()
+            {
+                PollId = null,
+                Question = question,
+                AllowsMultipleChoices = allowsMultipleChoices,
+                IsAnonymous = isAnonymous,
+                VotesUntil = null,
+                Options =
+                [
+                    .. labels.Select(label => new PostAnnouncementPollOptionDataDto
+                    {
+                        OptionId = null,
+                        Label = label,
+                    }),
+                ],
+            },
+            SignUpList = null,
+            Borrowed = null,
+        };
+
+    private static PostAnnouncementAddOnDataDto AnnouncementSignUpList(string title) =>
+        new()
+        {
+            Kind = AnnouncementAddOnKind.SignUpList,
+            Attendance = null,
+            Poll = null,
+            SignUpList = new()
+            {
+                SignUpListId = null,
+                Title = title,
+                Hint = null,
+                SignUpUntil = null,
+            },
+            Borrowed = null,
+        };
+
+    private static PostAnnouncementAddOnDataDto Borrowed(
+        AnnouncementAddOnKind kind,
+        int calendarEntryId,
+        int? addOnId
+    ) =>
+        new()
+        {
+            Kind = kind,
+            Attendance = null,
+            Poll = null,
+            SignUpList = null,
+            Borrowed = new() { CalendarEntryId = calendarEntryId, AddOnId = addOnId },
+        };
+
+    private static PostCalendarEntryAddOnDataDto CalendarPoll(
+        string question,
+        params string[] labels
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.Poll,
+            Poll = new()
+            {
+                PollId = null,
+                Question = question,
+                AllowsMultipleChoices = false,
+                IsAnonymous = false,
+                VotesUntil = null,
+                Options =
+                [
+                    .. labels.Select(label => new PostCalendarEntryPollOptionDataDto
+                    {
+                        OptionId = null,
+                        Label = label,
+                    }),
+                ],
+            },
+            SignUpList = null,
+            DaySchedule = null,
+        };
 
     private static async Task<int> CreateEntryAsync(
         SeededContext ctx,

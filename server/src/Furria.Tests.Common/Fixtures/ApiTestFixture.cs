@@ -422,6 +422,43 @@ public sealed class ApiTestFixture : IAsyncLifetime
         return await db.OutboxWhatsApps.AsNoTracking().OrderBy(row => row.Id).ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyDictionary<string, int?>> PollIdsByQuestionAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db
+            .Polls.AsNoTracking()
+            .ToDictionaryAsync(poll => poll.Question, poll => (int?)poll.Id, ct);
+    }
+
+    public async Task<IReadOnlyList<int>> PollOptionIdsAsync(
+        int pollId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db
+            .PollOptions.AsNoTracking()
+            .Where(option => option.PollId == pollId)
+            .OrderBy(option => option.Position)
+            .Select(option => option.Id)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyDictionary<string, int?>> SignUpListIdsByTitleAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db
+            .SignUpLists.AsNoTracking()
+            .ToDictionaryAsync(list => list.Title, list => (int?)list.Id, ct);
+    }
+
     public async Task<IReadOnlyList<WhatsAppMessage>> WhatsAppPostRecordsAsync(
         CancellationToken ct = default
     )

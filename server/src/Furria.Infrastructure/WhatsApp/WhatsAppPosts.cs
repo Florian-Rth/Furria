@@ -38,6 +38,7 @@ public sealed class WhatsAppPosts
         if (await ClubChatIdAsync(ct) is not { } chatId)
             return;
 
+        var link = LinkOf(AnnouncementPath, announcement.Id);
         var post = WhatsAppPostText.Render(
             new WhatsAppPostDraft
             {
@@ -47,11 +48,24 @@ public sealed class WhatsAppPosts
                 MentionablePhones = await MentionablePhonesAsync(announcement.Mentions, ct),
                 Schedules = [],
                 GroupNames = [],
+                TakenOverAddOns = await TakenOverAddOnsAsync(announcement.BorrowedAddOns, ct),
                 AuthorName = await NameOfAsync(announcement.AuthorPersonId, ct),
-                Link = LinkOf(AnnouncementPath, announcement.Id),
+                Link = link,
             }
         );
-        Stage(chatId, WhatsAppHostKind.Announcement, announcement.Id, post);
+        Stage(
+            new StagedHost(chatId, WhatsAppHostKind.Announcement, announcement.Id, Now()),
+            post,
+            AddOnMessagesOf(
+                new AddOnPositions(
+                    announcement.AttendancePosition,
+                    announcement.Polls,
+                    announcement.SignUpLists
+                ),
+                WhatsAppAddOnMessages.AttendancePoll(announcement.Title),
+                link
+            )
+        );
         await _dbContext.SaveChangesAsync(ct);
     }
 
@@ -66,47 +80,187 @@ public sealed class WhatsAppPosts
         if (await ClubChatIdAsync(ct) is not { } chatId)
             return;
 
+        var slot = new WhatsAppPostSlot(
+            entry.StartsAt,
+            entry.EndsAt,
+            await VenueNameAsync(entry.VenueId, ct)
+        );
+        var link = LinkOf(CalendarPath, entry.Id);
         var post = WhatsAppPostText.Render(
             new WhatsAppPostDraft
             {
                 Title = entry.Title,
-                Slot = new WhatsAppPostSlot(
-                    entry.StartsAt,
-                    entry.EndsAt,
-                    await VenueNameAsync(entry.VenueId, ct)
-                ),
+                Slot = slot,
                 Body = entry.Description is { } description
                     ? WhatsAppPostBody.Plain(description)
                     : null,
                 MentionablePhones = new Dictionary<int, string>(),
                 Schedules = SchedulesOf(entry),
                 GroupNames = await GroupNamesAsync(entry, ct),
+                TakenOverAddOns = [],
                 AuthorName = await NameOfAsync(authorPersonId, ct),
-                Link = LinkOf(CalendarPath, entry.Id),
+                Link = link,
             }
         );
-        Stage(chatId, WhatsAppHostKind.CalendarEntry, entry.Id, post);
+        Stage(
+            new StagedHost(chatId, WhatsAppHostKind.CalendarEntry, entry.Id, Now()),
+            post,
+            AddOnMessagesOf(
+                new AddOnPositions(entry.AttendancePosition, entry.Polls, entry.SignUpLists),
+                WhatsAppAddOnMessages.AttendanceEvent(entry.Title, slot),
+                link
+            )
+        );
         await _dbContext.SaveChangesAsync(ct);
     }
 
     private void Stage(
-        string chatId,
-        WhatsAppHostKind hostKind,
-        int hostId,
-        WhatsAppPostContent post
-    ) =>
+        StagedHost host,
+        WhatsAppPostContent post,
+        IEnumerable<WhatsAppAddOnMessage> addOnMessages
+    )
+    {
         _dbContext.OutboxWhatsApps.Add(
             new OutboxWhatsApp
             {
-                ChatId = chatId,
+                ChatId = host.ChatId,
                 Operation = WhatsAppOperation.PostText,
-                HostKind = hostKind,
-                HostId = hostId,
+                HostKind = host.Kind,
+                HostId = host.Id,
                 Text = post.Text,
                 Mentions = [.. post.MentionedChatIds],
-                EnqueuedAt = _timeProvider.GetUtcNow(),
+                EnqueuedAt = host.EnqueuedAt,
             }
         );
+        _dbContext.OutboxWhatsApps.AddRange(
+            addOnMessages.Select(message => OperationOf(host, message))
+        );
+    }
+
+    private DateTimeOffset Now() => _timeProvider.GetUtcNow();
+
+    [Pure]
+    private static OutboxWhatsApp OperationOf(StagedHost host, WhatsAppAddOnMessage message) =>
+        new()
+        {
+            ChatId = host.ChatId,
+            Operation = message.Operation,
+            HostKind = host.Kind,
+            HostId = host.Id,
+            Text = message.Text,
+            PollOptions = [.. message.PollOptions],
+            PollOptionIds = [.. message.PollOptionIds],
+            AllowsSeveralAnswers = message.AllowsSeveralAnswers,
+            EventStartsAt = message.EventSlot?.StartsAt,
+            EventEndsAt = message.EventSlot?.EndsAt,
+            EventPlace = message.EventSlot?.VenueName,
+            AddOnKind = message.AddOnKind,
+            AddOnId = message.AddOnId,
+            EnqueuedAt = host.EnqueuedAt,
+        };
+
+    [Pure]
+    private static IEnumerable<WhatsAppAddOnMessage> AddOnMessagesOf(
+        AddOnPositions addOns,
+        WhatsAppAddOnMessage attendance,
+        string link
+    ) =>
+        Placed(addOns.AttendancePosition, attendance)
+            .Concat(
+                addOns.Polls.Select(poll =>
+                    (poll.Position, Message: WhatsAppAddOnMessages.PollOf(poll, link))
+                )
+            )
+            .Concat(
+                addOns.SignUpLists.Select(list =>
+                    (list.Position, Message: WhatsAppAddOnMessages.SignUpListOf(list, link))
+                )
+            )
+            .OrderBy(addOn => addOn.Position)
+            .Select(addOn => addOn.Message);
+
+    [Pure]
+    private static IEnumerable<(int Position, WhatsAppAddOnMessage Message)> Placed(
+        int? position,
+        WhatsAppAddOnMessage message
+    ) => position is { } placed ? [(placed, message)] : [];
+
+    private async Task<IReadOnlyList<WhatsAppAddOnLine>> TakenOverAddOnsAsync(
+        IEnumerable<AnnouncementBorrowedAddOn> loans,
+        CancellationToken ct
+    )
+    {
+        var ordered = loans.OrderBy(loan => loan.Position).ToList();
+        if (ordered.Count == 0)
+            return [];
+
+        var names = await TakenOverNamesAsync(ordered, ct);
+        return
+        [
+            .. ordered.Select(loan =>
+                TakenOverLineOf(loan, names, LinkOf(CalendarPath, loan.CalendarEntryId))
+            ),
+        ];
+    }
+
+    private async Task<TakenOverNames> TakenOverNamesAsync(
+        IReadOnlyList<AnnouncementBorrowedAddOn> loans,
+        CancellationToken ct
+    )
+    {
+        var entryIds = loans.Select(loan => loan.CalendarEntryId).Distinct().ToList();
+        var pollIds = loans.Select(loan => loan.PollId).OfType<int>().ToList();
+        var listIds = loans.Select(loan => loan.SignUpListId).OfType<int>().ToList();
+
+        return new TakenOverNames(
+            await _dbContext
+                .CalendarEntries.AsNoTracking()
+                .Where(entry => entryIds.Contains(entry.Id))
+                .ToDictionaryAsync(entry => entry.Id, entry => entry.Title, ct),
+            await _dbContext
+                .Polls.AsNoTracking()
+                .Where(poll => pollIds.Contains(poll.Id))
+                .ToDictionaryAsync(
+                    poll => poll.Id,
+                    poll => new TakenOverPoll(poll.Question, poll.IsAnonymous),
+                    ct
+                ),
+            await _dbContext
+                .SignUpLists.AsNoTracking()
+                .Where(list => listIds.Contains(list.Id))
+                .ToDictionaryAsync(list => list.Id, list => list.Title, ct)
+        );
+    }
+
+    [Pure]
+    private static WhatsAppAddOnLine TakenOverLineOf(
+        AnnouncementBorrowedAddOn loan,
+        TakenOverNames names,
+        string link
+    ) =>
+        (loan.Kind, loan.PollId, loan.SignUpListId) switch
+        {
+            (AnnouncementAddOnKind.Poll, { } pollId, _) => new WhatsAppAddOnLine(
+                names.Polls[pollId].IsAnonymous
+                    ? WhatsAppAddOnMessages.AnonymousVoteLead
+                    : WhatsAppAddOnMessages.VoteLead,
+                names.Polls[pollId].Question,
+                link
+            ),
+            (AnnouncementAddOnKind.SignUpList, _, { } listId) => new WhatsAppAddOnLine(
+                WhatsAppAddOnMessages.SignUpLead,
+                names.SignUpLists[listId],
+                link
+            ),
+            (AnnouncementAddOnKind.Attendance, _, _) => new WhatsAppAddOnLine(
+                WhatsAppAddOnMessages.AttendanceLead,
+                names.EntryTitles[loan.CalendarEntryId],
+                link
+            ),
+            _ => throw new InvalidOperationException(
+                $"Taken-over add-on {loan.Id} names no {loan.Kind} it borrows."
+            ),
+        };
 
     private async Task<string?> ClubChatIdAsync(CancellationToken ct) =>
         _options.Value.IsConfigured
@@ -200,4 +354,25 @@ public sealed class WhatsAppPosts
                     ]
                 )),
         ];
+
+    private sealed record StagedHost(
+        string ChatId,
+        WhatsAppHostKind Kind,
+        int Id,
+        DateTimeOffset EnqueuedAt
+    );
+
+    private sealed record AddOnPositions(
+        int? AttendancePosition,
+        IEnumerable<Poll> Polls,
+        IEnumerable<SignUpList> SignUpLists
+    );
+
+    private sealed record TakenOverPoll(string Question, bool IsAnonymous);
+
+    private sealed record TakenOverNames(
+        IReadOnlyDictionary<int, string> EntryTitles,
+        IReadOnlyDictionary<int, TakenOverPoll> Polls,
+        IReadOnlyDictionary<int, string> SignUpLists
+    );
 }

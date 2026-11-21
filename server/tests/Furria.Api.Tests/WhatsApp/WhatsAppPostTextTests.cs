@@ -180,6 +180,7 @@ public sealed class WhatsAppPostTextTests
             MentionablePhones = new Dictionary<int, string>(),
             Schedules = [],
             GroupNames = [],
+            TakenOverAddOns = [],
             AuthorName = null,
             Link = Link,
         };

@@ -136,9 +136,9 @@ Goal: notifying a club-audience Aushang or entry posts it into the club group.
 
 ### Phase 4 — Add-ons in the group
 Goal: answerable add-ons follow the post as polls, events and links.
-- [ ] Per add-on message in the author's order: entry Zu-/Absage → event; Aushang Zu-/Absage → Ja/Nein/Vielleicht poll; named poll → poll; anonymous poll / sign-up list → link line — tests first
-- [ ] Post record per add-on with the posted poll option texts
-- [ ] Taken-over add-ons named in the Aushang post, not posted
+- [x] Per add-on message in the author's order: entry Zu-/Absage → event; Aushang Zu-/Absage → Ja/Nein/Vielleicht poll (question = the Aushang's title); named poll → poll; anonymous poll / sign-up list → link line (*Anonym abstimmen: **Frage*** / *Eintragen: **Titel*** + the host's app link) — tests first
+- [x] Post record per add-on (kind, add-on id) with the posted poll option texts and their option ids (phase 5 maps a vote by index, so a renamed answer still matches); a poll beyond WhatsApp's limits (> 12 answers or an answer > 100 characters) goes as an *Abstimmen* link line instead
+- [x] Taken-over add-ons named in the Aushang post as lines (*Abstimmen / Anonym abstimmen / Eintragen / Zu-/Absage: **Name*** + the lending entry's app link), not posted
 
 ### Phase 5 — Answers flow back
 Goal: votes and event responses in the group become app answers.

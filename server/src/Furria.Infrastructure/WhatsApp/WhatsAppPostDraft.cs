@@ -14,6 +14,8 @@ public sealed record WhatsAppPostDraft
 
     public required IReadOnlyList<string> GroupNames { get; init; }
 
+    public required IReadOnlyList<WhatsAppAddOnLine> TakenOverAddOns { get; init; }
+
     public required string? AuthorName { get; init; }
 
     public required string Link { get; init; }

@@ -18,6 +18,22 @@ public sealed class OutboxWhatsApp
 
     public List<string> Mentions { get; set; } = [];
 
+    public List<string> PollOptions { get; set; } = [];
+
+    public List<int> PollOptionIds { get; set; } = [];
+
+    public bool AllowsSeveralAnswers { get; set; }
+
+    public DateTimeOffset? EventStartsAt { get; set; }
+
+    public DateTimeOffset? EventEndsAt { get; set; }
+
+    public string? EventPlace { get; set; }
+
+    public WhatsAppAddOnKind? AddOnKind { get; set; }
+
+    public int? AddOnId { get; set; }
+
     public DateTimeOffset EnqueuedAt { get; set; }
 
     public int Attempt { get; set; } = 1;

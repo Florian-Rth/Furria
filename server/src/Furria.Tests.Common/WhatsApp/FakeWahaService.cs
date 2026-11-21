@@ -110,7 +110,10 @@ public sealed class FakeWahaService : HttpMessageHandler
                 Json(JsonSerializer.Serialize(new { value = ScanningQrValue }))
             ),
             ("POST", "request-code") => ScanningOnly(() => RequestPairingCode(body)),
-            ("POST", "sendText" or "sendImage") => Send(Route(path), body),
+            ("POST", "sendText" or "sendImage" or "sendPoll" or "events") => Send(
+                Route(path),
+                body
+            ),
             _ => new HttpResponseMessage(HttpStatusCode.NotFound),
         };
 
@@ -120,12 +123,14 @@ public sealed class FakeWahaService : HttpMessageHandler
             "/api/sessions" => "sessions",
             "/api/sendText" => "sendText",
             "/api/sendImage" => "sendImage",
+            "/api/sendPoll" => "sendPoll",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)
                     && path.EndsWith("/start", StringComparison.Ordinal) => "start",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)
                     && path.EndsWith("/restart", StringComparison.Ordinal) => "restart",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal) => "session",
             _ when path.EndsWith("/groups", StringComparison.Ordinal) => "groups",
+            _ when path.EndsWith("/events", StringComparison.Ordinal) => "events",
             _ when path.EndsWith("/auth/qr", StringComparison.Ordinal) => "qr",
             _ when path.EndsWith("/auth/request-code", StringComparison.Ordinal) => "request-code",
             _ => "",
@@ -173,22 +178,66 @@ public sealed class FakeWahaService : HttpMessageHandler
 
         using var document = JsonDocument.Parse(body);
         var root = document.RootElement;
-        var messageId = $"true_{root.GetProperty("chatId").GetString()}_FAKE{++_sentCount}";
-        _sent.Enqueue(
-            new FakeWahaSend(
+        var chatId = root.GetProperty("chatId").GetString() ?? "";
+        var messageId = $"true_{chatId}_FAKE{++_sentCount}";
+        _sent.Enqueue(SentOf(kind, chatId, root, messageId));
+        return Json(JsonSerializer.Serialize(new { id = messageId }));
+    }
+
+    private static FakeWahaSend SentOf(
+        string kind,
+        string chatId,
+        JsonElement root,
+        string messageId
+    ) =>
+        kind switch
+        {
+            "sendPoll" => PollSentOf(chatId, root.GetProperty("poll"), messageId),
+            "events" => EventSentOf(chatId, root.GetProperty("event"), messageId),
+            _ => new FakeWahaSend(
                 kind,
-                root.GetProperty("chatId").GetString() ?? "",
+                chatId,
                 (
                     kind == "sendImage" ? root.GetProperty("caption") : root.GetProperty("text")
                 ).GetString() ?? "",
-                root.TryGetProperty("mentions", out var mentions)
-                    ? [.. mentions.EnumerateArray().Select(mention => mention.GetString() ?? "")]
-                    : [],
+                MentionsOf(root),
                 messageId
-            )
-        );
-        return Json(JsonSerializer.Serialize(new { id = messageId }));
-    }
+            ),
+        };
+
+    private static FakeWahaSend PollSentOf(string chatId, JsonElement poll, string messageId) =>
+        new("sendPoll", chatId, poll.GetProperty("name").GetString() ?? "", [], messageId)
+        {
+            Options =
+            [
+                .. poll.GetProperty("options")
+                    .EnumerateArray()
+                    .Select(option => option.GetString() ?? ""),
+            ],
+            AllowsSeveralAnswers = poll.GetProperty("multipleAnswers").GetBoolean(),
+        };
+
+    private static FakeWahaSend EventSentOf(string chatId, JsonElement sent, string messageId) =>
+        new("sendEvent", chatId, sent.GetProperty("name").GetString() ?? "", [], messageId)
+        {
+            StartTime = sent.GetProperty("startTime").GetInt64(),
+            EndTime =
+                sent.TryGetProperty("endTime", out var endTime)
+                && endTime.ValueKind == JsonValueKind.Number
+                    ? endTime.GetInt64()
+                    : null,
+            Place =
+                sent.TryGetProperty("location", out var location)
+                && location.ValueKind == JsonValueKind.Object
+                    ? location.GetProperty("name").GetString()
+                    : null,
+        };
+
+    private static IReadOnlyList<string> MentionsOf(JsonElement root) =>
+        root.TryGetProperty("mentions", out var mentions)
+        && mentions.ValueKind == JsonValueKind.Array
+            ? [.. mentions.EnumerateArray().Select(mention => mention.GetString() ?? "")]
+            : [];
 
     private string GroupsJson() =>
         JsonSerializer.Serialize(

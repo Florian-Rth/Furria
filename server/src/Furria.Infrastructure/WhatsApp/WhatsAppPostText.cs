@@ -32,6 +32,7 @@ public static class WhatsAppPostText
             body?.Text,
             .. draft.Schedules.Select(schedule => ScheduleOf(schedule, draft.Slot, spansDays)),
             GroupsOf(draft.GroupNames),
+            .. draft.TakenOverAddOns.Select(WhatsAppAddOnMessages.LineOf),
             AuthorOf(draft.AuthorName) is { } author ? $"{author}\n{draft.Link}" : draft.Link,
         ];
 
