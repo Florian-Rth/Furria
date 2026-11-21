@@ -3,12 +3,15 @@ namespace Furria.Infrastructure.WhatsApp;
 public sealed class WhatsAppMessage
 {
     public const int MessageIdLength = 256;
+    public const int MessageKeyLength = 256;
 
     public long Id { get; set; }
 
     public string ChatId { get; set; } = "";
 
     public string MessageId { get; set; } = "";
+
+    public string MessageKey { get; set; } = "";
 
     public WhatsAppHostKind HostKind { get; set; }
 

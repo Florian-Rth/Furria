@@ -171,11 +171,29 @@ public sealed class WahaClient
             )
         );
 
-    public async Task<string?> PhoneIdOfLidAsync(string lid, CancellationToken ct) =>
-        WahaJson.TextOf(
-            await GetAsync($"api/{_sessionSegment}/lids/{Uri.EscapeDataString(lid)}", ct),
-            "pn"
+    public async Task<string?> PhoneIdOfLidAsync(string lid, CancellationToken ct)
+    {
+        using var response = await _http.GetAsync(
+            $"api/{_sessionSegment}/lids/{Uri.EscapeDataString(lid)}",
+            ct
         );
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return null;
+
+        return WahaJson.TextOf(await ReadAsync(response, ct), "pn");
+    }
+
+    public async Task<string?> ContactNameAsync(string contactId, CancellationToken ct)
+    {
+        using var response = await _http.GetAsync(
+            $"api/contacts?contactId={Uri.EscapeDataString(contactId)}&session={_sessionSegment}",
+            ct
+        );
+        if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            return null;
+
+        return WahaJson.TextOf(await ReadAsync(response, ct), "pushname", "name");
+    }
 
     private string MessageRoute(string chatId, string messageId) =>
         $"api/{_sessionSegment}/chats/{Uri.EscapeDataString(chatId)}/messages/{Uri.EscapeDataString(messageId)}";

@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -100,6 +101,7 @@ public sealed partial class CalendarService
                                         poll.VoterIds
                                     )
                                     : null,
+                                Unassigned = organises ? poll.Unassigned : null,
                             },
                         }
                     ),
@@ -156,6 +158,18 @@ public sealed partial class CalendarService
                     reachable,
                     answeredIds
                 )
+                : null,
+            organises
+                ?
+                [
+                    .. (
+                        await _dbContext.UnassignedAttendanceAsync(
+                            WhatsAppHostKind.CalendarEntry,
+                            [calendarEntryId],
+                            ct
+                        )
+                    )[calendarEntryId],
+                ]
                 : null
         );
     }

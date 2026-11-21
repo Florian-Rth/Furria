@@ -142,10 +142,10 @@ Goal: answerable add-ons follow the post as polls, events and links.
 
 ### Phase 5 — Answers flow back
 Goal: votes and event responses in the group become app answers.
-- [ ] Phone normalisation to E.164 (German default) and single-person match; LID → phone through WAHA — tests first
-- [ ] `poll.vote` → poll votes / Aushang Zu-/Absage; `event.response` → attendance; latest timestamp wins; eligibility and closing respected; answer marked as given through WhatsApp
-- [ ] Unassigned answers stored per add-on with WhatsApp name; organiser's result view shows them
-- [ ] Web: result view lists *nicht zugeordnet*; answer source shown; phone field hint *wird mit WhatsApp abgeglichen*
+- [x] Phone normalisation to E.164 (German default) and single-person match among non-archived people; LID → phone through WAHA, resolved before any row lock — tests first
+- [x] `poll.vote` → poll votes / Aushang Zu-/Absage; `event.response` → attendance; latest timestamp wins; eligibility and closing respected; answer marked as given through WhatsApp; the answer time is the vote's own, capped at receipt; a vote naming no posted answer counts for nothing (only an emptied selection withdraws, and only a WhatsApp-given answer)
+- [x] Unassigned answers stored per add-on with WhatsApp name; organiser's result view shows them
+- [x] Web: result view lists *nicht zugeordnet*; answer source shown; phone field hint *wird mit WhatsApp abgeglichen*
 
 ### Phase 6 — Keeping the post in step
 Goal: changes in the app are told in the group.
@@ -153,6 +153,7 @@ Goal: changes in the app are told in the group.
 - [ ] Close (by time or by hand) → result reply; reopen posts nothing
 - [ ] Changed poll answers → delete old poll, post new one, re-point the post record
 - [ ] Undelivered operations of a withdrawn host are dropped like its pushes
+- [ ] WhatsApp answers (`whatsapp_answer`, incl. unassigned senders' name and phone) go with their host or add-on
 
 ### Phase 7 — Group keeping (server)
 Goal: with the switch on, the bot adds consenting active members.

@@ -40,6 +40,10 @@ public sealed class PollVoteConfiguration : IEntityTypeConfiguration<PollVote>
             .HasDatabaseName("ix_poll_vote_poll_id_person_id");
         builder.HasIndex(vote => vote.PersonId).HasDatabaseName("ix_poll_vote_person_id");
 
+        builder
+            .Property(vote => vote.IsGivenThroughWhatsApp)
+            .HasColumnName("is_given_through_whatsapp")
+            .HasDefaultValue(false);
         builder.Property(vote => vote.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(vote => vote.UpdatedAt).HasDefaultValueSql("now()");
     }

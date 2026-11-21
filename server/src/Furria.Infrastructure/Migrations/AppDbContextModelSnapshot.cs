@@ -676,6 +676,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<bool>("IsGivenThroughWhatsApp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_given_through_whatsapp");
+
                     b.Property<bool>("IsRecordedOnBehalf")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1542,6 +1548,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<bool>("IsGivenThroughWhatsApp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_given_through_whatsapp");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("integer")
@@ -6026,6 +6038,71 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppAnswer", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("AnsweredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("answered_at");
+
+                    b.Property<string>("Attendance")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("attendance");
+
+                    b.Property<int?>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.PrimitiveCollection<List<int>>("PollOptionIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("poll_option_ids")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("sender_id");
+
+                    b.Property<string>("SenderName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("sender_name");
+
+                    b.Property<string>("SenderPhone")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("sender_phone");
+
+                    b.Property<long>("WhatsAppMessageId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("whatsapp_message_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_whatsapp_answer");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_whatsapp_answer_person_id");
+
+                    b.HasIndex("WhatsAppMessageId", "SenderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_whatsapp_answer_whatsapp_message_id_sender_id");
+
+                    b.ToTable("whatsapp_answer", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_whatsapp_answer_attendance", "attendance IN ('Yes', 'No', 'Maybe')");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppMessage", b =>
                 {
                     b.Property<long>("Id")
@@ -6066,6 +6143,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("message_id");
 
+                    b.Property<string>("MessageKey")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("message_key");
+
                     b.PrimitiveCollection<List<int>>("PollOptionIds")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -6086,6 +6169,9 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_whatsapp_message");
+
+                    b.HasIndex("MessageKey")
+                        .HasDatabaseName("ix_whatsapp_message_message_key");
 
                     b.HasIndex("AddOnKind", "AddOnId")
                         .HasDatabaseName("ix_whatsapp_message_add_on_kind_add_on_id")
@@ -8071,6 +8157,26 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_linked_whatsapp_group_group_group_id");
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppAnswer", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_whatsapp_answer_person_person_id");
+
+                    b.HasOne("Furria.Infrastructure.WhatsApp.WhatsAppMessage", "WhatsAppMessage")
+                        .WithMany()
+                        .HasForeignKey("WhatsAppMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_whatsapp_answer_whatsapp_message_whatsapp_message_id");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("WhatsAppMessage");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>

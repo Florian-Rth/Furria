@@ -14,6 +14,8 @@ public sealed class FakeWahaService : HttpMessageHandler
     private const string WorkingStatus = "WORKING";
 
     private readonly ConcurrentDictionary<string, string> _groups = new();
+    private readonly ConcurrentDictionary<string, string> _phoneIdsOfLids = new();
+    private readonly ConcurrentDictionary<string, string> _contactNames = new();
     private readonly ConcurrentQueue<FakeWahaSend> _sent = new();
     private readonly Lock _sessionLock = new();
     private string? _sessionStatus;
@@ -46,6 +48,11 @@ public sealed class FakeWahaService : HttpMessageHandler
 
     public void JoinGroup(string chatId, string name) => _groups[chatId] = name;
 
+    public void KnowLid(string lid, string phoneId) => _phoneIdsOfLids[lid] = phoneId;
+
+    public void KnowContact(string contactId, string pushName) =>
+        _contactNames[contactId] = pushName;
+
     public void RefuseSends(HttpStatusCode status, string body)
     {
         lock (_sessionLock)
@@ -72,6 +79,8 @@ public sealed class FakeWahaService : HttpMessageHandler
     public void Forget()
     {
         _groups.Clear();
+        _phoneIdsOfLids.Clear();
+        _contactNames.Clear();
         _sent.Clear();
         lock (_sessionLock)
         {
@@ -96,9 +105,35 @@ public sealed class FakeWahaService : HttpMessageHandler
         var body = request.Content is null
             ? ""
             : await request.Content.ReadAsStringAsync(cancellationToken);
+        if (request.Method == HttpMethod.Get && Route(path) is "lids" or "contacts")
+            return Lookup(Route(path), path, request.RequestUri?.Query ?? "");
+
         lock (_sessionLock)
             return Answer(request.Method, path, body);
     }
+
+    private HttpResponseMessage Lookup(string route, string path, string query) =>
+        route == "lids"
+            ? PhoneOfLid(Uri.UnescapeDataString(path[(path.LastIndexOf('/') + 1)..]))
+            : ContactOf(ContactIdOf(query));
+
+    private HttpResponseMessage PhoneOfLid(string lid) =>
+        Json(JsonSerializer.Serialize(new { lid, pn = _phoneIdsOfLids.GetValueOrDefault(lid) }));
+
+    private HttpResponseMessage ContactOf(string contactId) =>
+        _contactNames.TryGetValue(contactId, out var pushName)
+            ? Json(JsonSerializer.Serialize(new { id = contactId, pushname = pushName }))
+            : new HttpResponseMessage(HttpStatusCode.NotFound);
+
+    private static string ContactIdOf(string query) =>
+        query
+            .TrimStart('?')
+            .Split('&')
+            .Select(pair => pair.Split('=', 2))
+            .Where(pair => pair is ["contactId", _])
+            .Select(pair => Uri.UnescapeDataString(pair[1]))
+            .FirstOrDefault()
+        ?? "";
 
     private HttpResponseMessage Answer(HttpMethod method, string path, string body) =>
         (method.Method, Route(path)) switch
@@ -124,6 +159,8 @@ public sealed class FakeWahaService : HttpMessageHandler
             "/api/sendText" => "sendText",
             "/api/sendImage" => "sendImage",
             "/api/sendPoll" => "sendPoll",
+            "/api/contacts" => "contacts",
+            _ when path.Contains("/lids/", StringComparison.Ordinal) => "lids",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)
                     && path.EndsWith("/start", StringComparison.Ordinal) => "start",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)

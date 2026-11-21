@@ -26,5 +26,7 @@ public sealed record PollDetails
 
     public CalendarReminderDetails? Reminder { get; init; }
 
+    public IReadOnlyList<WhatsAppUnassignedVote>? Unassigned { get; init; }
+
     public required IReadOnlyList<PollOptionDetails> Options { get; init; }
 }

@@ -12,6 +12,8 @@ public sealed class PollVote : ITimestamped
 
     public int PersonId { get; set; }
 
+    public bool IsGivenThroughWhatsApp { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

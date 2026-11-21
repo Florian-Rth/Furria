@@ -13,7 +13,10 @@ public static class WhatsAppAddOnMessages
     public const int NativePollMaxOptions = 12;
     public const int NativePollOptionLength = 100;
 
-    private static readonly IReadOnlyList<string> AttendanceAnswers = ["Ja", "Nein", "Vielleicht"];
+    private static readonly IReadOnlyList<string> AttendanceAnswers =
+    [
+        .. WhatsAppAnswerRules.AttendanceOptions.Select(option => option.Label),
+    ];
 
     [Pure]
     public static WhatsAppAddOnMessage AttendancePoll(string title) =>

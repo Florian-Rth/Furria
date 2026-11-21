@@ -20,6 +20,7 @@ import {
   CalendarReminderSchema,
   CalendarSignUpListFormSchema,
   CalendarSignUpListSchema,
+  WhatsAppUnassignedAnswerSchema,
 } from '@/features/calendar/schemas';
 import { MentionTargetsSchema } from '@/features/rich-text/schemas';
 import { PictureSchema } from '@/lib/api/schemas';
@@ -95,6 +96,7 @@ export const AnnouncementAttendanceSchema = z.object({
   answers: z.array(CalendarAttendanceAnswerSchema),
   notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
   reminder: CalendarReminderSchema.nullable(),
+  unassigned: z.array(WhatsAppUnassignedAnswerSchema).nullable(),
 });
 export type AnnouncementAttendance = z.infer<typeof AnnouncementAttendanceSchema>;
 

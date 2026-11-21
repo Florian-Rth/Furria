@@ -40,6 +40,7 @@ public sealed partial class CalendarService
                     ? response.RecordedBy!.LastName
                     : null,
                 AnsweredAt = response.UpdatedAt,
+                IsGivenThroughWhatsApp = response.IsGivenThroughWhatsApp,
             })
             .ToListAsync(ct);
 
@@ -108,6 +109,7 @@ public sealed partial class CalendarService
     private sealed record AttendanceRoll(
         IReadOnlyList<CalendarAttendanceAnswerDetails> Answers,
         IReadOnlyList<CalendarAttendancePerson>? NotAnswered,
-        CalendarReminderDetails? Reminder
+        CalendarReminderDetails? Reminder,
+        IReadOnlyList<WhatsAppUnassignedAnswer>? Unassigned
     );
 }

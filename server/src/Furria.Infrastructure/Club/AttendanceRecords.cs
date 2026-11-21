@@ -9,7 +9,8 @@ internal sealed record AttendanceRecord(
     int PersonId,
     AttendanceAnswer Answer,
     bool IsRecordedOnBehalf,
-    int? RecordedByPersonId
+    int? RecordedByPersonId,
+    bool IsGivenThroughWhatsApp = false
 );
 
 internal static class AttendanceRecords
@@ -33,6 +34,28 @@ internal static class AttendanceRecords
         return await dbContext.AttendanceResponses.SingleOrDefaultAsync(
             response =>
                 response.CalendarEntryId == calendarEntryId && response.PersonId == personId,
+            ct
+        );
+    }
+
+    public static async Task<AttendanceResponse?> LockedAnnouncementResponseAsync(
+        this AppDbContext dbContext,
+        int announcementId,
+        int personId,
+        CancellationToken ct
+    )
+    {
+        await dbContext.Database.ExecuteSqlAsync(
+            $"""
+            SELECT 1 FROM attendance_response
+            WHERE announcement_id = {announcementId} AND person_id = {personId}
+            FOR UPDATE
+            """,
+            ct
+        );
+
+        return await dbContext.AttendanceResponses.SingleOrDefaultAsync(
+            response => response.AnnouncementId == announcementId && response.PersonId == personId,
             ct
         );
     }
@@ -64,6 +87,7 @@ internal static class AttendanceRecords
         response.Answer = record.Answer;
         response.IsRecordedOnBehalf = record.IsRecordedOnBehalf;
         response.RecordedByPersonId = record.RecordedByPersonId;
+        response.IsGivenThroughWhatsApp = record.IsGivenThroughWhatsApp;
 
         dbContext.AttendanceResponseChanges.Add(
             new AttendanceResponseChange

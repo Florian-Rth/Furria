@@ -232,6 +232,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WhatsAppInbox>();
         services.AddScoped<WhatsAppSessionTracker>();
         services.AddScoped<WhatsAppInboxProcessor>();
+        services.AddScoped<WhatsAppSenderMatch>();
+        services.AddScoped<WhatsAppAnswers>();
         services.AddScoped<WhatsAppGroupService>();
         services.AddScoped<WhatsAppConnectionService>();
         services.AddHostedService<WhatsAppInboxWorker>();

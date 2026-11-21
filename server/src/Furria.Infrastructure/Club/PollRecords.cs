@@ -148,10 +148,12 @@ internal static class PollRecords
                 vote.PollOptionId,
                 vote.PersonId,
                 vote.PollOption!.Poll!.IsAnonymous ? "" : vote.Person!.FirstName,
-                vote.PollOption!.Poll!.IsAnonymous ? "" : vote.Person!.LastName
+                vote.PollOption!.Poll!.IsAnonymous ? "" : vote.Person!.LastName,
+                vote.IsGivenThroughWhatsApp
             ))
             .ToListAsync(ct);
         var votesByPoll = votes.ToLookup(vote => vote.PollId);
+        var unassigned = await dbContext.UnassignedVotesOfPollsAsync(pollIds, ct);
 
         return polls
             .GroupBy(poll => poll.HostId)
@@ -164,7 +166,8 @@ internal static class PollRecords
                                 poll.Position,
                                 ToDetails(poll, [.. votesByPoll[poll.PollId]], viewerPersonId, now),
                                 VoterIdsOf(votesByPoll[poll.PollId]),
-                                poll.LastRemindedAt
+                                poll.LastRemindedAt,
+                                poll.IsAnonymous ? [] : [.. unassigned[poll.PollId]]
                             )),
                         ]
             );
@@ -233,6 +236,7 @@ internal static class PollRecords
             PersonId = vote.PersonId,
             FirstName = vote.FirstName,
             LastName = vote.LastName,
+            IsGivenThroughWhatsApp = vote.IsGivenThroughWhatsApp,
         };
 
     [Pure]
@@ -441,7 +445,8 @@ internal static class PollRecords
         int OptionId,
         int PersonId,
         string FirstName,
-        string LastName
+        string LastName,
+        bool IsGivenThroughWhatsApp
     );
 }
 
@@ -449,5 +454,6 @@ internal sealed record PlacedPoll(
     int Position,
     PollDetails Details,
     IReadOnlySet<int> VoterIds,
-    DateTimeOffset? LastRemindedAt
+    DateTimeOffset? LastRemindedAt,
+    IReadOnlyList<WhatsAppUnassignedVote> Unassigned
 );

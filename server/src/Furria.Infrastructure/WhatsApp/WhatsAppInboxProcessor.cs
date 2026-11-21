@@ -10,18 +10,21 @@ public sealed class WhatsAppInboxProcessor
 
     private readonly AppDbContext _dbContext;
     private readonly WhatsAppSessionTracker _sessionTracker;
+    private readonly WhatsAppAnswers _answers;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<WhatsAppInboxProcessor> _logger;
 
     public WhatsAppInboxProcessor(
         AppDbContext dbContext,
         WhatsAppSessionTracker sessionTracker,
+        WhatsAppAnswers answers,
         TimeProvider timeProvider,
         ILogger<WhatsAppInboxProcessor> logger
     )
     {
         _dbContext = dbContext;
         _sessionTracker = sessionTracker;
+        _answers = answers;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -62,8 +65,19 @@ public sealed class WhatsAppInboxProcessor
         inboxEvent.Event switch
         {
             WahaEvents.SessionStatus => _sessionTracker.TrackAsync(inboxEvent, ct),
+            WahaEvents.PollVote or WahaEvents.EventResponse => _answers.ApplyAsync(inboxEvent, ct),
+            WahaEvents.PollVoteFailed => LoggedFailedVote(inboxEvent),
             _ => Task.CompletedTask,
         };
+
+    private Task LoggedFailedVote(InboxWhatsAppEvent inboxEvent)
+    {
+        _logger.LogWarning(
+            "WhatsApp could not decrypt a poll vote ({InboxEventId}); it counts for nothing",
+            inboxEvent.Id
+        );
+        return Task.CompletedTask;
+    }
 
     private Task<InboxWhatsAppEvent?> ClaimDueAsync(DateTimeOffset now, CancellationToken ct) =>
         _dbContext

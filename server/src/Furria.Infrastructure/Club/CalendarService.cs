@@ -864,6 +864,7 @@ public sealed partial class CalendarService
             Answers = roll?.Answers,
             NotAnswered = roll?.NotAnswered,
             Reminder = roll?.Reminder,
+            Unassigned = roll?.Unassigned,
         };
 
     private PictureDetails? EventPictureOf(int eventId, EventFactsRow facts) =>

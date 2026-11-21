@@ -80,6 +80,7 @@ export const CalendarDetailPoll: FC<CalendarDetailPollProps> = ({
       <CalendarNotAnsweredRoll
         label={control.question}
         openTab={control.openTab}
+        unassignedTab={control.unassignedTab}
         onOpen={control.sheet.open}
       />
       <CalendarNamesSheet

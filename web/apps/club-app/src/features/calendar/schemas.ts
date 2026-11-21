@@ -68,12 +68,17 @@ export const CalendarAddOnKindSchema = z.enum([
 ]);
 export type CalendarAddOnKind = z.infer<typeof CalendarAddOnKindSchema>;
 
+export const CalendarPollVoterSchema = AudiencePersonSchema.extend({
+  isGivenThroughWhatsApp: z.boolean(),
+});
+export type CalendarPollVoter = z.infer<typeof CalendarPollVoterSchema>;
+
 export const CalendarPollOptionSchema = z.object({
   optionId: z.number().int(),
   label: z.string(),
   voteCount: z.number().int(),
   viewerChose: z.boolean(),
-  voters: z.array(AudiencePersonSchema),
+  voters: z.array(CalendarPollVoterSchema),
 });
 export type CalendarPollOption = z.infer<typeof CalendarPollOptionSchema>;
 
@@ -83,6 +88,17 @@ export const CalendarAttendancePersonSchema = z.object({
   lastName: z.string(),
 });
 export type CalendarAttendancePerson = z.infer<typeof CalendarAttendancePersonSchema>;
+
+export const WhatsAppSenderSchema = z.object({
+  whatsAppName: z.string().nullable(),
+  phone: z.string().nullable(),
+});
+export type WhatsAppSender = z.infer<typeof WhatsAppSenderSchema>;
+
+export const WhatsAppUnassignedVoteSchema = WhatsAppSenderSchema.extend({
+  optionIds: z.array(z.number().int()),
+});
+export type WhatsAppUnassignedVote = z.infer<typeof WhatsAppUnassignedVoteSchema>;
 
 export const CalendarReminderSchema = z.object({
   lastRemindedAt: z.iso.datetime({ offset: true }).nullable(),
@@ -119,6 +135,7 @@ export const CalendarPollSchema = z.object({
   concernedCount: z.number().int().nullable(),
   notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
   reminder: CalendarReminderSchema.nullable(),
+  unassigned: z.array(WhatsAppUnassignedVoteSchema).nullable(),
   options: z.array(CalendarPollOptionSchema),
 });
 export type CalendarPoll = z.infer<typeof CalendarPollSchema>;
@@ -208,8 +225,14 @@ export const CalendarAttendanceAnswerSchema = CalendarAttendancePersonSchema.ext
   recordedByFirstName: z.string().nullable(),
   recordedByLastName: z.string().nullable(),
   answeredAt: z.iso.datetime({ offset: true }),
+  isGivenThroughWhatsApp: z.boolean(),
 });
 export type CalendarAttendanceAnswer = z.infer<typeof CalendarAttendanceAnswerSchema>;
+
+export const WhatsAppUnassignedAnswerSchema = WhatsAppSenderSchema.extend({
+  answer: AttendanceAnswerSchema,
+});
+export type WhatsAppUnassignedAnswer = z.infer<typeof WhatsAppUnassignedAnswerSchema>;
 
 export const CalendarAttendanceSchema = z.object({
   isClosed: z.boolean(),
@@ -219,6 +242,7 @@ export const CalendarAttendanceSchema = z.object({
   answers: z.array(CalendarAttendanceAnswerSchema).nullable(),
   notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
   reminder: CalendarReminderSchema.nullable(),
+  unassigned: z.array(WhatsAppUnassignedAnswerSchema).nullable(),
 });
 export type CalendarAttendance = z.infer<typeof CalendarAttendanceSchema>;
 

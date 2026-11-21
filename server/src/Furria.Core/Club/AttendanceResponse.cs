@@ -18,6 +18,8 @@ public sealed class AttendanceResponse : ITimestamped
 
     public int? RecordedByPersonId { get; set; }
 
+    public bool IsGivenThroughWhatsApp { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

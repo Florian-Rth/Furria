@@ -7,4 +7,6 @@ public sealed record PollVoter
     public required string FirstName { get; init; }
 
     public required string LastName { get; init; }
+
+    public required bool IsGivenThroughWhatsApp { get; init; }
 }

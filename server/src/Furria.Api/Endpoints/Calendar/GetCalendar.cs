@@ -279,6 +279,8 @@ public sealed record CalendarAttendanceDto
 
     public required CalendarReminderDto? Reminder { get; init; }
 
+    public required IReadOnlyList<WhatsAppUnassignedAnswerDto>? Unassigned { get; init; }
+
     [Pure]
     public static CalendarAttendanceDto From(CalendarAttendanceDetails attendance) =>
         new()
@@ -294,7 +296,58 @@ public sealed record CalendarAttendanceDto
                 ? [.. people.Select(CalendarAttendancePersonDto.From)]
                 : null,
             Reminder = CalendarReminderDto.From(attendance.Reminder),
+            Unassigned = WhatsAppUnassignedAnswerDto.FromAll(attendance.Unassigned),
         };
+}
+
+public sealed record WhatsAppUnassignedAnswerDto
+{
+    public required string? WhatsAppName { get; init; }
+
+    public required string? Phone { get; init; }
+
+    public required AttendanceAnswer Answer { get; init; }
+
+    [Pure]
+    public static IReadOnlyList<WhatsAppUnassignedAnswerDto>? FromAll(
+        IReadOnlyList<WhatsAppUnassignedAnswer>? answers
+    ) =>
+        answers is null
+            ? null
+            :
+            [
+                .. answers.Select(answer => new WhatsAppUnassignedAnswerDto
+                {
+                    WhatsAppName = answer.WhatsAppName,
+                    Phone = answer.Phone,
+                    Answer = answer.Answer,
+                }),
+            ];
+}
+
+public sealed record WhatsAppUnassignedVoteDto
+{
+    public required string? WhatsAppName { get; init; }
+
+    public required string? Phone { get; init; }
+
+    public required IReadOnlyList<int> OptionIds { get; init; }
+
+    [Pure]
+    public static IReadOnlyList<WhatsAppUnassignedVoteDto>? FromAll(
+        IReadOnlyList<WhatsAppUnassignedVote>? votes
+    ) =>
+        votes is null
+            ? null
+            :
+            [
+                .. votes.Select(vote => new WhatsAppUnassignedVoteDto
+                {
+                    WhatsAppName = vote.WhatsAppName,
+                    Phone = vote.Phone,
+                    OptionIds = vote.OptionIds,
+                }),
+            ];
 }
 
 public sealed record CalendarReminderDto
@@ -333,6 +386,8 @@ public sealed record CalendarAttendanceAnswerDto
 
     public required DateTimeOffset AnsweredAt { get; init; }
 
+    public required bool IsGivenThroughWhatsApp { get; init; }
+
     [Pure]
     public static CalendarAttendanceAnswerDto From(CalendarAttendanceAnswerDetails answer) =>
         new()
@@ -344,6 +399,7 @@ public sealed record CalendarAttendanceAnswerDto
             RecordedByFirstName = answer.RecordedByFirstName,
             RecordedByLastName = answer.RecordedByLastName,
             AnsweredAt = answer.AnsweredAt,
+            IsGivenThroughWhatsApp = answer.IsGivenThroughWhatsApp,
         };
 }
 
@@ -547,6 +603,8 @@ public sealed record CalendarPollDto
 
     public required CalendarReminderDto? Reminder { get; init; }
 
+    public required IReadOnlyList<WhatsAppUnassignedVoteDto>? Unassigned { get; init; }
+
     public required IReadOnlyList<CalendarPollOptionDto> Options { get; init; }
 
     [Pure]
@@ -568,6 +626,7 @@ public sealed record CalendarPollDto
                 ? [.. missing.Select(CalendarAttendancePersonDto.From)]
                 : null,
             Reminder = CalendarReminderDto.From(poll.Reminder),
+            Unassigned = WhatsAppUnassignedVoteDto.FromAll(poll.Unassigned),
             Options = [.. poll.Options.Select(CalendarPollOptionDto.From)],
         };
 }
@@ -604,6 +663,8 @@ public sealed record CalendarPollVoterDto
 
     public required string LastName { get; init; }
 
+    public required bool IsGivenThroughWhatsApp { get; init; }
+
     [Pure]
     public static CalendarPollVoterDto From(PollVoter voter) =>
         new()
@@ -611,6 +672,7 @@ public sealed record CalendarPollVoterDto
             PersonId = voter.PersonId,
             FirstName = voter.FirstName,
             LastName = voter.LastName,
+            IsGivenThroughWhatsApp = voter.IsGivenThroughWhatsApp,
         };
 }
 

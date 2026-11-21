@@ -164,6 +164,7 @@ public sealed class WhatsAppOutboxDelivery
             {
                 ChatId = operation.ChatId,
                 MessageId = messageId,
+                MessageKey = WahaAnswerEvents.MessageKeyOf(messageId),
                 HostKind = operation.HostKind,
                 HostId = operation.HostId,
                 AddOnKind = operation.AddOnKind,

@@ -1,4 +1,5 @@
 import type { KkStatusTone } from '@furria/ui/KkStatusLine';
+import type { UnassignedCopy } from '@/features/calendar/whatsapp-answers';
 import type { WhatsAppState } from './schemas';
 
 export const WHATSAPP_TITLE = 'WhatsApp';
@@ -45,4 +46,13 @@ export const STATE_COPY: Record<WhatsAppState, WhatsAppStateCopy> = {
   scanQrCode: { tone: 'busy', text: 'Wartet auf Verknüpfung' },
   working: { tone: 'done', text: 'Verbunden' },
   failed: { tone: 'conflict', text: 'Getrennt' },
+};
+
+export const PHONE_WHATSAPP_HINT = 'Wird mit WhatsApp abgeglichen.';
+export const THROUGH_WHATSAPP_NOTE = 'über WhatsApp';
+const UNASSIGNED_TAB_LABEL = 'Nicht zugeordnet';
+const UNKNOWN_SENDER_NAME = 'Unbekannt';
+export const UNASSIGNED_COPY: UnassignedCopy = {
+  label: UNASSIGNED_TAB_LABEL,
+  unknownSender: UNKNOWN_SENDER_NAME,
 };

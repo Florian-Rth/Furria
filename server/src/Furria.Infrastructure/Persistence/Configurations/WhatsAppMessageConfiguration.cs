@@ -57,6 +57,10 @@ public sealed class WhatsAppMessageConfiguration : IEntityTypeConfiguration<What
             .HasMaxLength(WhatsAppMessage.MessageIdLength)
             .IsRequired();
         builder
+            .Property(message => message.MessageKey)
+            .HasMaxLength(WhatsAppMessage.MessageKeyLength)
+            .IsRequired();
+        builder
             .Property(message => message.HostKind)
             .HasConversion<string>()
             .HasMaxLength(EnumLength);
@@ -75,6 +79,7 @@ public sealed class WhatsAppMessageConfiguration : IEntityTypeConfiguration<What
 
         builder.HasIndex(message => new { message.ChatId, message.MessageId }).IsUnique();
         builder.HasIndex(message => new { message.HostKind, message.HostId });
+        builder.HasIndex(message => message.MessageKey);
         builder
             .HasIndex(message => new { message.AddOnKind, message.AddOnId })
             .HasFilter("add_on_id IS NOT NULL");

@@ -220,6 +220,7 @@ describe('reminder sources', () => {
         concernedCount: null,
         notAnswered: null,
         reminder: null,
+        unassigned: null,
         options: [],
       },
     );

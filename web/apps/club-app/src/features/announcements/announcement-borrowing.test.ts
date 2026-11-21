@@ -26,6 +26,7 @@ const pollOf = (pollId: number, question: string): CalendarPoll => ({
   concernedCount: 0,
   notAnswered: null,
   reminder: null,
+  unassigned: null,
   options: [],
 });
 

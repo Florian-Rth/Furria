@@ -1,6 +1,7 @@
 import { useAttendanceChoice } from '@/features/attendance/hooks/use-attendance-choice';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { useMeQuery } from '@/features/session/api';
+import { THROUGH_WHATSAPP_NOTE, UNASSIGNED_COPY } from '@/features/whatsapp/whatsapp-copy';
 import { canAnswer } from '@/lib/calendar-answering';
 import {
   ATTENDANCE_ROLL_LABELS,
@@ -34,6 +35,8 @@ export interface CalendarDetailAttendanceControl {
 export const ATTENDANCE_ROLL_COPY: AttendanceRollCopy = {
   labels: ATTENDANCE_ROLL_LABELS,
   onBehalf: toOnBehalfLabel,
+  throughWhatsApp: THROUGH_WHATSAPP_NOTE,
+  unassigned: UNASSIGNED_COPY,
 };
 
 export const useCalendarDetailAttendance = (
