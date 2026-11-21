@@ -30,7 +30,7 @@ const NO_ACTIONS: AccessActions = {
   birthDateEntry: false,
 };
 
-const hasAccount = (access: PersonAccess): boolean =>
+export const hasAccount = (access: PersonAccess): boolean =>
   access.state === 'active' || access.state === 'disabled';
 
 const hasAddress = (email: string | null): boolean => email !== null && email.trim() !== '';

@@ -8,6 +8,7 @@ import { toIsoDay } from '@/lib/day';
 import { DOMAIN_CHANGES, queryKeys } from '@/lib/query/reads';
 import { refreshAfter } from '@/lib/query/refresh-after';
 import { isNotFoundError } from '@/lib/query-error';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import type { InvitationRoundKind } from './invitation-round-labels';
 import { toRoundSentMessage } from './invitation-round-labels';
 import {
@@ -36,6 +37,7 @@ import {
   requestPauseUpdate,
   requestPerson,
   requestPersonArchived,
+  requestPersonClubGroupConsent,
   requestPersonCreate,
   requestPersonErasure,
   requestPersons,
@@ -93,6 +95,16 @@ export const useUpdatePersonMutation = (
     request: (form: PersonForm, accessToken) => requestPersonUpdate(personId, form, accessToken),
     changes: ['person'],
     notice: { success: (form) => toPersonSavedMessage(`${form.firstName} ${form.lastName}`) },
+  });
+
+export const usePersonClubGroupConsentMutation = (
+  personId: number,
+): UseMutationResult<void, Error, boolean> =>
+  useApiMutation({
+    request: (consent: boolean, accessToken) =>
+      requestPersonClubGroupConsent(personId, consent, accessToken),
+    changes: ['person'],
+    notice: { failure: toWriteErrorMessage },
   });
 
 export interface PersonArchivedInput {

@@ -99,6 +99,7 @@ export const MePersonSchema = z.object({
   city: z.string().nullable(),
   birthDate: z.iso.date().nullable(),
   contactVisibleToMembers: z.boolean(),
+  clubGroupConsent: z.boolean(),
   contactChange: ContactChangeSchema.nullable(),
   portrait: PictureEditingSchema.nullable(),
 });

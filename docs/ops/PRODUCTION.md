@@ -15,6 +15,7 @@ browser ──HTTPS──▶ edge nginx (on the Hetzner server, outside this rep
                      ├─ club-app  :CLUB_APP_PORT ─┤
                      ├─ api       :8080 (internal) ◀┘
                      ├─ media-worker (no port; renditions, ADR-0024)
+                     ├─ waha      (no port; the club's WhatsApp bot, ADR-0042)
                      ├─ postgres  (internal)
                      └─ watchtower
 ```
@@ -36,6 +37,7 @@ internal network. The edge is not in this repo. It must:
 | Pass `/.well-known/assetlinks.json` through without redirect, on both hosts | Android App Links (`app.`) and passkeys (apex) |
 | On `app.`: `client_max_body_size 20m`, `proxy_request_buffering off`, `proxy_buffering off` | Uploads travel by tus in 16 MB chunks — nginx's default 1 MB answers 413; buffering would spool every chunk, and every original (videos up to 20 GB), video seek and album ZIP, to the edge's disk |
 | Pass `Accept-Encoding` through and never compress itself — no `gzip on`, no `brotli on`, no stripping of `Content-Encoding` | The API compresses its JSON (Brotli, then Gzip) and nothing else; media is already compressed and range requests must stay byte-exact |
+| Never route `/api/whatsapp/webhook` (both nginx answer it with 404 anyway) | WAHA posts its webhooks to `api:8080` inside the compose network; nothing outside may reach that route |
 | Pass `Range` through and never cache `/api/media/…` or `/api/public/…` — no `proxy_cache`, no `proxy_ignore_headers Cache-Control` | Video seeking needs range requests; a public picture must 404 the moment it leaves the public face ([ADR-0025](../adr/0025-media-is-fetched-by-signed-urls.md)) |
 
 The app nginx adds HSTS (`includeSubDomains`, no `preload`), the CSP and the other security
@@ -96,6 +98,8 @@ every variable. The ones that matter most:
   `MEDIA_WORKER_DEVICE` names the render node). Decoding, scaling and HDR tone mapping stay on the
   CPU either way. One video encodes at a time per worker; photos run beside it.
 - **`EDGE_PROXY_ADDRESS`** — the API refuses to start in production without trusted proxies.
+- **`WAHA_API_KEY` / `WHATSAPP_WEBHOOK_HMAC_KEY`** — the key the API calls the bot with and the
+  key the bot signs its webhooks with (`openssl rand -base64 48` each). See [WhatsApp](#whatsapp).
 - **`ANDROID_CERT_FINGERPRINTS`** — feeds both `assetlinks.json` files and the API's accepted
   passkey origins.
 
@@ -258,8 +262,8 @@ BACKUP_DIR=/mnt/backup/furria ./backup.sh
 30 3 * * * cd /home/<user>/furria && BACKUP_DIR=/mnt/backup/furria ./backup.sh >> backup.log 2>&1
 ```
 
-Each run is a snapshot `$BACKUP_DIR/<UTC time>/` with `database.dump` (`pg_dump -Fc`) and
-`originals/`. It copies the originals while everything runs, then **stops `api`** for the dump
+Each run is a snapshot `$BACKUP_DIR/<UTC time>/` with `database.dump` (`pg_dump -Fc`),
+`originals/` and `waha-sessions.tar.gz` (the bot's session keys, see [WhatsApp](#whatsapp)). It copies the originals while everything runs, then **stops `api`** for the dump
 and a last pass over the originals (only what changed since the first pass), then starts it
 again — the website and club app keep serving their pages meanwhile, an upload in flight resumes
 afterwards. Unchanged originals are hard links into the previous snapshot, so a snapshot costs
@@ -270,7 +274,8 @@ another disk than the media path; a copy off the host is the operator's (`rsync 
 **Restore** a snapshot `S`, with Florian on the host:
 
 ```bash
-docker compose stop api media-worker
+docker compose stop api media-worker waha
+docker run --rm --volumes-from "$(docker compose ps -aq waha)" -i alpine:3.22 sh -c 'rm -rf /app/.sessions/* && tar -xzf - -C /app/.sessions' < S/waha-sessions.tar.gz
 docker compose exec -T postgres sh -c 'dropdb -U "$POSTGRES_USER" --force "$POSTGRES_DB" && createdb -U "$POSTGRES_USER" "$POSTGRES_DB"'
 docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --exit-on-error' < S/database.dump
 M=<the media path>   # MEDIA_PATH, or: docker volume inspect -f '{{ .Mountpoint }}' furria_media
@@ -325,6 +330,56 @@ docker compose logs api | grep -E 'Membership application|membership application
 
 Spent challenges and the rate limits live in memory: an API restart forgets them, so a
 challenge solved in the 10 minutes before a restart can be spent once more.
+
+## WhatsApp
+
+The club's WhatsApp group is reached through a bot ([ADR-0042](../adr/0042-the-club-reaches-whatsapp-through-a-self-hosted-waha-bot.md)):
+the club's own number, linked as a device to the `waha` container (WAHA, GOWS engine). The API
+calls it at `http://waha:3000` with `WAHA_API_KEY`; WAHA posts `session.status`, `poll.vote`,
+`poll.vote.failed`, `event.response` and `group.v2.participants` to
+`http://api:8080/api/whatsapp/webhook`, signed with `WHATSAPP_WEBHOOK_HMAC_KEY`. Neither has a
+port on the host, and both app nginx answer the webhook route with 404. The image is pinned in
+the compose file and never moved by Watchtower: update it by hand, after reading WAHA's changelog
+for the GOWS engine, and check a vote flows back afterwards.
+
+**Linking**, once, by an admin with the bot's phone in hand:
+
+1. The bot's phone runs WhatsApp (or WhatsApp Business) on the club's number and is a member,
+   and **admin**, of the club group — only an admin may add members.
+2. *Mehr → Verwaltung → System → WhatsApp → Bot verknüpfen*, then scan the QR code in WhatsApp
+   (*Einstellungen › Verknüpfte Geräte › Gerät hinzufügen*) or request a pairing code.
+3. Once the state reads *Verbunden*, pick the club group under *Vereinsgruppe*. Picking a group
+   switches *Vereinsgruppe verwalten* off; switch it on when members should be added.
+
+**The session volume** `waha-sessions` holds the linked device's keys. Losing it unlinks the
+bot and makes every vote on a poll posted before undecryptable: those polls then count only
+the app's answers. The nightly backup copies it (with `waha` stopped for seconds); restore it
+together with the database of the same snapshot, see [Backup and restore](#backup-and-restore).
+
+**When the bot drops** — the System page reads *Getrennt*, and admins get a push. Nothing is
+lost: posts, polls, replies and adds wait in the WhatsApp outbox (*System → WhatsApp-Versand*)
+and go out once the session is back. Then:
+
+- **Logged out** (the phone was offline for about two weeks, or someone removed the linked
+  device): keep the phone online and link again (*Bot verknüpfen*). Same number, same group:
+  nothing else to do. Votes on polls posted before keep arriving only when the session store
+  survived; after a fresh link they do not.
+- **Banned number** (WhatsApp refuses the number): the number is gone for good, never a
+  member's. Take a new dedicated number, link it as above, have a group admin add it to the club
+  group as admin, pick the group again and switch *Vereinsgruppe verwalten* back on. Polls posted
+  under the old number count only the app's answers from then on. Before linking the new
+  number, look at why: the bot only posts into the club group, one message at a time with a gap,
+  and never writes to anyone directly — a ban despite that means WhatsApp tightened its rules,
+  read WAHA's issue tracker first.
+- **Rate signals** (463/475 in the log) make the dispatcher back off by itself; never re-link
+  because of them.
+
+The trail:
+
+```bash
+docker compose logs api | grep -E 'WhatsApp'
+docker compose logs waha --since 1h
+```
 
 ## Moving the live host onto the example compose
 

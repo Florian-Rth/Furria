@@ -66,6 +66,7 @@ const start = (panels: StartPanel[]): Start => ({
   today: '2027-01-19',
   reshapeAt: null,
   viewerIsActiveInClub: true,
+  clubGroupInviteLink: null,
   panels,
 });
 

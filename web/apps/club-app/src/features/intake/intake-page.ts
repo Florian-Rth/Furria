@@ -56,6 +56,7 @@ export const toSubmitBody = (
   city: addressRequired ? filledOrNull(form.city) : null,
   phone: filledOrNull(form.phone),
   email: filledOrNull(form.email),
+  clubGroupConsent: form.clubGroupConsent,
 });
 
 export const invitationHrefOf = (link: string | null): string | null => {

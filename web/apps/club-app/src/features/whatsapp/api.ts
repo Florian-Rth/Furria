@@ -6,6 +6,7 @@ import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   requestWhatsAppClubGroup,
+  requestWhatsAppGroupKeeping,
   requestWhatsAppLinking,
   requestWhatsAppOverview,
   requestWhatsAppPairingCode,
@@ -18,7 +19,11 @@ import type {
   WhatsAppQrCode,
   WhatsAppReach,
 } from './schemas';
-import { CLUB_GROUP_PICKED_NOTICE, LINKING_STARTED_NOTICE } from './whatsapp-copy';
+import {
+  CLUB_GROUP_PICKED_NOTICE,
+  LINKING_STARTED_NOTICE,
+  toGroupKeepingNotice,
+} from './whatsapp-copy';
 import { overviewPollDelayOf } from './whatsapp-polling';
 
 const QR_CODE_POLL_MS = 15_000;
@@ -69,4 +74,11 @@ export const usePickWhatsAppClubGroupMutation = (): UseMutationResult<void, Erro
     request: requestWhatsAppClubGroup,
     changes: ['whatsApp'],
     notice: { success: () => CLUB_GROUP_PICKED_NOTICE, failure: toWriteErrorMessage },
+  });
+
+export const useWhatsAppGroupKeepingMutation = (): UseMutationResult<void, Error, boolean> =>
+  useApiMutation({
+    request: requestWhatsAppGroupKeeping,
+    changes: ['whatsApp'],
+    notice: { success: toGroupKeepingNotice, failure: toWriteErrorMessage },
   });

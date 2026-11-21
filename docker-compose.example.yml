@@ -1,5 +1,5 @@
-# Example full-stack deployment: PostgreSQL + API + media worker + website + club-app, kept up to
-# date by Watchtower.
+# Example full-stack deployment: PostgreSQL + API + media worker + WhatsApp bot (WAHA) + website +
+# club-app, kept up to date by Watchtower.
 #
 # Usage on the host that runs the app:
 #   cp docker-compose.example.yml docker-compose.yml
@@ -86,6 +86,11 @@ services:
       # Production refuses to start without trusted proxies.
       ForwardedHeaders__TrustedProxies__0: *furria-subnet
       ForwardedHeaders__TrustedProxies__1: ${EDGE_PROXY_ADDRESS:?set EDGE_PROXY_ADDRESS in .env}
+      # The club's WhatsApp bot (ADR-0042): the api calls waha inside this network with the API key,
+      # waha posts its webhooks back signed with the HMAC key. Both at least 32 characters.
+      WhatsApp__BaseUrl: http://waha:3000
+      WhatsApp__ApiKey: ${WAHA_API_KEY:?set WAHA_API_KEY (>= 32 chars) in .env}
+      WhatsApp__WebhookHmacKey: ${WHATSAPP_WEBHOOK_HMAC_KEY:?set WHATSAPP_WEBHOOK_HMAC_KEY (>= 32 chars) in .env}
     volumes:
       # A named volume by default; set MEDIA_PATH to a host path (NAS mount, mounted bucket) to
       # put the media elsewhere - owned by uid 1654, the containers' user. Back it up together
@@ -146,6 +151,32 @@ services:
     labels:
       com.centurylinklabs.watchtower.enable: "true"
 
+  # The club's WhatsApp bot (ADR-0042): WAHA with the GOWS engine, linked to the club's own number
+  # as a linked device. No port - only the api talks to it, and it posts webhooks only to the api;
+  # the website and club-app nginx answer /api/whatsapp/webhook with 404. Pinned: a WAHA update is
+  # a deliberate step (docs/ops/PRODUCTION.md, "WhatsApp"), never Watchtower's.
+  waha:
+    image: devlikeapro/waha:gows-2026.10.1
+    restart: unless-stopped
+    environment:
+      WHATSAPP_DEFAULT_ENGINE: GOWS
+      WHATSAPP_RESTART_ALL_SESSIONS: "true"
+      WAHA_API_KEY: ${WAHA_API_KEY:?set WAHA_API_KEY (>= 32 chars) in .env}
+      WAHA_DASHBOARD_ENABLED: "false"
+      WHATSAPP_SWAGGER_ENABLED: "false"
+      WHATSAPP_HOOK_URL: http://api:8080/api/whatsapp/webhook
+      WHATSAPP_HOOK_EVENTS: session.status,poll.vote,poll.vote.failed,event.response,group.v2.participants
+      WHATSAPP_HOOK_HMAC_KEY: ${WHATSAPP_WEBHOOK_HMAC_KEY:?set WHATSAPP_WEBHOOK_HMAC_KEY (>= 32 chars) in .env}
+    volumes:
+      # The session keys: losing them unlinks the bot and makes every vote on an earlier poll
+      # undecryptable. Backed up with the database (backup.example.sh).
+      - waha-sessions:/app/.sessions
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
   website:
     image: ${DOCKERHUB_USERNAME}/furria-website:latest
     restart: unless-stopped
@@ -192,3 +223,4 @@ services:
 volumes:
   postgres-data:
   media:
+  waha-sessions:

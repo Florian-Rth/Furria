@@ -164,10 +164,11 @@ Goal: with the switch on, the bot adds consenting active members.
 
 ### Phase 8 — Group keeping (club app) and rollout
 Goal: members consent in the app, managers see blocked adds, production runs the bot.
-- [ ] Consent toggle in her profile, a Welcome step and a Neuzugang wizard step; manager toggle for persons without account
-- [ ] Start card *Tritt der Vereinsgruppe bei* with the invite link when her add was refused
-- [ ] System → WhatsApp: Group keeping switch and *Hinzufügen blockiert*
-- [ ] `docs/ops`: WAHA in production (the edge never routes `/api/whatsapp/webhook`), session linking, backup of the session volume, what to do on a ban or logout; production compose edit (with Florian's approval)
+- [x] Consent switch in her profile (*WhatsApp*), a consent question after the Welcome poster (asked only when the poster plays and she has not consented), a switch on the QR-Anmeldung form; manager switch on the person page, editable only for a person without account (*Sie entscheidet das selbst in der App* otherwise)
+- [x] Start card *Tritt der Vereinsgruppe bei* with the invite link when her add was refused (also shown when Start has no panels)
+- [x] System → WhatsApp: *Vereinsgruppe verwalten* switch with the invite link, and *Hinzufügen blockiert* (name, number, since, links to the person) once a club group is picked
+- [x] `docs/ops`: WAHA in production (`waha` in the example compose, no port, pinned image, keys in `.env`; both app nginx answer `/api/whatsapp/webhook` with 404), session linking, backup and restore of the session volume (`backup.example.sh`), what to do on a logout or a ban
+- [ ] Production compose edit on the live host (with Florian's approval)
 - [ ] Device checks on a test group: post, poll, event, vote back, edit/move/close, add with and without privacy block
 
 ## Risks & alternatives

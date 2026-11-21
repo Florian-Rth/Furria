@@ -50,3 +50,14 @@ export const requestWhatsAppClubGroup = (chatId: string, accessToken: string): P
     schema: NoContentSchema,
     accessToken,
   });
+
+export const requestWhatsAppGroupKeeping = (
+  keepsMembers: boolean,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${API_PATH}/group-keeping`, {
+    method: 'PUT',
+    body: { keepsMembers },
+    schema: NoContentSchema,
+    accessToken,
+  });

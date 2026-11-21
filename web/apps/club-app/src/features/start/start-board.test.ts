@@ -74,6 +74,7 @@ const start = (panels: StartPanel[], overrides: Partial<Start> = {}): Start => (
   today: '2027-01-19',
   reshapeAt: null,
   viewerIsActiveInClub: true,
+  clubGroupInviteLink: null,
   panels,
   ...overrides,
 });
@@ -118,6 +119,16 @@ describe('startScreenOf', () => {
       label: 'the active viewer has no panels',
       input: { start: start([]), ownPanels: false, failed: false, skeletonDue: false },
       expected: 'empty',
+    },
+    {
+      label: 'the active viewer has no panels but a refused group add',
+      input: {
+        start: start([], { clubGroupInviteLink: 'https://chat.whatsapp.com/AbC123' }),
+        ownPanels: false,
+        failed: false,
+        skeletonDue: false,
+      },
+      expected: 'board',
     },
     {
       label: 'the viewer only has tiles built on the device',

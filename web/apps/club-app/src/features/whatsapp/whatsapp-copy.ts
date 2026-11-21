@@ -1,5 +1,7 @@
 import type { KkStatusTone } from '@furria/ui/KkStatusLine';
 import type { UnassignedCopy } from '@/features/calendar/whatsapp-answers';
+import { toIsoDay } from '@/lib/day';
+import { formatIsoDay } from '@/lib/membership-labels';
 import type { WhatsAppState } from './schemas';
 
 export const WHATSAPP_TITLE = 'WhatsApp';
@@ -26,6 +28,23 @@ export const CLUB_GROUP_EMPTY =
   'Der Bot ist in keiner Gruppe. Füge ihn in WhatsApp der Vereinsgruppe hinzu.';
 export const CLUB_GROUP_GONE = 'Der Bot ist nicht mehr in der verknüpften Vereinsgruppe.';
 export const CLUB_GROUP_PICKED_NOTICE = 'Vereinsgruppe verknüpft.';
+
+export const GROUP_KEEPING_TITLE = 'Mitglieder hinzufügen';
+export const GROUP_KEEPING_LABEL = 'Vereinsgruppe verwalten';
+export const GROUP_KEEPING_DESCRIPTION =
+  'Der Bot fügt aktive Mitglieder mit Einwilligung und Handynummer zur Vereinsgruppe hinzu.';
+export const INVITE_LINK_LABEL = 'Einladungslink';
+export const REFUSED_ADDS_TITLE = 'Hinzufügen blockiert';
+export const REFUSED_ADDS_HINT =
+  'WhatsApp lässt das Hinzufügen nicht zu. Den Einladungslink persönlich weitergeben.';
+export const REFUSED_ADDS_EMPTY = 'Niemand';
+export const NO_PHONE_VALUE = 'keine Nummer';
+
+export const toGroupKeepingNotice = (keepsMembers: boolean): string =>
+  keepsMembers ? 'Der Bot fügt jetzt Mitglieder hinzu.' : 'Der Bot fügt niemanden mehr hinzu.';
+
+export const toRefusedAddMeta = (phone: string | null, refusedAt: string): string =>
+  `${phone ?? NO_PHONE_VALUE} · blockiert seit ${formatIsoDay(toIsoDay(new Date(refusedAt)))}`;
 
 export const START_LINKING_LABEL = 'Bot verknüpfen';
 export const LINKING_STARTED_NOTICE = 'Verknüpfung gestartet.';

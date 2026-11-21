@@ -160,6 +160,7 @@ export const PersonDetailsSchema = z
     contactChange: ContactChangeSchema.nullable(),
     archive: PersonArchiveSchema.nullable(),
     honours: HonoursSchema,
+    clubGroupConsent: z.boolean(),
   })
   .extend(PersonContactSchema.shape);
 export type PersonDetails = z.infer<typeof PersonDetailsSchema>;

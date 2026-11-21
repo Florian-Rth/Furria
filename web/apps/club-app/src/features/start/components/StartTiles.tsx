@@ -8,6 +8,7 @@ import type { StartBoard } from '../hooks/use-start-view';
 import { AnnouncementsSheet } from './AnnouncementsSheet';
 import { BeerCratesSheet } from './BeerCratesSheet';
 import { CalendarSheet } from './CalendarSheet';
+import { ClubGroupJoinCard } from './ClubGroupJoinCard';
 import { EntrySheet } from './EntrySheet';
 import { OfficeSheet } from './OfficeSheet';
 import { OwedSheet } from './OwedSheet';
@@ -40,6 +41,13 @@ export const StartTiles: FC<StartTilesProps> = ({ board, focusedDay, strip }) =>
         {strip}
       </Grid>
     );
+  const inviteLink = board.start.clubGroupInviteLink;
+  const joinCell =
+    inviteLink === null ? null : (
+      <Grid size={FULL}>
+        <ClubGroupJoinCard inviteLink={inviteLink} />
+      </Grid>
+    );
   const lead =
     mosaic.lead === null ? null : (
       <Grid size={mosaic.lead.span}>
@@ -67,6 +75,7 @@ export const StartTiles: FC<StartTilesProps> = ({ board, focusedDay, strip }) =>
     <>
       <Grid container spacing={TILE_SPACING} sx={{ alignItems: 'stretch', mt: -1 }}>
         {stripCell}
+        {joinCell}
         {lead}
         {side}
         {rest}

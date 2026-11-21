@@ -6,6 +6,7 @@ const PAYLOAD_HEAD = {
   today: '2027-01-19',
   reshapeAt: null,
   viewerIsActiveInClub: true,
+  clubGroupInviteLink: null,
 };
 
 describe('StartSchema', () => {

@@ -293,6 +293,7 @@ export const StartSchema = z.object({
   today: z.iso.date(),
   reshapeAt: z.iso.datetime({ offset: true }).nullable(),
   viewerIsActiveInClub: z.boolean(),
+  clubGroupInviteLink: z.string().nullable(),
   panels: knownKindsOnly(StartPanelSchema, START_PANEL_KINDS),
 });
 export type Start = z.infer<typeof StartSchema>;

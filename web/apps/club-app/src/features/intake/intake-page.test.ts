@@ -43,6 +43,7 @@ describe('toSubmitBody', () => {
     street: 'Hauptstraße 4',
     zip: '61118',
     city: 'Bad Vilbel',
+    clubGroupConsent: true,
   };
 
   it('sends her address when she joins as a member and blanks as absent', () => {
@@ -56,6 +57,7 @@ describe('toSubmitBody', () => {
       city: 'Bad Vilbel',
       phone: '0171 234567',
       email: null,
+      clubGroupConsent: true,
     });
   });
 

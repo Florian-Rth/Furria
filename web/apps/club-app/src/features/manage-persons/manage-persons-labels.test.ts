@@ -53,6 +53,7 @@ const personDetails = (
   city: null,
   birthDate: null,
   contactVisibleToMembers: false,
+  clubGroupConsent: false,
   membershipState: 'active',
   memberSince: null,
   memberships: [],

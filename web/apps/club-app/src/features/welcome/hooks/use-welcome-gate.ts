@@ -3,15 +3,18 @@ import { useEffect, useRef, useState } from 'react';
 import { useMeQuery } from '@/features/session/api';
 import { useWelcomeSeenMutation } from '../api';
 import type { WelcomePlan } from '../welcome-plan';
-import { owedWelcomeOf, welcomePlanOf } from '../welcome-plan';
+import { asksClubGroupConsentOf, owedWelcomeOf, welcomePlanOf } from '../welcome-plan';
 import type { WelcomePhase } from './use-welcome-run';
 import { useWelcomeRun } from './use-welcome-run';
 
-type WelcomeDecision = { kind: 'pending' } | { kind: 'decided'; plan: WelcomePlan | null };
+type WelcomeDecision =
+  | { kind: 'pending' }
+  | { kind: 'decided'; plan: WelcomePlan | null; asksConsent: boolean };
 
 export interface WelcomeGateView {
   plan: WelcomePlan | null;
   phase: WelcomePhase;
+  asksConsent: boolean;
   leave: () => void;
 }
 
@@ -27,10 +30,12 @@ export const useWelcomeGate = (): WelcomeGateView => {
     setDecision({
       kind: 'decided',
       plan: owed === null ? null : welcomePlanOf(owed, KK_WELCOME_SWEEP_MS),
+      asksConsent: owed !== null && asksClubGroupConsentOf(me.data),
     });
   }
 
   const plan = decision.kind === 'decided' ? decision.plan : null;
+  const asksConsent = decision.kind === 'decided' && decision.asksConsent;
   const run = useWelcomeRun();
 
   useEffect(() => {
@@ -42,5 +47,5 @@ export const useWelcomeGate = (): WelcomeGateView => {
     markSeen();
   }, [plan, markSeen]);
 
-  return { plan, phase: run.phase, leave: run.leave };
+  return { plan, phase: run.phase, asksConsent, leave: run.leave };
 };

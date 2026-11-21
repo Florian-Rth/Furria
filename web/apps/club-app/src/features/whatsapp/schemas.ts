@@ -17,11 +17,23 @@ export const WhatsAppGroupSchema = z.object({
 });
 export type WhatsAppGroup = z.infer<typeof WhatsAppGroupSchema>;
 
+export const WhatsAppRefusedAddSchema = z.object({
+  personId: z.number().int(),
+  firstName: z.string(),
+  lastName: z.string(),
+  phone: z.string().nullable(),
+  refusedAt: z.iso.datetime({ offset: true }),
+});
+export type WhatsAppRefusedAdd = z.infer<typeof WhatsAppRefusedAddSchema>;
+
 export const WhatsAppOverviewSchema = z.object({
   state: WhatsAppStateSchema,
   botPhone: z.string().nullable(),
   clubChatId: z.string().nullable(),
+  keepsClubGroup: z.boolean(),
+  clubGroupInviteLink: z.string().nullable(),
   groups: z.array(WhatsAppGroupSchema),
+  refusedAdds: z.array(WhatsAppRefusedAddSchema),
 });
 export type WhatsAppOverview = z.infer<typeof WhatsAppOverviewSchema>;
 

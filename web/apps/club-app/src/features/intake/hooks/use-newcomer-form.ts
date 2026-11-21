@@ -21,6 +21,7 @@ const NEWCOMER_DEFAULTS: NewcomerForm = {
   street: '',
   zip: '',
   city: '',
+  clubGroupConsent: false,
 };
 
 export interface NewcomerFormControl {
