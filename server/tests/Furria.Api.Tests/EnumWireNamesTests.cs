@@ -17,6 +17,7 @@ using Furria.Core.Gallery;
 using Furria.Core.GroupMatcher;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
+using Furria.Core.Intakes;
 using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.Push;
@@ -34,6 +35,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         string
     >
     {
+        [typeof(ArchivedParentTieKind)] = "group role groupAdmin boardSeat",
         [typeof(StartPanelKind)] = "calendar announcements mine groups toDos gallery news beerTab",
         [typeof(StartMineKind)] =
             "newBoardSeat newGroupAdmin newGroupMembership newKey "
@@ -46,7 +48,8 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
             + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom scepter "
             + "jesterCap chain viceCrown childCrown laurel medal gavel briefcase quill ledger "
-            + "jingleBell castle diamond handshake child confetti rocket",
+            + "jingleBell castle diamond handshake child confetti rocket fruit singer woodOven "
+            + "chicken pearl seaShell prince",
         [typeof(PersonFunctionKind)] = "boardSeat groupAdmin role",
         [typeof(DayOfWeek)] = "sunday monday tuesday wednesday thursday friday saturday",
         [typeof(EventSalesStatus)] =
@@ -69,8 +72,11 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(MediaKind)] = "photo video audio",
         [typeof(EveningChange)] = "cast spots choreography",
         [typeof(MediaOwnerKind)] =
-            "person group gallery newsPost website event act session uploadLink",
+            "person group gallery newsPost website event act session uploadLink intake",
         [typeof(UploadLinkState)] = "open expired revoked",
+        [typeof(IntakeState)] = "open expired needsReview completed discarded",
+        [typeof(IntakeLinkState)] = "open expired used discarded",
+        [typeof(IntakeMatch)] = "email nameAndBirthDate",
         [typeof(SystemLevel)] = "ok attention broken",
         [typeof(SystemCheck)] = "database workers queue storage media logs services mail whatsApp",
         [typeof(SystemReasonCode)] =
@@ -82,7 +88,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
             + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings "
-            + "pushDispatcher whatsAppInbox whatsAppDispatcher",
+            + "pushDispatcher intakeExpirySweep whatsAppInbox whatsAppDispatcher",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",
@@ -116,13 +122,14 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "clubRecord announcement announcementSeen media newsPost websitePicture act "
             + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
             + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
-            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher whatsApp",
+            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher intake whatsApp",
         [typeof(ChangeLineKind)] = "ready changes ping",
         [typeof(StancePosition)] = "yes neutral no",
         [typeof(AdmissionAgeBand)] =
             "underTwelve twelveToThirteen fourteenToFifteen sixteenToSeventeen eighteenPlus",
         [typeof(GroupStatementState)] = "answered open new changed",
-        [typeof(PushTopic)] = "invitations changes reminders announcements beerTab beerStock",
+        [typeof(PushTopic)] =
+            "invitations changes reminders announcements beerTab beerStock intakes",
         [typeof(WhatsAppConnectionState)] =
             "off unreachable stopped starting scanQrCode working failed",
     };

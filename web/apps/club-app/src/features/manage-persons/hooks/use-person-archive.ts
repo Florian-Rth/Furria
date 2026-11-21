@@ -13,7 +13,10 @@ export interface PersonArchiveControl {
   submit: () => void;
 }
 
-export const usePersonArchive = (person: PersonDetails): PersonArchiveControl => {
+export const usePersonArchive = (
+  person: PersonDetails,
+  lastDay: string | null,
+): PersonArchiveControl => {
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
   const mutation = useSetPersonArchivedMutation(person.personId);
@@ -30,7 +33,11 @@ export const usePersonArchive = (person: PersonDetails): PersonArchiveControl =>
   const submit = (): void => {
     setRejection(null);
     void mutation
-      .mutateAsync({ isArchived: person.archive === null, personName: toPersonName(person) })
+      .mutateAsync({
+        isArchived: person.archive === null,
+        lastDay,
+        personName: toPersonName(person),
+      })
       .then(
         () => {
           setIsOpen(false);

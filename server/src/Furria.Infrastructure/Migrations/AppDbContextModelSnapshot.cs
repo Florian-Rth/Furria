@@ -845,7 +845,7 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("board_office", null, t =>
                         {
-                            t.HasCheckConstraint("ck_board_office_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom', 'Scepter', 'JesterCap', 'Chain', 'ViceCrown', 'ChildCrown', 'Laurel', 'Medal', 'Gavel', 'Briefcase', 'Quill', 'Ledger', 'JingleBell', 'Castle', 'Diamond', 'Handshake', 'Child', 'Confetti', 'Rocket')");
+                            t.HasCheckConstraint("ck_board_office_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom', 'Scepter', 'JesterCap', 'Chain', 'ViceCrown', 'ChildCrown', 'Laurel', 'Medal', 'Gavel', 'Briefcase', 'Quill', 'Ledger', 'JingleBell', 'Castle', 'Diamond', 'Handshake', 'Child', 'Confetti', 'Rocket', 'Fruit', 'Singer', 'WoodOven', 'Chicken', 'Pearl', 'SeaShell', 'Prince')");
                         });
                 });
 
@@ -2352,7 +2352,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_group_founded_year", "founded_year IS NULL OR founded_year >= 1800");
 
-                            t.HasCheckConstraint("ck_group_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom', 'Scepter', 'JesterCap', 'Chain', 'ViceCrown', 'ChildCrown', 'Laurel', 'Medal', 'Gavel', 'Briefcase', 'Quill', 'Ledger', 'JingleBell', 'Castle', 'Diamond', 'Handshake', 'Child', 'Confetti', 'Rocket')");
+                            t.HasCheckConstraint("ck_group_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom', 'Scepter', 'JesterCap', 'Chain', 'ViceCrown', 'ChildCrown', 'Laurel', 'Medal', 'Gavel', 'Briefcase', 'Quill', 'Ledger', 'JingleBell', 'Castle', 'Diamond', 'Handshake', 'Child', 'Confetti', 'Rocket', 'Fruit', 'Singer', 'WoodOven', 'Chicken', 'Pearl', 'SeaShell', 'Prince')");
 
                             t.HasCheckConstraint("ck_group_tone", "tone IS NULL OR tone ~ '^#[0-9A-F]{6}$'");
                         });
@@ -2872,6 +2872,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(43)")
                         .HasColumnName("code_hash");
 
+                    b.Property<bool>("ContactEmailUnconfirmed")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("contact_email_unconfirmed");
+
                     b.Property<DateTimeOffset>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
@@ -2977,6 +2983,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("guardian_consent_confirmed");
 
+                    b.Property<int?>("IntakeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("intake_id");
+
                     b.Property<int>("PersonId")
                         .HasColumnType("integer")
                         .HasColumnName("person_id");
@@ -2997,6 +3007,10 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("AdmittedByPersonId")
                         .HasDatabaseName("ix_membership_admitted_by_person_id");
 
+                    b.HasIndex("IntakeId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_membership_intake_id");
+
                     b.HasIndex("PersonId")
                         .HasDatabaseName("ix_membership_person_id");
 
@@ -3008,6 +3022,8 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("membership", null, t =>
                         {
                             t.HasCheckConstraint("ck_membership_admission", "admitted_at IS NOT NULL OR (admitted_by_person_id IS NULL AND NOT guardian_consent_confirmed)");
+
+                            t.HasCheckConstraint("ck_membership_one_origin", "admitted_at IS NULL OR intake_id IS NULL");
 
                             t.HasCheckConstraint("ck_membership_period", "ended_on IS NULL OR ended_on >= started_on");
                         });
@@ -3156,6 +3172,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("ArchivedByPersonId")
                         .HasDatabaseName("ix_person_archived_by_person_id");
 
+                    b.HasIndex("BirthDate")
+                        .HasDatabaseName("ix_person_birth_date");
+
                     b.HasIndex("ContactChangedByPersonId")
                         .HasDatabaseName("ix_person_contact_changed_by_person_id");
 
@@ -3167,6 +3186,168 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_person_last_name_first_name");
 
                     b.ToTable("person", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Intakes.Intake", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("BirthDate")
+                        .HasColumnType("date")
+                        .HasColumnName("birth_date");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("city");
+
+                    b.Property<DateTimeOffset?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("DiscardedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("discarded_at");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("email");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<string>("FirstName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("first_name");
+
+                    b.Property<string>("Label")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("label");
+
+                    b.Property<string>("LastName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("last_name");
+
+                    b.Property<DateOnly?>("MemberFrom")
+                        .HasColumnType("date")
+                        .HasColumnName("member_from");
+
+                    b.Property<int?>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("phone");
+
+                    b.Property<int?>("StartedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("started_by_person_id");
+
+                    b.Property<string>("Street")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("street");
+
+                    b.Property<DateTimeOffset?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(43)
+                        .HasColumnType("character varying(43)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<string>("TokenSeed")
+                        .HasMaxLength(22)
+                        .HasColumnType("character varying(22)")
+                        .HasColumnName("token_seed");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.Property<string>("Zip")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("zip");
+
+                    b.HasKey("Id")
+                        .HasName("pk_intake");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_intake_created_at");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_intake_person_id");
+
+                    b.HasIndex("StartedByPersonId")
+                        .HasDatabaseName("ix_intake_started_by_person_id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_intake_token_hash");
+
+                    b.ToTable("intake", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_intake_completed_after_submission", "completed_at IS NULL OR submitted_at IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_intake_details_only_while_awaiting_review", "(first_name IS NULL AND last_name IS NULL AND birth_date IS NULL AND street IS NULL AND zip IS NULL AND city IS NULL AND phone IS NULL AND email IS NULL AND NOT contact_visible_to_members) OR (submitted_at IS NOT NULL AND completed_at IS NULL AND discarded_at IS NULL)");
+
+                            t.HasCheckConstraint("ck_intake_expiry", "expires_at > created_at");
+
+                            t.HasCheckConstraint("ck_intake_label", "label IS NULL OR length(btrim(label)) > 0");
+
+                            t.HasCheckConstraint("ck_intake_one_ending", "completed_at IS NULL OR discarded_at IS NULL");
+
+                            t.HasCheckConstraint("ck_intake_person_once_completed", "person_id IS NULL OR completed_at IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_intake_seed_only_while_undecided", "token_seed IS NULL OR (completed_at IS NULL AND discarded_at IS NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Intakes.IntakeGroup", b =>
+                {
+                    b.Property<int>("IntakeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("intake_id");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.HasKey("IntakeId", "GroupId")
+                        .HasName("pk_intake_group");
+
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("ix_intake_group_group_id");
+
+                    b.ToTable("intake_group", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Core.Media.MediaItem", b =>
@@ -3253,6 +3434,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("owner_group_id");
 
+                    b.Property<int?>("OwnerIntakeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_intake_id");
+
                     b.Property<string>("OwnerKind")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -3335,6 +3520,10 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("OwnerGroupId")
                         .HasDatabaseName("ix_media_item_owner_group_id");
 
+                    b.HasIndex("OwnerIntakeId")
+                        .HasDatabaseName("ix_media_item_owner_intake_id")
+                        .HasFilter("owner_intake_id IS NOT NULL");
+
                     b.HasIndex("OwnerNewsPostId")
                         .HasDatabaseName("ix_media_item_owner_news_post_id");
 
@@ -3379,11 +3568,11 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video', 'Audio')");
 
-                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Act' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Session' AND owner_session_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'UploadLink' AND owner_upload_link_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)");
+                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Act' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Session' AND owner_session_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'UploadLink' AND owner_upload_link_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_intake_id IS NULL)\nOR (owner_kind = 'Intake' AND owner_intake_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)");
 
-                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event', 'Act', 'Session', 'UploadLink')");
+                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event', 'Act', 'Session', 'UploadLink', 'Intake')");
 
-                            t.HasCheckConstraint("ck_media_item_photo_only", "owner_kind NOT IN ('Website', 'Event', 'Session') OR kind = 'Photo'");
+                            t.HasCheckConstraint("ck_media_item_photo_only", "owner_kind NOT IN ('Website', 'Event', 'Session', 'Intake') OR kind = 'Photo'");
 
                             t.HasCheckConstraint("ck_media_item_placed", "(album_id IS NULL) = (placed_at IS NULL)");
 
@@ -3822,7 +4011,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_role_coin", "(icon IS NULL) = (tone IS NULL)");
 
-                            t.HasCheckConstraint("ck_role_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom', 'Scepter', 'JesterCap', 'Chain', 'ViceCrown', 'ChildCrown', 'Laurel', 'Medal', 'Gavel', 'Briefcase', 'Quill', 'Ledger', 'JingleBell', 'Castle', 'Diamond', 'Handshake', 'Child', 'Confetti', 'Rocket')");
+                            t.HasCheckConstraint("ck_role_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom', 'Scepter', 'JesterCap', 'Chain', 'ViceCrown', 'ChildCrown', 'Laurel', 'Medal', 'Gavel', 'Briefcase', 'Quill', 'Ledger', 'JingleBell', 'Castle', 'Diamond', 'Handshake', 'Child', 'Confetti', 'Rocket', 'Fruit', 'Singer', 'WoodOven', 'Chicken', 'Pearl', 'SeaShell', 'Prince')");
 
                             t.HasCheckConstraint("ck_role_tone", "tone IS NULL OR tone ~ '^#[0-9A-F]{6}$'");
                         });
@@ -7252,6 +7441,12 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_membership_person_admitted_by_person_id");
 
+                    b.HasOne("Furria.Core.Intakes.Intake", "Intake")
+                        .WithMany()
+                        .HasForeignKey("IntakeId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_membership_intake_intake_id");
+
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany("Memberships")
                         .HasForeignKey("PersonId")
@@ -7260,6 +7455,8 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_membership_person_person_id");
 
                     b.Navigation("AdmittedBy");
+
+                    b.Navigation("Intake");
 
                     b.Navigation("Person");
                 });
@@ -7303,6 +7500,46 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Portrait");
                 });
 
+            modelBuilder.Entity("Furria.Core.Intakes.Intake", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_intake_person_person_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "StartedBy")
+                        .WithMany()
+                        .HasForeignKey("StartedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_intake_person_started_by_person_id");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("StartedBy");
+                });
+
+            modelBuilder.Entity("Furria.Core.Intakes.IntakeGroup", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_intake_group_group_group_id");
+
+                    b.HasOne("Furria.Core.Intakes.Intake", "Intake")
+                        .WithMany("Groups")
+                        .HasForeignKey("IntakeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_intake_group_intake_intake_id");
+
+                    b.Navigation("Group");
+
+                    b.Navigation("Intake");
+                });
+
             modelBuilder.Entity("Furria.Core.Media.MediaItem", b =>
                 {
                     b.HasOne("Furria.Core.Gallery.Album", "Album")
@@ -7328,6 +7565,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasForeignKey("OwnerGroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_media_item_group_owner_group_id");
+
+                    b.HasOne("Furria.Core.Intakes.Intake", "OwnerIntake")
+                        .WithMany()
+                        .HasForeignKey("OwnerIntakeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_item_intake_owner_intake_id");
 
                     b.HasOne("Furria.Core.News.NewsPost", "OwnerNewsPost")
                         .WithMany()
@@ -7440,6 +7683,8 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("OwnerEvent");
 
                     b.Navigation("OwnerGroup");
+
+                    b.Navigation("OwnerIntake");
 
                     b.Navigation("OwnerNewsPost");
 
@@ -8389,6 +8634,11 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Memberships");
 
                     b.Navigation("RoleHoldings");
+                });
+
+            modelBuilder.Entity("Furria.Core.Intakes.Intake", b =>
+                {
+                    b.Navigation("Groups");
                 });
 
             modelBuilder.Entity("Furria.Core.Media.MediaItem", b =>

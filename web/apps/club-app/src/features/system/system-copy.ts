@@ -164,6 +164,7 @@ export const SERVICE_NAMES: Readonly<Record<string, string>> = {
   beerTabReminders: 'An offene Bierkisten erinnern',
   beerStockWarnings: 'Vor leerem Bierbestand warnen',
   pushDispatcher: 'Mitteilungen versenden',
+  intakeExpirySweep: 'Abgelaufene QR-Anmeldungen bereinigen',
   whatsAppInbox: 'WhatsApp-Ereignisse verarbeiten',
   whatsAppDispatcher: 'In die WhatsApp-Gruppe senden',
 };

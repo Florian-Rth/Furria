@@ -47,6 +47,10 @@ export const PUSH_TOPIC_COPY: Record<PushTopic, PushTopicCopy> = {
     label: 'Bierbestand',
     description: 'Wenn das Bier bald ausgeht',
   },
+  intakes: {
+    label: 'QR-Anmeldungen',
+    description: 'Wenn sich jemand per QR-Code eingetragen hat oder geprüft werden muss',
+  },
 };
 
 export const PUSH_TOPICS_LABEL = 'Themen';

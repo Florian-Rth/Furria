@@ -37,6 +37,7 @@ English rendering anywhere else, so two translations never drift apart.
 | group membership | Zugehörigkeit | `GroupMembership` |
 | group admin / function | Gruppen-Admin / Funktion | `GroupAdmin`, `Function` |
 | membership application / admission | Beitrittsantrag / Aufnahme | `MembershipApplication`, — |
+| intake | QR-Anmeldung | `Intake` |
 | role / permission | Rolle / Berechtigung | `Role`, `RolePermission` |
 | role holding / holder | Inhaberschaft / Inhaber | `RoleHolding` |
 | board / board office / board seat | Vorstand / Vorstandsfunktion / Vorstandssitz | `BoardOffice`, `BoardSeat` |
@@ -503,7 +504,8 @@ eligible at once (**bulk invitation**, *Alle einladen*). A bulk invitation reach
 pressing the button twice never mails the same person twice. A person has **at most one live
 invitation**: a new one, by any channel, voids the one before; each lives as long as its channel
 warrants (a mail for days, a code on a manager's screen for minutes). A **group admin** issues
-none — accounts are the club's business, never a group's (ruled 2026-09-25).
+none — accounts are the club's business, never a group's (ruled 2026-09-25) — except the one an
+**intake** she started sends on its completion (ruled 2026-11-19, ADR-0041).
 **Never invited** means she has never been sent an onboarding invitation at all, by any channel.
 An **offene Einladung** (open invitation) is a live onboarding invitation of a person who still
 has no account — neither redeemed nor voided, **expired or not**: an expired one was issued and
@@ -595,9 +597,16 @@ _Avoid_: anonymising, soft delete, archiving (a different act)
 
 **Archived person**:
 A person the club has filed away, record whole — the person-management counterpart of
-**deletion**. Only a person who is not **active in the club**, holds no running **key holding**
-and has nothing of either dated to begin later can be archived: archiving ends nothing, so
-whatever still runs is ended first, each on its own date. She leaves the register's default view
+**deletion**. Archiving **closes her out in one act** (ruled 2026-11-19, reversing "archiving ends
+nothing" of 2026-10-07): every tie still running — membership, group memberships, role holdings,
+group admin tenures, board seats, key holdings — ends on **one last day** the archiver picks
+(default yesterday; never today or later, never before the latest start of a running tie); an
+open **membership pause** is cut at that day. What has **not yet begun** — a tie dated ahead, a
+membership pause in a later session — is **deleted**, the one place it never ran so no history
+is lost. Person management alone suffices for all of it, whatever key a tie otherwise needs;
+**fee reductions** are untouched, they expire on their own. The confirmation names everything it
+ends and everything it deletes, so nothing vanishes unseen. Restoring reopens none of it — a
+returning member gets new periods. She leaves the register's default view
 and every picker that opens a chain, but **admission** matching and the **adoption candidate**
 still find her — a former member who returns is exactly who they are for. Archived and running
 exclude each other: opening any chain on her lifts the archive by itself — so does restoring the
@@ -609,7 +618,8 @@ only the latest archiving is kept, and restoring clears it. Archiving is the clu
 she is done, not a state — *nothing running* is derived, *archived* is chosen — so it happens one
 person at a time on her own screen: never in bulk, never a **to-do** (ruled 2026-10-07).
 _UI copy_: *Archivieren*; *Archiviert* (the register filter); *Archiviert von Anna am 7. Okt.*;
-*Wiederherstellen*
+*Wiederherstellen*; *Letzter Tag*; *Endet am 18. Nov.*; *Wird gelöscht – hat noch nicht begonnen*;
+*Wiederherstellen öffnet nichts davon wieder.*
 _Avoid_: deactivated, inactive (that is **active in the club**, derived), deleting
 
 ### Club app structure
@@ -1556,6 +1566,42 @@ exactly while it sits in its uploader's inbox; placing it in an album takes it o
 the inbox is final. Uploading straight into an album skips it.
 _UI copy_: Eingang
 _Avoid_: unsorted, drafts, uploads, staging
+
+**Intake** (`Intake`):
+The club's way to bring a new person into the registry when the club has **already decided** who
+she is to it: someone with the right starts it with only what the club decides — whether she
+becomes a **member** and from when (today unless said otherwise, past or future allowed), which
+**groups** she joins, and optionally *Für wen?*, a label that only tells open intakes apart — and
+she fills in her own details herself through a secret **intake link**, shown as a QR on the
+starter's screen or shared. It is the reverse of a **membership application**: no decision waits
+on her word, so an intake is never an **admission**, and it needs no membership at all. It needs
+**at least one affiliation** — a membership or a group — or the person it makes would not belong
+in the registry. `persons.manage` starts any intake; a **group admin** starts one for the groups
+she runs, never with a membership — the trainer brings a new dancer in, the club decides on
+members (ruled 2026-11-19).
+She gives her name and birth date always, her address when she becomes a member, and optionally
+phone, email (*für die App*), whether her contact details are shown to members, and her
+**portrait**. The form asks nothing about age and no guardian; the starter has met her. On
+submit the person, her membership and her group memberships are made at once, the membership
+recording that it came from an intake and by whom — unless the registry already holds someone with
+her email or her name and birth date: then the intake waits **zu prüfen**, and whoever may act on
+it decides *Das ist sie* (fills only what the registry lacks, a former member keeps her *Mitglied
+seit*, a running membership is not opened twice) or *Neue Person*. She is never told a match
+exists. Starting the intake is the club's decision to invite her: when she gave an email and is
+**eligible** (the club's **age of consent**), the **invitation** goes out on completion with the
+starter as its issuer — a group admin's intake included
+([ADR-0041](docs/adr/0041-an-intake-invites-on-its-starters-decision.md)) — and her last screen
+offers to set up the app right away.
+The intake link is open **7 days**, used once; the starter or `persons.manage` can show it again,
+**renew** it (new link, the old one void) or **discard** the intake. States: *offen*,
+*abgelaufen*, *zu prüfen*, *abgeschlossen*, *verworfen*. `persons.manage` sees every intake, a
+group admin those of her groups; the starter is told by push when hers is completed or waits for
+review. An intake holds her details only until it is decided — afterwards it keeps who started
+it, when, and what it opened; a discarded or expired one keeps nothing of hers.
+_UI copy_: QR-Anmeldung; *QR-Code erstellen*; *QR-Anmeldungen* (a row in *Personenverwaltung*, no own hub row); *Für wen?*; *offen* · *abgelaufen* ·
+*zu prüfen* · *abgeschlossen* · *verworfen*; *QR-Anmeldung verwerfen*; *App jetzt einrichten*
+_Avoid_: Neuzugang, onboarding, registration, bare Anmeldung (sign-in owns that word — always *QR-Anmeldung*), Aufnahme (that is the
+admission), auto-matching a found person
 
 **Upload link** (`UploadLink`):
 A secret link someone who manages the **gallery** makes for one occasion and posts into the club's

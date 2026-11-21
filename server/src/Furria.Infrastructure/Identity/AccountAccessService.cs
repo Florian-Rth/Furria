@@ -22,8 +22,10 @@ public sealed class AccountAccessService
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string DeadInvitationMessage = "Diese Einladung gilt nicht mehr.";
     private const string PasswordErrorPrefix = "Password";
-    private const string AdmissionOutsideTransactionMessage =
-        "An admission invites in its own transaction; begin it before inviting the admitted person.";
+    private const string NewcomerMissingMessage =
+        "A newcomer is invited right after she is entered; her person row is missing.";
+    private const string NewcomerOutsideTransactionMessage =
+        "A newcomer is invited in the transaction that enters her; begin it before inviting her.";
 
     private static readonly IReadOnlySet<string> TakenLoginErrorCodes = new HashSet<string>(
         StringComparer.Ordinal
@@ -141,40 +143,43 @@ public sealed class AccountAccessService
         CancellationToken ct
     )
     {
-        if (_dbContext.Database.CurrentTransaction is null)
-            throw new InvalidOperationException(AdmissionOutsideTransactionMessage);
-
-        var now = _timeProvider.GetUtcNow();
-        var subject =
-            await SubjectAsync(personId, ClubClock.DayOf(now), ct)
-            ?? throw new InvalidOperationException(UnknownPersonMessage);
-        var terms = await ClubTermsAsync(ct);
+        var (subject, terms) = await NewcomerAsync(personId, ct);
         if (WithheldAdmissionInvitationOf(subject, terms) is { } withheld)
             return Result<AdmissionInvitation>.Success(withheld);
 
-        var token = OpaqueTokenSecret.Generate(out var tokenHash);
-        var expiresAt = now + Invitation.MailLifetime;
-        await StageIssuedAsync(
-            new Invitation
-            {
-                PersonId = personId,
-                Purpose = InvitationPurpose.Onboarding,
-                Channel = InvitationChannel.Mail,
-                TokenHash = tokenHash,
-                IssuedByPersonId = admitterPersonId,
-                IssuedAt = now,
-                ExpiresAt = expiresAt,
-            },
+        var staged = await StageNewcomerInvitationAsync(
+            new NewcomerInvitation(
+                subject,
+                terms,
+                admitterPersonId,
+                ContactEmailUnconfirmed: false
+            ),
             ct
         );
-        _mailOutbox.Stage(InvitationMail.Compose(ToMailContent(subject, terms, token, expiresAt)));
-        var saved = await _dbContext.SaveOrConflictAsync(ct);
-        if (!saved.IsSuccess)
-            return Result<AdmissionInvitation>.Carrying(saved);
 
-        _logger.LogInformation("Mail invitation issued for person {PersonId}", personId);
+        return staged.IsSuccess
+            ? Result<AdmissionInvitation>.Success(AdmissionInvitation.Sent)
+            : Result<AdmissionInvitation>.Carrying(staged);
+    }
 
-        return Result<AdmissionInvitation>.Success(AdmissionInvitation.Sent);
+    public async Task<Result<string?>> InviteIntakeNewcomerAsync(
+        int personId,
+        int? starterPersonId,
+        CancellationToken ct
+    )
+    {
+        var (subject, terms) = await NewcomerAsync(personId, ct);
+        if (!IsInvitableNewcomer(subject, terms))
+            return Result<string?>.Success(null);
+
+        var staged = await StageNewcomerInvitationAsync(
+            new NewcomerInvitation(subject, terms, starterPersonId, ContactEmailUnconfirmed: true),
+            ct
+        );
+
+        return staged.IsSuccess
+            ? Result<string?>.Success(InvitationMail.LinkOf(_clubAppOptions.BaseUrl, staged.Value))
+            : Result<string?>.Carrying(staged);
     }
 
     public async Task<Result<IssuedInPersonInvitationDetails>> IssueInPersonInvitationAsync(
@@ -361,6 +366,54 @@ public sealed class AccountAccessService
         return saved;
     }
 
+    private async Task<(SubjectRow Subject, ClubTerms Terms)> NewcomerAsync(
+        int personId,
+        CancellationToken ct
+    )
+    {
+        if (_dbContext.Database.CurrentTransaction is null)
+            throw new InvalidOperationException(NewcomerOutsideTransactionMessage);
+
+        var subject =
+            await SubjectAsync(personId, ClubClock.DayOf(_timeProvider.GetUtcNow()), ct)
+            ?? throw new InvalidOperationException(NewcomerMissingMessage);
+
+        return (subject, await ClubTermsAsync(ct));
+    }
+
+    private async Task<Result<string>> StageNewcomerInvitationAsync(
+        NewcomerInvitation newcomer,
+        CancellationToken ct
+    )
+    {
+        var (subject, terms, issuedByPersonId, contactEmailUnconfirmed) = newcomer;
+        var now = _timeProvider.GetUtcNow();
+        var token = OpaqueTokenSecret.Generate(out var tokenHash);
+        var expiresAt = now + Invitation.MailLifetime;
+        await StageIssuedAsync(
+            new Invitation
+            {
+                PersonId = subject.PersonId,
+                Purpose = InvitationPurpose.Onboarding,
+                Channel = InvitationChannel.Mail,
+                TokenHash = tokenHash,
+                IssuedByPersonId = issuedByPersonId,
+                IssuedAt = now,
+                ExpiresAt = expiresAt,
+                ContactEmailUnconfirmed = contactEmailUnconfirmed,
+            },
+            ct
+        );
+        _mailOutbox.Stage(InvitationMail.Compose(ToMailContent(subject, terms, token, expiresAt)));
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result<string>.Carrying(saved);
+
+        _logger.LogInformation("Mail invitation issued for person {PersonId}", subject.PersonId);
+
+        return Result<string>.Success(token);
+    }
+
     private async Task StageIssuedAsync(Invitation invitation, CancellationToken ct)
     {
         await VoidLiveInvitationsAsync(invitation.PersonId, invitation.IssuedAt, ct);
@@ -518,7 +571,8 @@ public sealed class AccountAccessService
     private string NormalizedEmailOf(string email) => _userManager.NormalizeEmail(email) ?? email;
 
     private bool IsContactEmail(RedeemableInvitation redeemable, string normalizedLoginEmail) =>
-        redeemable.ContactEmail is { } contactEmail
+        !redeemable.ContactEmailUnconfirmed
+        && redeemable.ContactEmail is { } contactEmail
         && string.Equals(
             NormalizedEmailOf(contactEmail),
             normalizedLoginEmail,
@@ -653,7 +707,12 @@ public sealed class AccountAccessService
                 && row.VoidedAt == null
                 && row.ExpiresAt > now
             )
-            .Select(row => new { row.Id, row.PersonId })
+            .Select(row => new
+            {
+                row.Id,
+                row.PersonId,
+                row.ContactEmailUnconfirmed,
+            })
             .SingleOrDefaultAsync(ct);
 
         if (invitation is null)
@@ -671,7 +730,8 @@ public sealed class AccountAccessService
             invitation.Id,
             subject.PersonId,
             subject.FirstName,
-            AccountEligibility.CanBeMailed(subject.Candidate) ? subject.Candidate.Email : null
+            AccountEligibility.CanBeMailed(subject.Candidate) ? subject.Candidate.Email : null,
+            invitation.ContactEmailUnconfirmed
         );
     }
 
@@ -720,6 +780,13 @@ public sealed class AccountAccessService
 
         return null;
     }
+
+    [Pure]
+    private static bool IsInvitableNewcomer(SubjectRow subject, ClubTerms terms) =>
+        subject.AccountIsDisabled is null
+        && AccountEligibility.CanBeMailed(subject.Candidate)
+        && AccountEligibility.ReasonAgainst(subject.Candidate, subject.Today, terms.AgeOfConsent)
+            is null;
 
     [Pure]
     private static AdmissionInvitation? WithheldAdmissionInvitationOf(
@@ -893,7 +960,15 @@ public sealed class AccountAccessService
         int InvitationId,
         int PersonId,
         string FirstName,
-        string? ContactEmail
+        string? ContactEmail,
+        bool ContactEmailUnconfirmed
+    );
+
+    private sealed record NewcomerInvitation(
+        SubjectRow Subject,
+        ClubTerms Terms,
+        int? IssuedByPersonId,
+        bool ContactEmailUnconfirmed
     );
 
     private sealed record ChosenLogin(string Email, string NormalizedEmail, string Password);

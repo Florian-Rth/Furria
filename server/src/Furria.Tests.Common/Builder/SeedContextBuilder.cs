@@ -10,6 +10,7 @@ public sealed class SeedContextBuilder
     private readonly NewsSeedBuilder _news = new();
     private readonly BeerListSeedBuilder _beerList = new();
     private readonly GroupMatcherSeedBuilder _groupMatcher = new();
+    private readonly IntakeSeedBuilder _intakes = new();
 
     internal IdentitySeedBuilder RecordedIdentity => _identity;
 
@@ -26,6 +27,8 @@ public sealed class SeedContextBuilder
     internal BeerListSeedBuilder RecordedBeerList => _beerList;
 
     internal GroupMatcherSeedBuilder RecordedGroupMatcher => _groupMatcher;
+
+    internal IntakeSeedBuilder RecordedIntakes => _intakes;
 
     public SeedContextBuilder Identity(Action<IdentitySeedBuilder> configure)
     {
@@ -72,6 +75,12 @@ public sealed class SeedContextBuilder
     public SeedContextBuilder GroupMatcher(Action<GroupMatcherSeedBuilder> configure)
     {
         configure(_groupMatcher);
+        return this;
+    }
+
+    public SeedContextBuilder Intakes(Action<IntakeSeedBuilder> configure)
+    {
+        configure(_intakes);
         return this;
     }
 }

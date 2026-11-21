@@ -9,6 +9,8 @@ const API_PROXY_TARGET = process.env.FURRIA_API_PROXY ?? 'http://localhost:5100'
 
 const SCREEN_BACKGROUND = '#F1F2F4';
 const PRECACHE_FILE_LIMIT_BYTES = 6 * 1024 * 1024;
+const PICTURE_CACHE_ENTRIES = 4000;
+const PICTURE_CACHE_SECONDS = 14 * 24 * 60 * 60;
 
 export default defineConfig(({ mode }) => ({
   plugins: [
@@ -66,6 +68,31 @@ export default defineConfig(({ mode }) => ({
         navigateFallbackDenylist: [/^\/api\//, /^\/\.well-known\//],
         cleanupOutdatedCaches: true,
         maximumFileSizeToCacheInBytes: PRECACHE_FILE_LIMIT_BYTES,
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) =>
+              /^\/api\/media\/\d+\/(small|medium|large|poster)$/.test(url.pathname) &&
+              !url.searchParams.has('download'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'media-pictures',
+              expiration: {
+                maxEntries: PICTURE_CACHE_ENTRIES,
+                maxAgeSeconds: PICTURE_CACHE_SECONDS,
+                purgeOnQuotaError: true,
+              },
+              plugins: [
+                {
+                  cacheWillUpdate: async ({ response }) =>
+                    response.status === 200 &&
+                    (response.headers.get('Cache-Control') ?? '').includes('immutable')
+                      ? response
+                      : null,
+                },
+              ],
+            },
+          },
+        ],
       },
     }),
   ],

@@ -32,6 +32,11 @@ describe('isInstallGateClosed', () => {
       expected: false,
     },
     {
+      label: 'an intake link a newcomer scanned',
+      input: { ...PHONE_TAB, pathname: '/intake' },
+      expected: false,
+    },
+    {
       label: 'the pallet code on the beer pallet',
       input: { ...PHONE_TAB, pathname: '/beer-list/book' },
       expected: false,

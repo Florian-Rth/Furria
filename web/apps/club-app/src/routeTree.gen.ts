@@ -15,6 +15,7 @@ import { Route as PromoRouteImport } from './routes/promo'
 import { Route as PhotosRouteImport } from './routes/photos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvitationRouteImport } from './routes/invitation'
+import { Route as IntakeRouteImport } from './routes/intake'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as ClaimWindowRouteImport } from './routes/claim-window'
 import { Route as AppRouteImport } from './routes/_app'
@@ -86,6 +87,7 @@ import { Route as AppManageSessionsNewRouteImport } from './routes/_app/manage.s
 import { Route as AppManageRolesNewRouteImport } from './routes/_app/manage.roles_.new'
 import { Route as AppManageRolesRoleIdRouteImport } from './routes/_app/manage.roles_.$roleId'
 import { Route as AppManagePersonsNewRouteImport } from './routes/_app/manage.persons_.new'
+import { Route as AppManagePersonsIntakesRouteImport } from './routes/_app/manage.persons_.intakes'
 import { Route as AppManagePersonsPersonIdRouteImport } from './routes/_app/manage.persons_.$personId'
 import { Route as AppManageGroupsNewRouteImport } from './routes/_app/manage.groups_.new'
 import { Route as AppManageClubRecordStageRouteImport } from './routes/_app/manage.club-record_.stage'
@@ -96,9 +98,8 @@ import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.boar
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
 import { Route as AppLabWelcomeCaseRouteImport } from './routes/_app/lab_.welcome.$case'
+import { Route as AppGroupsGroupIdSettingsRouteImport } from './routes/_app/groups_.$groupId_.settings'
 import { Route as AppGroupsGroupIdGroupMatcherRouteImport } from './routes/_app/groups_.$groupId_.group-matcher'
-import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
-import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
 import { Route as AppGroupsGroupIdActsRouteImport } from './routes/_app/groups_.$groupId_.acts'
 import { Route as AppGalleryAlbumIdSelectionRouteImport } from './routes/_app/gallery_.$albumId_.selection'
 import { Route as AppGalleryAlbumIdEditRouteImport } from './routes/_app/gallery_.$albumId_.edit'
@@ -129,6 +130,8 @@ import { Route as AppActsActIdDetailsIndexRouteImport } from './routes/_app/acts
 import { Route as AppManageVenuesVenueIdEditRouteImport } from './routes/_app/manage.venues_.$venueId_.edit'
 import { Route as AppManageSessionsSessionIdEditRouteImport } from './routes/_app/manage.sessions_.$sessionId.edit'
 import { Route as AppManageRolesRoleIdEditRouteImport } from './routes/_app/manage.roles_.$roleId_.edit'
+import { Route as AppManagePersonsIntakesNewRouteImport } from './routes/_app/manage.persons_.intakes_.new'
+import { Route as AppManagePersonsIntakesIntakeIdRouteImport } from './routes/_app/manage.persons_.intakes_.$intakeId'
 import { Route as AppManagePersonsPersonIdEditRouteImport } from './routes/_app/manage.persons_.$personId_.edit'
 import { Route as AppManagePersonsPersonIdAccessRecoveryRouteImport } from './routes/_app/manage.persons_.$personId_.access-recovery'
 import { Route as AppManageKeysHoldingsKeyHoldingIdRouteImport } from './routes/_app/manage.keys_.holdings.$keyHoldingId'
@@ -153,6 +156,8 @@ import { Route as AppActsActIdDetailsSettingsRouteImport } from './routes/_app/a
 import { Route as AppPersonalProfileSecurityPasswordRouteImport } from './routes/_app/_personal.profile_.security_.password'
 import { Route as AppPersonalProfileSecurityLoginEmailRouteImport } from './routes/_app/_personal.profile_.security_.login-email'
 import { Route as AppPersonalProfileContactEditRouteImport } from './routes/_app/_personal.profile_.contact.edit'
+import { Route as AppManagePersonsIntakesIntakeIdReviewRouteImport } from './routes/_app/manage.persons_.intakes_.$intakeId_.review'
+import { Route as AppManagePersonsIntakesIntakeIdEditRouteImport } from './routes/_app/manage.persons_.intakes_.$intakeId_.edit'
 import { Route as AppManagePersonsPersonIdPausesNewRouteImport } from './routes/_app/manage.persons_.$personId_.pauses.new'
 import { Route as AppManagePersonsPersonIdPausesPauseIdRouteImport } from './routes/_app/manage.persons_.$personId_.pauses.$pauseId'
 import { Route as AppManagePersonsPersonIdMembershipsNewRouteImport } from './routes/_app/manage.persons_.$personId_.memberships.new'
@@ -197,6 +202,11 @@ const LoginRoute = LoginRouteImport.update({
 const InvitationRoute = InvitationRouteImport.update({
   id: '/invitation',
   path: '/invitation',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntakeRoute = IntakeRouteImport.update({
+  id: '/intake',
+  path: '/intake',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -554,6 +564,11 @@ const AppManagePersonsNewRoute = AppManagePersonsNewRouteImport.update({
   path: '/manage/persons/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManagePersonsIntakesRoute = AppManagePersonsIntakesRouteImport.update({
+  id: '/manage/persons_/intakes',
+  path: '/manage/persons/intakes',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManagePersonsPersonIdRoute =
   AppManagePersonsPersonIdRouteImport.update({
     id: '/manage/persons_/$personId',
@@ -611,21 +626,16 @@ const AppLabWelcomeCaseRoute = AppLabWelcomeCaseRouteImport.update({
   path: '/lab/welcome/$case',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGroupsGroupIdSettingsRoute =
+  AppGroupsGroupIdSettingsRouteImport.update({
+    id: '/groups_/$groupId_/settings',
+    path: '/groups/$groupId/settings',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppGroupsGroupIdGroupMatcherRoute =
   AppGroupsGroupIdGroupMatcherRouteImport.update({
     id: '/groups_/$groupId_/group-matcher',
     path: '/groups/$groupId/group-matcher',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppGroupsGroupIdEditRoute = AppGroupsGroupIdEditRouteImport.update({
-  id: '/groups_/$groupId_/edit',
-  path: '/groups/$groupId/edit',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppGroupsGroupIdAdministrationRoute =
-  AppGroupsGroupIdAdministrationRouteImport.update({
-    id: '/groups_/$groupId_/administration',
-    path: '/groups/$groupId/administration',
     getParentRoute: () => AppRoute,
   } as any)
 const AppGroupsGroupIdActsRoute = AppGroupsGroupIdActsRouteImport.update({
@@ -792,6 +802,18 @@ const AppManageRolesRoleIdEditRoute =
     path: '/manage/roles/$roleId/edit',
     getParentRoute: () => AppRoute,
   } as any)
+const AppManagePersonsIntakesNewRoute =
+  AppManagePersonsIntakesNewRouteImport.update({
+    id: '/manage/persons_/intakes_/new',
+    path: '/manage/persons/intakes/new',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppManagePersonsIntakesIntakeIdRoute =
+  AppManagePersonsIntakesIntakeIdRouteImport.update({
+    id: '/manage/persons_/intakes_/$intakeId',
+    path: '/manage/persons/intakes/$intakeId',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppManagePersonsPersonIdEditRoute =
   AppManagePersonsPersonIdEditRouteImport.update({
     id: '/manage/persons_/$personId_/edit',
@@ -934,6 +956,18 @@ const AppPersonalProfileContactEditRoute =
     path: '/profile/contact/edit',
     getParentRoute: () => AppPersonalRoute,
   } as any)
+const AppManagePersonsIntakesIntakeIdReviewRoute =
+  AppManagePersonsIntakesIntakeIdReviewRouteImport.update({
+    id: '/manage/persons_/intakes_/$intakeId_/review',
+    path: '/manage/persons/intakes/$intakeId/review',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppManagePersonsIntakesIntakeIdEditRoute =
+  AppManagePersonsIntakesIntakeIdEditRouteImport.update({
+    id: '/manage/persons_/intakes_/$intakeId_/edit',
+    path: '/manage/persons/intakes/$intakeId/edit',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppManagePersonsPersonIdPausesNewRoute =
   AppManagePersonsPersonIdPausesNewRouteImport.update({
     id: '/manage/persons_/$personId_/pauses/new',
@@ -1029,6 +1063,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/claim-window': typeof ClaimWindowRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/intake': typeof IntakeRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
@@ -1118,9 +1153,8 @@ export interface FileRoutesByFullPath {
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
-  '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
-  '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
+  '/groups/$groupId/settings': typeof AppGroupsGroupIdSettingsRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1131,6 +1165,7 @@ export interface FileRoutesByFullPath {
   '/manage/club-record/stage': typeof AppManageClubRecordStageRoute
   '/manage/groups/new': typeof AppManageGroupsNewRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
+  '/manage/persons/intakes': typeof AppManagePersonsIntakesRoute
   '/manage/persons/new': typeof AppManagePersonsNewRoute
   '/manage/roles/$roleId': typeof AppManageRolesRoleIdRoute
   '/manage/roles/new': typeof AppManageRolesNewRoute
@@ -1163,6 +1198,8 @@ export interface FileRoutesByFullPath {
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
   '/manage/persons/$personId/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/manage/persons/$personId/edit': typeof AppManagePersonsPersonIdEditRoute
+  '/manage/persons/intakes/$intakeId': typeof AppManagePersonsIntakesIntakeIdRoute
+  '/manage/persons/intakes/new': typeof AppManagePersonsIntakesNewRoute
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
@@ -1181,11 +1218,14 @@ export interface FileRoutesByFullPath {
   '/manage/persons/$personId/memberships/new': typeof AppManagePersonsPersonIdMembershipsNewRoute
   '/manage/persons/$personId/pauses/$pauseId': typeof AppManagePersonsPersonIdPausesPauseIdRoute
   '/manage/persons/$personId/pauses/new': typeof AppManagePersonsPersonIdPausesNewRoute
+  '/manage/persons/intakes/$intakeId/edit': typeof AppManagePersonsIntakesIntakeIdEditRoute
+  '/manage/persons/intakes/$intakeId/review': typeof AppManagePersonsIntakesIntakeIdReviewRoute
   '/acts/$actId/details/trainings/$trainingId/roll': typeof AppActsActIdDetailsTrainingsTrainingIdRollRoute
 }
 export interface FileRoutesByTo {
   '/claim-window': typeof ClaimWindowRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/intake': typeof IntakeRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
@@ -1273,9 +1313,8 @@ export interface FileRoutesByTo {
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
-  '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
-  '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
+  '/groups/$groupId/settings': typeof AppGroupsGroupIdSettingsRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1286,6 +1325,7 @@ export interface FileRoutesByTo {
   '/manage/club-record/stage': typeof AppManageClubRecordStageRoute
   '/manage/groups/new': typeof AppManageGroupsNewRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
+  '/manage/persons/intakes': typeof AppManagePersonsIntakesRoute
   '/manage/persons/new': typeof AppManagePersonsNewRoute
   '/manage/roles/$roleId': typeof AppManageRolesRoleIdRoute
   '/manage/roles/new': typeof AppManageRolesNewRoute
@@ -1318,6 +1358,8 @@ export interface FileRoutesByTo {
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
   '/manage/persons/$personId/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/manage/persons/$personId/edit': typeof AppManagePersonsPersonIdEditRoute
+  '/manage/persons/intakes/$intakeId': typeof AppManagePersonsIntakesIntakeIdRoute
+  '/manage/persons/intakes/new': typeof AppManagePersonsIntakesNewRoute
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
@@ -1336,6 +1378,8 @@ export interface FileRoutesByTo {
   '/manage/persons/$personId/memberships/new': typeof AppManagePersonsPersonIdMembershipsNewRoute
   '/manage/persons/$personId/pauses/$pauseId': typeof AppManagePersonsPersonIdPausesPauseIdRoute
   '/manage/persons/$personId/pauses/new': typeof AppManagePersonsPersonIdPausesNewRoute
+  '/manage/persons/intakes/$intakeId/edit': typeof AppManagePersonsIntakesIntakeIdEditRoute
+  '/manage/persons/intakes/$intakeId/review': typeof AppManagePersonsIntakesIntakeIdReviewRoute
   '/acts/$actId/details/trainings/$trainingId/roll': typeof AppActsActIdDetailsTrainingsTrainingIdRollRoute
 }
 export interface FileRoutesById {
@@ -1343,6 +1387,7 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/claim-window': typeof ClaimWindowRoute
   '/forgot-password': typeof ForgotPasswordRoute
+  '/intake': typeof IntakeRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
@@ -1435,9 +1480,8 @@ export interface FileRoutesById {
   '/_app/gallery_/$albumId_/edit': typeof AppGalleryAlbumIdEditRoute
   '/_app/gallery_/$albumId_/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/_app/groups_/$groupId_/acts': typeof AppGroupsGroupIdActsRoute
-  '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
-  '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
   '/_app/groups_/$groupId_/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
+  '/_app/groups_/$groupId_/settings': typeof AppGroupsGroupIdSettingsRoute
   '/_app/lab_/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1448,6 +1492,7 @@ export interface FileRoutesById {
   '/_app/manage/club-record_/stage': typeof AppManageClubRecordStageRoute
   '/_app/manage/groups_/new': typeof AppManageGroupsNewRoute
   '/_app/manage/persons_/$personId': typeof AppManagePersonsPersonIdRoute
+  '/_app/manage/persons_/intakes': typeof AppManagePersonsIntakesRoute
   '/_app/manage/persons_/new': typeof AppManagePersonsNewRoute
   '/_app/manage/roles_/$roleId': typeof AppManageRolesRoleIdRoute
   '/_app/manage/roles_/new': typeof AppManageRolesNewRoute
@@ -1480,6 +1525,8 @@ export interface FileRoutesById {
   '/_app/manage/keys_/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
   '/_app/manage/persons_/$personId_/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/_app/manage/persons_/$personId_/edit': typeof AppManagePersonsPersonIdEditRoute
+  '/_app/manage/persons_/intakes_/$intakeId': typeof AppManagePersonsIntakesIntakeIdRoute
+  '/_app/manage/persons_/intakes_/new': typeof AppManagePersonsIntakesNewRoute
   '/_app/manage/roles_/$roleId_/edit': typeof AppManageRolesRoleIdEditRoute
   '/_app/manage/sessions_/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/_app/manage/venues_/$venueId_/edit': typeof AppManageVenuesVenueIdEditRoute
@@ -1498,6 +1545,8 @@ export interface FileRoutesById {
   '/_app/manage/persons_/$personId_/memberships/new': typeof AppManagePersonsPersonIdMembershipsNewRoute
   '/_app/manage/persons_/$personId_/pauses/$pauseId': typeof AppManagePersonsPersonIdPausesPauseIdRoute
   '/_app/manage/persons_/$personId_/pauses/new': typeof AppManagePersonsPersonIdPausesNewRoute
+  '/_app/manage/persons_/intakes_/$intakeId_/edit': typeof AppManagePersonsIntakesIntakeIdEditRoute
+  '/_app/manage/persons_/intakes_/$intakeId_/review': typeof AppManagePersonsIntakesIntakeIdReviewRoute
   '/_app/acts_/$actId_/details/trainings/$trainingId/roll': typeof AppActsActIdDetailsTrainingsTrainingIdRollRoute
 }
 export interface FileRouteTypes {
@@ -1506,6 +1555,7 @@ export interface FileRouteTypes {
     | '/'
     | '/claim-window'
     | '/forgot-password'
+    | '/intake'
     | '/invitation'
     | '/login'
     | '/photos'
@@ -1595,9 +1645,8 @@ export interface FileRouteTypes {
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/acts'
-    | '/groups/$groupId/administration'
-    | '/groups/$groupId/edit'
     | '/groups/$groupId/group-matcher'
+    | '/groups/$groupId/settings'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1608,6 +1657,7 @@ export interface FileRouteTypes {
     | '/manage/club-record/stage'
     | '/manage/groups/new'
     | '/manage/persons/$personId'
+    | '/manage/persons/intakes'
     | '/manage/persons/new'
     | '/manage/roles/$roleId'
     | '/manage/roles/new'
@@ -1640,6 +1690,8 @@ export interface FileRouteTypes {
     | '/manage/keys/holdings/$keyHoldingId'
     | '/manage/persons/$personId/access-recovery'
     | '/manage/persons/$personId/edit'
+    | '/manage/persons/intakes/$intakeId'
+    | '/manage/persons/intakes/new'
     | '/manage/roles/$roleId/edit'
     | '/manage/sessions/$sessionId/edit'
     | '/manage/venues/$venueId/edit'
@@ -1658,11 +1710,14 @@ export interface FileRouteTypes {
     | '/manage/persons/$personId/memberships/new'
     | '/manage/persons/$personId/pauses/$pauseId'
     | '/manage/persons/$personId/pauses/new'
+    | '/manage/persons/intakes/$intakeId/edit'
+    | '/manage/persons/intakes/$intakeId/review'
     | '/acts/$actId/details/trainings/$trainingId/roll'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/claim-window'
     | '/forgot-password'
+    | '/intake'
     | '/invitation'
     | '/login'
     | '/photos'
@@ -1750,9 +1805,8 @@ export interface FileRouteTypes {
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/acts'
-    | '/groups/$groupId/administration'
-    | '/groups/$groupId/edit'
     | '/groups/$groupId/group-matcher'
+    | '/groups/$groupId/settings'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1763,6 +1817,7 @@ export interface FileRouteTypes {
     | '/manage/club-record/stage'
     | '/manage/groups/new'
     | '/manage/persons/$personId'
+    | '/manage/persons/intakes'
     | '/manage/persons/new'
     | '/manage/roles/$roleId'
     | '/manage/roles/new'
@@ -1795,6 +1850,8 @@ export interface FileRouteTypes {
     | '/manage/keys/holdings/$keyHoldingId'
     | '/manage/persons/$personId/access-recovery'
     | '/manage/persons/$personId/edit'
+    | '/manage/persons/intakes/$intakeId'
+    | '/manage/persons/intakes/new'
     | '/manage/roles/$roleId/edit'
     | '/manage/sessions/$sessionId/edit'
     | '/manage/venues/$venueId/edit'
@@ -1813,12 +1870,15 @@ export interface FileRouteTypes {
     | '/manage/persons/$personId/memberships/new'
     | '/manage/persons/$personId/pauses/$pauseId'
     | '/manage/persons/$personId/pauses/new'
+    | '/manage/persons/intakes/$intakeId/edit'
+    | '/manage/persons/intakes/$intakeId/review'
     | '/acts/$actId/details/trainings/$trainingId/roll'
   id:
     | '__root__'
     | '/_app'
     | '/claim-window'
     | '/forgot-password'
+    | '/intake'
     | '/invitation'
     | '/login'
     | '/photos'
@@ -1911,9 +1971,8 @@ export interface FileRouteTypes {
     | '/_app/gallery_/$albumId_/edit'
     | '/_app/gallery_/$albumId_/selection'
     | '/_app/groups_/$groupId_/acts'
-    | '/_app/groups_/$groupId_/administration'
-    | '/_app/groups_/$groupId_/edit'
     | '/_app/groups_/$groupId_/group-matcher'
+    | '/_app/groups_/$groupId_/settings'
     | '/_app/lab_/welcome/$case'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/$boardOfficeId'
@@ -1924,6 +1983,7 @@ export interface FileRouteTypes {
     | '/_app/manage/club-record_/stage'
     | '/_app/manage/groups_/new'
     | '/_app/manage/persons_/$personId'
+    | '/_app/manage/persons_/intakes'
     | '/_app/manage/persons_/new'
     | '/_app/manage/roles_/$roleId'
     | '/_app/manage/roles_/new'
@@ -1956,6 +2016,8 @@ export interface FileRouteTypes {
     | '/_app/manage/keys_/holdings/$keyHoldingId'
     | '/_app/manage/persons_/$personId_/access-recovery'
     | '/_app/manage/persons_/$personId_/edit'
+    | '/_app/manage/persons_/intakes_/$intakeId'
+    | '/_app/manage/persons_/intakes_/new'
     | '/_app/manage/roles_/$roleId_/edit'
     | '/_app/manage/sessions_/$sessionId/edit'
     | '/_app/manage/venues_/$venueId_/edit'
@@ -1974,6 +2036,8 @@ export interface FileRouteTypes {
     | '/_app/manage/persons_/$personId_/memberships/new'
     | '/_app/manage/persons_/$personId_/pauses/$pauseId'
     | '/_app/manage/persons_/$personId_/pauses/new'
+    | '/_app/manage/persons_/intakes_/$intakeId_/edit'
+    | '/_app/manage/persons_/intakes_/$intakeId_/review'
     | '/_app/acts_/$actId_/details/trainings/$trainingId/roll'
   fileRoutesById: FileRoutesById
 }
@@ -1981,6 +2045,7 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ClaimWindowRoute: typeof ClaimWindowRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
+  IntakeRoute: typeof IntakeRoute
   InvitationRoute: typeof InvitationRoute
   LoginRoute: typeof LoginRoute
   PhotosRoute: typeof PhotosRoute
@@ -2033,6 +2098,13 @@ declare module '@tanstack/react-router' {
       path: '/invitation'
       fullPath: '/invitation'
       preLoaderRoute: typeof InvitationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/intake': {
+      id: '/intake'
+      path: '/intake'
+      fullPath: '/intake'
+      preLoaderRoute: typeof IntakeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -2532,6 +2604,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManagePersonsNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/persons_/intakes': {
+      id: '/_app/manage/persons_/intakes'
+      path: '/manage/persons/intakes'
+      fullPath: '/manage/persons/intakes'
+      preLoaderRoute: typeof AppManagePersonsIntakesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/persons_/$personId': {
       id: '/_app/manage/persons_/$personId'
       path: '/manage/persons/$personId'
@@ -2602,25 +2681,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLabWelcomeCaseRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/groups_/$groupId_/settings': {
+      id: '/_app/groups_/$groupId_/settings'
+      path: '/groups/$groupId/settings'
+      fullPath: '/groups/$groupId/settings'
+      preLoaderRoute: typeof AppGroupsGroupIdSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups_/$groupId_/group-matcher': {
       id: '/_app/groups_/$groupId_/group-matcher'
       path: '/groups/$groupId/group-matcher'
       fullPath: '/groups/$groupId/group-matcher'
       preLoaderRoute: typeof AppGroupsGroupIdGroupMatcherRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/groups_/$groupId_/edit': {
-      id: '/_app/groups_/$groupId_/edit'
-      path: '/groups/$groupId/edit'
-      fullPath: '/groups/$groupId/edit'
-      preLoaderRoute: typeof AppGroupsGroupIdEditRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/groups_/$groupId_/administration': {
-      id: '/_app/groups_/$groupId_/administration'
-      path: '/groups/$groupId/administration'
-      fullPath: '/groups/$groupId/administration'
-      preLoaderRoute: typeof AppGroupsGroupIdAdministrationRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/groups_/$groupId_/acts': {
@@ -2833,6 +2905,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageRolesRoleIdEditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/manage/persons_/intakes_/new': {
+      id: '/_app/manage/persons_/intakes_/new'
+      path: '/manage/persons/intakes/new'
+      fullPath: '/manage/persons/intakes/new'
+      preLoaderRoute: typeof AppManagePersonsIntakesNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/persons_/intakes_/$intakeId': {
+      id: '/_app/manage/persons_/intakes_/$intakeId'
+      path: '/manage/persons/intakes/$intakeId'
+      fullPath: '/manage/persons/intakes/$intakeId'
+      preLoaderRoute: typeof AppManagePersonsIntakesIntakeIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/persons_/$personId_/edit': {
       id: '/_app/manage/persons_/$personId_/edit'
       path: '/manage/persons/$personId/edit'
@@ -3000,6 +3086,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/profile/contact/edit'
       preLoaderRoute: typeof AppPersonalProfileContactEditRouteImport
       parentRoute: typeof AppPersonalRoute
+    }
+    '/_app/manage/persons_/intakes_/$intakeId_/review': {
+      id: '/_app/manage/persons_/intakes_/$intakeId_/review'
+      path: '/manage/persons/intakes/$intakeId/review'
+      fullPath: '/manage/persons/intakes/$intakeId/review'
+      preLoaderRoute: typeof AppManagePersonsIntakesIntakeIdReviewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/persons_/intakes_/$intakeId_/edit': {
+      id: '/_app/manage/persons_/intakes_/$intakeId_/edit'
+      path: '/manage/persons/intakes/$intakeId/edit'
+      fullPath: '/manage/persons/intakes/$intakeId/edit'
+      preLoaderRoute: typeof AppManagePersonsIntakesIntakeIdEditRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/manage/persons_/$personId_/pauses/new': {
       id: '/_app/manage/persons_/$personId_/pauses/new'
@@ -3291,9 +3391,8 @@ interface AppRouteChildren {
   AppGalleryAlbumIdEditRoute: typeof AppGalleryAlbumIdEditRoute
   AppGalleryAlbumIdSelectionRoute: typeof AppGalleryAlbumIdSelectionRoute
   AppGroupsGroupIdActsRoute: typeof AppGroupsGroupIdActsRoute
-  AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
-  AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
   AppGroupsGroupIdGroupMatcherRoute: typeof AppGroupsGroupIdGroupMatcherRoute
+  AppGroupsGroupIdSettingsRoute: typeof AppGroupsGroupIdSettingsRoute
   AppLabWelcomeCaseRoute: typeof AppLabWelcomeCaseRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardBoardOfficeIdRoute: typeof AppManageBoardBoardOfficeIdRoute
@@ -3304,6 +3403,7 @@ interface AppRouteChildren {
   AppManageClubRecordStageRoute: typeof AppManageClubRecordStageRoute
   AppManageGroupsNewRoute: typeof AppManageGroupsNewRoute
   AppManagePersonsPersonIdRoute: typeof AppManagePersonsPersonIdRoute
+  AppManagePersonsIntakesRoute: typeof AppManagePersonsIntakesRoute
   AppManagePersonsNewRoute: typeof AppManagePersonsNewRoute
   AppManageRolesRoleIdRoute: typeof AppManageRolesRoleIdRoute
   AppManageRolesNewRoute: typeof AppManageRolesNewRoute
@@ -3326,6 +3426,8 @@ interface AppRouteChildren {
   AppManageKeysHoldingsKeyHoldingIdRoute: typeof AppManageKeysHoldingsKeyHoldingIdRoute
   AppManagePersonsPersonIdAccessRecoveryRoute: typeof AppManagePersonsPersonIdAccessRecoveryRoute
   AppManagePersonsPersonIdEditRoute: typeof AppManagePersonsPersonIdEditRoute
+  AppManagePersonsIntakesIntakeIdRoute: typeof AppManagePersonsIntakesIntakeIdRoute
+  AppManagePersonsIntakesNewRoute: typeof AppManagePersonsIntakesNewRoute
   AppManageRolesRoleIdEditRoute: typeof AppManageRolesRoleIdEditRoute
   AppManageSessionsSessionIdEditRoute: typeof AppManageSessionsSessionIdEditRoute
   AppManageVenuesVenueIdEditRoute: typeof AppManageVenuesVenueIdEditRoute
@@ -3341,6 +3443,8 @@ interface AppRouteChildren {
   AppManagePersonsPersonIdMembershipsNewRoute: typeof AppManagePersonsPersonIdMembershipsNewRoute
   AppManagePersonsPersonIdPausesPauseIdRoute: typeof AppManagePersonsPersonIdPausesPauseIdRoute
   AppManagePersonsPersonIdPausesNewRoute: typeof AppManagePersonsPersonIdPausesNewRoute
+  AppManagePersonsIntakesIntakeIdEditRoute: typeof AppManagePersonsIntakesIntakeIdEditRoute
+  AppManagePersonsIntakesIntakeIdReviewRoute: typeof AppManagePersonsIntakesIntakeIdReviewRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -3416,9 +3520,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppGalleryAlbumIdEditRoute: AppGalleryAlbumIdEditRoute,
   AppGalleryAlbumIdSelectionRoute: AppGalleryAlbumIdSelectionRoute,
   AppGroupsGroupIdActsRoute: AppGroupsGroupIdActsRoute,
-  AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
-  AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
   AppGroupsGroupIdGroupMatcherRoute: AppGroupsGroupIdGroupMatcherRoute,
+  AppGroupsGroupIdSettingsRoute: AppGroupsGroupIdSettingsRoute,
   AppLabWelcomeCaseRoute: AppLabWelcomeCaseRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,
@@ -3430,6 +3533,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageClubRecordStageRoute: AppManageClubRecordStageRoute,
   AppManageGroupsNewRoute: AppManageGroupsNewRoute,
   AppManagePersonsPersonIdRoute: AppManagePersonsPersonIdRoute,
+  AppManagePersonsIntakesRoute: AppManagePersonsIntakesRoute,
   AppManagePersonsNewRoute: AppManagePersonsNewRoute,
   AppManageRolesRoleIdRoute: AppManageRolesRoleIdRoute,
   AppManageRolesNewRoute: AppManageRolesNewRoute,
@@ -3458,6 +3562,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppManagePersonsPersonIdAccessRecoveryRoute:
     AppManagePersonsPersonIdAccessRecoveryRoute,
   AppManagePersonsPersonIdEditRoute: AppManagePersonsPersonIdEditRoute,
+  AppManagePersonsIntakesIntakeIdRoute: AppManagePersonsIntakesIntakeIdRoute,
+  AppManagePersonsIntakesNewRoute: AppManagePersonsIntakesNewRoute,
   AppManageRolesRoleIdEditRoute: AppManageRolesRoleIdEditRoute,
   AppManageSessionsSessionIdEditRoute: AppManageSessionsSessionIdEditRoute,
   AppManageVenuesVenueIdEditRoute: AppManageVenuesVenueIdEditRoute,
@@ -3483,6 +3589,10 @@ const AppRouteChildren: AppRouteChildren = {
     AppManagePersonsPersonIdPausesPauseIdRoute,
   AppManagePersonsPersonIdPausesNewRoute:
     AppManagePersonsPersonIdPausesNewRoute,
+  AppManagePersonsIntakesIntakeIdEditRoute:
+    AppManagePersonsIntakesIntakeIdEditRoute,
+  AppManagePersonsIntakesIntakeIdReviewRoute:
+    AppManagePersonsIntakesIntakeIdReviewRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -3491,6 +3601,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ClaimWindowRoute: ClaimWindowRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
+  IntakeRoute: IntakeRoute,
   InvitationRoute: InvitationRoute,
   LoginRoute: LoginRoute,
   PhotosRoute: PhotosRoute,

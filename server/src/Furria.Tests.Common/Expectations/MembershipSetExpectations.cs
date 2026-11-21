@@ -35,4 +35,30 @@ public sealed class MembershipSetExpectations
                         .CountAsync(row => row.PersonId == _personId && row.EndedOn == null, ct)
                 )
         );
+
+    public Expected ToHaveOnlyOneFromIntake(int intakeId, DateOnly startedOn) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var membership = await dbContext
+                    .Memberships.AsNoTracking()
+                    .SingleAsync(row => row.PersonId == _personId, ct);
+                Assert.Equal(intakeId, membership.IntakeId);
+                Assert.Equal(startedOn, membership.StartedOn);
+                Assert.Null(membership.EndedOn);
+                Assert.Null(membership.AdmittedAt);
+            }
+        );
+
+    public Expected ToHaveOneFromIntakeSince(int intakeId, DateOnly startedOn) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var membership = await dbContext
+                    .Memberships.AsNoTracking()
+                    .SingleAsync(row => row.PersonId == _personId && row.IntakeId == intakeId, ct);
+                Assert.Equal(startedOn, membership.StartedOn);
+                Assert.Null(membership.EndedOn);
+            }
+        );
 }

@@ -125,6 +125,15 @@ export const PersonKeyHoldingSchema = z.object({
 });
 export type PersonKeyHolding = z.infer<typeof PersonKeyHoldingSchema>;
 
+const ArchivedParentTieKindSchema = z.enum(['group', 'role', 'groupAdmin', 'boardSeat']);
+
+export const PersonArchivedParentTieSchema = z.object({
+  kind: ArchivedParentTieKindSchema,
+  name: z.string(),
+  sinceOn: z.iso.date(),
+});
+export type PersonArchivedParentTie = z.infer<typeof PersonArchivedParentTieSchema>;
+
 export const PersonArchiveSchema = z.object({
   archivedOn: z.iso.date(),
   archivedBy: PersonRefSchema.nullable(),
@@ -146,6 +155,7 @@ export const PersonDetailsSchema = z
     unendedGroupAdminTenures: z.array(PersonGroupAdminTenureSchema),
     unendedBoardSeats: z.array(PersonBoardSeatSchema),
     unendedKeyHoldings: z.array(PersonKeyHoldingSchema),
+    unendedTiesUnderArchivedParents: z.array(PersonArchivedParentTieSchema),
     access: PersonAccessSchema,
     contactChange: ContactChangeSchema.nullable(),
     archive: PersonArchiveSchema.nullable(),

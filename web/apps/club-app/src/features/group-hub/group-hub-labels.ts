@@ -17,7 +17,7 @@ import { formatIsoDay, formatPeriod, formatSinceSession } from '@/lib/membership
 import type { StateChip } from '@/lib/state-chips';
 import { toRecruitingChip } from '@/lib/state-chips';
 import type { HubPerson } from './hub-people';
-import type { GroupHub, GroupInfoForm } from './schemas';
+import type { GroupHub, GroupSettingsForm } from './schemas';
 
 const HUB_TITLE_FALLBACK = 'Gruppe';
 const TONE_TAKEN_WARNING = 'Eine sehr ähnliche Farbe hat schon eine andere Gruppe.';
@@ -202,18 +202,19 @@ export const toPersonStandingLines = (person: HubPerson): string[] => {
   return lines;
 };
 
+export const GROUP_SETTINGS_TITLE = 'Einstellungen';
+export const GROUP_SETTINGS_ACTION_LABEL = 'Einstellungen der Gruppe';
+
 export const EDITOR_DENIED_MESSAGE =
   'Nur Gruppen-Admins und die Gruppenverwaltung können die Gruppe bearbeiten.';
-
-export const ADMINISTRATION_DENIED_MESSAGE =
-  'Nur die Gruppenverwaltung kann Name und Gruppenart ändern.';
 
 export const PERSON_SCREEN_OPEN_LABEL = 'Zum Profil';
 export const PERSON_SCREEN_UNREACHABLE_NOTE = 'Kein Profil im Verzeichnis.';
 export const PERSON_SCREEN_ADD_MEMBERSHIP_LABEL = 'Mitglied aufnehmen';
 export const PERSON_SCREEN_ADD_ADMIN_LABEL = 'Gruppen-Admin ernennen';
 
-export type GroupInfoPayload = {
+export type GroupSettingsPayload = {
+  name: string | null;
   description: string;
   isRecruiting: boolean;
   groupKindId: number | null;
@@ -222,7 +223,11 @@ export type GroupInfoPayload = {
   icon: ClubIcon | null;
 };
 
-export const toGroupInfoPayload = (form: GroupInfoForm): GroupInfoPayload => ({
+export const toGroupSettingsPayload = (
+  form: GroupSettingsForm,
+  renames: boolean,
+): GroupSettingsPayload => ({
+  name: renames ? form.name : null,
   description: form.description,
   isRecruiting: form.isRecruiting,
   groupKindId: toGroupKindId(form.groupKindId),
@@ -231,16 +236,10 @@ export const toGroupInfoPayload = (form: GroupInfoForm): GroupInfoPayload => ({
   icon: form.icon,
 });
 
-export interface GroupInfoFormOverrides {
-  isRecruiting?: boolean;
-}
-
-export const toGroupInfoFormValues = (
-  hub: GroupHub,
-  overrides: GroupInfoFormOverrides = {},
-): GroupInfoForm => ({
+export const toGroupSettingsFormValues = (hub: GroupHub): GroupSettingsForm => ({
+  name: hub.name,
   description: hub.description,
-  isRecruiting: overrides.isRecruiting ?? hub.isRecruiting,
+  isRecruiting: hub.isRecruiting,
   groupKindId: toGroupKindValue(hub.groupKindId),
   foundedYear: hub.foundedYear === null ? '' : String(hub.foundedYear),
   tone: hub.tone ?? '',
@@ -282,7 +281,7 @@ const SEARCH_TERM_MIN_LENGTH = 2;
 const SEARCH_TERM_MAX_LENGTH = 64;
 const SEARCH_RESULT_CAP = 25;
 
-export const GROUP_INFO_SAVED_MESSAGE = 'Die Angaben zur Gruppe sind gespeichert.';
+export const GROUP_SETTINGS_SAVED_MESSAGE = 'Die Einstellungen der Gruppe sind gespeichert.';
 
 export const toSearchTerm = (raw: string): string | null => {
   const trimmed = raw.trim();
@@ -475,9 +474,6 @@ export const toSelfAdminEndedMessage = (
   isFutureDay(endedOn, todayIsoDay)
     ? `Ab dem ${formatIsoDay(endedOn)} bist du nicht mehr Gruppen-Admin von ${groupName}.`
     : `Du bist nicht mehr Gruppen-Admin von ${groupName}.`;
-
-export const toGroupAdministrationSavedMessage = (name: string): string =>
-  `${name} ist gespeichert.`;
 
 const NOBODY_LINE = 'Es ist niemand eingetragen.';
 

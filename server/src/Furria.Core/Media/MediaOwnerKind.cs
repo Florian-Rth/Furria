@@ -11,4 +11,5 @@ public enum MediaOwnerKind
     Act = 7,
     Session = 8,
     UploadLink = 9,
+    Intake = 10,
 }

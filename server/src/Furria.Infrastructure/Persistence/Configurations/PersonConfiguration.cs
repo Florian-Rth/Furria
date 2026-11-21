@@ -31,6 +31,7 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(person => person.UpdatedAt).HasDefaultValueSql("now()");
 
         builder.HasIndex(person => new { person.LastName, person.FirstName });
+        builder.HasIndex(person => person.BirthDate);
 
         builder.HasIndex(person => person.ContactChangedByPersonId);
         builder

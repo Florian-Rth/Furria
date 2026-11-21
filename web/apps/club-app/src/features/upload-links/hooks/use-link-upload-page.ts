@@ -21,11 +21,12 @@ import { inCaptureOrder, tallyOf } from '@/features/gallery/upload/upload-queue'
 import type { UploadStatus } from '@/features/gallery/upload/upload-status';
 import { uploadStatusOf } from '@/features/gallery/upload/upload-status';
 import { isDeveloped, tileLookOf } from '@/features/gallery/upload/upload-tiles';
+import { tokenOfHash } from '@/lib/link-token';
 import { useUploadLinkLookupQuery } from '../api';
 import { retryFailedLinkUploads, retryLinkUpload, sendThroughLink } from '../link-upload-store';
 import { momentLabelOf } from '../upload-link-copy';
 import type { LinkPageStage } from '../upload-link-view';
-import { linkPageStageOf, tokenOfHash } from '../upload-link-view';
+import { linkPageStageOf } from '../upload-link-view';
 import { useLinkUploads } from './use-link-uploads';
 
 const NAME_STORAGE_KEY = 'furria.upload-link.name';

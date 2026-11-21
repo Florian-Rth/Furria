@@ -1,9 +1,9 @@
 import type { FC } from 'react';
+import { LinkPageChecking } from '@/features/link-page/components/LinkPageChecking';
+import { LinkPageFailed } from '@/features/link-page/components/LinkPageFailed';
+import { LinkPageFrame } from '@/features/link-page/components/LinkPageFrame';
 import { useLinkUploadPage } from '../hooks/use-link-upload-page';
-import { LinkUploadChecking } from './LinkUploadChecking';
 import { LinkUploadClosed } from './LinkUploadClosed';
-import { LinkUploadFailed } from './LinkUploadFailed';
-import { LinkUploadFrame } from './LinkUploadFrame';
 import { LinkUploadOpen } from './LinkUploadOpen';
 
 export const LinkUploadScreen: FC = () => {
@@ -12,27 +12,27 @@ export const LinkUploadScreen: FC = () => {
   switch (page.stage) {
     case 'open':
       return (
-        <LinkUploadFrame>
+        <LinkPageFrame>
           <LinkUploadOpen page={page} />
-        </LinkUploadFrame>
+        </LinkPageFrame>
       );
     case 'checking':
       return (
-        <LinkUploadFrame>
-          <LinkUploadChecking />
-        </LinkUploadFrame>
+        <LinkPageFrame>
+          <LinkPageChecking />
+        </LinkPageFrame>
       );
     case 'failed':
       return (
-        <LinkUploadFrame>
-          <LinkUploadFailed retrying={page.checking} onRetry={page.onRecheck} />
-        </LinkUploadFrame>
+        <LinkPageFrame>
+          <LinkPageFailed retrying={page.checking} onRetry={page.onRecheck} />
+        </LinkPageFrame>
       );
     default:
       return (
-        <LinkUploadFrame>
+        <LinkPageFrame>
           <LinkUploadClosed reason={page.stage} />
-        </LinkUploadFrame>
+        </LinkPageFrame>
       );
   }
 };

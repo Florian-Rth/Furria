@@ -3,7 +3,6 @@ export const GROUP_SECTION_TITLES = {
   usualTrainingTimes: 'Übliche Trainingszeiten',
   history: 'Geschichte',
   events: 'Termine',
-  settings: 'Einstellungen',
 } as const;
 
 const SUBLINE_SEPARATOR = ' · ';

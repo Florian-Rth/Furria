@@ -600,6 +600,59 @@ public sealed class PersonService
                     SinceOn = holding.SinceOn,
                     UntilOn = holding.UntilOn,
                 })
+                .ToList(),
+            person
+                .GroupMemberships.AsQueryable()
+                .Where(RunningOrAhead.GroupMemberships(today))
+                .Where(membership => membership.Group!.ArchivedOn != null)
+                .OrderBy(membership =>
+                    EF.Functions.Collate(membership.Group!.Name, GermanCollation.Name)
+                )
+                .ThenBy(membership => membership.JoinedOn)
+                .Select(membership => new PersonArchivedParentTie
+                {
+                    Kind = ArchivedParentTieKind.Group,
+                    Name = membership.Group!.Name,
+                    SinceOn = membership.JoinedOn,
+                })
+                .ToList(),
+            person
+                .RoleHoldings.AsQueryable()
+                .Where(RunningOrAhead.RoleHoldings(today))
+                .Where(holding => holding.Role!.ArchivedOn != null)
+                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name))
+                .ThenBy(holding => holding.SinceOn)
+                .Select(holding => new PersonArchivedParentTie
+                {
+                    Kind = ArchivedParentTieKind.Role,
+                    Name = holding.Role!.Name,
+                    SinceOn = holding.SinceOn,
+                })
+                .ToList(),
+            person
+                .GroupAdminships.AsQueryable()
+                .Where(RunningOrAhead.GroupAdmins(today))
+                .Where(tenure => tenure.Group!.ArchivedOn != null)
+                .OrderBy(tenure => EF.Functions.Collate(tenure.Group!.Name, GermanCollation.Name))
+                .ThenBy(tenure => tenure.SinceOn)
+                .Select(tenure => new PersonArchivedParentTie
+                {
+                    Kind = ArchivedParentTieKind.GroupAdmin,
+                    Name = tenure.Group!.Name,
+                    SinceOn = tenure.SinceOn,
+                })
+                .ToList(),
+            _dbContext
+                .BoardSeats.Where(RunningOrAhead.BoardSeats(today))
+                .Where(seat => seat.PersonId == person.Id && seat.BoardOffice!.ArchivedOn != null)
+                .OrderBy(seat => seat.BoardOffice!.SortOrder)
+                .ThenBy(seat => seat.SinceOn)
+                .Select(seat => new PersonArchivedParentTie
+                {
+                    Kind = ArchivedParentTieKind.BoardSeat,
+                    Name = seat.BoardOffice!.Name,
+                    SinceOn = seat.SinceOn,
+                })
                 .ToList()
         );
 
@@ -700,6 +753,7 @@ public sealed class PersonService
             UnendedGroupAdminTenures = row.UnendedTies.GroupAdminTenures,
             UnendedBoardSeats = row.UnendedTies.BoardSeats,
             UnendedKeyHoldings = row.UnendedTies.KeyHoldings,
+            UnendedTiesUnderArchivedParents = row.UnendedTies.UnderArchivedParents,
         };
     }
 
@@ -851,8 +905,21 @@ public sealed class PersonService
     private sealed record UnendedTiesRow(
         IReadOnlyList<PersonGroupAdminTenure> GroupAdminTenures,
         IReadOnlyList<PersonBoardSeat> BoardSeats,
-        IReadOnlyList<PersonKeyHolding> KeyHoldings
-    );
+        IReadOnlyList<PersonKeyHolding> KeyHoldings,
+        IReadOnlyList<PersonArchivedParentTie> GroupsUnderArchivedParents,
+        IReadOnlyList<PersonArchivedParentTie> RolesUnderArchivedParents,
+        IReadOnlyList<PersonArchivedParentTie> GroupAdminTenuresUnderArchivedParents,
+        IReadOnlyList<PersonArchivedParentTie> BoardSeatsUnderArchivedParents
+    )
+    {
+        public IReadOnlyList<PersonArchivedParentTie> UnderArchivedParents =>
+            [
+                .. GroupsUnderArchivedParents,
+                .. RolesUnderArchivedParents,
+                .. GroupAdminTenuresUnderArchivedParents,
+                .. BoardSeatsUnderArchivedParents,
+            ];
+    }
 
     private sealed record MemberCardRow(
         int Id,

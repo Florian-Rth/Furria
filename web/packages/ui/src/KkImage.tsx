@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import { markPainted, wasPainted } from './internal/painted-images';
 import type { ImageFault } from './internal/use-image-fault';
 import { useImageFault } from './internal/use-image-fault';
 import { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
@@ -43,6 +44,12 @@ export const KkImage: FC<KkImageProps> = ({
   const ownFault = useImageFault(src);
   const imageFault = faultState ?? ownFault;
   const sxList = Array.isArray(sx) ? sx : [sx];
+  const isPainted = wasPainted(src);
+  const paintLoading = isPainted ? 'eager' : loading;
+  const paintDecoding = isPainted ? 'sync' : decoding;
+  const rememberPainted = (): void => {
+    markPainted(src);
+  };
 
   if (imageFault.hasFailed && fault === 'hide') {
     return null;
@@ -60,10 +67,11 @@ export const KkImage: FC<KkImageProps> = ({
       alt={alt}
       width={width}
       height={height}
-      loading={loading}
-      decoding={decoding}
+      loading={paintLoading}
+      decoding={paintDecoding}
       fetchPriority={fetchPriority}
       draggable={draggable}
+      onLoad={rememberPainted}
       onError={imageFault.onError}
       data-kk-image
       sx={sx}

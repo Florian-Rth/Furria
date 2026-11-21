@@ -1,0 +1,197 @@
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import type { KkNumberStepLabels } from '@furria/ui/KkNumberField';
+import { KkNumberField } from '@furria/ui/KkNumberField';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
+import { KkTextArea } from '@furria/ui/KkTextArea';
+import { KkTextField } from '@furria/ui/KkTextField';
+import type { FC } from 'react';
+import { useGroupKindsQuery } from '@/features/group-kinds/api';
+import {
+  GROUP_KIND_FIELD_LABEL,
+  toGroupKindOptions,
+  toHeldGroupKind,
+} from '@/features/group-kinds/group-kinds-labels';
+import { GroupMatcherHubRow } from '@/features/group-matcher/components/GroupMatcherHubRow';
+import { toGroupTone } from '@/features/groups/group-identity';
+import { ClubIconField } from '@/features/write/components/ClubIconField';
+import { WriteScreen } from '@/features/write/WriteScreen';
+import { GROUP_SETTINGS_TITLE, toHubEditorOrigin } from '../group-hub-labels';
+import { toEditorChoicesErrorMessage } from '../group-hub-messages';
+import { useGroupSettingsEditor } from '../hooks/use-group-settings-editor';
+import { useTakenTones } from '../hooks/use-taken-tones';
+import type { GroupHub } from '../schemas';
+import { DESCRIPTION_MAX_LENGTH, EARLIEST_FOUNDED_YEAR, LATEST_FOUNDED_YEAR } from '../schemas';
+import { GroupEditorError } from './GroupEditorError';
+import { GroupEditorSkeleton } from './GroupEditorSkeleton';
+import { GroupPictureSection } from './GroupPictureSection';
+import { HubArchiveAction } from './HubArchiveAction';
+import { HubTonePicker } from './HubTonePicker';
+
+const SAVE_LABEL = 'Speichern';
+const ABOUT_SECTION = 'Über die Gruppe';
+const FACTS_SECTION = 'Eckdaten';
+const NEWCOMERS_SECTION = 'Neue Mitglieder';
+const NAME_LABEL = 'Name';
+const RECRUITING_LABEL = 'Sucht Verstärkung';
+const DESCRIPTION_LABEL = 'Beschreibung';
+const DESCRIPTION_PLACEHOLDER = 'Kurzbeschreibung der Gruppe';
+const DESCRIPTION_ROWS = 5;
+const FOUNDED_LABEL = 'Gründungsjahr';
+const FOUNDED_STEP_LABELS: KkNumberStepLabels = {
+  less: 'Ein Jahr früher',
+  more: 'Ein Jahr später',
+};
+
+const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
+
+interface GroupSettingsEditorProps {
+  hub: GroupHub;
+  administers: boolean;
+}
+
+export const GroupSettingsEditor: FC<GroupSettingsEditorProps> = ({ hub, administers }) => {
+  const control = useGroupSettingsEditor(hub, administers);
+  const kinds = useGroupKindsQuery();
+  const takenTones = useTakenTones(hub.groupId, true);
+  const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
+  const origin = toHubEditorOrigin(hub);
+
+  const reloadKinds = (): void => {
+    void kinds.refetch();
+  };
+
+  if (kinds.data === undefined) {
+    if (kinds.error === null) {
+      return <GroupEditorSkeleton />;
+    }
+
+    const kindsErrorMessage = toEditorChoicesErrorMessage(kinds.error);
+
+    return (
+      <GroupEditorError
+        title={GROUP_SETTINGS_TITLE}
+        origin={origin}
+        message={kindsErrorMessage}
+        onRetry={reloadKinds}
+        isRetrying={kinds.isFetching}
+      />
+    );
+  }
+  if (takenTones.state.kind === 'failed') {
+    const tonesErrorMessage = toEditorChoicesErrorMessage(takenTones.state.error);
+
+    return (
+      <GroupEditorError
+        title={GROUP_SETTINGS_TITLE}
+        origin={origin}
+        message={tonesErrorMessage}
+        onRetry={takenTones.retry}
+        isRetrying={takenTones.isRetrying}
+      />
+    );
+  }
+  if (takenTones.state.kind === 'pending') {
+    return <GroupEditorSkeleton />;
+  }
+
+  const kindOptions = toGroupKindOptions(kinds.data.kinds, heldKind);
+  const pictureTone = toGroupTone(hub.groupId, control.tone === '' ? null : control.tone);
+
+  const nameField = administers ? (
+    <KkTextField
+      name={control.name.name}
+      label={NAME_LABEL}
+      required
+      onChange={control.name.onChange}
+      onBlur={control.name.onBlur}
+      inputRef={control.name.ref}
+      error={control.nameError !== undefined}
+      helperText={control.nameError}
+    />
+  ) : null;
+
+  const groupMatcher =
+    hub.groupMatcher === null ? null : (
+      <GroupMatcherHubRow groupId={hub.groupId} status={hub.groupMatcher} />
+    );
+
+  const archive = administers ? <HubArchiveAction hub={hub} /> : null;
+
+  return (
+    <WriteScreen
+      origin={origin}
+      title={GROUP_SETTINGS_TITLE}
+      rejection={control.rejection ?? undefined}
+      isDirty={control.isDirty}
+      action={{
+        primary: {
+          label: SAVE_LABEL,
+          onSelect: control.submit,
+          loading: control.isSaving,
+          disabled: !control.canSubmit,
+        },
+      }}
+    >
+      <KkFormSection title={ABOUT_SECTION}>
+        {nameField}
+        <KkTextArea
+          name="description"
+          label={DESCRIPTION_LABEL}
+          value={control.description}
+          onChange={control.setDescription}
+          rows={DESCRIPTION_ROWS}
+          maxLength={DESCRIPTION_MAX_LENGTH}
+          showCount
+          countLabel={toCountLabel}
+          placeholder={DESCRIPTION_PLACEHOLDER}
+        />
+      </KkFormSection>
+      <GroupPictureSection hub={hub} tone={pictureTone} />
+      <KkFormSection title={FACTS_SECTION}>
+        <KkFormPair
+          balance="leading"
+          start={
+            <KkSelectField
+              name="groupKindId"
+              label={GROUP_KIND_FIELD_LABEL}
+              value={control.groupKindId}
+              options={kindOptions}
+              onChange={control.setGroupKindId}
+              presentation="select"
+            />
+          }
+          end={
+            <KkNumberField
+              name="foundedYear"
+              label={FOUNDED_LABEL}
+              value={control.foundedYear}
+              onChange={control.setFoundedYear}
+              stepLabels={FOUNDED_STEP_LABELS}
+              min={EARLIEST_FOUNDED_YEAR}
+              max={LATEST_FOUNDED_YEAR}
+              error={control.foundedYearError !== undefined}
+              helperText={control.foundedYearError}
+            />
+          }
+        />
+        <HubTonePicker
+          value={control.tone}
+          takenTones={takenTones.state.tones}
+          onChange={control.setTone}
+        />
+        <ClubIconField value={control.icon} onChange={control.setIcon} />
+      </KkFormSection>
+      <KkFormSection title={NEWCOMERS_SECTION}>
+        <KkSwitchRow
+          label={RECRUITING_LABEL}
+          checked={control.isRecruiting}
+          onChange={control.setIsRecruiting}
+        />
+        {groupMatcher}
+      </KkFormSection>
+      {archive}
+    </WriteScreen>
+  );
+};

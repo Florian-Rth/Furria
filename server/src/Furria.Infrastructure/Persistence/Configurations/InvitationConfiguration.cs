@@ -37,6 +37,7 @@ public sealed class InvitationConfiguration : IEntityTypeConfiguration<Invitatio
             .Property(invitation => invitation.CodeHash)
             .HasMaxLength(Invitation.TokenHashLength);
         builder.Property(invitation => invitation.IsReminder).HasDefaultValue(false);
+        builder.Property(invitation => invitation.ContactEmailUnconfirmed).HasDefaultValue(false);
 
         builder.HasIndex(invitation => invitation.TokenHash).IsUnique();
         builder.HasIndex(invitation => invitation.PersonId);

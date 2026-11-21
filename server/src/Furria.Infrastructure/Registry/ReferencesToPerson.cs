@@ -4,6 +4,7 @@ using Furria.Core.Club;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
+using Furria.Core.Intakes;
 using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.Roles;
@@ -96,6 +97,8 @@ public static class ReferencesToPerson
         HerAct<Person>(nameof(Person.ArchivedByPersonId)),
         HerAct<MediaItem>(nameof(MediaItem.UploadedByPersonId)),
         HerAct<UploadLink>(nameof(UploadLink.CreatedByPersonId)),
+        HerAct<Intake>(nameof(Intake.StartedByPersonId)),
+        HerAct<Intake>(nameof(Intake.PersonId)),
         HerAct<NewsPost>(nameof(NewsPost.LastSavedByPersonId)),
         HerAct<WebsitePicture>(nameof(WebsitePicture.UpdatedByPersonId)),
         HerAct<ActCoEditor>(nameof(ActCoEditor.GrantedByPersonId)),

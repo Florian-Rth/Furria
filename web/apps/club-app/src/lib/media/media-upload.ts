@@ -6,7 +6,8 @@ export type UploadOwner =
   | { kind: 'person' | 'group' | 'news' | 'event' | 'act' | 'session'; id: number }
   | { kind: 'gallery'; albumId: number | null }
   | { kind: 'website'; slot: string; position: number; aspect: number }
-  | { kind: 'link'; uploaderName: string | null };
+  | { kind: 'link'; uploaderName: string | null }
+  | { kind: 'intake' };
 
 export interface MediaUpload {
   file: File;
@@ -56,6 +57,8 @@ const ownerTokenOf = (owner: UploadOwner): string => {
       return `website:${owner.slot}:${owner.position}`;
     case 'link':
       return 'link';
+    case 'intake':
+      return 'intake';
     default:
       return `${owner.kind}:${owner.id}`;
   }

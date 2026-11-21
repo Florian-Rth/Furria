@@ -38,4 +38,5 @@ export interface KkBannerDeskActions {
   onCropCancel: () => void;
   onRemove: () => void;
   onCropChange: (crop: KkCrop) => void;
+  onUnreadable?: () => void;
 }

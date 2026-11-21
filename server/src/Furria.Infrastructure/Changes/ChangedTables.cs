@@ -9,6 +9,7 @@ using Furria.Core.GroupMatcher;
 using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
+using Furria.Core.Intakes;
 using Furria.Core.Media;
 using Furria.Core.MembershipApplications;
 using Furria.Core.News;
@@ -127,6 +128,8 @@ public static class ChangedTables
         [typeof(MatcherStatement)] = [DomainChange.GroupMatcher],
         [typeof(Stance)] = [DomainChange.GroupMatcher],
         [typeof(GroupAdmissionAge)] = [DomainChange.GroupMatcher],
+        [typeof(Intake)] = [DomainChange.Intake],
+        [typeof(IntakeGroup)] = [DomainChange.Intake],
         [typeof(WhatsAppSession)] = [DomainChange.WhatsApp],
         [typeof(LinkedWhatsAppGroup)] = [DomainChange.WhatsApp],
     }.ToFrozenDictionary();
