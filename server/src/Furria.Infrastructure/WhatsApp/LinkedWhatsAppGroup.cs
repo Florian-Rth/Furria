@@ -5,6 +5,7 @@ namespace Furria.Infrastructure.WhatsApp;
 public sealed class LinkedWhatsAppGroup
 {
     public const int ChatIdLength = 128;
+    public const int InviteLinkLength = 256;
 
     public int Id { get; set; }
 
@@ -13,6 +14,10 @@ public sealed class LinkedWhatsAppGroup
     public int? GroupId { get; set; }
 
     public DateTimeOffset LinkedAt { get; set; }
+
+    public bool KeepsMembers { get; set; }
+
+    public string? InviteLink { get; set; }
 
     public Group? Group { get; set; }
 }

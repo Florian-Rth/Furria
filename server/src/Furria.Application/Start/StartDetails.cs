@@ -10,5 +10,7 @@ public sealed record StartDetails
 
     public required bool ViewerIsActiveInClub { get; init; }
 
+    public string? ClubGroupInviteLink { get; init; }
+
     public required IReadOnlyList<StartPanel> Panels { get; init; }
 }

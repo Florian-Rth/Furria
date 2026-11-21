@@ -16,6 +16,11 @@ public sealed class LinkedWhatsAppGroupConfiguration : IEntityTypeConfiguration<
             .HasMaxLength(LinkedWhatsAppGroup.ChatIdLength)
             .IsRequired();
 
+        builder.Property(link => link.KeepsMembers).HasDefaultValue(false);
+        builder
+            .Property(link => link.InviteLink)
+            .HasMaxLength(LinkedWhatsAppGroup.InviteLinkLength);
+
         builder.HasIndex(link => link.ChatId).IsUnique();
         builder
             .HasIndex(link => link.GroupId)

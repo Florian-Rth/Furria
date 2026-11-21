@@ -16,5 +16,7 @@ public sealed record FillPersonGapsCommand
 
     public required string? City { get; init; }
 
+    public required bool ClubGroupConsent { get; init; }
+
     public required int? ActorPersonId { get; init; }
 }

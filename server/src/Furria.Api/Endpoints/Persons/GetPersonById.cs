@@ -116,6 +116,7 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             City = person.City,
             BirthDate = person.BirthDate,
             ContactVisibleToMembers = person.ContactVisibleToMembers,
+            ClubGroupConsent = person.ClubGroupConsent,
             ContactChange = person.ContactChange is { } change ? ToDto(change) : null,
             Archive = person.Archive is { } archive ? ToDto(archive) : null,
             MembershipState = person.MembershipState,
@@ -353,6 +354,8 @@ public sealed record GetPersonByIdResponse
     public required DateOnly? BirthDate { get; init; }
 
     public required bool ContactVisibleToMembers { get; init; }
+
+    public required bool ClubGroupConsent { get; init; }
 
     public required PersonContactChangeDto? ContactChange { get; init; }
 

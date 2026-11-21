@@ -27,6 +27,7 @@ public sealed class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(person => person.Zip).HasMaxLength(16);
         builder.Property(person => person.City).HasMaxLength(128);
         builder.Property(person => person.ContactVisibleToMembers).HasDefaultValue(false);
+        builder.Property(person => person.ClubGroupConsent).HasDefaultValue(false);
         builder.Property(person => person.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(person => person.UpdatedAt).HasDefaultValueSql("now()");
 

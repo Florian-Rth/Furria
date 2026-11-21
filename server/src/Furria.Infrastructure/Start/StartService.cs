@@ -8,6 +8,7 @@ using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
 using Furria.Infrastructure.Registry;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Start;
@@ -19,6 +20,7 @@ public sealed partial class StartService
     private readonly RunningBoardSeats _runningBoardSeats;
     private readonly MediaPictures _pictures;
     private readonly PublicFace _publicFace;
+    private readonly WhatsAppGroupAddQuery _groupAdds;
     private readonly ToDoService _toDoService;
     private readonly AnnouncementMentionTargetsQuery _mentionTargets;
     private readonly TimeProvider _timeProvider;
@@ -31,9 +33,11 @@ public sealed partial class StartService
         AnnouncementMentionTargetsQuery mentionTargets,
         MediaPictures pictures,
         PublicFace publicFace,
+        WhatsAppGroupAddQuery groupAdds,
         TimeProvider timeProvider
     )
     {
+        _groupAdds = groupAdds;
         _dbContext = dbContext;
         _authorizer = authorizer;
         _runningBoardSeats = runningBoardSeats;
@@ -67,8 +71,7 @@ public sealed partial class StartService
             return StartComposer.Inactive(moment);
 
         var viewer = await ViewerAsync(accountId, personId, moment, ct);
-
-        return StartComposer.Compose(
+        var start = StartComposer.Compose(
             new StartCandidates
             {
                 Entries = await EntryCandidatesAsync(viewer, ct),
@@ -83,6 +86,11 @@ public sealed partial class StartService
             },
             moment
         );
+
+        return start with
+        {
+            ClubGroupInviteLink = await _groupAdds.InviteLinkForAsync(personId, ct),
+        };
     }
 
     private Task<bool> IsActiveInClubAsync(int personId, DateOnly today, CancellationToken ct) =>

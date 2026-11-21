@@ -65,6 +65,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             Today = start.Today,
             ReshapeAt = start.ReshapeAt,
             ViewerIsActiveInClub = start.ViewerIsActiveInClub,
+            ClubGroupInviteLink = start.ClubGroupInviteLink,
             Panels = [.. start.Panels.Select(ToDto)],
         };
 
@@ -318,6 +319,8 @@ public sealed record GetStartResponse
     public required DateTimeOffset? ReshapeAt { get; init; }
 
     public required bool ViewerIsActiveInClub { get; init; }
+
+    public required string? ClubGroupInviteLink { get; init; }
 
     public required IReadOnlyList<StartPanelDto> Panels { get; init; }
 }

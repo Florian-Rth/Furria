@@ -6,6 +6,7 @@ using Furria.Core.Club;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -66,6 +67,7 @@ public sealed class PersonErasureService
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await DropMailQueuedForAsync(personId, ct);
+        await DropWhatsAppAddsQueuedForAsync(personId, ct);
         await StageNoticeAsync(personId, ct);
         var erased = await _dbContext
             .People.Where(person => person.Id == personId)
@@ -79,6 +81,13 @@ public sealed class PersonErasureService
         await transaction.CommitAsync(ct);
         return true;
     }
+
+    private Task DropWhatsAppAddsQueuedForAsync(int personId, CancellationToken ct) =>
+        _dbContext
+            .OutboxWhatsApps.Where(operation =>
+                operation.HostKind == WhatsAppHostKind.Person && operation.HostId == personId
+            )
+            .ExecuteDeleteAsync(ct);
 
     private Task DropMailQueuedForAsync(int personId, CancellationToken ct) =>
         _dbContext

@@ -229,6 +229,7 @@ public sealed class AccountService
                         City = account.Person.City,
                         BirthDate = account.Person.BirthDate,
                         ContactVisibleToMembers = account.Person.ContactVisibleToMembers,
+                        ClubGroupConsent = account.Person.ClubGroupConsent,
                         ContactChange =
                             account.Person.ContactChangedAt == null
                                 ? null

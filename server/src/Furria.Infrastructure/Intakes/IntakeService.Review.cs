@@ -321,6 +321,7 @@ public sealed partial class IntakeService
             Street = newcomer.Street,
             Zip = newcomer.Zip,
             City = newcomer.City,
+            ClubGroupConsent = newcomer.ClubGroupConsent,
             ActorPersonId = personId,
         };
 

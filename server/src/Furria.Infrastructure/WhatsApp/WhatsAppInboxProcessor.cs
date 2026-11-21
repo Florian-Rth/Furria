@@ -11,6 +11,7 @@ public sealed class WhatsAppInboxProcessor
     private readonly AppDbContext _dbContext;
     private readonly WhatsAppSessionTracker _sessionTracker;
     private readonly WhatsAppAnswers _answers;
+    private readonly WhatsAppGroupKeeping _keeping;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<WhatsAppInboxProcessor> _logger;
 
@@ -18,6 +19,7 @@ public sealed class WhatsAppInboxProcessor
         AppDbContext dbContext,
         WhatsAppSessionTracker sessionTracker,
         WhatsAppAnswers answers,
+        WhatsAppGroupKeeping keeping,
         TimeProvider timeProvider,
         ILogger<WhatsAppInboxProcessor> logger
     )
@@ -25,6 +27,7 @@ public sealed class WhatsAppInboxProcessor
         _dbContext = dbContext;
         _sessionTracker = sessionTracker;
         _answers = answers;
+        _keeping = keeping;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -67,6 +70,7 @@ public sealed class WhatsAppInboxProcessor
             WahaEvents.SessionStatus => _sessionTracker.TrackAsync(inboxEvent, ct),
             WahaEvents.PollVote or WahaEvents.EventResponse => _answers.ApplyAsync(inboxEvent, ct),
             WahaEvents.PollVoteFailed => LoggedFailedVote(inboxEvent),
+            WahaEvents.GroupParticipants => _keeping.RecordJoinAsync(inboxEvent, ct),
             _ => Task.CompletedTask,
         };
 

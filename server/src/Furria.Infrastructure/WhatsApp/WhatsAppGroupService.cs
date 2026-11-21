@@ -54,11 +54,26 @@ public sealed class WhatsAppGroupService
             $"LOCK TABLE linked_whatsapp_group IN SHARE ROW EXCLUSIVE MODE",
             ct
         );
+        var keepsMembers = await _dbContext.LinkedWhatsAppGroups.AnyAsync(
+            link => link.GroupId == null && link.KeepsMembers && link.ChatId == chatId,
+            ct
+        );
+        await _dbContext
+            .OutboxWhatsApps.Where(operation =>
+                operation.Operation == WhatsAppOperation.AddParticipant
+                && operation.ChatId != chatId
+            )
+            .ExecuteDeleteAsync(ct);
         await _dbContext
             .LinkedWhatsAppGroups.Where(link => link.GroupId == null || link.ChatId == chatId)
             .ExecuteDeleteAsync(ct);
         _dbContext.LinkedWhatsAppGroups.Add(
-            new LinkedWhatsAppGroup { ChatId = chatId, LinkedAt = _timeProvider.GetUtcNow() }
+            new LinkedWhatsAppGroup
+            {
+                ChatId = chatId,
+                LinkedAt = _timeProvider.GetUtcNow(),
+                KeepsMembers = keepsMembers,
+            }
         );
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);

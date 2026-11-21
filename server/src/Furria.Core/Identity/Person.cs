@@ -33,6 +33,8 @@ public sealed class Person : ITimestamped
 
     public bool ContactVisibleToMembers { get; set; }
 
+    public bool ClubGroupConsent { get; set; }
+
     public int? PortraitId { get; set; }
 
     public MediaItem? Portrait { get; set; }

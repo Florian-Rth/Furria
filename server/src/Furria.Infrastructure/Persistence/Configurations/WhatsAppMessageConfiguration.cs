@@ -15,7 +15,9 @@ public sealed class WhatsAppMessageConfiguration : IEntityTypeConfiguration<What
 
     private static readonly string KnownHostKinds = string.Join(
         ", ",
-        Enum.GetNames<WhatsAppHostKind>().Select(name => $"'{name}'")
+        Enum.GetValues<WhatsAppHostKind>()
+            .Where(kind => kind != WhatsAppHostKind.Person)
+            .Select(kind => $"'{kind}'")
     );
 
     public void Configure(EntityTypeBuilder<WhatsAppMessage> builder)

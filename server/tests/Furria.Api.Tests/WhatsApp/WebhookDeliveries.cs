@@ -38,6 +38,38 @@ internal static class WebhookDeliveries
             }
         );
 
+    internal static string GroupJoin(
+        string groupChatId,
+        string participantId,
+        string? phoneId,
+        DateTimeOffset at
+    ) =>
+        JsonSerializer.Serialize(
+            new
+            {
+                id = $"evt_{Guid.NewGuid():N}",
+                timestamp = at.ToUnixTimeMilliseconds(),
+                @event = "group.v2.participants",
+                session = ApiTestFixture.WhatsAppSession,
+                engine = "GOWS",
+                payload = new
+                {
+                    group = new { id = groupChatId },
+                    type = "join",
+                    timestamp = at.ToUnixTimeSeconds(),
+                    participants = new[]
+                    {
+                        new
+                        {
+                            id = participantId,
+                            pn = phoneId,
+                            role = "participant",
+                        },
+                    },
+                },
+            }
+        );
+
     internal static string PollVote(
         string pollMessageId,
         string voterId,

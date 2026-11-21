@@ -5,6 +5,8 @@ namespace Furria.Infrastructure.WhatsApp;
 
 public static class WhatsAppSenders
 {
+    public const string PhoneServer = "@c.us";
+
     private const char ServerSeparator = '@';
     private const char DeviceSeparator = ':';
 

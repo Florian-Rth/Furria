@@ -32,6 +32,7 @@ public sealed class OutboxWhatsAppConfiguration : IEntityTypeConfiguration<Outbo
         ", ",
         WhatsAppOperations
             .Targeting.Prepend(WhatsAppOperation.PostText)
+            .Append(WhatsAppOperation.AddParticipant)
             .Select(operation => $"'{operation}'")
     );
 
@@ -69,6 +70,10 @@ public sealed class OutboxWhatsAppConfiguration : IEntityTypeConfiguration<Outbo
                 table.HasCheckConstraint(
                     "ck_outbox_whatsapp_add_on_operation",
                     $"operation IN ({AddOnFreeOperations}) OR add_on_kind IS NOT NULL"
+                );
+                table.HasCheckConstraint(
+                    "ck_outbox_whatsapp_person_add",
+                    $"(operation = '{nameof(WhatsAppOperation.AddParticipant)}') = (host_kind = '{nameof(WhatsAppHostKind.Person)}')"
                 );
                 table.HasCheckConstraint(
                     "ck_outbox_whatsapp_target_message",

@@ -9,6 +9,8 @@ public sealed class FakeWahaService : HttpMessageHandler
 {
     public const string ScanningQrValue = "2@fake-waha-qr,linking";
     public const string PairingCode = "ABCD-EFGH";
+    public const string InviteLink = "https://chat.whatsapp.com/FakeInvite";
+    public const int PrivacyRefusal = 403;
 
     private const string ScanningStatus = "SCAN_QR_CODE";
     private const string WorkingStatus = "WORKING";
@@ -17,6 +19,11 @@ public sealed class FakeWahaService : HttpMessageHandler
     private readonly ConcurrentDictionary<string, string> _phoneIdsOfLids = new();
     private readonly ConcurrentDictionary<string, string> _contactNames = new();
     private readonly ConcurrentQueue<FakeWahaSend> _sent = new();
+    private readonly ConcurrentDictionary<
+        string,
+        ConcurrentDictionary<string, string?>
+    > _participants = new();
+    private readonly ConcurrentDictionary<string, byte> _refusingAdds = new();
     private readonly Lock _sessionLock = new();
     private string? _sessionStatus;
     private string? _botAccountId;
@@ -50,6 +57,14 @@ public sealed class FakeWahaService : HttpMessageHandler
 
     public void KnowLid(string lid, string phoneId) => _phoneIdsOfLids[lid] = phoneId;
 
+    public void SeatParticipant(string groupChatId, string participantId, string? phoneId = null) =>
+        _participants.GetOrAdd(groupChatId, _ => new())[participantId] = phoneId;
+
+    public void Unseat(string groupChatId, string participantId) =>
+        _participants.GetOrAdd(groupChatId, _ => new()).TryRemove(participantId, out _);
+
+    public void RefuseAddingOf(string participantId) => _refusingAdds[participantId] = 0;
+
     public void KnowContact(string contactId, string pushName) =>
         _contactNames[contactId] = pushName;
 
@@ -82,6 +97,8 @@ public sealed class FakeWahaService : HttpMessageHandler
         _phoneIdsOfLids.Clear();
         _contactNames.Clear();
         _sent.Clear();
+        _participants.Clear();
+        _refusingAdds.Clear();
         lock (_sessionLock)
         {
             _sendRefusal = null;
@@ -149,6 +166,9 @@ public sealed class FakeWahaService : HttpMessageHandler
                 Route(path),
                 body
             ),
+            ("GET", "participants") => Json(ParticipantsJson(GroupChatIdOf(path))),
+            ("POST", "add-participants") => AddParticipants(GroupChatIdOf(path), body),
+            ("GET", "invite-code") => Json(JsonSerializer.Serialize(InviteLink)),
             ("PUT", "message") => Change("edit", path, TextOf(body)),
             ("DELETE", "message") => Change("delete", path, ""),
             _ => new HttpResponseMessage(HttpStatusCode.NotFound),
@@ -164,6 +184,10 @@ public sealed class FakeWahaService : HttpMessageHandler
             "/api/contacts" => "contacts",
             _ when path.Contains("/lids/", StringComparison.Ordinal) => "lids",
             _ when path.Contains("/messages/", StringComparison.Ordinal) => "message",
+            _ when path.EndsWith("/participants/v2", StringComparison.Ordinal) => "participants",
+            _ when path.EndsWith("/participants/add", StringComparison.Ordinal) =>
+                "add-participants",
+            _ when path.EndsWith("/invite-code", StringComparison.Ordinal) => "invite-code",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)
                     && path.EndsWith("/start", StringComparison.Ordinal) => "start",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)
@@ -308,6 +332,51 @@ public sealed class FakeWahaService : HttpMessageHandler
         && mentions.ValueKind == JsonValueKind.Array
             ? [.. mentions.EnumerateArray().Select(mention => mention.GetString() ?? "")]
             : [];
+
+    private static string GroupChatIdOf(string path)
+    {
+        var segments = path.Split('/');
+        var groupsAt = Array.IndexOf(segments, "groups");
+        return Uri.UnescapeDataString(segments[groupsAt + 1]);
+    }
+
+    private string ParticipantsJson(string groupChatId) =>
+        JsonSerializer.Serialize(
+            _participants
+                .GetOrAdd(groupChatId, _ => new())
+                .Select(participant => new
+                {
+                    id = participant.Key,
+                    pn = participant.Value,
+                    role = "participant",
+                })
+        );
+
+    private HttpResponseMessage AddParticipants(string groupChatId, string body)
+    {
+        using var document = JsonDocument.Parse(body);
+        var participantIds = document
+            .RootElement.GetProperty("participants")
+            .EnumerateArray()
+            .Select(participant => participant.GetProperty("id").GetString() ?? "")
+            .ToList();
+        foreach (var participantId in participantIds)
+        {
+            _sent.Enqueue(new FakeWahaSend("add", groupChatId, participantId, [], ""));
+            if (!_refusingAdds.ContainsKey(participantId))
+                SeatParticipant(groupChatId, participantId);
+        }
+
+        return Json(
+            JsonSerializer.Serialize(
+                participantIds.Select(participantId => new
+                {
+                    JID = participantId,
+                    Error = _refusingAdds.ContainsKey(participantId) ? PrivacyRefusal : 0,
+                })
+            )
+        );
+    }
 
     private string GroupsJson() =>
         JsonSerializer.Serialize(

@@ -1518,7 +1518,11 @@ from the group.
 A person's yes to being added to the club group, no by default — given by herself, or for a
 person without an account by a manager on her word. It only permits adding; withdrawing it removes
 nobody. When her WhatsApp refuses the add, the bot never writes to her directly — the app offers
-her the invite instead, and a manager sees whom to hand it to (ruled 2026-11-20).
+her the invite instead, and a manager sees whom to hand it to (ruled 2026-11-20). The bot tries
+her number once: once she is in the group — added by the bot or joined herself — she is never
+added again, also after she left it; a refused add waits until she joins through the invite. A
+new phone number counts as a new try. The bot adds at most three people every ten minutes (built
+2026-11-21, RFC 0010 phase 7).
 _Avoid_: opt-in, subscription
 
 ### Photos and videos

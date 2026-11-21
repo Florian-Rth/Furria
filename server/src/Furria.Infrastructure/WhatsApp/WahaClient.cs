@@ -149,27 +149,26 @@ public sealed class WahaClient
         await EnsureAnsweredAsync(response, ct);
     }
 
-    public Task AddParticipantAsync(
+    public async Task<WahaAddOutcome> AddParticipantAsync(
         string groupChatId,
         string participantId,
         CancellationToken ct
     ) =>
-        PostAsync(
-            $"api/{_sessionSegment}/groups/{Uri.EscapeDataString(groupChatId)}/participants/add",
-            new ParticipantsChange([new ParticipantId(participantId)]),
-            ct
+        WahaAddOutcomes.Of(
+            await PostAsync(
+                $"{GroupRoute(groupChatId)}/participants/add",
+                new ParticipantsChange([new ParticipantId(participantId)]),
+                ct
+            )
         );
+
+    public async Task<string?> InviteLinkAsync(string groupChatId, CancellationToken ct) =>
+        WahaInviteLinks.Of(await GetAsync($"{GroupRoute(groupChatId)}/invite-code", ct));
 
     public async Task<IReadOnlyList<WahaParticipant>> ParticipantsAsync(
         string groupChatId,
         CancellationToken ct
-    ) =>
-        ParticipantsOf(
-            await GetAsync(
-                $"api/{_sessionSegment}/groups/{Uri.EscapeDataString(groupChatId)}/participants/v2",
-                ct
-            )
-        );
+    ) => ParticipantsOf(await GetAsync($"{GroupRoute(groupChatId)}/participants/v2", ct));
 
     public async Task<string?> PhoneIdOfLidAsync(string lid, CancellationToken ct)
     {
@@ -194,6 +193,9 @@ public sealed class WahaClient
 
         return WahaJson.TextOf(await ReadAsync(response, ct), "pushname", "name");
     }
+
+    private string GroupRoute(string groupChatId) =>
+        $"api/{_sessionSegment}/groups/{Uri.EscapeDataString(groupChatId)}";
 
     private string MessageRoute(string chatId, string messageId) =>
         $"api/{_sessionSegment}/chats/{Uri.EscapeDataString(chatId)}/messages/{Uri.EscapeDataString(messageId)}";

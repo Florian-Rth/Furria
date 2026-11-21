@@ -3102,6 +3102,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("city");
 
+                    b.Property<bool>("ClubGroupConsent")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("club_group_consent");
+
                     b.Property<DateTimeOffset?>("ContactChangedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("contact_changed_at");
@@ -3205,6 +3211,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("city");
+
+                    b.Property<bool>("ClubGroupConsent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("club_group_consent");
 
                     b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("timestamp with time zone")
@@ -6067,6 +6077,17 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("group_id");
 
+                    b.Property<string>("InviteLink")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("invite_link");
+
+                    b.Property<bool>("KeepsMembers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("keeps_members");
+
                     b.Property<DateTimeOffset>("LinkedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("linked_at");
@@ -6214,15 +6235,17 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_add_on_kind", "add_on_kind IN ('Attendance', 'Poll', 'SignUpList')");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation IN ('PostText', 'EditText', 'Reply', 'Delete') OR add_on_kind IS NOT NULL");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation IN ('PostText', 'EditText', 'Reply', 'Delete', 'AddParticipant') OR add_on_kind IS NOT NULL");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_attempt", "attempt >= 1");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_event", "CASE WHEN operation = 'SendEvent' THEN event_starts_at IS NOT NULL AND (event_ends_at IS NULL OR event_ends_at >= event_starts_at) ELSE event_starts_at IS NULL AND event_ends_at IS NULL AND event_place IS NULL END");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_host_kind", "host_kind IN ('Announcement', 'CalendarEntry')");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_host_kind", "host_kind IN ('Announcement', 'CalendarEntry', 'Person')");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent', 'EditText', 'Reply', 'Delete')");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent', 'EditText', 'Reply', 'Delete', 'AddParticipant')");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_person_add", "(operation = 'AddParticipant') = (host_kind = 'Person')");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_poll", "(operation = 'SendPoll') = (cardinality(poll_options) BETWEEN 2 AND 12)");
 
@@ -6296,6 +6319,59 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("whatsapp_answer", null, t =>
                         {
                             t.HasCheckConstraint("ck_whatsapp_answer_attendance", "attendance IN ('Yes', 'No', 'Maybe')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppGroupAdd", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("changed_at");
+
+                    b.Property<string>("ChatId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("chat_id");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<string>("PhoneDigits")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("phone_digits");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("state");
+
+                    b.HasKey("Id")
+                        .HasName("pk_whatsapp_group_add");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_whatsapp_group_add_person_id");
+
+                    b.HasIndex("ChatId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_whatsapp_group_add_chat_id_person_id");
+
+                    b.ToTable("whatsapp_group_add", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_whatsapp_group_add_phone_digits", "phone_digits ~ '^[0-9]{8,15}$'");
+
+                            t.HasCheckConstraint("ck_whatsapp_group_add_state", "state IN ('Requested', 'InGroup', 'Refused')");
                         });
                 });
 
@@ -8451,6 +8527,18 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
 
                     b.Navigation("WhatsAppMessage");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppGroupAdd", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_whatsapp_group_add_person_person_id");
+
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>

@@ -75,6 +75,27 @@ public sealed class SubmitIntakeTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_RecordHerClubGroupConsent_When_SheGivesItOnTheForm()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            With(intakes => intakes.AddIntake("fresh", Manager, _fixture.Today)),
+            ct
+        );
+        var intakeId = ctx.Intakes.Intakes.IdOf("fresh");
+
+        await SubmitAsync(
+            Adult(ctx.Intakes.LinkTokens.IdOf("fresh")) with
+            {
+                ClubGroupConsent = true,
+            }
+        );
+
+        var personId = await MadePersonIdAsync(_fixture, intakeId, ct);
+        await ctx.Expected.Person(personId).ToHaveClubGroupConsent(true).AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_InviteHerOnTheStartersBehalfAndHandHerTheLink_When_SheIsOfAgeAndGaveAnEmail()
     {
         var ct = TestContext.Current.CancellationToken;

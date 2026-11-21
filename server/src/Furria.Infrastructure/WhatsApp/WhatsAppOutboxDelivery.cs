@@ -17,6 +17,7 @@ public sealed class WhatsAppOutboxDelivery
 
     private readonly AppDbContext _dbContext;
     private readonly WahaClient _waha;
+    private readonly WhatsAppGroupKeeping _keeping;
     private readonly IOptions<WhatsAppOptions> _options;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<WhatsAppOutboxDelivery> _logger;
@@ -24,6 +25,7 @@ public sealed class WhatsAppOutboxDelivery
     public WhatsAppOutboxDelivery(
         AppDbContext dbContext,
         WahaClient waha,
+        WhatsAppGroupKeeping keeping,
         IOptions<WhatsAppOptions> options,
         TimeProvider timeProvider,
         ILogger<WhatsAppOutboxDelivery> logger
@@ -31,6 +33,7 @@ public sealed class WhatsAppOutboxDelivery
     {
         _dbContext = dbContext;
         _waha = waha;
+        _keeping = keeping;
         _options = options;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -48,10 +51,10 @@ public sealed class WhatsAppOutboxDelivery
             return WhatsAppSendOutcome.Idle;
 
         await transaction.CreateSavepointAsync(SendSavepoint, ct);
-        string? messageId;
+        WhatsAppSent sent;
         try
         {
-            messageId = await SendAsync(operation, ct);
+            sent = await SendAsync(operation, ct);
         }
         catch (Exception exception) when (!ct.IsCancellationRequested)
         {
@@ -66,11 +69,15 @@ public sealed class WhatsAppOutboxDelivery
             return outcome;
         }
 
-        if (!WhatsAppOperations.Targeting.Contains(operation.Operation))
-            await RecordPostAsync(operation, messageId, now, ct);
+        if (sent.AddOutcome is { } addOutcome)
+            await _keeping.RecordAddAsync(operation, addOutcome, ct);
+        else if (!WhatsAppOperations.Targeting.Contains(operation.Operation))
+            await RecordPostAsync(operation, sent.MessageId, now, ct);
         _dbContext.OutboxWhatsApps.Remove(operation);
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
+        if (sent.AddOutcome == WahaAddOutcome.Refused)
+            await _keeping.FetchInviteLinkForRefusedAsync(operation.ChatId, ct);
         return WhatsAppSendOutcome.Sent;
     }
 
@@ -100,6 +107,7 @@ public sealed class WhatsAppOutboxDelivery
                   AND NOT EXISTS (
                       SELECT 1 FROM outbox_whatsapp AS earlier
                       WHERE earlier.chat_id = head.chat_id
+                        AND (earlier.operation = 'AddParticipant') = (head.operation = 'AddParticipant')
                         AND earlier.failed_at IS NULL
                         AND earlier.id < head.id
                   )
@@ -110,14 +118,14 @@ public sealed class WhatsAppOutboxDelivery
             )
             .SingleOrDefaultAsync(ct);
 
-    private async Task<string?> SendAsync(OutboxWhatsApp operation, CancellationToken ct)
+    private async Task<WhatsAppSent> SendAsync(OutboxWhatsApp operation, CancellationToken ct)
     {
         switch (operation.Operation)
         {
             case WhatsAppOperation.SendPoll:
-                return await _waha.SendPollAsync(PollOf(operation), ct);
+                return WhatsAppSent.Message(await _waha.SendPollAsync(PollOf(operation), ct));
             case WhatsAppOperation.SendEvent:
-                return await _waha.SendEventAsync(EventOf(operation), ct);
+                return WhatsAppSent.Message(await _waha.SendEventAsync(EventOf(operation), ct));
             case WhatsAppOperation.EditText:
                 await _waha.EditTextAsync(
                     operation.ChatId,
@@ -125,12 +133,16 @@ public sealed class WhatsAppOutboxDelivery
                     operation.Text,
                     ct
                 );
-                return null;
+                return WhatsAppSent.Message(null);
             case WhatsAppOperation.Delete:
                 await _waha.DeleteMessageAsync(operation.ChatId, TargetOf(operation), ct);
-                return null;
+                return WhatsAppSent.Message(null);
+            case WhatsAppOperation.AddParticipant:
+                return WhatsAppSent.Add(
+                    await _waha.AddParticipantAsync(operation.ChatId, operation.Text, ct)
+                );
             default:
-                return await _waha.SendTextAsync(TextOf(operation), ct);
+                return WhatsAppSent.Message(await _waha.SendTextAsync(TextOf(operation), ct));
         }
     }
 

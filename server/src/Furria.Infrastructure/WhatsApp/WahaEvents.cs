@@ -6,4 +6,5 @@ public static class WahaEvents
     public const string PollVote = "poll.vote";
     public const string PollVoteFailed = "poll.vote.failed";
     public const string EventResponse = "event.response";
+    public const string GroupParticipants = "group.v2.participants";
 }

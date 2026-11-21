@@ -888,6 +888,7 @@ public sealed class GetPersonByIdTests : IClassFixture<ApiTestFixture>
                 "city",
                 "birthDate",
                 "contactVisibleToMembers",
+                "clubGroupConsent",
                 "contactChange",
                 "archive",
                 "membershipState",

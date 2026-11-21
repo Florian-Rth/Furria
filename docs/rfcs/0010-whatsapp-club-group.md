@@ -157,10 +157,10 @@ Goal: changes in the app are told in the group.
 
 ### Phase 7 — Group keeping (server)
 Goal: with the switch on, the bot adds consenting active members.
-- [ ] Group consent on the person (migration, default no); she sets it, a manager on her word for a person without an account — tests first
-- [ ] Group keeping switch (club-level) and the group's participants read from WAHA + `group.v2.participants`
-- [ ] Add pass: active, consent, phone, not in group → add-participant operation; refused adds recorded as blocked
-- [ ] Endpoints the club app needs: consent, switch, blocked list, invite link for her Start card
+- [x] Group consent on the person (migration, default no); she sets it (`PUT auth/me/club-group-consent`, also on the QR-Anmeldung form, taken over on *Das ist sie*), a manager on her word only for a person without an account (`PUT manage/persons/{id}/club-group-consent`, else 409); withdrawing drops a queued add — tests first
+- [x] Group keeping switch on the club link (`PUT system/whatsapp/group-keeping`; off drops queued adds; picking a different club group switches it off) and the group's participants read from WAHA (each pass) + `group.v2.participants` joins
+- [x] Add pass (dispatcher, every 10 min, at most 3 adds, own outbox lane so adds never hold up posts): active, consent, phone, not in group → add-participant operation; per person and number the bot tries once (`whatsapp_group_add`: requested / in group / refused) — someone who was in the group is never re-added, a refused add waits for her join, a failed-for-good add is not retried; refusal parsed from WAHA's per-participant error code (403 etc., to verify on device)
+- [x] Endpoints the club app needs: consent (above), switch, `GET system/whatsapp` carries the switch, invite link and *Hinzufügen blockiert*; `GET start` carries `clubGroupInviteLink` while her add is refused
 
 ### Phase 8 — Group keeping (club app) and rollout
 Goal: members consent in the app, managers see blocked adds, production runs the bot.

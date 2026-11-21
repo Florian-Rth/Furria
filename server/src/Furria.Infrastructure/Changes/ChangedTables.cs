@@ -132,6 +132,13 @@ public static class ChangedTables
         [typeof(IntakeGroup)] = [DomainChange.Intake],
         [typeof(WhatsAppSession)] = [DomainChange.WhatsApp],
         [typeof(LinkedWhatsAppGroup)] = [DomainChange.WhatsApp],
+        [typeof(WhatsAppGroupAdd)] = [DomainChange.WhatsApp],
+        [typeof(WhatsAppAnswer)] =
+        [
+            DomainChange.CalendarPollVote,
+            DomainChange.AttendanceResponse,
+            DomainChange.Announcement,
+        ],
     }.ToFrozenDictionary();
 
     private static readonly FrozenSet<Type> Unrelated = new[]

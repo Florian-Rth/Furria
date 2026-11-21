@@ -46,13 +46,13 @@ public sealed class WhatsAppConnectionService
         if (!_options.Value.IsConfigured)
             return SwitchedOff;
 
-        var clubChatId = await ClubChatIdAsync(ct);
+        var clubGroup = await ClubGroupAsync(ct);
         var session = await WahaReach.TryAsync(() => _waha.SessionAsync(ct), ct);
         if (session is null)
             return new WhatsAppOverviewDetails(
                 WhatsAppConnectionState.Unreachable,
                 null,
-                clubChatId,
+                clubGroup,
                 []
             );
 
@@ -67,7 +67,7 @@ public sealed class WhatsAppConnectionService
             session.Value?.AccountId is { } accountId
                 ? WhatsAppPhoneNumbers.PhoneOfAccountId(accountId)
                 : null,
-            clubChatId,
+            clubGroup,
             SummariesOf(groups?.Value ?? [])
         );
     }
@@ -142,11 +142,15 @@ public sealed class WhatsAppConnectionService
                 _ => Task.CompletedTask,
             };
 
-    private Task<string?> ClubChatIdAsync(CancellationToken ct) =>
+    private Task<WhatsAppClubGroupDetails?> ClubGroupAsync(CancellationToken ct) =>
         _dbContext
             .LinkedWhatsAppGroups.AsNoTracking()
             .Where(link => link.GroupId == null)
-            .Select(link => link.ChatId)
+            .Select(link => new WhatsAppClubGroupDetails(
+                link.ChatId,
+                link.KeepsMembers,
+                link.InviteLink
+            ))
             .FirstOrDefaultAsync(ct);
 
     [Pure]

@@ -51,6 +51,7 @@ public sealed class SubmitIntake : Endpoint<SubmitIntakeRequest, SubmitIntakeRes
             City = req.City,
             Phone = req.Phone,
             Email = req.Email,
+            ClubGroupConsent = req.ClubGroupConsent,
         };
 }
 
@@ -73,6 +74,8 @@ public sealed record SubmitIntakeRequest
     public string? Phone { get; init; }
 
     public string? Email { get; init; }
+
+    public bool ClubGroupConsent { get; init; }
 }
 
 public sealed class SubmitIntakeValidator : Validator<SubmitIntakeRequest>

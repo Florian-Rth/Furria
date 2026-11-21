@@ -14,6 +14,7 @@ using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Registry;
@@ -24,6 +25,8 @@ public sealed class PersonService
     private const string UnknownMemberMessage = "Diese Person steht nicht im Verzeichnis.";
     private const string MissingOwnPersonMessage = "Zu diesem Konto gibt es keine Person mehr.";
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
+    private const string DecidesHerselfMessage =
+        "Sie hat ein Konto und entscheidet das selbst in der App.";
     private const int SearchResultLimit = 25;
 
     private static readonly Expression<Func<Person, MemberCardRow>> MemberCardProjection =
@@ -122,6 +125,7 @@ public sealed class PersonService
                 person.City
             ),
             person.BirthDate,
+            person.ClubGroupConsent,
             person.Memberships.AsQueryable().Select(MembershipPeriodRow.Projection).ToList(),
             person
                 .FeeReductions.OrderByDescending(reduction => reduction.FirstSessionYear)
@@ -471,6 +475,7 @@ public sealed class PersonService
             return Result.NotFound(UnknownPersonMessage);
 
         person.BirthDate ??= command.BirthDate;
+        person.ClubGroupConsent |= command.ClubGroupConsent;
         WriteContactDetails(
             person,
             RegistryGaps.Filled(ContactDetails.Of(person), ContactDetailsOf(command)),
@@ -532,6 +537,62 @@ public sealed class PersonService
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
+    }
+
+    public async Task<Result> SetClubGroupConsentAsync(
+        int personId,
+        bool consents,
+        CancellationToken ct
+    )
+    {
+        var person = await _dbContext.People.SingleOrDefaultAsync(row => row.Id == personId, ct);
+
+        if (person is null)
+            return Result.NotFound(MissingOwnPersonMessage);
+
+        person.ClubGroupConsent = consents;
+        if (!consents)
+            await DropWaitingClubGroupAddsAsync(personId, ct);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    public async Task<Result> SetClubGroupConsentOnHerWordAsync(
+        int personId,
+        bool consents,
+        CancellationToken ct
+    )
+    {
+        var person = await _dbContext.People.SingleOrDefaultAsync(row => row.Id == personId, ct);
+
+        if (person is null)
+            return Result.NotFound(UnknownPersonMessage);
+        if (await _dbContext.Users.AnyAsync(account => account.PersonId == personId, ct))
+            return Result.Conflict(DecidesHerselfMessage);
+
+        person.ClubGroupConsent = consents;
+        if (!consents)
+            await DropWaitingClubGroupAddsAsync(personId, ct);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    private async Task DropWaitingClubGroupAddsAsync(int personId, CancellationToken ct)
+    {
+        await _dbContext
+            .OutboxWhatsApps.Where(operation =>
+                operation.HostKind == WhatsAppHostKind.Person
+                && operation.HostId == personId
+                && operation.FailedAt == null
+            )
+            .ExecuteDeleteAsync(ct);
+        await _dbContext
+            .WhatsAppGroupAdds.Where(add =>
+                add.PersonId == personId && add.State == WhatsAppGroupAddState.Requested
+            )
+            .ExecuteDeleteAsync(ct);
     }
 
     private void WriteContactDetails(Person person, ContactDetails submitted, int? actorPersonId)
@@ -741,6 +802,7 @@ public sealed class PersonService
             City = row.Contact.City,
             BirthDate = row.BirthDate,
             ContactVisibleToMembers = row.Contact.VisibleToMembers,
+            ClubGroupConsent = row.ClubGroupConsent,
             ContactChange = row.ContactChange,
             Archive = row.Archive,
             MembershipState = chain.State,
@@ -892,6 +954,7 @@ public sealed class PersonService
         string LastName,
         ContactRow Contact,
         DateOnly? BirthDate,
+        bool ClubGroupConsent,
         IReadOnlyList<MembershipPeriodRow> Memberships,
         IReadOnlyList<PersonFeeReduction> FeeReductions,
         IReadOnlyList<PersonGroup> Groups,

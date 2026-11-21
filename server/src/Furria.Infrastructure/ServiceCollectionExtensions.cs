@@ -244,6 +244,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WhatsAppOutboxDelivery>();
         services.AddScoped<WhatsAppPostUpdates>();
         services.AddScoped<WhatsAppResults>();
+        services.AddScoped<WhatsAppGroupKeeping>();
+        services.AddScoped<WhatsAppGroupAddQuery>();
         services.AddSingleton<WhatsAppPacing>();
         services.AddHostedService<WhatsAppDispatcher>();
         services.AddSingleton<ChangeFeed>();

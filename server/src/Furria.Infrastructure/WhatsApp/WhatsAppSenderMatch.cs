@@ -5,8 +5,6 @@ namespace Furria.Infrastructure.WhatsApp;
 
 public sealed class WhatsAppSenderMatch
 {
-    private const string PhoneServer = "@c.us";
-
     private readonly AppDbContext _dbContext;
     private readonly WahaClient _waha;
 
@@ -39,14 +37,16 @@ public sealed class WhatsAppSenderMatch
             await WahaReach.TryAsync(
                 () =>
                     _waha.ContactNameAsync(
-                        sender.PhoneDigits is { } digits ? digits + PhoneServer : senderId,
+                        sender.PhoneDigits is { } digits
+                            ? digits + WhatsAppSenders.PhoneServer
+                            : senderId,
                         ct
                     ),
                 ct
             )
         )?.Value;
 
-    private async Task<string?> PhoneDigitsOfAsync(string senderId, CancellationToken ct) =>
+    public async Task<string?> PhoneDigitsOfAsync(string senderId, CancellationToken ct) =>
         WhatsAppSenders.IsLinkedId(senderId)
             ? await _waha.PhoneIdOfLidAsync(senderId, ct) is { } phoneId
                 ? WhatsAppSenders.PhoneDigitsOf(phoneId)

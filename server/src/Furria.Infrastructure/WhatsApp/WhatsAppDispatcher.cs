@@ -12,6 +12,7 @@ public sealed class WhatsAppDispatcher : BackgroundService
 
     private static readonly TimeSpan PollInterval = BackgroundJobSchedule.Every(Job);
     private static readonly TimeSpan PurgeEvery = TimeSpan.FromHours(1);
+    private static readonly TimeSpan AddPassEvery = TimeSpan.FromMinutes(10);
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly WhatsAppOutboxSignal _signal;
@@ -20,6 +21,7 @@ public sealed class WhatsAppDispatcher : BackgroundService
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<WhatsAppDispatcher> _logger;
     private DateTimeOffset _purgedAt = DateTimeOffset.MinValue;
+    private DateTimeOffset _addPassAt = DateTimeOffset.MinValue;
 
     public WhatsAppDispatcher(
         IServiceScopeFactory scopeFactory,
@@ -62,6 +64,7 @@ public sealed class WhatsAppDispatcher : BackgroundService
     private async Task DispatchAllAsync(CancellationToken ct)
     {
         await StageResultsAsync(ct);
+        await StageAddsWhenDueAsync(ct);
         while (!_pacing.IsPaused && await SendNextPacedAsync(ct)) { }
         await PurgeWhenDueAsync(ct);
     }
@@ -75,6 +78,23 @@ public sealed class WhatsAppDispatcher : BackgroundService
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
             _logger.LogWarning(exception, "WhatsApp results could not be staged");
+        }
+    }
+
+    private async Task StageAddsWhenDueAsync(CancellationToken ct)
+    {
+        var now = _timeProvider.GetUtcNow();
+        if (now - _addPassAt < AddPassEvery)
+            return;
+
+        _addPassAt = now;
+        try
+        {
+            await InScopeAsync<WhatsAppGroupKeeping>(keeping => keeping.StageAddsAsync(ct));
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            _logger.LogWarning(exception, "WhatsApp group adds could not be staged");
         }
     }
 

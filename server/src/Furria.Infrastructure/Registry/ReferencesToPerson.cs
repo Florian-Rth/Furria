@@ -89,6 +89,11 @@ public static class ReferencesToPerson
             OnAbsorption.MovesToKeeperUnlessSheHoldsOne,
             OnErasure.ErasedWithHer
         ),
+        Reference<WhatsAppGroupAdd>(
+            nameof(WhatsAppGroupAdd.PersonId),
+            OnAbsorption.MovesToKeeperUnlessSheHoldsOne,
+            OnErasure.ErasedWithHer
+        ),
         HerAct<AccountEvent>(nameof(AccountEvent.ActorPersonId)),
         HerAct<Invitation>(nameof(Invitation.IssuedByPersonId)),
         HerAct<ClaimWindow>(nameof(ClaimWindow.OpenedByPersonId)),

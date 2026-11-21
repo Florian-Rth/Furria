@@ -3,6 +3,6 @@ namespace Furria.Application.WhatsApp;
 public sealed record WhatsAppOverviewDetails(
     WhatsAppConnectionState State,
     string? BotPhone,
-    string? ClubChatId,
+    WhatsAppClubGroupDetails? ClubGroup,
     IReadOnlyList<WhatsAppGroupSummary> Groups
 );
