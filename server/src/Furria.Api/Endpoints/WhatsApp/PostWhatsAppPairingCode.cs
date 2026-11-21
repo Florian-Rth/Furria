@@ -57,6 +57,7 @@ public sealed class PostWhatsAppPairingCodeValidator : Validator<PostWhatsAppPai
     public PostWhatsAppPairingCodeValidator()
     {
         RuleFor(request => request.PhoneNumber)
+            .Cascade(CascadeMode.Stop)
             .NotEmpty()
             .MaximumLength(LongestInput)
             .Must(phoneNumber =>

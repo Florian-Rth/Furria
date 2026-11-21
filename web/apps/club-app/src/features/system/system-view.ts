@@ -433,6 +433,25 @@ export const mailViewOf = (status: SystemStatus, nowMs: number): MailView => {
   };
 };
 
+export interface WhatsAppOutboxView {
+  waiting: string;
+  retrying: string;
+  failed: string;
+  aside: string;
+}
+
+export const whatsAppOutboxViewOf = (status: SystemStatus, nowMs: number): WhatsAppOutboxView => {
+  const oldest = status.whatsApp.oldestWaitingAt;
+  const waited = oldest === null ? null : (nowMs - new Date(oldest).getTime()) / 1000;
+
+  return {
+    waiting: formatCount(status.whatsApp.waiting),
+    retrying: formatCount(status.whatsApp.retrying),
+    failed: formatCount(status.whatsApp.failed),
+    aside: oldestWaitingOf(waited),
+  };
+};
+
 export interface AreaRowView {
   area: SystemArea;
   label: string;

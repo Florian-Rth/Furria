@@ -140,6 +140,7 @@ export const READ_NAMES = [
   'groupMatcherPage',
   'statementPool',
   'whatsAppOverview',
+  'whatsAppReach',
   'whatsAppQrCode',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
@@ -232,6 +233,7 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   groupMatcherPage: ['group-matcher', 'group'],
   statementPool: ['group-matcher', 'pool'],
   whatsAppOverview: ['whatsapp', 'overview'],
+  whatsAppReach: ['whatsapp', 'reach'],
   whatsAppQrCode: ['whatsapp', 'qr-code'],
 };
 
@@ -568,6 +570,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   groupMatcherPage: ['groupMatcher', 'group'],
   statementPool: ['groupMatcher', 'group'],
   whatsAppOverview: ['whatsApp'],
+  whatsAppReach: ['whatsApp'],
   whatsAppQrCode: [],
 };
 
@@ -690,5 +693,6 @@ export const queryKeys = {
   groupMatcherPage: (groupId: number | null): QueryKey => keyOf('groupMatcherPage', groupId),
   statementPool: READ_ROOTS.statementPool,
   whatsAppOverview: READ_ROOTS.whatsAppOverview,
+  whatsAppReach: READ_ROOTS.whatsAppReach,
   whatsAppQrCode: READ_ROOTS.whatsAppQrCode,
 } as const;

@@ -10,4 +10,5 @@ public enum SystemCheck
     Logs = 6,
     Services = 7,
     Mail = 8,
+    WhatsApp = 9,
 }

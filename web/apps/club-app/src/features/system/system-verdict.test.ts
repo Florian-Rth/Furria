@@ -26,6 +26,7 @@ describe('areaOfCheck', () => {
     { check: 'workers', area: 'media' },
     { check: 'queue', area: 'media' },
     { check: 'logs', area: 'log' },
+    { check: 'whatsApp', area: 'whatsApp' },
     { check: 'backup', area: null },
   ])('$check belongs to $area', ({ check, area }) => {
     expect(areaOfCheck(check)).toBe(area);

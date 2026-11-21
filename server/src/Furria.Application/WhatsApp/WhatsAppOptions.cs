@@ -6,6 +6,9 @@ public sealed class WhatsAppOptions
 
     public const string DefaultSession = "default";
 
+    private static readonly TimeSpan DefaultSendGap = TimeSpan.FromSeconds(4);
+    private static readonly TimeSpan DefaultSendGapJitter = TimeSpan.FromSeconds(4);
+
     public string BaseUrl { get; set; } = "";
 
     public string ApiKey { get; set; } = "";
@@ -13,6 +16,10 @@ public sealed class WhatsAppOptions
     public string WebhookHmacKey { get; set; } = "";
 
     public string Session { get; set; } = DefaultSession;
+
+    public TimeSpan SendGap { get; set; } = DefaultSendGap;
+
+    public TimeSpan SendGapJitter { get; set; } = DefaultSendGapJitter;
 
     public bool IsSwitchedOff => BaseUrl.Length == 0;
 

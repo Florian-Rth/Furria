@@ -7,6 +7,11 @@ export type NotifyReach =
   | { readonly audience: 'groups'; readonly groupNames: readonly string[]; readonly asks: boolean }
   | { readonly audience: 'people'; readonly count: number; readonly asks: boolean };
 
+export const reachesWhatsAppGroup = (
+  audience: NotifyReach['audience'],
+  clubGroupLinked: boolean,
+): boolean => clubGroupLinked && audience === 'club';
+
 export interface NotifySwitch {
   checked: boolean;
   set: (checked: boolean) => void;

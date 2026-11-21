@@ -225,6 +225,14 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
             $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.Session)}",
             ApiTestFixture.WhatsAppSession
         );
+        builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.SendGap)}",
+            TimeSpan.Zero.ToString("c", CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.SendGapJitter)}",
+            TimeSpan.Zero.ToString("c", CultureInfo.InvariantCulture)
+        );
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<TimeProvider>();

@@ -235,6 +235,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WhatsAppGroupService>();
         services.AddScoped<WhatsAppConnectionService>();
         services.AddHostedService<WhatsAppInboxWorker>();
+        services.AddScoped<WhatsAppPosts>();
+        services.AddScoped<WhatsAppOutboxDelivery>();
+        services.AddSingleton<WhatsAppPacing>();
+        services.AddHostedService<WhatsAppDispatcher>();
         services.AddSingleton<ChangeFeed>();
         services.AddHostedService<ChangeListener>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
@@ -263,6 +267,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<WhatsAppInboxSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>
             serviceProvider.GetRequiredService<WhatsAppInboxSignal>()
+        );
+        services.AddSingleton<WhatsAppOutboxSignal>();
+        services.AddSingleton<OutboxSignal>(serviceProvider =>
+            serviceProvider.GetRequiredService<WhatsAppOutboxSignal>()
         );
         services.AddSingleton<MediaFileReaperSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>

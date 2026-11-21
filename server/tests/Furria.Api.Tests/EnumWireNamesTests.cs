@@ -72,16 +72,17 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "person group gallery newsPost website event act session uploadLink",
         [typeof(UploadLinkState)] = "open expired revoked",
         [typeof(SystemLevel)] = "ok attention broken",
-        [typeof(SystemCheck)] = "database workers queue storage media logs services mail",
+        [typeof(SystemCheck)] = "database workers queue storage media logs services mail whatsApp",
         [typeof(SystemReasonCode)] =
             "databaseUnreachable pendingMigrations slowDatabase workerStale noLiveWorker "
             + "workerVersionMismatch queueWaiting diskLow storageUnmeasured mediaFailed "
-            + "errorsLogged errorBurst serviceOverdue serviceFailed mailRetrying mailStuck",
+            + "errorsLogged errorBurst serviceOverdue serviceFailed mailRetrying mailStuck "
+            + "whatsAppRetrying whatsAppFailed whatsAppStuck",
         [typeof(BackgroundJob)] =
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
             + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings "
-            + "pushDispatcher whatsAppInbox",
+            + "pushDispatcher whatsAppInbox whatsAppDispatcher",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",

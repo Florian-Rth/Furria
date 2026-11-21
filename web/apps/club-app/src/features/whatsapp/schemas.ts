@@ -25,6 +25,9 @@ export const WhatsAppOverviewSchema = z.object({
 });
 export type WhatsAppOverview = z.infer<typeof WhatsAppOverviewSchema>;
 
+export const WhatsAppReachSchema = z.object({ clubGroup: z.boolean() });
+export type WhatsAppReach = z.infer<typeof WhatsAppReachSchema>;
+
 export const WhatsAppQrCodeSchema = z.object({ value: z.string() });
 export type WhatsAppQrCode = z.infer<typeof WhatsAppQrCodeSchema>;
 

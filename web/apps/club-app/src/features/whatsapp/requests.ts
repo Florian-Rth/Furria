@@ -1,9 +1,23 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
-import type { WhatsAppOverview, WhatsAppPairingCode, WhatsAppQrCode } from './schemas';
-import { WhatsAppOverviewSchema, WhatsAppPairingCodeSchema, WhatsAppQrCodeSchema } from './schemas';
+import type {
+  WhatsAppOverview,
+  WhatsAppPairingCode,
+  WhatsAppQrCode,
+  WhatsAppReach,
+} from './schemas';
+import {
+  WhatsAppOverviewSchema,
+  WhatsAppPairingCodeSchema,
+  WhatsAppQrCodeSchema,
+  WhatsAppReachSchema,
+} from './schemas';
 
 const API_PATH = '/api/system/whatsapp';
+const REACH_PATH = '/api/whatsapp/reach';
+
+export const requestWhatsAppReach = (accessToken: string): Promise<WhatsAppReach> =>
+  apiFetch(REACH_PATH, { schema: WhatsAppReachSchema, accessToken });
 
 export const requestWhatsAppOverview = (accessToken: string): Promise<WhatsAppOverview> =>
   apiFetch(API_PATH, { schema: WhatsAppOverviewSchema, accessToken });

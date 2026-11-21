@@ -144,6 +144,8 @@ public static class ChangedTables
         typeof(OutboxPush),
         typeof(OutboxCalendarPush),
         typeof(InboxWhatsAppEvent),
+        typeof(OutboxWhatsApp),
+        typeof(WhatsAppMessage),
         typeof(LogEntry),
         typeof(MediaJob),
         typeof(MediaFileTombstone),

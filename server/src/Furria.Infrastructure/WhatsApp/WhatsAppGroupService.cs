@@ -28,6 +28,10 @@ public sealed class WhatsAppGroupService
         _timeProvider = timeProvider;
     }
 
+    public async Task<bool> ReachesClubGroupAsync(CancellationToken ct) =>
+        _options.Value.IsConfigured
+        && await _dbContext.LinkedWhatsAppGroups.AnyAsync(link => link.GroupId == null, ct);
+
     public async Task<Result> PickClubGroupAsync(string chatId, CancellationToken ct)
     {
         if (!_options.Value.IsConfigured)

@@ -20,6 +20,9 @@ export const REASON_CODES = [
   'serviceFailed',
   'mailRetrying',
   'mailStuck',
+  'whatsAppRetrying',
+  'whatsAppFailed',
+  'whatsAppStuck',
 ] as const;
 
 export type ReasonCode = (typeof REASON_CODES)[number] | 'unknown';
@@ -32,6 +35,7 @@ const CHECK_AREAS: Readonly<Record<string, SystemArea>> = {
   storage: 'storage',
   services: 'services',
   mail: 'mail',
+  whatsApp: 'whatsApp',
   logs: 'log',
 };
 

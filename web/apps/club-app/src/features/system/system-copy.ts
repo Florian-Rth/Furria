@@ -50,6 +50,7 @@ export const SECTION_TITLES = {
   services: 'Hintergrundaufgaben',
   database: 'Datenbank',
   mail: 'E-Mail-Versand',
+  whatsApp: 'WhatsApp-Versand',
   log: 'Protokoll',
   program: 'Anwendung',
 } as const satisfies Record<SystemArea | 'program', string>;
@@ -60,6 +61,7 @@ export const AREA_PATHS: Record<SystemArea, string> = {
   services: '/system/tasks',
   database: '/system/database',
   mail: '/system/mail',
+  whatsApp: '/system/whatsapp-outbox',
   log: '/system/log',
 };
 
@@ -74,6 +76,7 @@ export const AREA_ORDER: readonly SystemArea[] = [
   'services',
   'database',
   'mail',
+  'whatsApp',
   'log',
 ];
 
@@ -83,6 +86,7 @@ export const AREA_ICONS: Record<SystemArea, KkIconName> = {
   services: 'reminder',
   database: 'settings',
   mail: 'mail',
+  whatsApp: 'send',
   log: 'paragraph',
 };
 
@@ -104,6 +108,7 @@ export const AREA_LABELS: Record<SystemArea, string> = {
   storage: 'Speicher',
   services: 'Hintergrundaufgaben',
   mail: 'E-Mail-Versand',
+  whatsApp: 'WhatsApp-Versand',
   log: 'Protokoll',
 };
 
@@ -127,6 +132,7 @@ const AREA_COUNT_UNITS: Record<SystemArea, string> = {
   storage: '',
   services: 'mit Hinweis',
   mail: 'in Warteschlange',
+  whatsApp: 'in Warteschlange',
   log: 'Fehler',
 };
 
@@ -159,6 +165,7 @@ export const SERVICE_NAMES: Readonly<Record<string, string>> = {
   beerStockWarnings: 'Vor leerem Bierbestand warnen',
   pushDispatcher: 'Mitteilungen versenden',
   whatsAppInbox: 'WhatsApp-Ereignisse verarbeiten',
+  whatsAppDispatcher: 'In die WhatsApp-Gruppe senden',
 };
 
 export const serviceNameOf = (job: string): string => SERVICE_NAMES[job] ?? job;
@@ -227,6 +234,12 @@ export const reasonTextOf = (reason: VerdictReason, context: ReasonContext): str
       return `${plural(count, 'Eine E-Mail konnte', `${count} E-Mails konnten`)} nicht zugestellt werden und ${plural(count, 'wird', 'werden')} erneut versucht.`;
     case 'mailStuck':
       return `Die älteste E-Mail wartet seit ${spanOf(reason.value)} auf den Versand.`;
+    case 'whatsAppRetrying':
+      return `${plural(count, 'Eine WhatsApp-Nachricht konnte', `${count} WhatsApp-Nachrichten konnten`)} nicht gesendet werden und ${plural(count, 'wird', 'werden')} erneut versucht.`;
+    case 'whatsAppFailed':
+      return `${plural(count, 'Eine WhatsApp-Nachricht wurde', `${count} WhatsApp-Nachrichten wurden`)} nach allen Versuchen nicht gesendet.`;
+    case 'whatsAppStuck':
+      return `Die älteste WhatsApp-Nachricht wartet seit ${spanOf(reason.value)} auf den Versand.`;
     case 'unknown':
       return 'Eine Prüfung hat einen unbekannten Hinweis gemeldet.';
   }
@@ -328,6 +341,12 @@ export const rowsAboutOf = (rows: number): string => `ca. ${formatCount(rows)} Z
 export const MAIL_FACT_LABELS = {
   pending: 'In Warteschlange',
   retrying: 'Erneuter Versuch',
+} as const;
+
+export const WHATSAPP_OUTBOX_FACT_LABELS = {
+  waiting: 'In Warteschlange',
+  retrying: 'Erneuter Versuch',
+  failed: 'Nicht gesendet',
 } as const;
 
 export const LOG_LABEL = 'Anwendungsprotokoll';
@@ -453,6 +472,13 @@ export const areaSummaryTextOf = (summary: AreaSummary): string => {
       }
 
       return `${formatCount(summary.pending)} in Warteschlange · ${formatCount(summary.retrying)} erneuter Versuch`;
+    }
+    case 'whatsApp': {
+      if (summary.waiting === 0 && summary.failed === 0) {
+        return 'Warteschlange leer';
+      }
+
+      return `${formatCount(summary.waiting)} in Warteschlange · ${formatCount(summary.failed)} nicht gesendet`;
     }
     case 'log':
       return `${formatCount(summary.errors)} Fehler in den letzten 24 Std`;

@@ -10,8 +10,14 @@ import {
   requestWhatsAppOverview,
   requestWhatsAppPairingCode,
   requestWhatsAppQrCode,
+  requestWhatsAppReach,
 } from './requests';
-import type { WhatsAppOverview, WhatsAppPairingCode, WhatsAppQrCode } from './schemas';
+import type {
+  WhatsAppOverview,
+  WhatsAppPairingCode,
+  WhatsAppQrCode,
+  WhatsAppReach,
+} from './schemas';
 import { CLUB_GROUP_PICKED_NOTICE, LINKING_STARTED_NOTICE } from './whatsapp-copy';
 import { overviewPollDelayOf } from './whatsapp-polling';
 
@@ -22,6 +28,13 @@ export const useWhatsAppOverviewQuery = (): UseQueryResult<WhatsAppOverview, Err
     queryKey: queryKeys.whatsAppOverview,
     queryFn: () => withFreshAccessToken(requestWhatsAppOverview),
     refetchInterval: (query) => overviewPollDelayOf(query.state.data?.state),
+  });
+
+export const useWhatsAppReachQuery = (isOffered: boolean): UseQueryResult<WhatsAppReach, Error> =>
+  useQuery({
+    queryKey: queryKeys.whatsAppReach,
+    queryFn: () => withFreshAccessToken(requestWhatsAppReach),
+    enabled: isOffered,
   });
 
 export const useWhatsAppQrCodeQuery = (): UseQueryResult<WhatsAppQrCode, Error> =>

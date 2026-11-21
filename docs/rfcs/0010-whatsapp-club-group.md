@@ -127,12 +127,12 @@ Goal: an admin links the bot and picks the club group from the club app.
 
 ### Phase 3 — The WhatsApp outbox and the post
 Goal: notifying a club-audience Aushang or entry posts it into the club group.
-- [ ] `outbox_whatsapp` + dispatcher: one operation per chat at a time, jittered gap, retry schedule, back-off on rate signals; shown on the System page like the mail outbox
-- [ ] `WhatsAppMessage` post record per host
-- [ ] Notifying enqueues the post in the same transaction as the pushes (Aushang; entry with audience club) — tests first
-- [ ] Post rendering (pure, tested): title, date line, news subset → WhatsApp formatting, day schedule and participating groups lines, author hint, deep link; picture → image with caption
-- [ ] Mentions: matched phone → @mention, else name
-- [ ] Web: reach line names the WhatsApp group when the club group is linked
+- [x] `outbox_whatsapp` + dispatcher: one operation per chat at a time, jittered gap, retry schedule, back-off on rate signals; shown on the System page like the mail outbox (area *WhatsApp-Versand*)
+- [x] `WhatsAppMessage` post record per host
+- [x] Notifying enqueues the post in the same transaction as the pushes (Aushang; entry with audience club) — tests first
+- [x] Post rendering (pure, tested): title, date line, news subset → WhatsApp formatting, day schedule and participating groups lines, author hint, deep link; text post only — no host carries a picture when it is notified (an Aushang has none, an entry's event picture comes later), so the image post waits for a host that has one
+- [x] Mentions: matched phone → @mention, else name
+- [x] Web: reach line names the WhatsApp group when the club group is linked (`GET whatsapp/reach`)
 
 ### Phase 4 — Add-ons in the group
 Goal: answerable add-ons follow the post as polls, events and links.

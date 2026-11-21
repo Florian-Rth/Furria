@@ -13,6 +13,7 @@ using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -59,13 +60,15 @@ public sealed partial class CalendarService
     private readonly MediaPictures _pictures;
     private readonly TimeProvider _timeProvider;
     private readonly CalendarPushRecipients _pushRecipients;
+    private readonly WhatsAppPosts _whatsAppPosts;
 
     public CalendarService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
         MediaPictures pictures,
         TimeProvider timeProvider,
-        CalendarPushRecipients pushRecipients
+        CalendarPushRecipients pushRecipients,
+        WhatsAppPosts whatsAppPosts
     )
     {
         _dbContext = dbContext;
@@ -73,6 +76,7 @@ public sealed partial class CalendarService
         _pictures = pictures;
         _timeProvider = timeProvider;
         _pushRecipients = pushRecipients;
+        _whatsAppPosts = whatsAppPosts;
     }
 
     public async Task<Result<IReadOnlyList<CalendarEntrySummary>>> GetEntriesAsync(
@@ -349,7 +353,10 @@ public sealed partial class CalendarService
             return Result<CalendarEntryWriteResult>.Carrying(saved);
 
         if (command.Notify)
+        {
             await EnqueueNotifyingPushAsync(entry, command.ViewerPersonId, ct);
+            await _whatsAppPosts.StageCalendarEntryAsync(entry, command.ViewerPersonId, ct);
+        }
 
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);

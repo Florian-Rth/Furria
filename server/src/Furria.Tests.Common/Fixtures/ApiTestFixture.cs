@@ -31,6 +31,7 @@ using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Push;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.RunningOrders;
+using Furria.Infrastructure.WhatsApp;
 using Furria.MediaWorker;
 using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
@@ -390,6 +391,55 @@ public sealed class ApiTestFixture : IAsyncLifetime
             "The WhatsApp inbox still holds unapplied events",
             ct
         );
+
+    public Task WhatsAppOutboxDrainedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var now = TimeProvider.GetUtcNow();
+                return await db.OutboxWhatsApps.AnyAsync(
+                    operation =>
+                        operation.FailedAt == null
+                        && (operation.NextAttemptAt == null || operation.NextAttemptAt <= now),
+                    token
+                )
+                    ? null
+                    : db;
+            },
+            OutboxDrainTimeout,
+            "The WhatsApp outbox still holds due operations",
+            ct
+        );
+
+    public async Task<IReadOnlyList<OutboxWhatsApp>> WhatsAppOutboxAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.OutboxWhatsApps.AsNoTracking().OrderBy(row => row.Id).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<WhatsAppMessage>> WhatsAppPostRecordsAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.WhatsAppMessages.AsNoTracking().OrderBy(row => row.Id).ToListAsync(ct);
+    }
+
+    public async Task LinkClubWhatsAppGroupAsync(string chatId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.LinkedWhatsAppGroups.Add(
+            new LinkedWhatsAppGroup { ChatId = chatId, LinkedAt = TimeProvider.GetUtcNow() }
+        );
+        await db.SaveChangesAsync(ct);
+    }
 
     public async Task<IReadOnlyList<(string ChatId, int? GroupId)>> LinkedWhatsAppGroupsAsync(
         CancellationToken ct = default

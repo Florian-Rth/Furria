@@ -147,6 +147,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<LinkedWhatsAppGroup> LinkedWhatsAppGroups => Set<LinkedWhatsAppGroup>();
 
+    public DbSet<OutboxWhatsApp> OutboxWhatsApps => Set<OutboxWhatsApp>();
+
+    public DbSet<WhatsAppMessage> WhatsAppMessages => Set<WhatsAppMessage>();
+
     public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();
 
     public DbSet<MediaItem> MediaItems => Set<MediaItem>();

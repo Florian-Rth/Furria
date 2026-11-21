@@ -140,13 +140,13 @@ public sealed class WahaClient
             WireOptions,
             ct
         );
-        response.EnsureSuccessStatusCode();
+        await EnsureAnsweredAsync(response, ct);
     }
 
     public async Task DeleteMessageAsync(string chatId, string messageId, CancellationToken ct)
     {
         using var response = await _http.DeleteAsync(MessageRoute(chatId, messageId), ct);
-        response.EnsureSuccessStatusCode();
+        await EnsureAnsweredAsync(response, ct);
     }
 
     public Task AddParticipantAsync(
@@ -192,12 +192,26 @@ public sealed class WahaClient
         return await ReadAsync(response, ct);
     }
 
+    private static async Task EnsureAnsweredAsync(
+        HttpResponseMessage response,
+        CancellationToken ct
+    )
+    {
+        if (response.IsSuccessStatusCode)
+            return;
+
+        throw new WahaCallFailedException(
+            response.StatusCode,
+            await response.Content.ReadAsStringAsync(ct)
+        );
+    }
+
     private static async Task<JsonElement> ReadAsync(
         HttpResponseMessage response,
         CancellationToken ct
     )
     {
-        response.EnsureSuccessStatusCode();
+        await EnsureAnsweredAsync(response, ct);
         var content = await response.Content.ReadAsByteArrayAsync(ct);
         if (content.Length == 0)
             return default;

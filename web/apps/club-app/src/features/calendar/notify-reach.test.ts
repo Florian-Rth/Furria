@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { isAskableReach, toNotifyReach, toNotifyReachPath } from './notify-reach';
+import {
+  isAskableReach,
+  reachesWhatsAppGroup,
+  toNotifyReach,
+  toNotifyReachPath,
+} from './notify-reach';
 
 describe('toNotifyReach', () => {
   it.each([
@@ -95,6 +100,20 @@ describe('isAskableReach', () => {
           audiencePersonIds: personIds,
         }),
       ).toBe(askable);
+    },
+  );
+});
+
+describe('reachesWhatsAppGroup', () => {
+  it.each([
+    ['club', true, true],
+    ['club', false, false],
+    ['groups', true, false],
+    ['people', true, false],
+  ] as const)(
+    'reaches the group for %s with a linked group %s: %s',
+    (audience, linked, reaches) => {
+      expect(reachesWhatsAppGroup(audience, linked)).toBe(reaches);
     },
   );
 });

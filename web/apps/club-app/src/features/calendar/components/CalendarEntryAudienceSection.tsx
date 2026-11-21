@@ -3,6 +3,7 @@ import { KkMultiSelectField } from '@furria/ui/KkMultiSelectField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
+import { useClubGroupReach } from '@/features/whatsapp/hooks/use-club-group-reach';
 import type { CalendarAudienceReach } from '../calendar-audience-reach';
 import { toOfferedAudiences, toReachablePool } from '../calendar-audience-reach';
 import type { CalendarParticipantPool } from '../calendar-authoring';
@@ -90,10 +91,15 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
 
   const notify = control.notify;
   const reachedPeople = useNotifyReachCount(control.values, notify !== null);
+  const clubGroupLinked = useClubGroupReach(notify !== null);
   const notifyReachLine =
     notify === null
       ? undefined
-      : toNotifyReachLine(toNotifyReach(control.values, clubGroups), reachedPeople);
+      : toNotifyReachLine(
+          toNotifyReach(control.values, clubGroups),
+          reachedPeople,
+          clubGroupLinked,
+        );
   const notifySwitch =
     notify === null ? null : (
       <KkSwitchRow

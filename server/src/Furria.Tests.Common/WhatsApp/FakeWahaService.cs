@@ -14,12 +14,15 @@ public sealed class FakeWahaService : HttpMessageHandler
     private const string WorkingStatus = "WORKING";
 
     private readonly ConcurrentDictionary<string, string> _groups = new();
+    private readonly ConcurrentQueue<FakeWahaSend> _sent = new();
     private readonly Lock _sessionLock = new();
     private string? _sessionStatus;
     private string? _botAccountId;
     private volatile bool _isOffline;
     private string? _pairingPhoneNumber;
     private string? _lastSessionCall;
+    private int _sentCount;
+    private (HttpStatusCode Status, string Body)? _sendRefusal;
 
     public string? PairingPhoneNumber
     {
@@ -39,7 +42,15 @@ public sealed class FakeWahaService : HttpMessageHandler
         }
     }
 
+    public IReadOnlyList<FakeWahaSend> Sent => [.. _sent];
+
     public void JoinGroup(string chatId, string name) => _groups[chatId] = name;
+
+    public void RefuseSends(HttpStatusCode status, string body)
+    {
+        lock (_sessionLock)
+            _sendRefusal = (status, body);
+    }
 
     public void HoldSession(string status)
     {
@@ -61,8 +72,10 @@ public sealed class FakeWahaService : HttpMessageHandler
     public void Forget()
     {
         _groups.Clear();
+        _sent.Clear();
         lock (_sessionLock)
         {
+            _sendRefusal = null;
             _sessionStatus = null;
             _botAccountId = null;
             _isOffline = false;
@@ -97,6 +110,7 @@ public sealed class FakeWahaService : HttpMessageHandler
                 Json(JsonSerializer.Serialize(new { value = ScanningQrValue }))
             ),
             ("POST", "request-code") => ScanningOnly(() => RequestPairingCode(body)),
+            ("POST", "sendText" or "sendImage") => Send(Route(path), body),
             _ => new HttpResponseMessage(HttpStatusCode.NotFound),
         };
 
@@ -104,6 +118,8 @@ public sealed class FakeWahaService : HttpMessageHandler
         path switch
         {
             "/api/sessions" => "sessions",
+            "/api/sendText" => "sendText",
+            "/api/sendImage" => "sendImage",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)
                     && path.EndsWith("/start", StringComparison.Ordinal) => "start",
             _ when path.StartsWith("/api/sessions/", StringComparison.Ordinal)
@@ -145,6 +161,33 @@ public sealed class FakeWahaService : HttpMessageHandler
         using var document = JsonDocument.Parse(body);
         _pairingPhoneNumber = document.RootElement.GetProperty("phoneNumber").GetString();
         return Json(JsonSerializer.Serialize(new { code = PairingCode }));
+    }
+
+    private HttpResponseMessage Send(string kind, string body)
+    {
+        if (_sendRefusal is var (status, refusal))
+            return new HttpResponseMessage(status)
+            {
+                Content = new StringContent(refusal, Encoding.UTF8, "application/json"),
+            };
+
+        using var document = JsonDocument.Parse(body);
+        var root = document.RootElement;
+        var messageId = $"true_{root.GetProperty("chatId").GetString()}_FAKE{++_sentCount}";
+        _sent.Enqueue(
+            new FakeWahaSend(
+                kind,
+                root.GetProperty("chatId").GetString() ?? "",
+                (
+                    kind == "sendImage" ? root.GetProperty("caption") : root.GetProperty("text")
+                ).GetString() ?? "",
+                root.TryGetProperty("mentions", out var mentions)
+                    ? [.. mentions.EnumerateArray().Select(mention => mention.GetString() ?? "")]
+                    : [],
+                messageId
+            )
+        );
+        return Json(JsonSerializer.Serialize(new { id = messageId }));
     }
 
     private string GroupsJson() =>
