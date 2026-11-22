@@ -9,7 +9,9 @@ polls and their votes must work inside it, and the bot must be able to add conse
 a group admin — none of which the official API offers a small club. We accept that this uses the
 unofficial linked-device protocol: a ban would cost the bot's number, never a person's, which is
 why the number is dedicated and the bot only posts into the one existing group, spaced out, and
-never writes to anyone directly.
+never writes to anyone directly — with one exception (amended 2026-11-22): a person who answers an
+add-on after it closed is told so in a private message, once per add-on, because saying it in the
+group would expose her to everyone. It only ever answers her own late vote, never starts a chat.
 
 ## Consequences
 
@@ -23,5 +25,7 @@ never writes to anyone directly.
 - WhatsApp's own limits shape the behaviour: an edit only within ~15 minutes, a delete only within
   ~2 days, no editable polls, no hidden voters — so anonymous polls and sign-up lists stay in the
   app, and changes after the fact are told as replies.
+- A late answer's private message goes through the same outbox and spacing as group posts; who was
+  told is kept per posted add-on, so a repeated late vote stays unanswered.
 - The session must persist across restarts; a lost session loses the keys to decrypt votes on
   polls already posted.

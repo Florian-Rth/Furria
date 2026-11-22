@@ -190,6 +190,28 @@ public sealed class WhatsAppAnswersTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_TellTheVoterPrivatelyOnce_When_SheVotesAfterTheAddOnClosed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var announcementId = await PostAnnouncementAsync(ctx, AnnouncementAttendance(), ct);
+        var poll = await PostedAsync("sendPoll", ct);
+        await CloseAttendanceAsync(ctx, announcementId, ct);
+
+        await DeliverAnswersAsync(
+            ct,
+            PollVote(poll.MessageId, AlicesChatId, Now.AddMinutes(1), "Ja"),
+            PollVote(poll.MessageId, AlicesChatId, Now.AddMinutes(2), "Nein")
+        );
+        await _fixture.WhatsAppOutboxDrainedAsync(ct);
+
+        var told = Assert.Single(_fixture.Waha.Sent, sent => sent.ChatId == AlicesChatId);
+        Assert.Equal("sendText", told.Kind);
+        Assert.Contains("Saalreinigung", told.Text);
+        Assert.Contains($"/announcements/{announcementId}", told.Text);
+    }
+
+    [Fact]
     public async Task Should_CountNothing_When_TheMatchedPersonMayNotAnswer()
     {
         var ct = TestContext.Current.CancellationToken;

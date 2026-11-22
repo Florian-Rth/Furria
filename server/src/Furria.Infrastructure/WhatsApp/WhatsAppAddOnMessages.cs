@@ -13,17 +13,19 @@ public static class WhatsAppAddOnMessages
     public const int NativePollMaxOptions = 12;
     public const int NativePollOptionLength = 100;
 
+    private const string DeadlineLead = "Bis ";
+
     private static readonly IReadOnlyList<string> AttendanceAnswers =
     [
         .. WhatsAppAnswerRules.AttendanceOptions.Select(option => option.Label),
     ];
 
     [Pure]
-    public static WhatsAppAddOnMessage AttendancePoll(string title) =>
+    public static WhatsAppAddOnMessage AttendancePoll(string title, DateTimeOffset? answersUntil) =>
         new()
         {
             Operation = WhatsAppOperation.SendPoll,
-            Text = title,
+            Text = QuestionOf(title, answersUntil),
             PollOptions = AttendanceAnswers,
             AllowsSeveralAnswers = false,
             AddOnKind = WhatsAppAddOnKind.Attendance,
@@ -46,12 +48,14 @@ public static class WhatsAppAddOnMessages
         poll switch
         {
             { IsAnonymous: true } => LinkMessage(
-                new WhatsAppAddOnLine(AnonymousVoteLead, poll.Question, link),
+                new WhatsAppAddOnLine(AnonymousVoteLead, poll.Question, poll.VotesUntil, link),
+                WhatsAppBadge.Vote,
                 WhatsAppAddOnKind.Poll,
                 poll.Id
             ),
             _ when !FitsANativePoll(poll) => LinkMessage(
-                new WhatsAppAddOnLine(VoteLead, poll.Question, link),
+                new WhatsAppAddOnLine(VoteLead, poll.Question, poll.VotesUntil, link),
+                WhatsAppBadge.Vote,
                 WhatsAppAddOnKind.Poll,
                 poll.Id
             ),
@@ -70,7 +74,7 @@ public static class WhatsAppAddOnMessages
         return new()
         {
             Operation = WhatsAppOperation.SendPoll,
-            Text = poll.Question,
+            Text = QuestionOf(poll.Question, poll.VotesUntil),
             PollOptions = [.. options.Select(option => option.Label)],
             PollOptionIds = [.. options.Select(option => option.Id)],
             AllowsSeveralAnswers = poll.AllowsMultipleChoices,
@@ -82,25 +86,41 @@ public static class WhatsAppAddOnMessages
     [Pure]
     public static WhatsAppAddOnMessage SignUpListOf(SignUpList list, string link) =>
         LinkMessage(
-            new WhatsAppAddOnLine(SignUpLead, list.Title, link),
+            new WhatsAppAddOnLine(SignUpLead, list.Title, list.SignUpUntil, link),
+            WhatsAppBadge.SignUpList,
             WhatsAppAddOnKind.SignUpList,
             list.Id
         );
 
     [Pure]
-    public static string LineOf(WhatsAppAddOnLine line) =>
-        $"{line.Lead}: {WhatsAppFormatting.Bold(line.Name)}\n{line.Link}";
+    public static string LineOf(WhatsAppAddOnLine line)
+    {
+        string?[] lines =
+        [
+            $"{line.Lead}: {WhatsAppFormatting.Bold(line.Name)}",
+            line.Until is { } until ? DeadlineLead + WhatsAppPostText.DeadlineOf(until) : null,
+            WhatsAppBadges.LinkLineOf(line.Link),
+        ];
+        return string.Join('\n', lines.OfType<string>());
+    }
+
+    [Pure]
+    private static string QuestionOf(string question, DateTimeOffset? until) =>
+        until is { } deadline
+            ? $"{question} (bis {WhatsAppPostText.DeadlineOf(deadline)})"
+            : question;
 
     [Pure]
     private static WhatsAppAddOnMessage LinkMessage(
         WhatsAppAddOnLine line,
+        WhatsAppBadge badge,
         WhatsAppAddOnKind kind,
         int addOnId
     ) =>
         new()
         {
             Operation = WhatsAppOperation.PostText,
-            Text = LineOf(line),
+            Text = WhatsAppBadges.Headed(badge, LineOf(line)),
             AddOnKind = kind,
             AddOnId = addOnId,
         };

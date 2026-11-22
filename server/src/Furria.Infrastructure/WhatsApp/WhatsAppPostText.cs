@@ -28,12 +28,12 @@ public static class WhatsAppPostText
         var spansDays = draft.Slot is { } slot && SpansDays(slot);
         string?[] blocks =
         [
-            HeadOf(draft.Title, draft.Slot),
+            WhatsAppBadges.Headed(draft.Badge, HeadOf(draft.Title, draft.Slot)),
             body?.Text,
             .. draft.Schedules.Select(schedule => ScheduleOf(schedule, draft.Slot, spansDays)),
             GroupsOf(draft.GroupNames),
             .. draft.TakenOverAddOns.Select(WhatsAppAddOnMessages.LineOf),
-            AuthorOf(draft.AuthorName) is { } author ? $"{author}\n{draft.Link}" : draft.Link,
+            LinkBlockOf(draft.AuthorName, WhatsAppBadges.LinkLineOf(draft.Link)),
         ];
 
         return new WhatsAppPostContent(
@@ -70,6 +70,13 @@ public static class WhatsAppPostText
             : $"{DayOf(starts)}{SlotSeparator}{TimeOf(starts)} Uhr";
 
         return slot.VenueName is { } venue ? $"{when}{SlotSeparator}{venue}" : when;
+    }
+
+    [Pure]
+    public static string DeadlineOf(DateTimeOffset until)
+    {
+        var wallClock = ClubClock.WallClockOf(until);
+        return $"{DayOf(wallClock)}{SlotSeparator}{TimeOf(wallClock)} Uhr";
     }
 
     [Pure]
@@ -124,6 +131,6 @@ public static class WhatsAppPostText
         groupNames.Count == 0 ? null : GroupsLead + string.Join(", ", groupNames);
 
     [Pure]
-    private static string? AuthorOf(string? authorName) =>
-        authorName is null ? null : WhatsAppFormatting.Italic(authorName);
+    private static string LinkBlockOf(string? authorName, string linkLine) =>
+        authorName is null ? linkLine : $"{WhatsAppFormatting.Italic(authorName)}\n{linkLine}";
 }

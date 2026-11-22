@@ -33,6 +33,7 @@ public sealed class OutboxWhatsAppConfiguration : IEntityTypeConfiguration<Outbo
         WhatsAppOperations
             .Targeting.Prepend(WhatsAppOperation.PostText)
             .Append(WhatsAppOperation.AddParticipant)
+            .Append(WhatsAppOperation.DirectText)
             .Select(operation => $"'{operation}'")
     );
 

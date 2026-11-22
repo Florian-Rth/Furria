@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Start/stop the local dev stack, reachable from other devices (vite --host).
 #
-#   scripts/dev.sh up       # postgres + mailpit + media worker + API + website + club-app
+#   scripts/dev.sh up       # postgres + mailpit + WhatsApp bot (WAHA) + media worker + API + website + club-app
 #   scripts/dev.sh worker-build # rebuild the media worker image from this worktree
 #   scripts/dev.sh down     # stop API + vite servers (postgres/mailpit keep running)
-#   scripts/dev.sh down-all # also stop media worker + postgres + mailpit
+#   scripts/dev.sh down-all # also stop media worker + WAHA + postgres + mailpit
 #   scripts/dev.sh status
 #   scripts/dev.sh logs [api|website|club-app]
 #
@@ -12,6 +12,8 @@
 # The vite proxies target the API on :5100, so the API port is fixed.
 # The dev database is shared by all worktrees, so media files are too: API and the one
 # media worker use DEV_MEDIA (not under ~/.herdr — snap docker cannot mount hidden dirs).
+# WAHA (dashboard http://127.0.0.1:3100, furria/furria) calls the API back through the docker
+# bridge gateway, so the API listens there too - never on the LAN.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -24,6 +26,8 @@ API_PORT=5100
 DEV_MEDIA="${DEV_MEDIA:-$HOME/furria-dev-media}"
 WORKER_IMAGE=furria-dev-media-worker:latest
 WORKER=furria-dev-media-worker
+WAHA=furria-dev-waha
+WAHA_IMAGE=devlikeapro/waha:gows-2026.10.1
 DB_CONNECTION="Host=localhost;Port=5432;Database=furria;Username=furria;Password=furria"
 
 mkdir -p "$STATE" "$DEV_MEDIA"
@@ -66,7 +70,10 @@ start_api() {
   fi
   if port_busy "$API_PORT"; then echo "✓ :$API_PORT already in use — assuming API runs elsewhere"; return; fi
   # exec: $! is the session leader, so `down` can kill dotnet run + the API as one group
-  (cd "$ROOT/server" && Media__RootPath="$DEV_MEDIA" exec setsid dotnet run --project src/Furria.Api >"$STATE/api.log" 2>&1 </dev/null) &
+  local gateway
+  gateway="$(docker network inspect bridge -f '{{ (index .IPAM.Config 0).Gateway }}')"
+  (cd "$ROOT/server" && Media__RootPath="$DEV_MEDIA" exec setsid dotnet run --project src/Furria.Api \
+    --urls "http://localhost:$API_PORT;http://$gateway:$API_PORT" >"$STATE/api.log" 2>&1 </dev/null) &
   echo $! >"$STATE/api.pid"
   echo "▶ api on :$API_PORT (log: .dev/api.log)"
 }
@@ -95,6 +102,18 @@ start_worker() {
     -v "$DEV_MEDIA:/media" "$WORKER_IMAGE"
 }
 
+start_waha() { # the session volume keeps the linked device across restarts
+  ensure_container "$WAHA" 3100 --restart unless-stopped -p 127.0.0.1:3100:3000 \
+    --add-host host.docker.internal:host-gateway \
+    -e WHATSAPP_DEFAULT_ENGINE=GOWS -e WHATSAPP_RESTART_ALL_SESSIONS=true \
+    -e WAHA_API_KEY=furria-development-waha-api-key \
+    -e WAHA_DASHBOARD_USERNAME=furria -e WAHA_DASHBOARD_PASSWORD=furria \
+    -e "WHATSAPP_HOOK_URL=http://host.docker.internal:$API_PORT/api/whatsapp/webhook" \
+    -e WHATSAPP_HOOK_EVENTS=session.status,poll.vote,poll.vote.failed,event.response,group.v2.participants \
+    -e WHATSAPP_HOOK_HMAC_KEY=furria-development-whatsapp-webhook-key \
+    -v furria-dev-waha-sessions:/app/.sessions "$WAHA_IMAGE"
+}
+
 up() {
   ensure_container furria-dev-postgres 5432 -p 127.0.0.1:5432:5432 \
     -e POSTGRES_USER=furria -e POSTGRES_PASSWORD=furria -e POSTGRES_DB=furria \
@@ -106,6 +125,7 @@ up() {
     node_run --rm "$NODE_IMAGE" sh -c "corepack pnpm config set store-dir /tmp/store && corepack pnpm install --frozen-lockfile"
   fi
 
+  start_waha
   start_worker
   start_api
   start_vite website "$WEBSITE_PORT"
@@ -128,12 +148,12 @@ down() {
 
 down_all() {
   down
-  docker stop "$WORKER" furria-dev-postgres furria-dev-mailpit >/dev/null 2>&1 &&
-    echo "■ media worker + postgres + mailpit stopped" || true
+  docker stop "$WORKER" "$WAHA" furria-dev-postgres furria-dev-mailpit >/dev/null 2>&1 &&
+    echo "■ media worker + WAHA + postgres + mailpit stopped" || true
 }
 
 status() {
-  for c in furria-dev-postgres furria-dev-mailpit "$WORKER" "furria-dev-website-$SLUG" "furria-dev-club-app-$SLUG"; do
+  for c in furria-dev-postgres furria-dev-mailpit "$WAHA" "$WORKER" "furria-dev-website-$SLUG" "furria-dev-club-app-$SLUG"; do
     container_running "$c" && echo "● $c" || echo "○ $c"
   done
   if [ -f "$STATE/api.pid" ] && kill -0 "$(cat "$STATE/api.pid")" 2>/dev/null; then
@@ -159,5 +179,5 @@ case "${1:-}" in
   worker-build) build_worker; docker rm -f "$WORKER" >/dev/null 2>&1 || true; start_worker ;;
   status) status ;;
   logs) logs "${2:-}" ;;
-  *) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+  *) sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

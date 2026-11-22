@@ -9,4 +9,5 @@ public enum WhatsAppOperation
     Reply = 5,
     Delete = 6,
     AddParticipant = 7,
+    DirectText = 8,
 }

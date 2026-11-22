@@ -71,7 +71,7 @@ public sealed class WhatsAppOutboxDelivery
 
         if (sent.AddOutcome is { } addOutcome)
             await _keeping.RecordAddAsync(operation, addOutcome, ct);
-        else if (!WhatsAppOperations.Targeting.Contains(operation.Operation))
+        else if (WhatsAppOperations.IsKeptAsPost(operation.Operation))
             await RecordPostAsync(operation, sent.MessageId, now, ct);
         _dbContext.OutboxWhatsApps.Remove(operation);
         await _dbContext.SaveChangesAsync(ct);

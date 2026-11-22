@@ -42,7 +42,7 @@ public sealed class WhatsAppPostsTests : IClassFixture<ApiTestFixture>
         var sent = Assert.Single(_fixture.Waha.Sent);
         Assert.Equal(("sendText", ClubChatId), (sent.Kind, sent.ChatId));
         Assert.Equal(
-            $"*{Title}*\n\nBitte *pünktlich*.\n\n_Bea Aushang_\n{ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}",
+            $"📌 `FCC · AUSHANG`\n*{Title}*\n\nBitte *pünktlich*.\n\n_Bea Aushang_\n↗ {ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}",
             sent.Text
         );
         var record = Assert.Single(await _fixture.WhatsAppPostRecordsAsync(ct));
@@ -71,7 +71,10 @@ public sealed class WhatsAppPostsTests : IClassFixture<ApiTestFixture>
 
         await _fixture.WhatsAppOutboxDrainedAsync(ct);
         var sent = Assert.Single(_fixture.Waha.Sent);
-        Assert.StartsWith($"*{Title}*\n\nDanke @491701234567 und Bea Aushang.", sent.Text);
+        Assert.StartsWith(
+            $"📌 `FCC · AUSHANG`\n*{Title}*\n\nDanke @491701234567 und Bea Aushang.",
+            sent.Text
+        );
         Assert.Equal(["491701234567@c.us"], sent.Mentions);
     }
 
@@ -150,7 +153,7 @@ public sealed class WhatsAppPostsTests : IClassFixture<ApiTestFixture>
         await _fixture.WhatsAppOutboxDrainedAsync(ct);
         var sent = Assert.Single(_fixture.Waha.Sent);
         Assert.Equal(
-            $"*{ClubMeeting}*\nMi 20.1. · 19:00–22:00 Uhr · Bühnenhaus\n\nTagesordnung folgt.\n\n19:30 Begrüßung\n\nDabei: Tanzgarde\n\n_Ilka Kalender_\n{ApiTestFixture.ClubAppBaseUrl}/calendar/{entryId}",
+            $"📅 `FCC · TERMIN`\n*{ClubMeeting}*\nMi 20.1. · 19:00–22:00 Uhr · Bühnenhaus\n\nTagesordnung folgt.\n\n19:30 Begrüßung\n\nDabei: Tanzgarde\n\n_Ilka Kalender_\n↗ {ApiTestFixture.ClubAppBaseUrl}/calendar/{entryId}",
             sent.Text
         );
         var record = Assert.Single(await _fixture.WhatsAppPostRecordsAsync(ct));
@@ -234,11 +237,17 @@ public sealed class WhatsAppPostsTests : IClassFixture<ApiTestFixture>
         var link = $"{ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}";
         Assert.Equal(
             [
-                ("sendText", $"*{Title}*\n\nWer hilft mit?\n\n_Bea Aushang_\n{link}"),
+                (
+                    "sendText",
+                    $"📌 `FCC · AUSHANG`\n*{Title}*\n\nWer hilft mit?\n\n_Bea Aushang_\n↗ {link}"
+                ),
                 ("sendPoll", "Welche Uhrzeit?"),
                 ("sendPoll", Title),
-                ("sendText", $"Eintragen: *Mitbringliste*\n{link}"),
-                ("sendText", $"Anonym abstimmen: *Wer putzt die Küche?*\n{link}"),
+                ("sendText", $"📝 `FCC · EINTRAGSLISTE`\nEintragen: *Mitbringliste*\n↗ {link}"),
+                (
+                    "sendText",
+                    $"🗳️ `FCC · ABSTIMMUNG`\nAnonym abstimmen: *Wer putzt die Küche?*\n↗ {link}"
+                ),
             ],
             _fixture.Waha.Sent.Select(sent => (sent.Kind, sent.Text))
         );
@@ -307,7 +316,7 @@ public sealed class WhatsAppPostsTests : IClassFixture<ApiTestFixture>
         await _fixture.WhatsAppOutboxDrainedAsync(ct);
         Assert.Equal(["sendText", "sendText"], _fixture.Waha.Sent.Select(sent => sent.Kind));
         Assert.Equal(
-            $"Abstimmen: *Welcher Tag?*\n{ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}",
+            $"🗳️ `FCC · ABSTIMMUNG`\nAbstimmen: *Welcher Tag?*\n↗ {ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}",
             _fixture.Waha.Sent[1].Text
         );
     }
@@ -416,7 +425,7 @@ public sealed class WhatsAppPostsTests : IClassFixture<ApiTestFixture>
         var sent = Assert.Single(_fixture.Waha.Sent);
         var entryLink = $"{ApiTestFixture.ClubAppBaseUrl}/calendar/{entryId}";
         Assert.Equal(
-            $"*{Title}*\n\nSiehe Kalender.\n\nAbstimmen: *Wer bringt Kuchen?*\n{entryLink}\n\nZu-/Absage: *{ClubMeeting}*\n{entryLink}\n\n_Bea Aushang_\n{ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}",
+            $"📌 `FCC · AUSHANG`\n*{Title}*\n\nSiehe Kalender.\n\nAbstimmen: *Wer bringt Kuchen?*\n↗ {entryLink}\n\nZu-/Absage: *{ClubMeeting}*\n↗ {entryLink}\n\n_Bea Aushang_\n↗ {ApiTestFixture.ClubAppBaseUrl}/announcements/{announcementId}",
             sent.Text
         );
     }

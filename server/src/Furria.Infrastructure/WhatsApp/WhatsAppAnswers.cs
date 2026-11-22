@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using Furria.Application.ClubApp;
 using Furria.Application.WhatsApp;
 using Furria.Core.Club;
 using Furria.Infrastructure.Club;
@@ -13,18 +14,21 @@ public sealed class WhatsAppAnswers
     private readonly AppDbContext _dbContext;
     private readonly WhatsAppSenderMatch _senders;
     private readonly IOptions<WhatsAppOptions> _options;
+    private readonly IOptions<ClubAppOptions> _clubApp;
     private readonly TimeProvider _timeProvider;
 
     public WhatsAppAnswers(
         AppDbContext dbContext,
         WhatsAppSenderMatch senders,
         IOptions<WhatsAppOptions> options,
+        IOptions<ClubAppOptions> clubApp,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _senders = senders;
         _options = options;
+        _clubApp = clubApp;
         _timeProvider = timeProvider;
     }
 
@@ -42,8 +46,13 @@ public sealed class WhatsAppAnswers
         var sender = await IdentifiedAsync(answer.SenderId, ct);
         if (await LockedRecordAsync(answer.MessageKey, ct) is not { } record)
             return;
-        if (await AddOnOfAsync(record, ct) is not { } addOn || addOn.IsClosedAt(answer.AnsweredAt))
+        if (await AddOnOfAsync(record, ct) is not { } addOn)
             return;
+        if (addOn.IsClosedAt(answer.AnsweredAt))
+        {
+            await TellLateAsync(record, addOn, answer.SenderId, ct);
+            return;
+        }
 
         if (ChoiceOf(record, addOn, answer) is not { } given)
             return;
@@ -57,6 +66,48 @@ public sealed class WhatsAppAnswers
 
         var stored = held ?? Added(record.Id, answer.SenderId);
         await RecordAsync(stored, sender, given, ct);
+        await _dbContext.SaveChangesAsync(ct);
+    }
+
+    private async Task TellLateAsync(
+        WhatsAppMessage record,
+        AnsweredAddOn addOn,
+        string senderId,
+        CancellationToken ct
+    )
+    {
+        if (
+            await _dbContext.WhatsAppLateAnswers.AnyAsync(
+                late => late.WhatsAppMessageId == record.Id && late.SenderId == senderId,
+                ct
+            )
+        )
+            return;
+
+        var now = _timeProvider.GetUtcNow();
+        _dbContext.WhatsAppLateAnswers.Add(
+            new WhatsAppLateAnswer
+            {
+                WhatsAppMessageId = record.Id,
+                SenderId = senderId,
+                ToldAt = now,
+            }
+        );
+        _dbContext.OutboxWhatsApps.Add(
+            new OutboxWhatsApp
+            {
+                ChatId = senderId,
+                Operation = WhatsAppOperation.DirectText,
+                HostKind = addOn.Host.Kind,
+                HostId = addOn.Host.Id,
+                Text = WhatsAppReplies.LateAnswer(
+                    addOn.Title,
+                    addOn.Poll?.Question,
+                    WhatsAppHostLinks.HostOf(_clubApp.Value.BaseUrl, addOn.Host.Kind, addOn.Host.Id)
+                ),
+                EnqueuedAt = now,
+            }
+        );
         await _dbContext.SaveChangesAsync(ct);
     }
 
@@ -156,9 +207,11 @@ public sealed class WhatsAppAnswers
             .Where(row => row.Id == pollId && !row.IsAnonymous)
             .Select(row => new
             {
+                row.Question,
                 row.AllowsMultipleChoices,
                 row.ClosedAt,
                 row.VotesUntil,
+                HostTitle = row.CalendarEntry!.Title ?? row.Announcement!.Title,
                 EntryStartsAt = (DateTimeOffset?)row.CalendarEntry!.StartsAt,
                 AnnouncementValidUntil = (DateOnly?)row.Announcement!.ValidUntil,
                 OptionIds = row.Options.Select(option => option.Id).ToList(),
@@ -169,7 +222,13 @@ public sealed class WhatsAppAnswers
             ? null
             : new AnsweredAddOn(
                 host,
-                new AnsweredPoll(pollId, poll.AllowsMultipleChoices, poll.OptionIds.ToHashSet()),
+                poll.HostTitle,
+                new AnsweredPoll(
+                    pollId,
+                    poll.Question,
+                    poll.AllowsMultipleChoices,
+                    poll.OptionIds.ToHashSet()
+                ),
                 new AnswerWindow(
                     poll.ClosedAt,
                     poll.VotesUntil,
@@ -188,13 +247,19 @@ public sealed class WhatsAppAnswers
         var entry = await _dbContext
             .CalendarEntries.AsNoTracking()
             .Where(row => row.Id == calendarEntryId && row.AsksForResponse)
-            .Select(row => new { row.StartsAt, row.EndsAt })
+            .Select(row => new
+            {
+                row.Title,
+                row.StartsAt,
+                row.EndsAt,
+            })
             .SingleOrDefaultAsync(ct);
 
         return entry is null
             ? null
             : new AnsweredAddOn(
                 host,
+                entry.Title,
                 null,
                 new AnswerWindow(null, null, AddOnClosing.EntryEndOf(entry.StartsAt, entry.EndsAt))
             );
@@ -212,6 +277,7 @@ public sealed class WhatsAppAnswers
             .Where(row => row.Id == announcementId && row.AttendancePosition != null)
             .Select(row => new
             {
+                row.Title,
                 row.AttendanceClosedAt,
                 row.AnswersUntil,
                 row.ValidUntil,
@@ -222,6 +288,7 @@ public sealed class WhatsAppAnswers
             ? null
             : new AnsweredAddOn(
                 host,
+                announcement.Title,
                 null,
                 new AnswerWindow(
                     announcement.AttendanceClosedAt,
@@ -453,6 +520,7 @@ public sealed class WhatsAppAnswers
 
     private sealed record AnsweredPoll(
         int PollId,
+        string Question,
         bool AllowsMultipleChoices,
         IReadOnlySet<int> OptionIds
     );
@@ -463,7 +531,12 @@ public sealed class WhatsAppAnswers
         DateTimeOffset? HostClosesAt
     );
 
-    private sealed record AnsweredAddOn(AnswerHost Host, AnsweredPoll? Poll, AnswerWindow Window)
+    private sealed record AnsweredAddOn(
+        AnswerHost Host,
+        string Title,
+        AnsweredPoll? Poll,
+        AnswerWindow Window
+    )
     {
         [Pure]
         public bool IsClosedAt(DateTimeOffset answeredAt) =>

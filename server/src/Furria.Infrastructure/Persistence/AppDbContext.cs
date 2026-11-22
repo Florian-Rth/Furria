@@ -154,6 +154,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<WhatsAppAnswer> WhatsAppAnswers => Set<WhatsAppAnswer>();
 
+    public DbSet<WhatsAppLateAnswer> WhatsAppLateAnswers => Set<WhatsAppLateAnswer>();
+
     public DbSet<WhatsAppGroupAdd> WhatsAppGroupAdds => Set<WhatsAppGroupAdd>();
 
     public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();

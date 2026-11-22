@@ -73,6 +73,8 @@ Notifying an Aushang, or a calendar entry with audience *Verein*, enqueues besid
 | Day schedule | text lines in the post | — |
 | Participating groups | one line in the post | — |
 
+A deadline (votes until, answers until, sign up until) is named in the message: after the poll question as *(bis Fr 4.12. · 18:00 Uhr)*, in a link line as its own line *Bis …*.
+
 Taken-over add-ons are not posted again; the Aushang post names them with the app link. The
 editor's reach line names the group: *Push an 42 · WhatsApp-Gruppe*. Reminders stay push-only.
 
@@ -84,7 +86,10 @@ editor's reach line names the group: *Push an 42 · WhatsApp-Gruppe*. Reminders 
   the audience) it counts for nothing.
 - An **unassigned** sender's answer counts for nobody; the add-on's organiser sees it by WhatsApp
   name in the result view. Nothing is applied later when a number appears.
-- Answers after the add-on closed count for nothing; `poll.vote.failed` is logged only.
+- Answers after the add-on closed count for nothing; `poll.vote.failed` is logged only. The
+  sender gets one private message per add-on (*Die Abstimmung „…“ ist schon beendet. Deine
+  Antwort wurde nicht übernommen.* + app link) — never a reply in the group (ADR-0042 amended
+  2026-11-22).
 - The phone field says it is the number WhatsApp is matched with.
 
 ### Keeping the post in step
@@ -92,7 +97,8 @@ editor's reach line names the group: *Push an 42 · WhatsApp-Gruppe*. Reminders 
 |---|---|
 | Text edited | edit the post within ~15 min, else nothing |
 | Entry moved in time or place | reply *Verschoben: …* |
-| Entry deleted / Aushang withdrawn | delete for everyone within ~2 days, else reply *Abgesagt* / *Zurückgezogen* |
+| Entry deleted | delete for everyone within ~2 days, else reply *Abgesagt* |
+| Aushang withdrawn | delete for everyone within ~2 days, else nothing (no reply) |
 | Poll / Zu-/Absage closes | reply with the result (counts) |
 | A poll's answers change (added, or an unchosen one changed/removed) | delete the old poll, post a new one; app votes stay |
 
@@ -123,7 +129,7 @@ Goal: the API talks to a linked WAHA session and stores its webhooks; nothing is
 Goal: an admin links the bot and picks the club group from the club app.
 - [x] Endpoints the screen needs: session state, start linking (QR / pairing code), the bot's groups, pick club group
 - [x] Club app route `/system/whatsapp` (child of System): link flow, state, club-group picker
-- [ ] Browser check on phone size against a real WAHA session — linking flow up to the live QR checked 2026-11-20; scan with the bot's phone, connected state and club-group pick still owed
+- [x] Browser check on phone size against a real WAHA session — linking flow up to the live QR checked 2026-11-20; linked 2026-11-22 (bot on a WhatsApp Business landline account, QR scanned from a second screen), connected state and club-group pick checked
 
 ### Phase 3 — The WhatsApp outbox and the post
 Goal: notifying a club-audience Aushang or entry posts it into the club group.
@@ -149,9 +155,9 @@ Goal: votes and event responses in the group become app answers.
 
 ### Phase 6 — Keeping the post in step
 Goal: changes in the app are told in the group.
-- [x] Edit within ~15 min (14 min with margin; a waiting post is rewritten instead); moved → reply *Verschoben: date line*; deleted / withdrawn → delete within ~2 days else reply *Abgesagt* / *Zurückgezogen* — tests first. An entry's edit renders the editor as author hint (entries carry no author); an entry narrowed away from *Verein* is no longer kept in step
+- [x] Edit within ~15 min (14 min with margin; a waiting post is rewritten instead); moved → reply *Verschoben: date line*; deleted / withdrawn → delete within ~2 days else reply *Abgesagt* (a withdrawn Aushang gets no reply) — tests first. An entry's edit renders the editor as author hint (entries carry no author); an entry narrowed away from *Verein* is no longer kept in step
 - [x] Close (by time or by hand) → result reply with counts (native polls and Zu-/Absage only; anonymous and linked polls stay app only), staged by the dispatcher each round; reopen posts nothing, a later close tells again
-- [x] Changed poll answers → delete old poll (else reply *Ersetzt*), post new one, re-point the post record (its WhatsApp answers dropped); a removed add-on's message is deleted (else reply *Zurückgezogen*). Add-ons added after the post are not posted
+- [x] Changed poll answers → delete old poll (else reply *Ersetzt*), post new one, re-point the post record (its WhatsApp answers dropped); a removed add-on's message is deleted within ~2 days, else left without a reply. Add-ons added after the post are not posted
 - [x] Undelivered operations of a withdrawn host are dropped like its pushes
 - [x] WhatsApp answers (`whatsapp_answer`, incl. unassigned senders' name and phone) go with their host or add-on
 
@@ -169,11 +175,48 @@ Goal: members consent in the app, managers see blocked adds, production runs the
 - [x] System → WhatsApp: *Vereinsgruppe verwalten* switch with the invite link, and *Hinzufügen blockiert* (name, number, since, links to the person) once a club group is picked
 - [x] `docs/ops`: WAHA in production (`waha` in the example compose, no port, pinned image, keys in `.env`; both app nginx answer `/api/whatsapp/webhook` with 404), session linking, backup and restore of the session volume (`backup.example.sh`), what to do on a logout or a ban
 - [ ] Production compose edit on the live host (with Florian's approval)
-- [ ] Device checks on a test group: post, poll, event, vote back, edit/move/close, add with and without privacy block
+- [ ] Device checks on a test group: post, poll, event, vote back, edit/move/close, add with and without privacy block — all but the add checked 2026-11-22, see *Device checks* below
+
+### Device checks (2026-11-22)
+Dev stack (`scripts/dev.sh` now runs WAHA and binds the API to the docker gateway so webhooks
+arrive), bot on a WhatsApp Business account, test group *Furria Dev Test Gruppe*, posts made as
+Florian's dev account.
+
+| # | Case | Result |
+|---|---|---|
+| 1 | Club entry, one day, venue → text post | ✅ |
+| 2 | Entry over several days (trip) → date line with both ends | ✅ |
+| 3 | Aushang with heading, bold, list, link, escapes → WhatsApp formatting | ✅ after the escape fix |
+| 4 | Mentions: person with phone → real @mention, without → name, group → name | ✅ |
+| 5 | Day schedule and participating groups in the post | ✅ |
+| 6 | Post with a picture | — no host carries a picture yet |
+| 7 | Aushang taking over an entry's Zu-/Absage and poll → named lines, nothing reposted | ✅ |
+| 8 | Entry with Zu-/Absage → WhatsApp event | ✅ (WhatsApp counts the bot as host *Zugesagt*; the app ignores it) |
+| 9 | Aushang Zu-/Absage → poll *Ja / Nein / Vielleicht*, single choice | ✅ |
+| 10 | Named polls, single and multiple choice | ✅ |
+| 11 | Anonymous poll, poll over 12 answers, sign-up list → link messages | ✅ |
+| 12 | Votes back: own answer, changed vote, unassigned sender, vote after closing | ✅ |
+| 13 | Edit within 15 min → post edited; later → nothing | ✅ |
+| 14 | Entry moved → reply *Verschoben* | ✅ |
+| 15 | Delete within 2 days → deleted; entry later → *Abgesagt*; Aushang later → nothing | ✅ |
+| 16 | Poll and Zu-/Absage closed → result reply with counts | ✅ |
+| 17 | Poll answers changed: within 2 days old poll deleted, later reply *Neue Abstimmung*; new poll posted | ✅ |
+| 18 | Group keeping: add, add refused by privacy | owed — needs real test numbers |
+| 19 | Session stopped → admins pushed, posts wait, sent after reconnect | ✅ (push checked in the log; dev app has no HTTPS push) |
+| 20 | Vote after closing (Zu-/Absage and poll) → one private message each, changed vote → none | ✅ (sender came as a LID) |
+
+Changes made from the checks:
+- [x] Every text message opens with a header line: icon + grey pill `FCC · KIND` (Termin, Training, Ausflug, Veranstaltung, Aushang, Abstimmung, Eintragsliste, Verschoben, Abgesagt, Neue Abstimmung, Ergebnis, Beendet); links start with ↗; polls and events keep WhatsApp's own look
+- [x] Escaped formatting characters stay literal (`∗ ＿ ∼ ˋ` look-alikes WhatsApp never formats)
+- [x] A withdrawn Aushang is deleted within ~2 days, else left without a reply; a removed add-on likewise
+- [x] Deadlines (votes / answers / sign up until) named in the message: after the poll question, or as a *Bis …* line
+- [x] A vote after closing is answered by one private message to the voter (`⌛ FCC · BEENDET`, what closed, *Deine Antwort wurde nicht übernommen.*, app link), once per person and add-on (`whatsapp_late_answer`); ADR-0042 amended
+- [ ] Pairing code survives a reload (kept on the server while the session waits), a *Kopieren* button, one code per session; the API rejects `+49 0…` numbers — iOS reloads the page when switching to WhatsApp and the code was lost
 
 ## Risks & alternatives
 - **Ban of the bot's number** (unofficial linked-device protocol). Mitigated by a dedicated number,
-  posting only into the existing group, spaced sends, no direct messages. Losing the number loses
+  posting only into the existing group, spaced sends, no direct messages except one answer to a
+  person's own late vote. Losing the number loses
   the bot, never a person's account.
 - **Linked device logged out** when the bot's phone stays offline too long (~14 days, to verify);
   the session-drop push and the outbox make it visible and lossless.
@@ -190,4 +233,5 @@ Goal: members consent in the app, managers see blocked adds, production runs the
 - Linking app groups' own WhatsApp groups (model ready, UI later).
 - Reminders, a weekly digest, read stats in WhatsApp; admin-only writing; a join-request gate.
 - Removing anyone from the group, also on archiving.
-- Direct messages to anyone; reading or answering chat messages.
+- Direct messages to anyone, except the one private notice on a late answer; reading or answering
+  chat messages.

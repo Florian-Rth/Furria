@@ -6,6 +6,8 @@ namespace Furria.Api.Tests.WhatsApp;
 public sealed class WhatsAppPostTextTests
 {
     private const string Link = "https://app.example.test/announcements/7";
+    private const string Head = "📌 `FCC · AUSHANG`\n";
+    private const string LinkLine = "↗ " + Link;
 
     private static readonly DateTimeOffset SaturdayAfternoon = new(
         2027,
@@ -30,8 +32,9 @@ public sealed class WhatsAppPostTextTests
         );
 
         Assert.Equal(
-            "*Saalreinigung*\n\n*Treffpunkt*\nBitte *pünktlich* sein.\n• Besen\n• Eimer *mitbringen*\nInfos hier (https://fcc.example/infos).\n\n"
-                + Link,
+            Head
+                + "*Saalreinigung*\n\n*Treffpunkt*\nBitte *pünktlich* sein.\n• Besen\n• Eimer ∗mitbringen∗\nInfos hier (https://fcc.example/infos).\n\n"
+                + LinkLine,
             post.Text
         );
     }
@@ -46,7 +49,7 @@ public sealed class WhatsAppPostTextTests
             }
         );
 
-        Assert.Equal($"*Saalreinigung*\n\n*Titel fett*\n\n{Link}", post.Text);
+        Assert.Equal($"{Head}*Saalreinigung*\n\n*Titel fett*\n\n{LinkLine}", post.Text);
     }
 
     [Fact]
@@ -63,7 +66,9 @@ public sealed class WhatsAppPostTextTests
         );
 
         Assert.Equal(
-            "*Saalreinigung*\n\nDanke @4917012345678, Bea Aushang und Tanzgarde.\n\n" + Link,
+            Head
+                + "*Saalreinigung*\n\nDanke @4917012345678, Bea Aushang und Tanzgarde.\n\n"
+                + LinkLine,
             post.Text
         );
         Assert.Equal(["4917012345678@c.us"], post.MentionedChatIds);
@@ -80,7 +85,7 @@ public sealed class WhatsAppPostTextTests
         );
 
         Assert.Equal(
-            "*Saalreinigung*\n\nMit **Sternchen** und [Klammern](x)\n\n" + Link,
+            Head + "*Saalreinigung*\n\nMit **Sternchen** und [Klammern](x)\n\n" + LinkLine,
             post.Text
         );
     }
@@ -107,7 +112,7 @@ public sealed class WhatsAppPostTextTests
             }
         );
 
-        Assert.Equal($"*Saalreinigung*\n{expectedDateLine}\n\n{Link}", post.Text);
+        Assert.Equal($"{Head}*Saalreinigung*\n{expectedDateLine}\n\n{LinkLine}", post.Text);
     }
 
     [Fact]
@@ -142,8 +147,9 @@ public sealed class WhatsAppPostTextTests
         );
 
         Assert.Equal(
-            "*Saalreinigung*\nSa 12.6. 15:00 Uhr – So 13.6. 02:00 Uhr\n\nAlle helfen mit.\n\n*Aufbau*\nSa 15:00 Treffen\nSo 01:30 Abbau\n\nSa 19:11 Einmarsch\n\nDabei: Tanzgarde, Elferrat\n\n_Bea Aushang_\n"
-                + Link,
+            Head
+                + "*Saalreinigung*\nSa 12.6. 15:00 Uhr – So 13.6. 02:00 Uhr\n\nAlle helfen mit.\n\n*Aufbau*\nSa 15:00 Treffen\nSo 01:30 Abbau\n\nSa 19:11 Einmarsch\n\nDabei: Tanzgarde, Elferrat\n\n_Bea Aushang_\n"
+                + LinkLine,
             post.Text
         );
     }
@@ -166,14 +172,31 @@ public sealed class WhatsAppPostTextTests
         );
 
         Assert.Equal(
-            $"*Saalreinigung*\nSa 12.6. · 15:00 Uhr\n\n15:30 Einlass\n\n{Link}",
+            $"{Head}*Saalreinigung*\nSa 12.6. · 15:00 Uhr\n\n15:30 Einlass\n\n{LinkLine}",
             post.Text
         );
+    }
+
+    [Theory]
+    [InlineData(WhatsAppBadge.Appointment, "📅 `FCC · TERMIN`")]
+    [InlineData(WhatsAppBadge.Training, "💃 `FCC · TRAINING`")]
+    [InlineData(WhatsAppBadge.Trip, "🚌 `FCC · AUSFLUG`")]
+    [InlineData(WhatsAppBadge.Event, "🎉 `FCC · VERANSTALTUNG`")]
+    [InlineData(WhatsAppBadge.Announcement, "📌 `FCC · AUSHANG`")]
+    public void Should_OpenWithTheBadgeOfTheHost_When_ThePostIsRendered(
+        WhatsAppBadge badge,
+        string expectedHead
+    )
+    {
+        var post = WhatsAppPostText.Render(Draft() with { Badge = badge });
+
+        Assert.Equal($"{expectedHead}\n*Saalreinigung*\n\n{LinkLine}", post.Text);
     }
 
     private static WhatsAppPostDraft Draft() =>
         new()
         {
+            Badge = WhatsAppBadge.Announcement,
             Title = "Saalreinigung",
             Slot = null,
             Body = null,

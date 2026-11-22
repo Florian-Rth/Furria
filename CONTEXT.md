@@ -1498,7 +1498,8 @@ What notifying puts into a linked WhatsApp group: the post itself, then one mess
 add-on — a calendar entry's Zu-/Absage as a WhatsApp event, an announcement's as a Ja/Nein/
 Vielleicht poll, a named poll as a poll; an anonymous poll and a sign-up list only as a link into
 the app. Moving or deleting the host, or closing an add-on, is answered in the group as a reply;
-answers arriving after closing count for nothing (ruled 2026-11-20). It speaks for the club, with
+answers arriving after closing count for nothing (ruled 2026-11-20); the late sender alone is told
+so in one private message per add-on, never in the group (ruled 2026-11-22). It speaks for the club, with
 a small hint naming its author.
 
 **WhatsApp match**:

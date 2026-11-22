@@ -57,11 +57,7 @@ public sealed class WhatsAppPostUpdates
     }
 
     public Task WithdrawAnnouncementAsync(int announcementId, CancellationToken ct) =>
-        TakeBackAsync(
-            new WhatsAppHost(WhatsAppHostKind.Announcement, announcementId),
-            WhatsAppReplies.Withdrawn,
-            ct
-        );
+        TakeBackAsync(new WhatsAppHost(WhatsAppHostKind.Announcement, announcementId), null, ct);
 
     public Task CancelCalendarEntryAsync(int calendarEntryId, CancellationToken ct) =>
         TakeBackAsync(
@@ -155,7 +151,8 @@ public sealed class WhatsAppPostUpdates
 
     private void Forget(Telling telling, WhatsAppMessage record)
     {
-        Enqueue(telling, record, RemovalOf(record, telling.Now, WhatsAppReplies.Withdrawn));
+        if (IsDeletable(record, telling.Now))
+            Enqueue(telling, record, WhatsAppTargeting.Delete(record.MessageId));
         _dbContext.WhatsAppMessages.Remove(record);
     }
 
@@ -174,7 +171,7 @@ public sealed class WhatsAppPostUpdates
         );
     }
 
-    private async Task TakeBackAsync(WhatsAppHost host, string reply, CancellationToken ct)
+    private async Task TakeBackAsync(WhatsAppHost host, string? reply, CancellationToken ct)
     {
         await WaitingOf(host).ExecuteDeleteAsync(ct);
         var records = await RecordsOf(host).ToListAsync(ct);
@@ -184,7 +181,7 @@ public sealed class WhatsAppPostUpdates
         var telling = new Telling(host, records, [], _timeProvider.GetUtcNow());
         foreach (var record in records.Where(record => IsDeletable(record, telling.Now)))
             Enqueue(telling, record, WhatsAppTargeting.Delete(record.MessageId));
-        if (telling.Post is { } post && !IsDeletable(post, telling.Now))
+        if (reply is not null && telling.Post is { } post && !IsDeletable(post, telling.Now))
             Enqueue(telling, post, WhatsAppTargeting.ReplyTo(post.MessageId, reply));
 
         _dbContext.OutboxWhatsApps.AddRange(telling.Added);

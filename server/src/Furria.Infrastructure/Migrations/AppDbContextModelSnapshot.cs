@@ -6235,7 +6235,7 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_add_on_kind", "add_on_kind IN ('Attendance', 'Poll', 'SignUpList')");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation IN ('PostText', 'EditText', 'Reply', 'Delete', 'AddParticipant') OR add_on_kind IS NOT NULL");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation IN ('PostText', 'EditText', 'Reply', 'Delete', 'AddParticipant', 'DirectText') OR add_on_kind IS NOT NULL");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_attempt", "attempt >= 1");
 
@@ -6243,7 +6243,7 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_host_kind", "host_kind IN ('Announcement', 'CalendarEntry', 'Person')");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent', 'EditText', 'Reply', 'Delete', 'AddParticipant')");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent', 'EditText', 'Reply', 'Delete', 'AddParticipant', 'DirectText')");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_person_add", "(operation = 'AddParticipant') = (host_kind = 'Person')");
 
@@ -6373,6 +6373,39 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_whatsapp_group_add_state", "state IN ('Requested', 'InGroup', 'Refused')");
                         });
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppLateAnswer", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("sender_id");
+
+                    b.Property<DateTimeOffset>("ToldAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("told_at");
+
+                    b.Property<long>("WhatsAppMessageId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("whatsapp_message_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_whatsapp_late_answer");
+
+                    b.HasIndex("WhatsAppMessageId", "SenderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_whatsapp_late_answer_whatsapp_message_id_sender_id");
+
+                    b.ToTable("whatsapp_late_answer", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppMessage", b =>
@@ -8539,6 +8572,18 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_whatsapp_group_add_person_person_id");
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppLateAnswer", b =>
+                {
+                    b.HasOne("Furria.Infrastructure.WhatsApp.WhatsAppMessage", "WhatsAppMessage")
+                        .WithMany()
+                        .HasForeignKey("WhatsAppMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_whatsapp_late_answer_whatsapp_message_whatsapp_message_id");
+
+                    b.Navigation("WhatsAppMessage");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>

@@ -1,5 +1,4 @@
 using System.Diagnostics.Contracts;
-using System.Globalization;
 using Furria.Application.ClubApp;
 using Furria.Application.WhatsApp;
 using Furria.Core.Club;
@@ -12,9 +11,6 @@ namespace Furria.Infrastructure.WhatsApp;
 
 public sealed class WhatsAppPosts
 {
-    private const string AnnouncementPath = "/announcements";
-    private const string CalendarPath = "/calendar";
-
     private readonly AppDbContext _dbContext;
     private readonly IOptions<WhatsAppOptions> _options;
     private readonly IOptions<ClubAppOptions> _clubApp;
@@ -62,10 +58,11 @@ public sealed class WhatsAppPosts
         CancellationToken ct
     )
     {
-        var link = LinkOf(AnnouncementPath, announcement.Id);
+        var link = WhatsAppHostLinks.AnnouncementOf(_clubApp.Value.BaseUrl, announcement.Id);
         var post = WhatsAppPostText.Render(
             new WhatsAppPostDraft
             {
+                Badge = WhatsAppBadge.Announcement,
                 Title = announcement.Title,
                 Slot = null,
                 Body = WhatsAppPostBody.Rich(announcement.Body),
@@ -87,7 +84,10 @@ public sealed class WhatsAppPosts
                         announcement.Polls,
                         announcement.SignUpLists
                     ),
-                    WhatsAppAddOnMessages.AttendancePoll(announcement.Title),
+                    WhatsAppAddOnMessages.AttendancePoll(
+                        announcement.Title,
+                        announcement.AnswersUntil
+                    ),
                     link
                 ),
             ],
@@ -106,10 +106,11 @@ public sealed class WhatsAppPosts
             entry.EndsAt,
             await VenueNameAsync(entry.VenueId, ct)
         );
-        var link = LinkOf(CalendarPath, entry.Id);
+        var link = WhatsAppHostLinks.CalendarEntryOf(_clubApp.Value.BaseUrl, entry.Id);
         var post = WhatsAppPostText.Render(
             new WhatsAppPostDraft
             {
+                Badge = WhatsAppBadges.OfEntryKind(entry.Kind),
                 Title = entry.Title,
                 Slot = slot,
                 Body = entry.Description is { } description
@@ -185,7 +186,11 @@ public sealed class WhatsAppPosts
         return
         [
             .. ordered.Select(loan =>
-                TakenOverLineOf(loan, names, LinkOf(CalendarPath, loan.CalendarEntryId))
+                TakenOverLineOf(
+                    loan,
+                    names,
+                    WhatsAppHostLinks.CalendarEntryOf(_clubApp.Value.BaseUrl, loan.CalendarEntryId)
+                )
             ),
         ];
     }
@@ -209,13 +214,17 @@ public sealed class WhatsAppPosts
                 .Where(poll => pollIds.Contains(poll.Id))
                 .ToDictionaryAsync(
                     poll => poll.Id,
-                    poll => new TakenOverPoll(poll.Question, poll.IsAnonymous),
+                    poll => new TakenOverPoll(poll.Question, poll.IsAnonymous, poll.VotesUntil),
                     ct
                 ),
             await _dbContext
                 .SignUpLists.AsNoTracking()
                 .Where(list => listIds.Contains(list.Id))
-                .ToDictionaryAsync(list => list.Id, list => list.Title, ct)
+                .ToDictionaryAsync(
+                    list => list.Id,
+                    list => new TakenOverList(list.Title, list.SignUpUntil),
+                    ct
+                )
         );
     }
 
@@ -232,16 +241,19 @@ public sealed class WhatsAppPosts
                     ? WhatsAppAddOnMessages.AnonymousVoteLead
                     : WhatsAppAddOnMessages.VoteLead,
                 names.Polls[pollId].Question,
+                names.Polls[pollId].VotesUntil,
                 link
             ),
             (AnnouncementAddOnKind.SignUpList, _, { } listId) => new WhatsAppAddOnLine(
                 WhatsAppAddOnMessages.SignUpLead,
-                names.SignUpLists[listId],
+                names.SignUpLists[listId].Title,
+                names.SignUpLists[listId].SignUpUntil,
                 link
             ),
             (AnnouncementAddOnKind.Attendance, _, _) => new WhatsAppAddOnLine(
                 WhatsAppAddOnMessages.AttendanceLead,
                 names.EntryTitles[loan.CalendarEntryId],
+                null,
                 link
             ),
             _ => throw new InvalidOperationException(
@@ -320,12 +332,6 @@ public sealed class WhatsAppPosts
         return [.. groupIds.Join(names, id => id, group => group.Id, (_, group) => group.Name)];
     }
 
-    private string LinkOf(string path, int id) =>
-        string.Create(
-            CultureInfo.InvariantCulture,
-            $"{_clubApp.Value.BaseUrl.TrimEnd('/')}{path}/{id}"
-        );
-
     [Pure]
     private static IReadOnlyList<WhatsAppPostSchedule> SchedulesOf(CalendarEntry entry) =>
         [
@@ -348,11 +354,17 @@ public sealed class WhatsAppPosts
         IEnumerable<SignUpList> SignUpLists
     );
 
-    private sealed record TakenOverPoll(string Question, bool IsAnonymous);
+    private sealed record TakenOverPoll(
+        string Question,
+        bool IsAnonymous,
+        DateTimeOffset? VotesUntil
+    );
+
+    private sealed record TakenOverList(string Title, DateTimeOffset? SignUpUntil);
 
     private sealed record TakenOverNames(
         IReadOnlyDictionary<int, string> EntryTitles,
         IReadOnlyDictionary<int, TakenOverPoll> Polls,
-        IReadOnlyDictionary<int, string> SignUpLists
+        IReadOnlyDictionary<int, TakenOverList> SignUpLists
     );
 }

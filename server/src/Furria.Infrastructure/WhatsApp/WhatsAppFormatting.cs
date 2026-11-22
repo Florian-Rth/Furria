@@ -12,6 +12,17 @@ public static partial class WhatsAppFormatting
     private const string PersonTargetPrefix = "person:";
     private const string ContactSuffix = "@c.us";
 
+    private static readonly IReadOnlyDictionary<string, string> InertLookAlikes = new Dictionary<
+        string,
+        string
+    >
+    {
+        ["*"] = "∗",
+        ["_"] = "＿",
+        ["~"] = "∼",
+        ["`"] = "ˋ",
+    };
+
     [Pure]
     public static string Bold(string text) => $"*{text}*";
 
@@ -68,7 +79,7 @@ public static partial class WhatsAppFormatting
     )
     {
         if (match.Groups["escaped"].Success)
-            return match.Groups["escaped"].Value;
+            return InertOf(match.Groups["escaped"].Value);
         if (match.Groups["bold"].Success)
             return "*";
 
@@ -100,7 +111,12 @@ public static partial class WhatsAppFormatting
             : null;
 
     [Pure]
-    private static string Unescaped(string text) => Escape().Replace(text, "$1");
+    private static string Unescaped(string text) =>
+        Escape().Replace(text, escaped => InertOf(escaped.Groups[1].Value));
+
+    [Pure]
+    private static string InertOf(string character) =>
+        InertLookAlikes.GetValueOrDefault(character, character);
 
     [GeneratedRegex(
         @"\\(?<escaped>[!-/:-@\[-`{-~])|(?<mention>@)?\[(?<label>(?:\\.|[^\]\\])+)\]\((?<target>[^)\s]+)\)|(?<bold>\*\*)"

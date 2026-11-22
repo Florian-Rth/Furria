@@ -2,6 +2,8 @@ namespace Furria.Infrastructure.WhatsApp;
 
 public sealed record WhatsAppPostDraft
 {
+    public required WhatsAppBadge Badge { get; init; }
+
     public required string Title { get; init; }
 
     public required WhatsAppPostSlot? Slot { get; init; }

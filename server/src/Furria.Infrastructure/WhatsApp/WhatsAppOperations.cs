@@ -1,3 +1,5 @@
+using System.Diagnostics.Contracts;
+
 namespace Furria.Infrastructure.WhatsApp;
 
 public static class WhatsAppOperations
@@ -8,4 +10,8 @@ public static class WhatsAppOperations
         WhatsAppOperation.Reply,
         WhatsAppOperation.Delete,
     ];
+
+    [Pure]
+    public static bool IsKeptAsPost(WhatsAppOperation operation) =>
+        operation != WhatsAppOperation.DirectText && !Targeting.Contains(operation);
 }
