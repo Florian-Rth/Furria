@@ -156,6 +156,7 @@ public static class ChangedTables
         typeof(InboxWhatsAppEvent),
         typeof(OutboxWhatsApp),
         typeof(WhatsAppMessage),
+        typeof(WhatsAppLateAnswer),
         typeof(LogEntry),
         typeof(MediaJob),
         typeof(MediaFileTombstone),
