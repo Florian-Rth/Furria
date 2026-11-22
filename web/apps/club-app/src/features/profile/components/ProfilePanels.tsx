@@ -12,6 +12,7 @@ import { formatIsoDay } from '@/lib/membership-labels';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfileAppearancePanel } from './ProfileAppearancePanel';
 import { ProfileBeerListPanel } from './ProfileBeerListPanel';
+import { ProfileClubGroupPanel } from './ProfileClubGroupPanel';
 import { ProfileContactPanel } from './ProfileContactPanel';
 import { ProfileGroupsPanel } from './ProfileGroupsPanel';
 import { ProfileMembershipPanel } from './ProfileMembershipPanel';
@@ -37,6 +38,7 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
         <KkPanelStack>
           <ProfileContactPanel person={person} highlightedKey={highlightedKey} />
           <ProfileVisibilityPanel person={person} />
+          <ProfileClubGroupPanel person={person} />
         </KkPanelStack>
       </Grid>
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>

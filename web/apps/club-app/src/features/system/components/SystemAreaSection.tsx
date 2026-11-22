@@ -8,6 +8,7 @@ import { SystemMailSection } from './SystemMailSection';
 import { SystemMediaSection } from './SystemMediaSection';
 import { SystemServicesSection } from './SystemServicesSection';
 import { SystemStorageSection } from './SystemStorageSection';
+import { SystemWhatsAppSection } from './SystemWhatsAppSection';
 
 interface SystemAreaSectionProps {
   area: SystemArea;
@@ -29,6 +30,8 @@ export const SystemAreaSection: FC<SystemAreaSectionProps> = ({ area, status, mo
       return <SystemDatabaseSection status={status} dimmed={dimmed} />;
     case 'mail':
       return <SystemMailSection status={status} nowMs={moment.nowMs} dimmed={dimmed} />;
+    case 'whatsApp':
+      return <SystemWhatsAppSection status={status} nowMs={moment.nowMs} dimmed={dimmed} />;
     case 'log':
       return <SystemLogSection logsSince={status.logsSince} nowMs={moment.nowMs} dimmed={dimmed} />;
   }

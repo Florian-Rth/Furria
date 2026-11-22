@@ -66,6 +66,7 @@ public sealed class SystemStatusService
             Queue = await QueueAsync(now, ct),
             Workers = await WorkersAsync(now, ct),
             Mail = await MailAsync(ct),
+            WhatsApp = await WhatsAppAsync(ct),
             ErrorsPerHour = await _databaseProbe.ErrorsPerHourAsync(now, ct),
             LogsSince = await _dbContext
                 .LogEntries.Select(entry => (DateTimeOffset?)entry.LoggedAt)
@@ -93,6 +94,7 @@ public sealed class SystemStatusService
             Workers = [],
             Services = _runs.Snapshot(),
             Mail = MailOutboxDetails.Unknown,
+            WhatsApp = WhatsAppOutboxDetails.Unknown,
             ErrorsPerHour = NoErrors,
             LogsSince = null,
         };
@@ -180,6 +182,21 @@ public sealed class SystemStatusService
             Retrying = await outbox.CountAsync(mail => mail.Attempt > 1, ct),
             OldestPendingAt = await outbox
                 .Select(mail => (DateTimeOffset?)mail.EnqueuedAt)
+                .MinAsync(ct),
+        };
+    }
+
+    private async Task<WhatsAppOutboxDetails> WhatsAppAsync(CancellationToken ct)
+    {
+        var outbox = _dbContext.OutboxWhatsApps.AsNoTracking();
+        var waiting = outbox.Where(operation => operation.FailedAt == null);
+        return new WhatsAppOutboxDetails
+        {
+            Waiting = await waiting.CountAsync(ct),
+            Retrying = await waiting.CountAsync(operation => operation.Attempt > 1, ct),
+            Failed = await outbox.CountAsync(operation => operation.FailedAt != null, ct),
+            OldestWaitingAt = await waiting
+                .Select(operation => (DateTimeOffset?)operation.EnqueuedAt)
                 .MinAsync(ct),
         };
     }

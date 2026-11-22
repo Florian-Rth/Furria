@@ -18,4 +18,7 @@ public enum SystemReasonCode
     ServiceFailed = 14,
     MailRetrying = 15,
     MailStuck = 16,
+    WhatsAppRetrying = 17,
+    WhatsAppFailed = 18,
+    WhatsAppStuck = 19,
 }

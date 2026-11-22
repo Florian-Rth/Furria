@@ -36,6 +36,7 @@ const BOARD_AREAS: readonly SystemArea[] = [
   'storage',
   'services',
   'mail',
+  'whatsApp',
   'log',
 ];
 
@@ -109,6 +110,8 @@ const figureOf = (area: SystemArea, status: SystemStatus, nowMs: number): BoardF
       };
     case 'mail':
       return { kind: 'count', count: status.mail.pending };
+    case 'whatsApp':
+      return { kind: 'count', count: status.whatsApp.waiting };
     case 'log':
       return { kind: 'count', count: sumOf(status.errorsPerHour) };
   }

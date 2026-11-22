@@ -257,3 +257,7 @@ const GALLERY_COUNT = new Intl.NumberFormat('de-DE');
 
 export const toGalleryShelfEdge = (itemCount: number): string =>
   `${GALLERY_COUNT.format(itemCount)} ${itemCount === 1 ? 'Bild' : 'Bilder'}`;
+
+export const CLUB_GROUP_JOIN_TITLE = 'Tritt der Vereinsgruppe bei';
+export const CLUB_GROUP_JOIN_LINE = 'Dein WhatsApp lässt das Hinzufügen nicht zu.';
+export const CLUB_GROUP_JOIN_LABEL = 'Gruppe öffnen';

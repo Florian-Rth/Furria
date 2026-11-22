@@ -8,13 +8,16 @@ using Furria.Application.Mail;
 using Furria.Application.Media;
 using Furria.Application.Push;
 using Furria.Application.Website;
+using Furria.Application.WhatsApp;
 using Furria.Core.Halls;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Push;
+using Furria.Infrastructure.WhatsApp;
 using Furria.Tests.Common.Push;
+using Furria.Tests.Common.WhatsApp;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -39,6 +42,8 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
     public CapturingLogSink Logs { get; } = new();
 
     public FakePushService PushService { get; } = new();
+
+    public FakeWahaService Waha { get; } = new();
 
     public string Database => _database;
 
@@ -204,6 +209,30 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
             $"{TrustedProxyOptions.SectionName}:{nameof(TrustedProxyOptions.TrustedProxies)}:0",
             ApiTestFixture.TrustedProxyAddress
         );
+        builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.BaseUrl)}",
+            ApiTestFixture.WahaBaseUrl
+        );
+        builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.ApiKey)}",
+            ApiTestFixture.WahaApiKey
+        );
+        builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.WebhookHmacKey)}",
+            ApiTestFixture.WhatsAppWebhookHmacKey
+        );
+        builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.Session)}",
+            ApiTestFixture.WhatsAppSession
+        );
+        builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.SendGap)}",
+            TimeSpan.Zero.ToString("c", CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.SendGapJitter)}",
+            TimeSpan.Zero.ToString("c", CultureInfo.InvariantCulture)
+        );
         builder.ConfigureServices(services =>
         {
             services.RemoveAll<TimeProvider>();
@@ -214,11 +243,16 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
             );
         });
         builder.ConfigureTestServices(services =>
+        {
             services
                 .AddHttpClient(PushSender.HttpClientName)
                 .ConfigurePrimaryHttpMessageHandler(() => PushService)
-                .SetHandlerLifetime(Timeout.InfiniteTimeSpan)
-        );
+                .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
+            services
+                .AddHttpClient<WahaClient>()
+                .ConfigurePrimaryHttpMessageHandler(() => Waha)
+                .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
+        });
     }
 
     public override async ValueTask DisposeAsync()

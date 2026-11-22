@@ -8,6 +8,7 @@ export type AreaSummary =
   | { kind: 'services'; punctual: number; overdue: number; failed: number }
   | { kind: 'database'; isReachable: boolean; latencyMs: number | null; sizeBytes: number | null }
   | { kind: 'mail'; pending: number; retrying: number }
+  | { kind: 'whatsApp'; waiting: number; failed: number }
   | { kind: 'log'; errors: number };
 
 const MILLISECONDS = 1000;
@@ -71,6 +72,12 @@ export const areaSummaryOf = (
       };
     case 'mail':
       return { kind: 'mail', pending: status.mail.pending, retrying: status.mail.retrying };
+    case 'whatsApp':
+      return {
+        kind: 'whatsApp',
+        waiting: status.whatsApp.waiting,
+        failed: status.whatsApp.failed,
+      };
     case 'log':
       return {
         kind: 'log',

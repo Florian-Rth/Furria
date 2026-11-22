@@ -50,6 +50,12 @@ public sealed class PersonExpectations
                 Assert.Equal(visible, (await SingleAsync(dbContext, ct)).ContactVisibleToMembers)
         );
 
+    public Expected ToHaveClubGroupConsent(bool consents) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(consents, (await SingleAsync(dbContext, ct)).ClubGroupConsent)
+        );
+
     public Expected ToHaveBirthDate(DateOnly? birthDate) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

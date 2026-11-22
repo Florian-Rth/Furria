@@ -21,6 +21,7 @@ using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Push;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -140,6 +141,22 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<OutboxCalendarPush> OutboxCalendarPushes => Set<OutboxCalendarPush>();
 
     public DbSet<OutboxPush> OutboxPushes => Set<OutboxPush>();
+
+    public DbSet<InboxWhatsAppEvent> InboxWhatsAppEvents => Set<InboxWhatsAppEvent>();
+
+    public DbSet<WhatsAppSession> WhatsAppSessions => Set<WhatsAppSession>();
+
+    public DbSet<LinkedWhatsAppGroup> LinkedWhatsAppGroups => Set<LinkedWhatsAppGroup>();
+
+    public DbSet<OutboxWhatsApp> OutboxWhatsApps => Set<OutboxWhatsApp>();
+
+    public DbSet<WhatsAppMessage> WhatsAppMessages => Set<WhatsAppMessage>();
+
+    public DbSet<WhatsAppAnswer> WhatsAppAnswers => Set<WhatsAppAnswer>();
+
+    public DbSet<WhatsAppLateAnswer> WhatsAppLateAnswers => Set<WhatsAppLateAnswer>();
+
+    public DbSet<WhatsAppGroupAdd> WhatsAppGroupAdds => Set<WhatsAppGroupAdd>();
 
     public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();
 

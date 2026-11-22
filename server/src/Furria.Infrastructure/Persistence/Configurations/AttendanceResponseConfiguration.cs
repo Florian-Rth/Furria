@@ -51,6 +51,10 @@ public sealed class AttendanceResponseConfiguration : IEntityTypeConfiguration<A
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.Property(response => response.IsRecordedOnBehalf).HasDefaultValue(false);
+        builder
+            .Property(response => response.IsGivenThroughWhatsApp)
+            .HasColumnName("is_given_through_whatsapp")
+            .HasDefaultValue(false);
 
         builder
             .HasOne(response => response.RecordedBy)

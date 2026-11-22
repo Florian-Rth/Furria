@@ -9,6 +9,7 @@ import { useNewcomerForm } from '../hooks/use-newcomer-form';
 import { PAGE_TITLE, SUBMIT_LABEL } from '../intake-copy';
 import { IntakeAboutFields } from './IntakeAboutFields';
 import { IntakeAddressFields } from './IntakeAddressFields';
+import { IntakeClubGroupField } from './IntakeClubGroupField';
 import { IntakeContactFields } from './IntakeContactFields';
 import { IntakePortraitField } from './IntakePortraitField';
 
@@ -36,6 +37,7 @@ export const IntakeOpen: FC<IntakeOpenProps> = ({ page }) => {
         <IntakeAboutFields form={control.form} />
         {address}
         <IntakeContactFields form={control.form} />
+        <IntakeClubGroupField form={control.form} />
         <IntakePortraitField portrait={control.portrait} uploadShare={control.uploadShare} />
         {rejection}
         <KkButton type="submit" fullWidth loading={control.isSending} disabled={!control.canSubmit}>

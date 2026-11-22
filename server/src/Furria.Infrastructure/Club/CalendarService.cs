@@ -13,6 +13,7 @@ using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -59,13 +60,17 @@ public sealed partial class CalendarService
     private readonly MediaPictures _pictures;
     private readonly TimeProvider _timeProvider;
     private readonly CalendarPushRecipients _pushRecipients;
+    private readonly WhatsAppPosts _whatsAppPosts;
+    private readonly WhatsAppPostUpdates _whatsAppPostUpdates;
 
     public CalendarService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
         MediaPictures pictures,
         TimeProvider timeProvider,
-        CalendarPushRecipients pushRecipients
+        CalendarPushRecipients pushRecipients,
+        WhatsAppPosts whatsAppPosts,
+        WhatsAppPostUpdates whatsAppPostUpdates
     )
     {
         _dbContext = dbContext;
@@ -73,6 +78,8 @@ public sealed partial class CalendarService
         _pictures = pictures;
         _timeProvider = timeProvider;
         _pushRecipients = pushRecipients;
+        _whatsAppPosts = whatsAppPosts;
+        _whatsAppPostUpdates = whatsAppPostUpdates;
     }
 
     public async Task<Result<IReadOnlyList<CalendarEntrySummary>>> GetEntriesAsync(
@@ -349,7 +356,10 @@ public sealed partial class CalendarService
             return Result<CalendarEntryWriteResult>.Carrying(saved);
 
         if (command.Notify)
+        {
             await EnqueueNotifyingPushAsync(entry, command.ViewerPersonId, ct);
+            await _whatsAppPosts.StageCalendarEntryAsync(entry, command.ViewerPersonId, ct);
+        }
 
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
@@ -461,6 +471,11 @@ public sealed partial class CalendarService
         if (!saved.IsSuccess)
             return Result<CalendarEntryWriteResult>.Carrying(saved);
 
+        await _whatsAppPostUpdates.KeepCalendarEntryInStepAsync(
+            entry,
+            new WhatsAppEntryChange(command.ViewerPersonId, pushBaseline.Moves),
+            ct
+        );
         await transaction.CommitAsync(ct);
         return Result<CalendarEntryWriteResult>.Success(
             await WrittenAsync(entry, command.ViewerPersonId, ct)
@@ -493,6 +508,7 @@ public sealed partial class CalendarService
         );
         _dbContext.CalendarEntries.Remove(entry);
         await _dbContext.SaveChangesAsync(ct);
+        await _whatsAppPostUpdates.CancelCalendarEntryAsync(entry.Id, ct);
         await transaction.CommitAsync(ct);
 
         return Result.Success();
@@ -857,6 +873,7 @@ public sealed partial class CalendarService
             Answers = roll?.Answers,
             NotAnswered = roll?.NotAnswered,
             Reminder = roll?.Reminder,
+            Unassigned = roll?.Unassigned,
         };
 
     private PictureDetails? EventPictureOf(int eventId, EventFactsRow facts) =>

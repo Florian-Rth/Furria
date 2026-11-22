@@ -47,6 +47,7 @@ const detail: Announcement = {
         answers: [],
         notAnswered: null,
         reminder: null,
+        unassigned: null,
       },
       borrowed: null,
     },

@@ -10,4 +10,11 @@ export interface LogFilter {
   search: string;
 }
 
-export type SystemArea = 'database' | 'media' | 'storage' | 'services' | 'mail' | 'log';
+export type SystemArea =
+  | 'database'
+  | 'media'
+  | 'storage'
+  | 'services'
+  | 'mail'
+  | 'whatsApp'
+  | 'log';

@@ -17,6 +17,7 @@ public static class SystemVerdict
     private static readonly TimeSpan QueueWaitingAfter = TimeSpan.FromMinutes(5);
     private static readonly TimeSpan QueueStuckAfter = TimeSpan.FromMinutes(30);
     private static readonly TimeSpan MailStuckAfter = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan WhatsAppStuckAfter = TimeSpan.FromMinutes(30);
 
     [Pure]
     private static IEnumerable<SystemReason> DatabaseReasons(SystemDatabaseDetails database)
@@ -212,6 +213,34 @@ public static class SystemVerdict
     }
 
     [Pure]
+    private static IEnumerable<SystemReason> WhatsAppReasons(
+        WhatsAppOutboxDetails outbox,
+        DateTimeOffset checkedAt
+    )
+    {
+        if (outbox.Retrying > 0)
+            yield return Attention(
+                SystemCheck.WhatsApp,
+                SystemReasonCode.WhatsAppRetrying,
+                outbox.Retrying
+            );
+
+        if (outbox.Failed > 0)
+            yield return Attention(
+                SystemCheck.WhatsApp,
+                SystemReasonCode.WhatsAppFailed,
+                outbox.Failed
+            );
+
+        if (outbox.OldestWaitingAt is { } oldest && checkedAt - oldest > WhatsAppStuckAfter)
+            yield return Broken(
+                SystemCheck.WhatsApp,
+                SystemReasonCode.WhatsAppStuck,
+                SecondsBetween(oldest, checkedAt)
+            );
+    }
+
+    [Pure]
     private static double SecondsBetween(DateTimeOffset earlier, DateTimeOffset later) =>
         Math.Round((later - earlier).TotalSeconds);
 
@@ -261,6 +290,7 @@ public static class SystemVerdict
             .. LogReasons(facts.ErrorsPerHour),
             .. facts.Services.SelectMany(run => ServiceReasons(run, facts.CheckedAt)),
             .. MailReasons(facts.Mail, facts.CheckedAt),
+            .. WhatsAppReasons(facts.WhatsApp, facts.CheckedAt),
         ];
 
         return new SystemVerdictDetails

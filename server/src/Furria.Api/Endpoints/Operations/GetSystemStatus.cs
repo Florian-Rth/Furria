@@ -42,6 +42,7 @@ public sealed class GetSystemStatus : EndpointWithoutRequest<GetSystemStatusResp
             Workers = [.. status.Facts.Workers.Select(ToDto)],
             Services = [.. status.Facts.Services.Select(ToDto)],
             Mail = ToDto(status.Facts.Mail),
+            WhatsApp = ToDto(status.Facts.WhatsApp),
             ErrorsPerHour = status.Facts.ErrorsPerHour,
             LogsSince = status.Facts.LogsSince,
         };
@@ -183,6 +184,15 @@ public sealed class GetSystemStatus : EndpointWithoutRequest<GetSystemStatusResp
             Retrying = mail.Retrying,
             OldestPendingAt = mail.OldestPendingAt,
         };
+
+    private static SystemWhatsAppDto ToDto(WhatsAppOutboxDetails outbox) =>
+        new()
+        {
+            Waiting = outbox.Waiting,
+            Retrying = outbox.Retrying,
+            Failed = outbox.Failed,
+            OldestWaitingAt = outbox.OldestWaitingAt,
+        };
 }
 
 public sealed record GetSystemStatusResponse
@@ -206,6 +216,8 @@ public sealed record GetSystemStatusResponse
     public required IReadOnlyList<SystemServiceDto> Services { get; init; }
 
     public required SystemMailDto Mail { get; init; }
+
+    public required SystemWhatsAppDto WhatsApp { get; init; }
 
     public required IReadOnlyList<int> ErrorsPerHour { get; init; }
 
@@ -392,4 +404,15 @@ public sealed record SystemMailDto
     public required int Retrying { get; init; }
 
     public required DateTimeOffset? OldestPendingAt { get; init; }
+}
+
+public sealed record SystemWhatsAppDto
+{
+    public required int Waiting { get; init; }
+
+    public required int Retrying { get; init; }
+
+    public required int Failed { get; init; }
+
+    public required DateTimeOffset? OldestWaitingAt { get; init; }
 }

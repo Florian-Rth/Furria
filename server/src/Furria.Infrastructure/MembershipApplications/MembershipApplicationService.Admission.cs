@@ -179,6 +179,7 @@ public sealed partial class MembershipApplicationService
             Street = applicant.Street,
             Zip = applicant.Zip,
             City = applicant.City,
+            ClubGroupConsent = false,
             ActorPersonId = admitterPersonId,
         };
 

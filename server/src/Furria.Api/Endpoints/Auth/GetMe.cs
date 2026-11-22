@@ -104,6 +104,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             City = person.City,
             BirthDate = person.BirthDate,
             ContactVisibleToMembers = person.ContactVisibleToMembers,
+            ClubGroupConsent = person.ClubGroupConsent,
             ContactChange = person.ContactChange is { } change ? ToDto(change) : null,
             Portrait = PictureEditingDto.From(portrait),
         };
@@ -191,6 +192,8 @@ public sealed record MePersonDto
     public required DateOnly? BirthDate { get; init; }
 
     public required bool ContactVisibleToMembers { get; init; }
+
+    public required bool ClubGroupConsent { get; init; }
 
     public required MeContactChangeDto? ContactChange { get; init; }
 

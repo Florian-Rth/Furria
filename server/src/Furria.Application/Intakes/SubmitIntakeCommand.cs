@@ -19,4 +19,6 @@ public sealed record SubmitIntakeCommand
     public required string? Phone { get; init; }
 
     public required string? Email { get; init; }
+
+    public required bool ClubGroupConsent { get; init; }
 }

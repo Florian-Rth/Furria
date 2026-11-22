@@ -5,10 +5,11 @@ import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import { KkTextField } from '@furria/ui/KkTextField';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
-import { NOTIFY_LABEL } from '@/features/calendar/calendar-labels';
+import { NOTIFY_LABEL, toNotifyReachLine } from '@/features/calendar/calendar-labels';
 import { RichTextLinkSheet } from '@/features/rich-text/components/RichTextLinkSheet';
 import { RichTextMentionLayer } from '@/features/rich-text/components/RichTextMentionLayer';
 import { FORMAT_RAIL_LABEL } from '@/features/rich-text/rich-text-copy';
+import { useClubGroupReach } from '@/features/whatsapp/hooks/use-club-group-reach';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { ANNOUNCEMENT_LINK_SHEET_ID } from '../announcement-mention-copy';
 import {
@@ -18,7 +19,7 @@ import {
   ANNOUNCEMENT_CONTENT_SECTION_TITLE,
   ANNOUNCEMENT_CREATE_TITLE,
   ANNOUNCEMENT_EDIT_TITLE,
-  ANNOUNCEMENT_NOTIFY_REACH_LINE,
+  ANNOUNCEMENT_NOTIFY_REACH,
   ANNOUNCEMENT_SAVE_LABEL,
   ANNOUNCEMENT_TITLE_FIELD_LABEL,
   ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL,
@@ -47,12 +48,14 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
   const withdrawal = useAnnouncementWithdrawal(announcement);
   const isBodyInvalid = errors.body !== undefined;
   const bodyHelper = errors.body?.message;
+  const clubGroupLinked = useClubGroupReach(control.notify !== null);
+  const notifyReachLine = toNotifyReachLine(ANNOUNCEMENT_NOTIFY_REACH, null, clubGroupLinked);
 
   const notifySwitch =
     control.notify === null ? null : (
       <KkSwitchRow
         label={NOTIFY_LABEL}
-        description={ANNOUNCEMENT_NOTIFY_REACH_LINE}
+        description={notifyReachLine}
         checked={control.notify.checked}
         onChange={control.notify.set}
         stateChip={false}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Me } from '@/lib/api/schemas';
-import { owedWelcomeOf, welcomePlanOf } from './welcome-plan';
+import type { Me, MePerson } from '@/lib/api/schemas';
+import { asksClubGroupConsentOf, owedWelcomeOf, welcomePlanOf } from './welcome-plan';
 
 const SWEEP_MS = 720;
 
@@ -82,23 +82,27 @@ describe('welcomePlanOf', () => {
   });
 });
 
+const PERSON: MePerson = {
+  id: 4,
+  firstName: 'Lena',
+  lastName: 'Muster',
+  email: null,
+  phone: null,
+  street: null,
+  zip: null,
+  city: null,
+  birthDate: null,
+  contactVisibleToMembers: false,
+  clubGroupConsent: false,
+  contactChange: null,
+  portrait: null,
+};
+
 const ME: Me = {
   accountId: 1,
   email: 'lena@example.org',
-  person: {
-    id: 4,
-    firstName: 'Lena',
-    lastName: 'Muster',
-    email: null,
-    phone: null,
-    street: null,
-    zip: null,
-    city: null,
-    birthDate: null,
-    contactVisibleToMembers: false,
-    contactChange: null,
-    portrait: null,
-  },
+  person: PERSON,
+
   membership: {
     state: 'active',
     memberSince: '2014-03-01',
@@ -126,5 +130,19 @@ describe('owedWelcomeOf', () => {
     { name: 'a managing login', me: { ...ME, person: null }, owed: false },
   ])('owes the welcome to $name: $owed', ({ me, owed }) => {
     expect(owedWelcomeOf(me) !== null).toBe(owed);
+  });
+});
+
+describe('asksClubGroupConsentOf', () => {
+  it.each([
+    { name: 'a person without consent', me: ME, asks: true },
+    {
+      name: 'a person who consented',
+      me: { ...ME, person: { ...PERSON, clubGroupConsent: true } },
+      asks: false,
+    },
+    { name: 'a managing login', me: { ...ME, person: null }, asks: false },
+  ])('asks $name: $asks', ({ me, asks }) => {
+    expect(asksClubGroupConsentOf(me)).toBe(asks);
   });
 });

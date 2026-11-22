@@ -28,6 +28,7 @@ const poll: CalendarPoll = {
   concernedCount: 20,
   notAnswered: null,
   reminder: null,
+  unassigned: null,
   options: [],
 };
 
@@ -64,6 +65,7 @@ const heldAddOns: AnnouncementAddOn[] = [
       answers: [],
       notAnswered: null,
       reminder: null,
+      unassigned: null,
     },
     borrowed: null,
   },

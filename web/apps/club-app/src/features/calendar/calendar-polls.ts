@@ -7,7 +7,6 @@ import {
   toDeadlineIssueCodes,
 } from './calendar-deadlines';
 import type {
-  AudiencePerson,
   BorrowedAddOnCardIdentity,
   CalendarAddOnCardForm,
   CalendarEntryAddOn,
@@ -15,6 +14,7 @@ import type {
   CalendarPollForm,
   CalendarPollOption,
   CalendarPollOptionForm,
+  CalendarPollVoter,
 } from './schemas';
 
 export const POLL_QUESTION_MAX_LENGTH = 200;
@@ -240,7 +240,7 @@ export interface CalendarPollResult {
   percent: number;
   isLeading: boolean;
   isChosen: boolean;
-  voters: AudiencePerson[];
+  voters: CalendarPollVoter[];
 }
 
 const toPlainPercents = (counts: readonly number[], voterCount: number): number[] =>

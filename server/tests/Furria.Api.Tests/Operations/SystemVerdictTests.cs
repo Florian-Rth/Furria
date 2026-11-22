@@ -47,6 +47,7 @@ public sealed class SystemVerdictTests
         Workers = [Worker(lastSeenAt: Now.AddSeconds(-10), AppVersion)],
         Services = [Run(BackgroundJob.LogEntryPurge, lastRunAt: Now.AddMinutes(-5))],
         Mail = MailOutboxDetails.Unknown,
+        WhatsApp = WhatsAppOutboxDetails.Unknown,
         ErrorsPerHour = new int[SystemFacts.ErrorHours],
         LogsSince = Now.AddDays(-3),
     };
@@ -387,6 +388,48 @@ public sealed class SystemVerdictTests
         );
 
         AssertSingleReason(verdict, SystemLevel.Broken, SystemReasonCode.MailStuck, 16 * 60);
+    }
+
+    [Fact]
+    public void Should_AskForAttention_When_WhatsAppOperationsRetryOrFailed()
+    {
+        var verdict = SystemVerdict.Of(
+            Healthy with
+            {
+                WhatsApp = new WhatsAppOutboxDetails
+                {
+                    Waiting = 2,
+                    Retrying = 1,
+                    Failed = 3,
+                    OldestWaitingAt = Now.AddMinutes(-5),
+                },
+            }
+        );
+
+        Assert.Equal(SystemLevel.Attention, verdict.Level);
+        Assert.Equal(
+            [(SystemReasonCode.WhatsAppRetrying, 1.0), (SystemReasonCode.WhatsAppFailed, 3.0)],
+            verdict.Reasons.Select(reason => (reason.Code, reason.Value ?? 0))
+        );
+    }
+
+    [Fact]
+    public void Should_Break_When_AWhatsAppOperationWaitsLongerThanHalfAnHour()
+    {
+        var verdict = SystemVerdict.Of(
+            Healthy with
+            {
+                WhatsApp = new WhatsAppOutboxDetails
+                {
+                    Waiting = 1,
+                    Retrying = 0,
+                    Failed = 0,
+                    OldestWaitingAt = Now.AddMinutes(-31),
+                },
+            }
+        );
+
+        AssertSingleReason(verdict, SystemLevel.Broken, SystemReasonCode.WhatsAppStuck, 31 * 60);
     }
 
     [Fact]

@@ -22,6 +22,8 @@ public sealed record SystemFacts
 
     public required MailOutboxDetails Mail { get; init; }
 
+    public required WhatsAppOutboxDetails WhatsApp { get; init; }
+
     public required IReadOnlyList<int> ErrorsPerHour { get; init; }
 
     public required DateTimeOffset? LogsSince { get; init; }

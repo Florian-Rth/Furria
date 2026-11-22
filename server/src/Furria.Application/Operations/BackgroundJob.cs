@@ -15,4 +15,6 @@ public enum BackgroundJob
     BeerStockWarnings = 12,
     PushDispatcher = 13,
     IntakeExpirySweep = 14,
+    WhatsAppInbox = 15,
+    WhatsAppDispatcher = 16,
 }

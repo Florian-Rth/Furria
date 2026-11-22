@@ -50,4 +50,5 @@ public enum DomainChange
     CalendarSignUpLine = 46,
     GroupMatcher = 47,
     Intake = 48,
+    WhatsApp = 49,
 }

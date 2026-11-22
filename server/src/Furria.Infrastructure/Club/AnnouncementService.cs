@@ -6,6 +6,7 @@ using Furria.Core.Text;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -22,6 +23,8 @@ public sealed partial class AnnouncementService
     private readonly AnnouncementMentionTargetsQuery _mentionTargets;
     private readonly CalendarService _calendarService;
     private readonly PermissionAuthorizer _authorizer;
+    private readonly WhatsAppPosts _whatsAppPosts;
+    private readonly WhatsAppPostUpdates _whatsAppPostUpdates;
     private readonly TimeProvider _timeProvider;
 
     public AnnouncementService(
@@ -31,6 +34,8 @@ public sealed partial class AnnouncementService
         AnnouncementMentionTargetsQuery mentionTargets,
         CalendarService calendarService,
         PermissionAuthorizer authorizer,
+        WhatsAppPosts whatsAppPosts,
+        WhatsAppPostUpdates whatsAppPostUpdates,
         TimeProvider timeProvider
     )
     {
@@ -40,6 +45,8 @@ public sealed partial class AnnouncementService
         _mentionTargets = mentionTargets;
         _calendarService = calendarService;
         _authorizer = authorizer;
+        _whatsAppPosts = whatsAppPosts;
+        _whatsAppPostUpdates = whatsAppPostUpdates;
         _timeProvider = timeProvider;
     }
 
@@ -114,7 +121,7 @@ public sealed partial class AnnouncementService
             return Result<int>.Carrying(saved);
 
         if (command.Notify)
-            await EnqueuePostedPushesAsync(announcement, ct);
+            await NotifyAsync(announcement, ct);
         await transaction.CommitAsync(ct);
 
         return Result<int>.Success(announcement.Id);
@@ -159,6 +166,7 @@ public sealed partial class AnnouncementService
         if (!saved.IsSuccess)
             return saved;
 
+        await _whatsAppPostUpdates.KeepAnnouncementInStepAsync(announcement, ct);
         await transaction.CommitAsync(ct);
         return Result.Success();
     }
@@ -185,6 +193,7 @@ public sealed partial class AnnouncementService
         _dbContext.Announcements.Remove(announcement);
         await _dbContext.SaveChangesAsync(ct);
         await DropUndeliveredPushesAsync(announcement.Id, ct);
+        await _whatsAppPostUpdates.WithdrawAnnouncementAsync(announcement.Id, ct);
         await transaction.CommitAsync(ct);
 
         return Result.Success();
@@ -242,11 +251,17 @@ public sealed partial class AnnouncementService
             OfficeName = officeNames.GetValueOrDefault(author.PersonId),
         };
 
-    private async Task EnqueuePostedPushesAsync(Announcement announcement, CancellationToken ct)
+    private async Task NotifyAsync(Announcement announcement, CancellationToken ct)
     {
         if (!AnnouncementPushRules.IsStillValid(announcement.ValidUntil, announcement.PublishedAt))
             return;
 
+        await EnqueuePostedPushesAsync(announcement, ct);
+        await _whatsAppPosts.StageAnnouncementAsync(announcement, ct);
+    }
+
+    private async Task EnqueuePostedPushesAsync(Announcement announcement, CancellationToken ct)
+    {
         var readerAccountIds = await _dbContext.PushableReaderAccountIdsAsync(
             announcement.AuthorPersonId,
             ClubClock.DayOf(announcement.PublishedAt),

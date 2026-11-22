@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Core.Club;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -232,11 +233,15 @@ public sealed partial class AnnouncementService
         var ids = rows.Select(row => row.AnnouncementId).ToList();
         var polls = await _dbContext.PollsOfAnnouncementsAsync(ids, viewerPersonId, now, ct);
         var lists = await _dbContext.SignUpListsOfAnnouncementsAsync(ids, viewerPersonId, now, ct);
-        var answers = await AnswersOnAsync(
-            [
-                .. rows.Where(row => row.Attendance.Position is not null)
-                    .Select(row => row.AnnouncementId),
-            ],
+        IReadOnlyList<int> attendanceIds =
+        [
+            .. rows.Where(row => row.Attendance.Position is not null)
+                .Select(row => row.AnnouncementId),
+        ];
+        var answers = await AnswersOnAsync(attendanceIds, ct);
+        var unassigned = await _dbContext.UnassignedAttendanceAsync(
+            WhatsAppHostKind.Announcement,
+            attendanceIds,
             ct
         );
         var concern = await ConcernOfAsync(rows, reader, polls.Count + lists.Count > 0, ct);
@@ -251,7 +256,8 @@ public sealed partial class AnnouncementService
                         polls.GetValueOrDefault(row.AnnouncementId, []),
                         lists.GetValueOrDefault(row.AnnouncementId, []),
                         [.. answers[row.AnnouncementId]],
-                        [.. loans[row.AnnouncementId]]
+                        [.. loans[row.AnnouncementId]],
+                        [.. unassigned[row.AnnouncementId]]
                     ),
                     concern.For(ManagedBy(row, reader), reader.Mentions.PersonId),
                     now
@@ -324,6 +330,7 @@ public sealed partial class AnnouncementService
                     RecordedByFirstName = null,
                     RecordedByLastName = null,
                     AnsweredAt = response.UpdatedAt,
+                    IsGivenThroughWhatsApp = response.IsGivenThroughWhatsApp,
                 }
             ))
             .ToListAsync(ct);
@@ -346,9 +353,7 @@ public sealed partial class AnnouncementService
             placed.Add(
                 (
                     attendancePosition,
-                    AttendanceAddOn(
-                        AttendanceOf(row.Attendance, held.Answers, concern, hostClosesAt, now)
-                    )
+                    AttendanceAddOn(AttendanceOf(row.Attendance, held, concern, hostClosesAt, now))
                 )
             );
 
@@ -384,12 +389,13 @@ public sealed partial class AnnouncementService
     [Pure]
     private static AnnouncementAttendanceDetails AttendanceOf(
         AnnouncementAttendanceRow attendance,
-        IReadOnlyList<CalendarAttendanceAnswerDetails> answers,
+        HeldAddOns held,
         AddOnConcernOfReader concern,
         DateTimeOffset? hostClosesAt,
         DateTimeOffset now
     )
     {
+        var answers = held.Answers;
         var answeredIds = answers.Select(answer => answer.PersonId).ToHashSet();
 
         return new AnnouncementAttendanceDetails
@@ -417,6 +423,7 @@ public sealed partial class AnnouncementService
             Reminder = concern.Manages
                 ? AddOnConcern.ReminderOf(attendance.LastRemindedAt, concern.Reachable, answeredIds)
                 : null,
+            Unassigned = concern.Manages ? held.Unassigned : null,
         };
     }
 
@@ -431,6 +438,7 @@ public sealed partial class AnnouncementService
             Reminder = concern.Manages
                 ? AddOnConcern.ReminderOf(poll.LastRemindedAt, concern.Reachable, poll.VoterIds)
                 : null,
+            Unassigned = concern.Manages ? poll.Unassigned : null,
         };
 
     [Pure]
@@ -508,7 +516,8 @@ public sealed partial class AnnouncementService
         IReadOnlyList<PlacedPoll> Polls,
         IReadOnlyList<PlacedSignUpList> SignUpLists,
         IReadOnlyList<CalendarAttendanceAnswerDetails> Answers,
-        IReadOnlyList<PlacedLoan> Loans
+        IReadOnlyList<PlacedLoan> Loans,
+        IReadOnlyList<WhatsAppUnassignedAnswer> Unassigned
     );
 
     private sealed record ReaderConcern(

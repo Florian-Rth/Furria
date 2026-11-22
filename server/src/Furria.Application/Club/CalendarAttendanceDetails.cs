@@ -15,4 +15,6 @@ public sealed record CalendarAttendanceDetails
     public required IReadOnlyList<CalendarAttendancePerson>? NotAnswered { get; init; }
 
     public CalendarReminderDetails? Reminder { get; init; }
+
+    public IReadOnlyList<WhatsAppUnassignedAnswer>? Unassigned { get; init; }
 }

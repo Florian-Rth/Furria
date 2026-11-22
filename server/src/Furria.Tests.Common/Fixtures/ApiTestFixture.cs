@@ -32,12 +32,14 @@ using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Push;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.RunningOrders;
+using Furria.Infrastructure.WhatsApp;
 using Furria.MediaWorker;
 using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
 using Furria.Tests.Common.Push;
+using Furria.Tests.Common.WhatsApp;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -124,6 +126,10 @@ public sealed class ApiTestFixture : IAsyncLifetime
     public const string VapidPublicKey =
         "BMhR4mFcMj4K9cYVgsAKgKIGevMvrCQLSM-Jy1kqfP4iSDlC7Pa4vNiXYZKmTo4mclU-aq_1BFfX8QuI46dHofQ";
     internal const string VapidPrivateKey = "GzIA-6S4MRXOlB2w1RDWAq_4D_CAYdtmWQCiTovlRZI";
+    internal const string WahaBaseUrl = "http://waha.test";
+    internal const string WahaApiKey = "furria-test-waha-api-key";
+    public const string WhatsAppWebhookHmacKey = "furria-test-whatsapp-webhook-hmac-key";
+    public const string WhatsAppSession = "furria";
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
@@ -147,6 +153,8 @@ public sealed class ApiTestFixture : IAsyncLifetime
     public CapturingLogSink Logs => Host.Logs;
 
     public FakePushService PushService => Host.PushService;
+
+    public FakeWahaService Waha => Host.Waha;
 
     public LogMark HostStarted => Host.Started;
 
@@ -209,6 +217,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
         await ResetDatabaseAsync();
         TimeProvider.SetUtcNow(WholeSecondNow());
         PushService.Forget();
+        Waha.Forget();
         EmptyMediaRoot();
 
         await using var scope = Services.CreateAsyncScope();
@@ -366,6 +375,158 @@ public sealed class ApiTestFixture : IAsyncLifetime
             ct
         );
 
+    public Task WhatsAppInboxDrainedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                return await db.InboxWhatsAppEvents.AnyAsync(
+                    inboxEvent => inboxEvent.ProcessedAt == null,
+                    token
+                )
+                    ? null
+                    : db;
+            },
+            OutboxDrainTimeout,
+            "The WhatsApp inbox still holds unapplied events",
+            ct
+        );
+
+    public Task WhatsAppOutboxDrainedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var now = TimeProvider.GetUtcNow();
+                return await db.OutboxWhatsApps.AnyAsync(
+                    operation =>
+                        operation.FailedAt == null
+                        && (operation.NextAttemptAt == null || operation.NextAttemptAt <= now),
+                    token
+                )
+                    ? null
+                    : db;
+            },
+            OutboxDrainTimeout,
+            "The WhatsApp outbox still holds due operations",
+            ct
+        );
+
+    public async Task<IReadOnlyList<OutboxWhatsApp>> WhatsAppOutboxAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.OutboxWhatsApps.AsNoTracking().OrderBy(row => row.Id).ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyDictionary<string, int?>> PollIdsByQuestionAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db
+            .Polls.AsNoTracking()
+            .ToDictionaryAsync(poll => poll.Question, poll => (int?)poll.Id, ct);
+    }
+
+    public async Task<IReadOnlyList<int>> PollOptionIdsAsync(
+        int pollId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db
+            .PollOptions.AsNoTracking()
+            .Where(option => option.PollId == pollId)
+            .OrderBy(option => option.Position)
+            .Select(option => option.Id)
+            .ToListAsync(ct);
+    }
+
+    public async Task<IReadOnlyDictionary<string, int?>> SignUpListIdsByTitleAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db
+            .SignUpLists.AsNoTracking()
+            .ToDictionaryAsync(list => list.Title, list => (int?)list.Id, ct);
+    }
+
+    public async Task<IReadOnlyList<WhatsAppMessage>> WhatsAppPostRecordsAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.WhatsAppMessages.AsNoTracking().OrderBy(row => row.Id).ToListAsync(ct);
+    }
+
+    public async Task AgeWhatsAppPostsAsync(TimeSpan age, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.WhatsAppMessages.ExecuteUpdateAsync(
+            setters => setters.SetProperty(row => row.SentAt, row => row.SentAt - age),
+            ct
+        );
+    }
+
+    public async Task<int> WhatsAppAnswerCountAsync(CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db.WhatsAppAnswers.CountAsync(ct);
+    }
+
+    public async Task StageWhatsAppGroupAddsAsync(CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<WhatsAppGroupKeeping>().StageAddsAsync(ct);
+    }
+
+    public async Task FailWhatsAppOutboxForGoodAsync(CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var now = TimeProvider.GetUtcNow();
+        await db.OutboxWhatsApps.ExecuteUpdateAsync(
+            setters => setters.SetProperty(row => row.FailedAt, now),
+            ct
+        );
+    }
+
+    public async Task LinkClubWhatsAppGroupAsync(string chatId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.LinkedWhatsAppGroups.Add(
+            new LinkedWhatsAppGroup { ChatId = chatId, LinkedAt = TimeProvider.GetUtcNow() }
+        );
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<(string ChatId, int? GroupId)>> LinkedWhatsAppGroupsAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var links = await db
+            .LinkedWhatsAppGroups.AsNoTracking()
+            .OrderBy(link => link.Id)
+            .Select(link => new { link.ChatId, link.GroupId })
+            .ToListAsync(ct);
+        return [.. links.Select(link => (link.ChatId, link.GroupId))];
+    }
+
     public Task OutboxDrainedAsync(CancellationToken ct = default) =>
         Polling.UntilAsync(
             async token =>
@@ -428,6 +589,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
     )
     {
         await ResetDatabaseAsync(ct);
+        Waha.Forget();
 
         var recorded = new SeedContextBuilder();
         configure(recorded);

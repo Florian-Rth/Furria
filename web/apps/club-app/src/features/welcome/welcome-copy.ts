@@ -9,6 +9,14 @@ export const WELCOME_ENTER_LABEL = 'Los geht’s';
 export const WELCOME_CALL_LEAD = 'Groß –';
 export const WELCOME_CALL_ANSWER = 'Furria!';
 
+export const CONSENT_QUESTION = 'In die Vereinsgruppe aufnehmen?';
+export const CONSENT_EXPLANATION =
+  'Der Vereins-Bot fügt dich mit deiner Handynummer zur WhatsApp-Gruppe des Vereins hinzu. Ändern kannst du das jederzeit in deinem Profil.';
+export const CONSENT_PHONE_LABEL = 'Handynummer';
+export const CONSENT_NO_PHONE = 'Noch nicht hinterlegt';
+export const CONSENT_CONFIRM_LABEL = 'Ja, aufnehmen';
+export const CONSENT_CANCEL_LABEL = 'Nein, danke';
+
 const FIRST_SESSION = 1;
 
 export const welcomeLabelOf = (firstName: string): string => `Willkommen, ${firstName}`;

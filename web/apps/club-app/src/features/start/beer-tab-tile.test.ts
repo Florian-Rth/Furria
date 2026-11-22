@@ -56,6 +56,7 @@ describe('beerTabsOfStart', () => {
     today: '2026-11-04',
     reshapeAt: null,
     viewerIsActiveInClub: true,
+    clubGroupInviteLink: null,
     panels,
   });
 

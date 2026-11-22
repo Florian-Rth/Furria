@@ -186,6 +186,8 @@ public sealed record AnnouncementAttendanceDto
 
     public required CalendarReminderDto? Reminder { get; init; }
 
+    public required IReadOnlyList<WhatsAppUnassignedAnswerDto>? Unassigned { get; init; }
+
     public static AnnouncementAttendanceDto From(AnnouncementAttendanceDetails attendance) =>
         new()
         {
@@ -203,6 +205,7 @@ public sealed record AnnouncementAttendanceDto
                 ? [.. missing.Select(CalendarAttendancePersonDto.From)]
                 : null,
             Reminder = CalendarReminderDto.From(attendance.Reminder),
+            Unassigned = WhatsAppUnassignedAnswerDto.FromAll(attendance.Unassigned),
         };
 }
 

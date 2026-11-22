@@ -4,6 +4,7 @@ using Furria.Application.Mail;
 using Furria.Application.Media;
 using Furria.Application.Push;
 using Furria.Application.Website;
+using Furria.Application.WhatsApp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -112,6 +113,16 @@ public static class ServiceCollectionExtensions
             .Validate(
                 options => PushOptions.IsContact(options.Subject),
                 $"{PushOptions.SectionName}:Subject must be a mailto: address or an https URL."
+            )
+            .ValidateOnStart();
+
+        services
+            .AddOptions<WhatsAppOptions>()
+            .BindConfiguration(WhatsAppOptions.SectionName)
+            .Validate(
+                options => options.IsSwitchedOff || options.IsConfigured,
+                $"{WhatsAppOptions.SectionName} needs a BaseUrl, an ApiKey, a WebhookHmacKey and "
+                    + "a Session together, or no BaseUrl at all to keep WhatsApp off."
             )
             .ValidateOnStart();
 

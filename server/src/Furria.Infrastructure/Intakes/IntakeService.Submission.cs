@@ -301,6 +301,7 @@ public sealed partial class IntakeService
         intake.City = newcomer.City;
         intake.Phone = newcomer.Phone;
         intake.Email = newcomer.Email;
+        intake.ClubGroupConsent = newcomer.ClubGroupConsent;
     }
 
     [Pure]
@@ -325,7 +326,8 @@ public sealed partial class IntakeService
         string? Zip,
         string? City,
         string? Phone,
-        string? Email
+        string? Email,
+        bool ClubGroupConsent
     )
     {
         public string FullName => $"{FirstName} {LastName}";
@@ -344,7 +346,8 @@ public sealed partial class IntakeService
                 Given(command.Zip),
                 Given(command.City),
                 Given(command.Phone),
-                Given(command.Email)
+                Given(command.Email),
+                command.ClubGroupConsent
             );
 
         [Pure]
@@ -357,7 +360,8 @@ public sealed partial class IntakeService
                 intake.Zip,
                 intake.City,
                 intake.Phone,
-                intake.Email
+                intake.Email,
+                intake.ClubGroupConsent
             );
 
         [Pure]
@@ -372,6 +376,7 @@ public sealed partial class IntakeService
                 City = City,
                 Phone = Phone,
                 Email = Email,
+                ClubGroupConsent = ClubGroupConsent,
             };
 
         [Pure]

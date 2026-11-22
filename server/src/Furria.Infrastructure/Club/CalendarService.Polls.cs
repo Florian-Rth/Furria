@@ -56,6 +56,8 @@ public sealed partial class CalendarService
         _dbContext.PollVotes.RemoveRange(
             held.Where(vote => !command.OptionIds.Contains(vote.PollOptionId))
         );
+        foreach (var kept in held.Where(vote => command.OptionIds.Contains(vote.PollOptionId)))
+            kept.IsGivenThroughWhatsApp = false;
         _dbContext.PollVotes.AddRange(
             command
                 .OptionIds.Where(optionId => held.All(vote => vote.PollOptionId != optionId))

@@ -24,5 +24,7 @@ public sealed record PersonDetails
 
     public required bool ContactVisibleToMembers { get; init; }
 
+    public required bool ClubGroupConsent { get; init; }
+
     public required ContactChangeDetails? ContactChange { get; init; }
 }

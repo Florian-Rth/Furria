@@ -30,8 +30,9 @@ public sealed partial class AnnouncementService
         if (await ResponseRefusalAsync(command.AnnouncementId, personId, ct) is { } refusal)
             return refusal;
 
-        var response = await _dbContext.AttendanceResponses.SingleOrDefaultAsync(
-            row => row.AnnouncementId == command.AnnouncementId && row.PersonId == personId,
+        var response = await _dbContext.LockedAnnouncementResponseAsync(
+            command.AnnouncementId,
+            personId,
             ct
         );
 
@@ -46,6 +47,7 @@ public sealed partial class AnnouncementService
         }
 
         response.Answer = command.Answer;
+        response.IsGivenThroughWhatsApp = false;
 
         var saved = await SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)

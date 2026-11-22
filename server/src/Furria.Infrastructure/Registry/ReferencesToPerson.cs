@@ -12,6 +12,7 @@ using Furria.Core.RunningOrders;
 using Furria.Core.Studio;
 using Furria.Core.Website;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.WhatsApp;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 
@@ -32,6 +33,7 @@ public static class ReferencesToPerson
         HerOwn<AttendanceResponseChange>(nameof(AttendanceResponseChange.PersonId)),
         HerOwn<CalendarEntryAudiencePerson>(nameof(CalendarEntryAudiencePerson.PersonId)),
         HerOwn<PollVote>(nameof(PollVote.PersonId)),
+        HerOwn<WhatsAppAnswer>(nameof(WhatsAppAnswer.PersonId)),
         HerOwn<SignUpLine>(nameof(SignUpLine.PersonId)),
         HerOwn<NewsPostMention>(nameof(NewsPostMention.PersonId)),
         HerOwn<ActCastChange>(nameof(ActCastChange.PersonId)),
@@ -84,6 +86,11 @@ public static class ReferencesToPerson
         ),
         Reference<MediaItem>(
             nameof(MediaItem.OwnerPersonId),
+            OnAbsorption.MovesToKeeperUnlessSheHoldsOne,
+            OnErasure.ErasedWithHer
+        ),
+        Reference<WhatsAppGroupAdd>(
+            nameof(WhatsAppGroupAdd.PersonId),
             OnAbsorption.MovesToKeeperUnlessSheHoldsOne,
             OnErasure.ErasedWithHer
         ),

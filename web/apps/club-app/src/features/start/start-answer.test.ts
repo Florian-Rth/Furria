@@ -34,6 +34,7 @@ const start = (entries: StartEntry[]): Start => ({
   today: '2027-01-19',
   reshapeAt: null,
   viewerIsActiveInClub: true,
+  clubGroupInviteLink: null,
   panels: [
     { kind: 'toDos', shownCount: 1, toDos: [{ kind: 'reminderDue', count: 12, group: null }] },
     { kind: 'calendar', shownCount: entries.length, entries, announcementAddOns: [] },

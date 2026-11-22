@@ -37,6 +37,7 @@ const heldPoll = (pollId: number, voterCount: number): CalendarPoll => ({
   concernedCount: null,
   notAnswered: null,
   reminder: null,
+  unassigned: null,
   options: [],
 });
 

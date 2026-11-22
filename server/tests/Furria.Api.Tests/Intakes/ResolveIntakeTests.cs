@@ -84,6 +84,19 @@ public sealed class ResolveIntakeTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_TakeHerClubGroupConsent_When_TheDeciderRecognisesHer()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ParkedAsync(_fixture.Today, ct, consentsToClubGroup: true);
+        var existingId = ctx.Identity.People.IdOf(Existing);
+        var manager = await ctx.Identity.ClientForAsync(Manager, ct);
+
+        await ResolveAsync(manager, ctx.Intakes.Intakes.IdOf("fresh"), existingId);
+
+        await ctx.Expected.Person(existingId).ToHaveClubGroupConsent(true).AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_OpenNoSecondMembership_When_HerMembershipStillRuns()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -257,7 +270,8 @@ public sealed class ResolveIntakeTests : IClassFixture<ApiTestFixture>
         CancellationToken ct,
         Action<IdentitySeedBuilder>? identity = null,
         bool withPortrait = false,
-        string starter = Manager
+        string starter = Manager,
+        bool consentsToClubGroup = false
     )
     {
         var ctx = await _fixture.BuildAsync(
@@ -285,7 +299,7 @@ public sealed class ResolveIntakeTests : IClassFixture<ApiTestFixture>
             SubmitIntake,
             SubmitIntakeRequest,
             SubmitIntakeResponse
-        >(Adult(token));
+        >(Adult(token) with { ClubGroupConsent = consentsToClubGroup });
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         return ctx;
     }

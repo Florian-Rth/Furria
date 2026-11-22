@@ -3,6 +3,7 @@ import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC, ReactNode } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
+import { PHONE_WHATSAPP_HINT } from '@/features/whatsapp/whatsapp-copy';
 import type { PersonForm } from '../schemas';
 
 const NAME_SECTION_TITLE = 'Name';
@@ -35,6 +36,7 @@ export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors, emai
   const lastNameError = errors.lastName?.message;
   const emailError = errors.email?.message;
   const phoneError = errors.phone?.message;
+  const phoneHelper = phoneError ?? PHONE_WHATSAPP_HINT;
   const streetError = errors.street?.message;
   const zipError = errors.zip?.message;
   const cityError = errors.city?.message;
@@ -96,7 +98,7 @@ export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors, emai
               inputMode="tel"
               autoComplete="tel"
               error={phoneError !== undefined}
-              helperText={phoneError}
+              helperText={phoneHelper}
               onChange={phone.onChange}
               onBlur={phone.onBlur}
               inputRef={phone.ref}

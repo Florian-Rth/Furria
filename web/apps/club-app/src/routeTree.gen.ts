@@ -38,6 +38,8 @@ import { Route as AppSplatRouteImport } from './routes/_app/$'
 import { Route as AppSystemIndexRouteImport } from './routes/_app/system.index'
 import { Route as AppManageIndexRouteImport } from './routes/_app/manage.index'
 import { Route as AppLabIndexRouteImport } from './routes/_app/lab.index'
+import { Route as AppSystemWhatsappOutboxRouteImport } from './routes/_app/system.whatsapp-outbox'
+import { Route as AppSystemWhatsappRouteImport } from './routes/_app/system.whatsapp'
 import { Route as AppSystemTasksRouteImport } from './routes/_app/system.tasks'
 import { Route as AppSystemStorageRouteImport } from './routes/_app/system.storage'
 import { Route as AppSystemMediaRouteImport } from './routes/_app/system.media'
@@ -312,6 +314,16 @@ const AppManageIndexRoute = AppManageIndexRouteImport.update({
 const AppLabIndexRoute = AppLabIndexRouteImport.update({
   id: '/lab/',
   path: '/lab/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemWhatsappOutboxRoute = AppSystemWhatsappOutboxRouteImport.update({
+  id: '/system/whatsapp-outbox',
+  path: '/system/whatsapp-outbox',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemWhatsappRoute = AppSystemWhatsappRouteImport.update({
+  id: '/system/whatsapp',
+  path: '/system/whatsapp',
   getParentRoute: () => AppRoute,
 } as any)
 const AppSystemTasksRoute = AppSystemTasksRouteImport.update({
@@ -1110,6 +1122,8 @@ export interface FileRoutesByFullPath {
   '/system/media': typeof AppSystemMediaRoute
   '/system/storage': typeof AppSystemStorageRoute
   '/system/tasks': typeof AppSystemTasksRoute
+  '/system/whatsapp': typeof AppSystemWhatsappRoute
+  '/system/whatsapp-outbox': typeof AppSystemWhatsappOutboxRoute
   '/lab/': typeof AppLabIndexRoute
   '/manage/': typeof AppManageIndexRoute
   '/system/': typeof AppSystemIndexRoute
@@ -1269,6 +1283,8 @@ export interface FileRoutesByTo {
   '/system/media': typeof AppSystemMediaRoute
   '/system/storage': typeof AppSystemStorageRoute
   '/system/tasks': typeof AppSystemTasksRoute
+  '/system/whatsapp': typeof AppSystemWhatsappRoute
+  '/system/whatsapp-outbox': typeof AppSystemWhatsappOutboxRoute
   '/lab': typeof AppLabIndexRoute
   '/manage': typeof AppManageIndexRoute
   '/system': typeof AppSystemIndexRoute
@@ -1433,6 +1449,8 @@ export interface FileRoutesById {
   '/_app/system/media': typeof AppSystemMediaRoute
   '/_app/system/storage': typeof AppSystemStorageRoute
   '/_app/system/tasks': typeof AppSystemTasksRoute
+  '/_app/system/whatsapp': typeof AppSystemWhatsappRoute
+  '/_app/system/whatsapp-outbox': typeof AppSystemWhatsappOutboxRoute
   '/_app/lab/': typeof AppLabIndexRoute
   '/_app/manage/': typeof AppManageIndexRoute
   '/_app/system/': typeof AppSystemIndexRoute
@@ -1596,6 +1614,8 @@ export interface FileRouteTypes {
     | '/system/media'
     | '/system/storage'
     | '/system/tasks'
+    | '/system/whatsapp'
+    | '/system/whatsapp-outbox'
     | '/lab/'
     | '/manage/'
     | '/system/'
@@ -1755,6 +1775,8 @@ export interface FileRouteTypes {
     | '/system/media'
     | '/system/storage'
     | '/system/tasks'
+    | '/system/whatsapp'
+    | '/system/whatsapp-outbox'
     | '/lab'
     | '/manage'
     | '/system'
@@ -1918,6 +1940,8 @@ export interface FileRouteTypes {
     | '/_app/system/media'
     | '/_app/system/storage'
     | '/_app/system/tasks'
+    | '/_app/system/whatsapp'
+    | '/_app/system/whatsapp-outbox'
     | '/_app/lab/'
     | '/_app/manage/'
     | '/_app/system/'
@@ -2235,6 +2259,20 @@ declare module '@tanstack/react-router' {
       path: '/lab'
       fullPath: '/lab/'
       preLoaderRoute: typeof AppLabIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system/whatsapp-outbox': {
+      id: '/_app/system/whatsapp-outbox'
+      path: '/system/whatsapp-outbox'
+      fullPath: '/system/whatsapp-outbox'
+      preLoaderRoute: typeof AppSystemWhatsappOutboxRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system/whatsapp': {
+      id: '/_app/system/whatsapp'
+      path: '/system/whatsapp'
+      fullPath: '/system/whatsapp'
+      preLoaderRoute: typeof AppSystemWhatsappRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/system/tasks': {
@@ -3333,6 +3371,8 @@ interface AppRouteChildren {
   AppSystemMediaRoute: typeof AppSystemMediaRoute
   AppSystemStorageRoute: typeof AppSystemStorageRoute
   AppSystemTasksRoute: typeof AppSystemTasksRoute
+  AppSystemWhatsappRoute: typeof AppSystemWhatsappRoute
+  AppSystemWhatsappOutboxRoute: typeof AppSystemWhatsappOutboxRoute
   AppLabIndexRoute: typeof AppLabIndexRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppSystemIndexRoute: typeof AppSystemIndexRoute
@@ -3459,6 +3499,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppSystemMediaRoute: AppSystemMediaRoute,
   AppSystemStorageRoute: AppSystemStorageRoute,
   AppSystemTasksRoute: AppSystemTasksRoute,
+  AppSystemWhatsappRoute: AppSystemWhatsappRoute,
+  AppSystemWhatsappOutboxRoute: AppSystemWhatsappOutboxRoute,
   AppLabIndexRoute: AppLabIndexRoute,
   AppManageIndexRoute: AppManageIndexRoute,
   AppSystemIndexRoute: AppSystemIndexRoute,

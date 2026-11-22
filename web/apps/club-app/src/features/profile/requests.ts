@@ -15,6 +15,17 @@ export const requestContactVisibility = (
     accessToken,
   });
 
+export const requestClubGroupConsent = (
+  clubGroupConsent: boolean,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch('/api/auth/me/club-group-consent', {
+    method: 'PUT',
+    body: { clubGroupConsent },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
 export const requestContactDetailsUpdate = (
   form: ContactDetailsForm,
   accessToken: string,

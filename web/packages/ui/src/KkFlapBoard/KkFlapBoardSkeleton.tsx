@@ -5,7 +5,7 @@ import type { KkSx } from '../kk-sx';
 import { kkTokens } from '../tokens';
 import { boardCell, boardFrame } from './internal/board-paint';
 
-const ROWS = ['database', 'media', 'storage', 'services', 'mail', 'log'] as const;
+const ROWS = ['database', 'media', 'storage', 'services', 'mail', 'whatsApp', 'log'] as const;
 const VERDICT_WIDTH = '62%';
 const VERDICT_HEIGHT = '2rem';
 

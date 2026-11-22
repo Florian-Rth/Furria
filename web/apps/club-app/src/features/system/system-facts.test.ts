@@ -122,6 +122,7 @@ describe('boardRowsOf', () => {
       service({ job: 'logEntryPurge', lastFailure: 'boom', consecutiveFailures: 2 }),
     ],
     mail: { pending: 4, retrying: 0, oldestPendingAt: null },
+    whatsApp: { waiting: 2, retrying: 0, failed: 0, oldestWaitingAt: null },
     errorsPerHour: [0, 2, 0, 5],
     logsSince: null,
   };
@@ -135,6 +136,7 @@ describe('boardRowsOf', () => {
       ['storage', 'attention', { kind: 'free', share: 0.12 }],
       ['services', 'ok', { kind: 'count', count: 2 }],
       ['mail', 'ok', { kind: 'count', count: 4 }],
+      ['whatsApp', 'ok', { kind: 'count', count: 2 }],
       ['log', 'ok', { kind: 'count', count: 7 }],
     ]);
   });

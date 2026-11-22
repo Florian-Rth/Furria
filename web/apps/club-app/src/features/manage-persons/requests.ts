@@ -80,6 +80,18 @@ export const requestPersonUpdate = (
     accessToken,
   });
 
+export const requestPersonClubGroupConsent = (
+  personId: number,
+  clubGroupConsent: boolean,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/persons/${personId}/club-group-consent`, {
+    method: 'PUT',
+    body: { clubGroupConsent },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
 export const requestPersonArchived = (
   personId: number,
   isArchived: boolean,

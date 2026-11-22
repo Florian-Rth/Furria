@@ -28,6 +28,7 @@ export const NewcomerFormSchema = z.object({
     .nullable()
     .refine((day): boolean => day !== null, 'Dein Geburtsdatum fehlt.'),
   ...ContactFieldsFormSchema.shape,
+  clubGroupConsent: z.boolean(),
 });
 export type NewcomerForm = z.infer<typeof NewcomerFormSchema>;
 

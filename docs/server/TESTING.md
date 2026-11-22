@@ -578,6 +578,19 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `Expected.AdmissionAgesOf(groupId)` (`ToBeExactly`) and
    `Expected.Group(id).ToHaveJoinedTheGroupMatcherAt(joinedAt)`. The migration's ten carried-over
    statements live only in the template; every reset clears them.
+22. **WhatsApp (RFC 0010)** — the host runs with `WhatsApp:*` set (session
+   `ApiTestFixture.WhatsAppSession`, HMAC key `ApiTestFixture.WhatsAppWebhookHmacKey`), and the
+   `WahaClient` talks to `FakeWahaService` (`_fixture.Waha`): `JoinGroup(chatId, name)` puts the
+   bot into a group. Like the push fake it lives as long as the class, so each test uses chat ids
+   of its own. `WebhookDeliveries.DeliverAsync` posts a signed WAHA webhook
+   (`DeliverForgedAsync` a mis-signed one); `WhatsAppInboxDrainedAsync` waits until the inbox
+   worker applied every event. `LinkedWhatsAppGroupsAsync` reads the linked groups.
+   Group keeping: `Waha.SeatParticipant(chatId, id, pn)` / `Unseat` shape the group's members,
+   `Waha.RefuseAddingOf(id)` makes WhatsApp refuse an add (privacy block, `FakeWahaService.InviteLink`
+   is the invite); `StageWhatsAppGroupAddsAsync` runs one add pass (the dispatcher only runs it
+   every 10 minutes), `WebhookDeliveries.GroupJoin` delivers a join, and
+   `FailWhatsAppOutboxForGoodAsync` marks every queued operation failed for good. A `session.status`
+   *STOPPED* delivery holds the outbox so staged operations can be inspected.
 
 ### Traps worth knowing
 

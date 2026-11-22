@@ -676,6 +676,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<bool>("IsGivenThroughWhatsApp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_given_through_whatsapp");
+
                     b.Property<bool>("IsRecordedOnBehalf")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -1542,6 +1548,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<bool>("IsGivenThroughWhatsApp")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_given_through_whatsapp");
 
                     b.Property<int>("PersonId")
                         .HasColumnType("integer")
@@ -3090,6 +3102,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(128)")
                         .HasColumnName("city");
 
+                    b.Property<bool>("ClubGroupConsent")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("club_group_consent");
+
                     b.Property<DateTimeOffset?>("ContactChangedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("contact_changed_at");
@@ -3193,6 +3211,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)")
                         .HasColumnName("city");
+
+                    b.Property<bool>("ClubGroupConsent")
+                        .HasColumnType("boolean")
+                        .HasColumnName("club_group_consent");
 
                     b.Property<DateTimeOffset?>("CompletedAt")
                         .HasColumnType("timestamp with time zone")
@@ -5963,6 +5985,576 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.InboxWhatsAppEvent", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("Attempt")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("body");
+
+                    b.Property<string>("Event")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("event");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<DateTimeOffset>("OccurredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("occurred_at");
+
+                    b.Property<DateTimeOffset?>("ProcessedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("processed_at");
+
+                    b.Property<DateTimeOffset>("ReceivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("received_at");
+
+                    b.Property<string>("RequestId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("request_id");
+
+                    b.Property<string>("Session")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("session");
+
+                    b.HasKey("Id")
+                        .HasName("pk_inbox_whatsapp");
+
+                    b.HasIndex("Id")
+                        .HasDatabaseName("ix_inbox_whatsapp_unprocessed")
+                        .HasFilter("processed_at IS NULL");
+
+                    b.HasIndex("ProcessedAt")
+                        .HasDatabaseName("ix_inbox_whatsapp_processed_at")
+                        .HasFilter("processed_at IS NOT NULL");
+
+                    b.HasIndex("RequestId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_inbox_whatsapp_request_id");
+
+                    b.ToTable("inbox_whatsapp", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_inbox_whatsapp_attempt", "attempt >= 1");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.LinkedWhatsAppGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ChatId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("chat_id");
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("InviteLink")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("invite_link");
+
+                    b.Property<bool>("KeepsMembers")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("keeps_members");
+
+                    b.Property<DateTimeOffset>("LinkedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("linked_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_linked_whatsapp_group");
+
+                    b.HasIndex("ChatId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_linked_whatsapp_group_chat_id");
+
+                    b.HasIndex("GroupId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_linked_whatsapp_group_audience");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("GroupId"), false);
+
+                    b.ToTable("linked_whatsapp_group", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.OutboxWhatsApp", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("AddOnId")
+                        .HasColumnType("integer")
+                        .HasColumnName("add_on_id");
+
+                    b.Property<string>("AddOnKind")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("add_on_kind");
+
+                    b.Property<bool>("AllowsSeveralAnswers")
+                        .HasColumnType("boolean")
+                        .HasColumnName("allows_several_answers");
+
+                    b.Property<int>("Attempt")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempt");
+
+                    b.Property<string>("ChatId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("chat_id");
+
+                    b.Property<DateTimeOffset>("EnqueuedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enqueued_at");
+
+                    b.Property<DateTimeOffset?>("EventEndsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("event_ends_at");
+
+                    b.Property<string>("EventPlace")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("event_place");
+
+                    b.Property<DateTimeOffset?>("EventStartsAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("event_starts_at");
+
+                    b.Property<DateTimeOffset?>("FailedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("failed_at");
+
+                    b.Property<int>("HostId")
+                        .HasColumnType("integer")
+                        .HasColumnName("host_id");
+
+                    b.Property<string>("HostKind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("host_kind");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("last_error");
+
+                    b.PrimitiveCollection<List<string>>("Mentions")
+                        .IsRequired()
+                        .HasColumnType("text[]")
+                        .HasColumnName("mentions");
+
+                    b.Property<DateTimeOffset?>("NextAttemptAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("next_attempt_at");
+
+                    b.Property<string>("Operation")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("operation");
+
+                    b.PrimitiveCollection<List<int>>("PollOptionIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("poll_option_ids")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<List<string>>("PollOptions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("poll_options")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.Property<string>("TargetMessageId")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("target_message_id");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_outbox_whatsapp");
+
+                    b.HasIndex("FailedAt")
+                        .HasDatabaseName("ix_outbox_whatsapp_failed")
+                        .HasFilter("failed_at IS NOT NULL");
+
+                    b.HasIndex("ChatId", "Id")
+                        .HasDatabaseName("ix_outbox_whatsapp_waiting")
+                        .HasFilter("failed_at IS NULL");
+
+                    b.HasIndex("HostKind", "HostId")
+                        .HasDatabaseName("ix_outbox_whatsapp_host_kind_host_id");
+
+                    b.ToTable("outbox_whatsapp", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_id", "(add_on_id IS NULL AND (add_on_kind IS NULL OR add_on_kind = 'Attendance')) OR (add_on_id IS NOT NULL AND add_on_kind IN ('Poll', 'SignUpList'))");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_kind", "add_on_kind IN ('Attendance', 'Poll', 'SignUpList')");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation IN ('PostText', 'EditText', 'Reply', 'Delete', 'AddParticipant', 'DirectText') OR add_on_kind IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_attempt", "attempt >= 1");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_event", "CASE WHEN operation = 'SendEvent' THEN event_starts_at IS NOT NULL AND (event_ends_at IS NULL OR event_ends_at >= event_starts_at) ELSE event_starts_at IS NULL AND event_ends_at IS NULL AND event_place IS NULL END");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_host_kind", "host_kind IN ('Announcement', 'CalendarEntry', 'Person')");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent', 'EditText', 'Reply', 'Delete', 'AddParticipant', 'DirectText')");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_person_add", "(operation = 'AddParticipant') = (host_kind = 'Person')");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_poll", "(operation = 'SendPoll') = (cardinality(poll_options) BETWEEN 2 AND 12)");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_poll_option_ids", "cardinality(poll_option_ids) = 0 OR cardinality(poll_option_ids) = cardinality(poll_options)");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_poll_options", "cardinality(poll_options) = 0 OR add_on_kind IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_target_message", "(operation IN ('EditText', 'Reply', 'Delete')) = (target_message_id IS NOT NULL)");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppAnswer", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTimeOffset>("AnsweredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("answered_at");
+
+                    b.Property<string>("Attendance")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("attendance");
+
+                    b.Property<int?>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.PrimitiveCollection<List<int>>("PollOptionIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("poll_option_ids")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("sender_id");
+
+                    b.Property<string>("SenderName")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("sender_name");
+
+                    b.Property<string>("SenderPhone")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("sender_phone");
+
+                    b.Property<long>("WhatsAppMessageId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("whatsapp_message_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_whatsapp_answer");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_whatsapp_answer_person_id");
+
+                    b.HasIndex("WhatsAppMessageId", "SenderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_whatsapp_answer_whatsapp_message_id_sender_id");
+
+                    b.ToTable("whatsapp_answer", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_whatsapp_answer_attendance", "attendance IN ('Yes', 'No', 'Maybe')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppGroupAdd", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("ChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("changed_at");
+
+                    b.Property<string>("ChatId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("chat_id");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<string>("PhoneDigits")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("phone_digits");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("state");
+
+                    b.HasKey("Id")
+                        .HasName("pk_whatsapp_group_add");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_whatsapp_group_add_person_id");
+
+                    b.HasIndex("ChatId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_whatsapp_group_add_chat_id_person_id");
+
+                    b.ToTable("whatsapp_group_add", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_whatsapp_group_add_phone_digits", "phone_digits ~ '^[0-9]{8,15}$'");
+
+                            t.HasCheckConstraint("ck_whatsapp_group_add_state", "state IN ('Requested', 'InGroup', 'Refused')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppLateAnswer", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("sender_id");
+
+                    b.Property<DateTimeOffset>("ToldAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("told_at");
+
+                    b.Property<long>("WhatsAppMessageId")
+                        .HasColumnType("bigint")
+                        .HasColumnName("whatsapp_message_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_whatsapp_late_answer");
+
+                    b.HasIndex("WhatsAppMessageId", "SenderId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_whatsapp_late_answer_whatsapp_message_id_sender_id");
+
+                    b.ToTable("whatsapp_late_answer", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppMessage", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int?>("AddOnId")
+                        .HasColumnType("integer")
+                        .HasColumnName("add_on_id");
+
+                    b.Property<string>("AddOnKind")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("add_on_kind");
+
+                    b.Property<string>("ChatId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("chat_id");
+
+                    b.Property<int>("HostId")
+                        .HasColumnType("integer")
+                        .HasColumnName("host_id");
+
+                    b.Property<string>("HostKind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("host_kind");
+
+                    b.Property<string>("MessageId")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("message_id");
+
+                    b.Property<string>("MessageKey")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)")
+                        .HasColumnName("message_key");
+
+                    b.PrimitiveCollection<List<int>>("PollOptionIds")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer[]")
+                        .HasColumnName("poll_option_ids")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.PrimitiveCollection<List<string>>("PollOptions")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text[]")
+                        .HasColumnName("poll_options")
+                        .HasDefaultValueSql("'{}'");
+
+                    b.Property<DateTimeOffset?>("ResultToldAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("result_told_at");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_whatsapp_message");
+
+                    b.HasIndex("AddOnKind")
+                        .HasDatabaseName("ix_whatsapp_message_result_untold")
+                        .HasFilter("result_told_at IS NULL AND add_on_kind IN ('Poll', 'Attendance')");
+
+                    b.HasIndex("MessageKey")
+                        .HasDatabaseName("ix_whatsapp_message_message_key");
+
+                    b.HasIndex("AddOnKind", "AddOnId")
+                        .HasDatabaseName("ix_whatsapp_message_add_on_kind_add_on_id")
+                        .HasFilter("add_on_id IS NOT NULL");
+
+                    b.HasIndex("ChatId", "MessageId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_whatsapp_message_chat_id_message_id");
+
+                    b.HasIndex("HostKind", "HostId")
+                        .HasDatabaseName("ix_whatsapp_message_host_kind_host_id");
+
+                    b.HasIndex("HostKind", "HostId", "AddOnKind", "AddOnId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_whatsapp_message_add_on")
+                        .HasFilter("add_on_kind IS NOT NULL");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex("HostKind", "HostId", "AddOnKind", "AddOnId"), false);
+
+                    b.ToTable("whatsapp_message", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_whatsapp_message_add_on_id", "(add_on_id IS NULL AND (add_on_kind IS NULL OR add_on_kind = 'Attendance')) OR (add_on_id IS NOT NULL AND add_on_kind IN ('Poll', 'SignUpList'))");
+
+                            t.HasCheckConstraint("ck_whatsapp_message_add_on_kind", "add_on_kind IN ('Attendance', 'Poll', 'SignUpList')");
+
+                            t.HasCheckConstraint("ck_whatsapp_message_host_kind", "host_kind IN ('Announcement', 'CalendarEntry')");
+
+                            t.HasCheckConstraint("ck_whatsapp_message_poll_option_ids", "cardinality(poll_option_ids) = 0 OR cardinality(poll_option_ids) = cardinality(poll_options)");
+
+                            t.HasCheckConstraint("ck_whatsapp_message_poll_options", "cardinality(poll_options) = 0 OR add_on_kind IS NOT NULL");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppSession", b =>
+                {
+                    b.Property<string>("Name")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)")
+                        .HasColumnName("name");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTimeOffset>("StatusAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("status_at");
+
+                    b.Property<bool>("WasWorking")
+                        .HasColumnType("boolean")
+                        .HasColumnName("was_working");
+
+                    b.HasKey("Name")
+                        .HasName("pk_whatsapp_session");
+
+                    b.ToTable("whatsapp_session", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_whatsapp_session_status", "status IN ('Stopped', 'Starting', 'ScanQrCode', 'Working', 'Failed')");
+                        });
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
                 {
                     b.Property<int>("Id")
@@ -7937,6 +8529,61 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_push_subscription_account_account_id");
 
                     b.Navigation("Account");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.LinkedWhatsAppGroup", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_linked_whatsapp_group_group_group_id");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppAnswer", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_whatsapp_answer_person_person_id");
+
+                    b.HasOne("Furria.Infrastructure.WhatsApp.WhatsAppMessage", "WhatsAppMessage")
+                        .WithMany()
+                        .HasForeignKey("WhatsAppMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_whatsapp_answer_whatsapp_message_whatsapp_message_id");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("WhatsAppMessage");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppGroupAdd", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_whatsapp_group_add_person_person_id");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.WhatsApp.WhatsAppLateAnswer", b =>
+                {
+                    b.HasOne("Furria.Infrastructure.WhatsApp.WhatsAppMessage", "WhatsAppMessage")
+                        .WithMany()
+                        .HasForeignKey("WhatsAppMessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_whatsapp_late_answer_whatsapp_message_whatsapp_message_id");
+
+                    b.Navigation("WhatsAppMessage");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>

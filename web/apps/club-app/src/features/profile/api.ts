@@ -5,9 +5,17 @@ import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import type { Me } from '@/lib/api/schemas';
 import { queryKeys } from '@/lib/query/reads';
 import { BEER_LIST_ENROLLED_MESSAGE, BEER_LIST_LEFT_MESSAGE } from './profile-beer-list-labels';
-import { CONTACT_DETAILS_SAVED_MESSAGE, toVisibilitySavedMessage } from './profile-labels';
+import {
+  CONTACT_DETAILS_SAVED_MESSAGE,
+  toClubGroupConsentSavedMessage,
+  toVisibilitySavedMessage,
+} from './profile-labels';
 import { toVisibilityErrorMessage } from './profile-messages';
-import { requestContactDetailsUpdate, requestContactVisibility } from './requests';
+import {
+  requestClubGroupConsent,
+  requestContactDetailsUpdate,
+  requestContactVisibility,
+} from './requests';
 import type { ContactDetailsForm } from './schemas';
 
 const applyVisibility = (current: Me | undefined, visible: boolean): Me | undefined => {
@@ -24,6 +32,22 @@ export const useContactVisibilityMutation = (): UseMutationResult<void, Error, b
     optimistic: [optimisticPatch(queryKeys.me, applyVisibility)],
     changes: ['person'],
     notice: { success: toVisibilitySavedMessage, failure: toVisibilityErrorMessage },
+  });
+
+const applyClubGroupConsent = (current: Me | undefined, consent: boolean): Me | undefined => {
+  if (current === undefined || current.person === null) {
+    return current;
+  }
+
+  return { ...current, person: { ...current.person, clubGroupConsent: consent } };
+};
+
+export const useClubGroupConsentMutation = (): UseMutationResult<void, Error, boolean> =>
+  useApiMutation({
+    request: requestClubGroupConsent,
+    optimistic: [optimisticPatch(queryKeys.me, applyClubGroupConsent)],
+    changes: ['person'],
+    notice: { success: toClubGroupConsentSavedMessage, failure: toVisibilityErrorMessage },
   });
 
 export const useUpdateContactDetailsMutation = (): UseMutationResult<

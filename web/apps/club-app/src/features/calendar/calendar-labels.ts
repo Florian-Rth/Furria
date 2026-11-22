@@ -18,6 +18,7 @@ import { toPersonName } from './calendar-people';
 import type { CalendarPollOutcome } from './calendar-polls';
 import type { RemindedAt, ReminderFailure, ReminderMeta } from './calendar-reminders';
 import type { NotifyReach } from './notify-reach';
+import { reachesWhatsAppGroup } from './notify-reach';
 import type {
   CalendarAddOnKind,
   CalendarEntry,
@@ -54,6 +55,7 @@ export const CALENDAR_KIND_OPTIONS: readonly KkSelectOption[] = AUTHORED_KINDS.m
 export const NOTIFY_LABEL = 'Benachrichtigen';
 
 const ASKS_FOR_AN_ANSWER = 'mit Bitte um Antwort';
+const WHATSAPP_GROUP_REACH = 'WhatsApp-Gruppe';
 
 const toChosenPeopleReach = (count: number): string => {
   if (count === 0) {
@@ -87,8 +89,12 @@ const toCountedPush = (people: number): string => {
 export const toNotifyReachLine = (
   reach: NotifyReach,
   reachedPeople: number | null = null,
+  clubGroupLinked = false,
 ): string => {
-  const reached = reachedPeople === null ? toReachedPeople(reach) : toCountedPush(reachedPeople);
+  const pushed = reachedPeople === null ? toReachedPeople(reach) : toCountedPush(reachedPeople);
+  const reached = reachesWhatsAppGroup(reach.audience, clubGroupLinked)
+    ? `${pushed} · ${WHATSAPP_GROUP_REACH}`
+    : pushed;
 
   return reach.asks ? `${reached}, ${ASKS_FOR_AN_ANSWER}` : reached;
 };

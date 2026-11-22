@@ -38,6 +38,12 @@ server {
         try_files $uri =404;
     }
 
+    # WAHA posts its webhooks to the api inside the compose network (ADR-0042); from outside the
+    # route does not exist.
+    location = /api/whatsapp/webhook {
+        return 404;
+    }
+
     location /api/ {
         set $api_upstream http://${API_UPSTREAM};
         proxy_pass $api_upstream;

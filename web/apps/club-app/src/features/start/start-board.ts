@@ -42,7 +42,9 @@ export const startScreenOf = ({
       return { kind: 'inactive' };
     }
 
-    return start.panels.length === 0 && !ownPanels ? { kind: 'empty' } : { kind: 'board', start };
+    const isEmpty = start.panels.length === 0 && !ownPanels && start.clubGroupInviteLink === null;
+
+    return isEmpty ? { kind: 'empty' } : { kind: 'board', start };
   }
   if (failed) {
     return { kind: 'error' };

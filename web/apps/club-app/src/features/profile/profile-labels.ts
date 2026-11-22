@@ -40,6 +40,11 @@ export const PROFILE_SECTION_TITLES = {
   appearance: 'Darstellung',
 } as const;
 
+export const toClubGroupConsentSavedMessage = (consent: boolean): string =>
+  consent
+    ? 'Du wirst zur WhatsApp-Vereinsgruppe hinzugefügt.'
+    : 'Du wirst nicht mehr zur WhatsApp-Vereinsgruppe hinzugefügt.';
+
 export const APPEARANCE_LABEL = 'Darstellung der App';
 
 export const APPEARANCE_CHOICES: readonly KkColorSchemeChoice[] = [

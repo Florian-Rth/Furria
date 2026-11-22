@@ -9,6 +9,7 @@ import type { FC } from 'react';
 import { useMeQuery } from '@/features/session/api';
 import { toLandingKey } from '@/features/write/landing-target';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
+import { useClubGroupConsentSwitch } from '../hooks/use-club-group-consent-switch';
 import { useContactVisibilitySwitch } from '../hooks/use-contact-visibility-switch';
 import { PERSON_SECTION_TITLES, toContactChangeNote } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
@@ -22,6 +23,9 @@ const PHONE_LABEL = 'Telefon';
 const ADDRESS_LABEL = 'Adresse';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
 const VISIBILITY_LABEL = 'Kontaktdaten für Mitglieder sichtbar';
+const CLUB_GROUP_CONSENT_LABEL = 'In die WhatsApp-Vereinsgruppe aufnehmen';
+const CLUB_GROUP_ON_HER_WORD = 'Nur auf ihren Wunsch einschalten.';
+const CLUB_GROUP_DECIDES_HERSELF = 'Sie entscheidet das selbst in der App.';
 const MISSING_VALUE = 'nicht hinterlegt';
 
 interface PersonMasterDataPanelProps {
@@ -34,6 +38,10 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
   highlightedKey,
 }) => {
   const visibility = useContactVisibilitySwitch(person);
+  const clubGroupConsent = useClubGroupConsentSwitch(person);
+  const clubGroupConsentHint = clubGroupConsent.decidesHerself
+    ? CLUB_GROUP_DECIDES_HERSELF
+    : CLUB_GROUP_ON_HER_WORD;
   const me = useMeQuery();
   const contactChange = toContactChangeNote(
     person.contactChange,
@@ -70,6 +78,14 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
           checked={visibility.checked}
           onChange={visibility.onChange}
           busy={visibility.busy}
+        />
+        <KkSwitchRow
+          label={CLUB_GROUP_CONSENT_LABEL}
+          description={clubGroupConsentHint}
+          checked={clubGroupConsent.checked}
+          onChange={clubGroupConsent.onChange}
+          busy={clubGroupConsent.busy}
+          disabled={clubGroupConsent.decidesHerself}
         />
       </KkPanel>
     </KkPanelSection>

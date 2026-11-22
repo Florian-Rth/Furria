@@ -9,6 +9,7 @@ using Furria.Application.Management;
 using Furria.Application.Operations;
 using Furria.Application.Registry;
 using Furria.Application.Start;
+using Furria.Application.WhatsApp;
 using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
@@ -77,16 +78,17 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(IntakeLinkState)] = "open expired used discarded",
         [typeof(IntakeMatch)] = "email nameAndBirthDate",
         [typeof(SystemLevel)] = "ok attention broken",
-        [typeof(SystemCheck)] = "database workers queue storage media logs services mail",
+        [typeof(SystemCheck)] = "database workers queue storage media logs services mail whatsApp",
         [typeof(SystemReasonCode)] =
             "databaseUnreachable pendingMigrations slowDatabase workerStale noLiveWorker "
             + "workerVersionMismatch queueWaiting diskLow storageUnmeasured mediaFailed "
-            + "errorsLogged errorBurst serviceOverdue serviceFailed mailRetrying mailStuck",
+            + "errorsLogged errorBurst serviceOverdue serviceFailed mailRetrying mailStuck "
+            + "whatsAppRetrying whatsAppFailed whatsAppStuck",
         [typeof(BackgroundJob)] =
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
             + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings "
-            + "pushDispatcher intakeExpirySweep",
+            + "pushDispatcher intakeExpirySweep whatsAppInbox whatsAppDispatcher",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",
@@ -120,7 +122,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "clubRecord announcement announcementSeen media newsPost websitePicture act "
             + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
             + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
-            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher intake",
+            + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher intake whatsApp",
         [typeof(ChangeLineKind)] = "ready changes ping",
         [typeof(StancePosition)] = "yes neutral no",
         [typeof(AdmissionAgeBand)] =
@@ -128,6 +130,8 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(GroupStatementState)] = "answered open new changed",
         [typeof(PushTopic)] =
             "invitations changes reminders announcements beerTab beerStock intakes",
+        [typeof(WhatsAppConnectionState)] =
+            "off unreachable stopped starting scanQrCode working failed",
     };
 
     private readonly ApiTestFixture _fixture;

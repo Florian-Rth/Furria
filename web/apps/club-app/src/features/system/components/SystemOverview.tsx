@@ -2,6 +2,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ClaimWindowSystemSection } from '@/features/claim-window/components/ClaimWindowSystemSection';
 import { TestPushSection } from '@/features/push/components/TestPushSection';
+import { WhatsAppSystemSection } from '@/features/whatsapp/components/WhatsAppSystemSection';
 import type { SystemStatus } from '../schemas';
 import type { SystemMoment } from '../system-view';
 import { SystemAreaList } from './SystemAreaList';
@@ -21,6 +22,7 @@ export const SystemOverview: FC<SystemOverviewProps> = ({ status, moment, offlin
     <SystemBoard status={status} moment={moment} offline={offline} />
     <SystemAreaList status={status} moment={moment} />
     <ClaimWindowSystemSection />
+    <WhatsAppSystemSection />
     <SystemProgramSection status={status} moment={moment} />
     <TestPushSection />
   </Stack>

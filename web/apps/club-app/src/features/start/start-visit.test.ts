@@ -53,6 +53,7 @@ const start = (panels: StartPanel[], reshapeAt: string | null = null): Start => 
   today: '2027-01-19',
   reshapeAt,
   viewerIsActiveInClub: true,
+  clubGroupInviteLink: null,
   panels,
 });
 

@@ -43,6 +43,7 @@ const poll = (overrides: Partial<CalendarPoll>): CalendarPoll => ({
   concernedCount: null,
   notAnswered: null,
   reminder: null,
+  unassigned: null,
   options: [option(1, 0), option(2, 0)],
   ...overrides,
 });

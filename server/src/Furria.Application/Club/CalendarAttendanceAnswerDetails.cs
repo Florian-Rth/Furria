@@ -17,4 +17,6 @@ public sealed record CalendarAttendanceAnswerDetails
     public required string? RecordedByLastName { get; init; }
 
     public required DateTimeOffset AnsweredAt { get; init; }
+
+    public required bool IsGivenThroughWhatsApp { get; init; }
 }

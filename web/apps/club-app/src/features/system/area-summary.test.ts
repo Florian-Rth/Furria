@@ -94,6 +94,7 @@ const status: SystemStatus = {
     },
   ],
   mail: { pending: 3, retrying: 1, oldestPendingAt: '2026-10-13T11:59:00Z' },
+  whatsApp: { waiting: 2, retrying: 1, failed: 1, oldestWaitingAt: null },
   errorsPerHour: [1, 0, 2],
   logsSince: '2026-10-10T12:00:00Z',
 };
@@ -111,6 +112,7 @@ describe('areaSummaryOf', () => {
       summary: { kind: 'database', isReachable: true, latencyMs: 4, sizeBytes: 190_840_832 },
     },
     { area: 'mail', summary: { kind: 'mail', pending: 3, retrying: 1 } },
+    { area: 'whatsApp', summary: { kind: 'whatsApp', waiting: 2, failed: 1 } },
     { area: 'log', summary: { kind: 'log', errors: 3 } },
   ])('sums up $area', ({ area, summary }) => {
     expect(areaSummaryOf(area, status, NOW)).toEqual(summary);

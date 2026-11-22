@@ -16,6 +16,7 @@ public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
         "/api/auth/me",
         "/api/auth/me/contact-visibility",
         "/api/auth/me/contact-details",
+        "/api/auth/me/club-group-consent",
         "/api/auth/logout",
         "/api/my-groups",
         "/api/group-kinds",

@@ -354,6 +354,7 @@ public sealed partial class IntakeService
         intake.City = null;
         intake.Phone = null;
         intake.Email = null;
+        intake.ClubGroupConsent = false;
     }
 
     [Pure]

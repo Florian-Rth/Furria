@@ -1,15 +1,17 @@
 import type { KkPollBallotMode } from '@furria/ui/KkPollBallot';
 import { useMeQuery } from '@/features/session/api';
+import { THROUGH_WHATSAPP_NOTE, UNASSIGNED_COPY } from '@/features/whatsapp/whatsapp-copy';
 import { ATTENDANCE_ROLL_LABELS } from '@/lib/calendar-copy';
 import type { AddOnAnswering } from '../add-on-host';
 import { usePollVoteMutation } from '../api';
 import { toPollMetaLabel, toPollOutcomeLabel } from '../calendar-labels';
 import type { NamesTab } from '../calendar-names';
-import { toNameLine, toOpenTab, toPersonEntry } from '../calendar-names';
+import { toNameLine, toOpenTab } from '../calendar-names';
 import { toPollOutcome, toPollResults, toViewerChoice, toVoteSet } from '../calendar-polls';
 import type { CalendarReminderSource } from '../calendar-reminders';
 import { toPollReminderSource } from '../calendar-reminders';
 import type { CalendarPoll } from '../schemas';
+import { toChosenLabels, toUnassignedTab, toVoterEntry, withTabs } from '../whatsapp-answers';
 import type { NamesSheetControl } from './use-names-sheet';
 import { useNamesSheet } from './use-names-sheet';
 
@@ -38,8 +40,11 @@ export interface CalendarPollControl {
   reminder: CalendarReminderSource;
   tabs: NamesTab[];
   openTab: NamesTab | null;
+  unassignedTab: NamesTab | null;
   sheet: NamesSheetControl;
 }
+
+const CHOSEN_SEPARATOR = ', ';
 
 const toOptionTabId = (optionId: number): string => `option-${optionId}`;
 
@@ -76,10 +81,15 @@ export const useCalendarPoll = (
       count: result.voteCount,
       entries: poll.isAnonymous
         ? null
-        : result.voters.map((voter) => toPersonEntry(voter, ownPersonId)),
+        : result.voters.map((voter) => toVoterEntry(voter, ownPersonId, THROUGH_WHATSAPP_NOTE)),
     }),
   );
   const openTab = toOpenTab(poll.notAnswered, ownPersonId, ATTENDANCE_ROLL_LABELS.open);
+  const unassignedTab = toUnassignedTab(
+    poll.unassigned,
+    (sender) => toChosenLabels(sender.optionIds, poll.options).join(CHOSEN_SEPARATOR),
+    UNASSIGNED_COPY,
+  );
   const choices = results.map((result, index): CalendarPollChoice => {
     const line = toNameLine(optionTabs[index]?.entries ?? []);
 
@@ -114,8 +124,9 @@ export const useCalendarPoll = (
     isLocked,
     isReadOnly: isLocked,
     isSubmitting,
-    tabs: openTab === null ? optionTabs : [...optionTabs, openTab],
+    tabs: withTabs(optionTabs, openTab, unassignedTab),
     openTab,
+    unassignedTab,
     sheet,
   };
 };

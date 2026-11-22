@@ -116,6 +116,14 @@ export const MailFactsSchema = z.object({
 });
 export type MailFacts = z.infer<typeof MailFactsSchema>;
 
+export const WhatsAppFactsSchema = z.object({
+  waiting: z.number(),
+  retrying: z.number(),
+  failed: z.number(),
+  oldestWaitingAt: MomentSchema.nullable(),
+});
+export type WhatsAppFacts = z.infer<typeof WhatsAppFactsSchema>;
+
 export const SystemStatusSchema = z.object({
   checkedAt: MomentSchema,
   verdict: z.object({ level: VerdictLevelSchema, reasons: z.array(VerdictReasonSchema) }),
@@ -127,6 +135,7 @@ export const SystemStatusSchema = z.object({
   workers: z.array(MediaWorkerSchema),
   services: z.array(BackgroundServiceSchema),
   mail: MailFactsSchema,
+  whatsApp: WhatsAppFactsSchema,
   errorsPerHour: z.array(z.number()),
   logsSince: MomentSchema.nullable(),
 });

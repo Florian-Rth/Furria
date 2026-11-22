@@ -49,6 +49,7 @@ export const DOMAIN_CHANGES = [
   'claimWindow',
   'groupMatcher',
   'intake',
+  'whatsApp',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -142,6 +143,9 @@ export const READ_NAMES = [
   'statementPool',
   'intakes',
   'intake',
+  'whatsAppOverview',
+  'whatsAppReach',
+  'whatsAppQrCode',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -235,6 +239,9 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   statementPool: ['group-matcher', 'pool'],
   intakes: ['manage', 'intakes', 'list'],
   intake: ['manage', 'intakes', 'detail'],
+  whatsAppOverview: ['whatsapp', 'overview'],
+  whatsAppReach: ['whatsapp', 'reach'],
+  whatsAppQrCode: ['whatsapp', 'qr-code'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -573,6 +580,9 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   statementPool: ['groupMatcher', 'group'],
   intakes: ['intake', 'group', 'person'],
   intake: ['intake', 'group', 'person', 'picture', 'membership', 'groupMembership', 'account'],
+  whatsAppOverview: ['whatsApp'],
+  whatsAppReach: ['whatsApp'],
+  whatsAppQrCode: [],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -696,4 +706,7 @@ export const queryKeys = {
   statementPool: READ_ROOTS.statementPool,
   intakes: READ_ROOTS.intakes,
   intake: (intakeId: number | null): QueryKey => keyOf('intake', intakeId),
+  whatsAppOverview: READ_ROOTS.whatsAppOverview,
+  whatsAppReach: READ_ROOTS.whatsAppReach,
+  whatsAppQrCode: READ_ROOTS.whatsAppQrCode,
 } as const;
