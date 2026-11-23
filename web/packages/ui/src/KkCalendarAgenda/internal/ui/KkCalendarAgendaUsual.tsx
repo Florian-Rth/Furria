@@ -124,24 +124,24 @@ export const KkCalendarAgendaUsual: FC<KkCalendarAgendaUsualProps> = ({
         <KkIcon name="clock" size="small" />
       </Box>
       <Box component="span" aria-hidden sx={{ display: 'block', minWidth: 0, width: '100%' }}>
-        <Typography
-          component="span"
-          variant="body2"
-          sx={{ display: 'block', fontStyle: 'italic', fontWeight: 600, lineHeight: 1.25 }}
-        >
-          {title}
-        </Typography>
+        <Stack direction="row" component="span" sx={{ alignItems: 'center', gap: 0.75 }}>
+          <Box component="span" sx={ringPaint(mark)} />
+          <Typography
+            component="span"
+            variant="body2"
+            sx={{ display: 'block', fontStyle: 'italic', fontWeight: 600, lineHeight: 1.25 }}
+          >
+            {groupName}
+          </Typography>
+        </Stack>
         <Stack
           direction="row"
           component="span"
           sx={{ alignItems: 'center', columnGap: 1, rowGap: 0.25, flexWrap: 'wrap', pt: 0.25 }}
         >
-          <Stack direction="row" component="span" sx={{ alignItems: 'center', gap: 0.5 }}>
-            <Box component="span" sx={ringPaint(mark)} />
-            <Typography component="span" variant="caption" sx={{ color: 'text.secondary' }}>
-              {groupName}
-            </Typography>
-          </Stack>
+          <Typography component="span" variant="caption" sx={{ color: 'text.secondary' }}>
+            {title}
+          </Typography>
           {venueMark}
         </Stack>
       </Box>

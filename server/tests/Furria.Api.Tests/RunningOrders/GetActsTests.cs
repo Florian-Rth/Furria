@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
+using Furria.Api.Endpoints.Groups;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
@@ -52,6 +53,40 @@ public sealed class GetActsTests : IClassFixture<ApiTestFixture>
             [(RunningOrderRuleKind.Early, RuleStrength.Prefer)],
             act.Wishes.Select(wish => (wish.Kind, wish.Strength))
         );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutTheAct_When_ItsGroupBecameAManagementGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(Planner, ct);
+        var garde = ctx.Groups.Groups.IdOf(Garde);
+        await CreateActAsync(client, "Gardetanz", garde, ActKind.Dance);
+        await CreateActAsync(client, "Einmarsch", kind: ActKind.Point);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var switchedOff = await manager.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = garde,
+                Description = "",
+                IsRecruiting = false,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
+                Icon = null,
+                IsManagementGroup = true,
+            }
+        );
+        switchedOff.EnsureSuccessStatusCode();
+
+        var (response, result) = await client.GETAsync<GetActs, GetActsRequest, GetActsResponse>(
+            new()
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var act = Assert.Single(result.Acts);
+        Assert.Equal("Einmarsch", act.Name);
     }
 
     [Fact]

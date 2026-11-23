@@ -41,6 +41,7 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
             .UseCollation(GermanCollation.Name);
         builder.Property(group => group.Description).HasMaxLength(400).IsRequired();
         builder.Property(group => group.IsRecruiting).HasDefaultValue(false);
+        builder.Property(group => group.IsManagementGroup).HasDefaultValue(false);
         builder
             .Property(group => group.Tone)
             .HasConversion<GroupToneConverter>()

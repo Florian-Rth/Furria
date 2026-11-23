@@ -35,6 +35,9 @@ const FACTS_SECTION = 'Eckdaten';
 const NEWCOMERS_SECTION = 'Neue Mitglieder';
 const NAME_LABEL = 'Name';
 const RECRUITING_LABEL = 'Sucht Verstärkung';
+const MANAGEMENT_GROUP_LABEL = 'Verwaltungsgruppe';
+const MANAGEMENT_GROUP_DESCRIPTION =
+  'Nur für die Vereinsarbeit: nicht auf der Website, nicht in der Gruppenzahl, keine Sessionsauftritte';
 const DESCRIPTION_LABEL = 'Beschreibung';
 const DESCRIPTION_PLACEHOLDER = 'Kurzbeschreibung der Gruppe';
 const DESCRIPTION_ROWS = 5;
@@ -117,6 +120,15 @@ export const GroupSettingsEditor: FC<GroupSettingsEditorProps> = ({ hub, adminis
       <GroupMatcherHubRow groupId={hub.groupId} status={hub.groupMatcher} />
     );
 
+  const managementGroupRow = administers ? (
+    <KkSwitchRow
+      label={MANAGEMENT_GROUP_LABEL}
+      description={MANAGEMENT_GROUP_DESCRIPTION}
+      checked={control.isManagementGroup}
+      onChange={control.setIsManagementGroup}
+    />
+  ) : null;
+
   const archive = administers ? <HubArchiveAction hub={hub} /> : null;
 
   return (
@@ -182,6 +194,7 @@ export const GroupSettingsEditor: FC<GroupSettingsEditorProps> = ({ hub, adminis
           onChange={control.setTone}
         />
         <ClubIconField value={control.icon} onChange={control.setIcon} />
+        {managementGroupRow}
       </KkFormSection>
       <KkFormSection title={NEWCOMERS_SECTION}>
         <KkSwitchRow

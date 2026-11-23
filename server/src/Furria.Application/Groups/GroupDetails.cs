@@ -16,6 +16,8 @@ public sealed record GroupDetails
 
     public required bool IsRecruiting { get; init; }
 
+    public required bool IsManagementGroup { get; init; }
+
     public required int? GroupKindId { get; init; }
 
     public required string? GroupKindName { get; init; }

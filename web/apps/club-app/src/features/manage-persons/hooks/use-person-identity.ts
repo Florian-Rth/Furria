@@ -1,6 +1,4 @@
 import type { KkStanding } from '@furria/ui/honour-types';
-import type { KkImageSource } from '@furria/ui/image-source';
-import { toImageSource } from '@furria/ui/image-source';
 import { useMeQuery } from '@/features/session/api';
 import { sessionAt } from '@/lib/club';
 import { toStanding } from '@/lib/honours';
@@ -13,7 +11,6 @@ import type { PersonDetails } from '../schemas';
 export interface PersonIdentity {
   name: string;
   initials: string;
-  portrait: KkImageSource | null;
   birthLine: string | null;
   archiveNote: string | null;
   standing: KkStanding;
@@ -27,7 +24,6 @@ export const usePersonIdentity = (person: PersonDetails): PersonIdentity => {
   return {
     name: toPersonName(person),
     initials: toInitials(person.firstName, person.lastName),
-    portrait: toImageSource(person.portrait?.picture ?? null, 'portrait'),
     birthLine: toBirthLine(person.birthDate, person.city, today),
     archiveNote: toArchiveNote(person.archive, me.data?.person?.id ?? null, today),
     standing: toStanding({

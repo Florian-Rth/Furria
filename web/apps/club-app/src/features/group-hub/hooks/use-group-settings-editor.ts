@@ -17,6 +17,8 @@ export interface GroupSettingsEditorControl {
   setDescription: (value: string) => void;
   isRecruiting: boolean;
   setIsRecruiting: (value: boolean) => void;
+  isManagementGroup: boolean;
+  setIsManagementGroup: (value: boolean) => void;
   groupKindId: string;
   setGroupKindId: (value: string) => void;
   foundedYear: string;
@@ -50,6 +52,10 @@ export const useGroupSettingsEditor = (
   });
   const description = useController({ control: write.form.control, name: 'description' });
   const isRecruiting = useController({ control: write.form.control, name: 'isRecruiting' });
+  const isManagementGroup = useController({
+    control: write.form.control,
+    name: 'isManagementGroup',
+  });
   const groupKindId = useController({ control: write.form.control, name: 'groupKindId' });
   const foundedYear = useController({ control: write.form.control, name: 'foundedYear' });
   const tone = useController({ control: write.form.control, name: 'tone' });
@@ -62,6 +68,8 @@ export const useGroupSettingsEditor = (
     setDescription: description.field.onChange,
     isRecruiting: isRecruiting.field.value,
     setIsRecruiting: isRecruiting.field.onChange,
+    isManagementGroup: isManagementGroup.field.value,
+    setIsManagementGroup: isManagementGroup.field.onChange,
     groupKindId: groupKindId.field.value,
     setGroupKindId: groupKindId.field.onChange,
     foundedYear: foundedYear.field.value,

@@ -46,6 +46,34 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
         );
 
     [Fact]
+    public async Task Should_SayItIsAManagementGroup_When_TheClubMarkedItSo()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups.AddGroup("vorstandsrunde", "Vorstandsrunde", isManagementGroup: true)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await ReadHubAsync(
+            client,
+            ctx.Groups.Groups.IdOf("vorstandsrunde")
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(result.IsManagementGroup);
+    }
+
+    [Fact]
     public async Task Should_CarryTheGroupWithItsPeople_When_AnAffiliatedStrangerReadsIt()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1092,6 +1120,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                 "pictureEditing",
                 "description",
                 "isRecruiting",
+                "isManagementGroup",
                 "groupKindId",
                 "groupKindName",
                 "foundedYear",

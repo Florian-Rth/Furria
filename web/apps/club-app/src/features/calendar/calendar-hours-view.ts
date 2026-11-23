@@ -15,7 +15,6 @@ import {
   toGroupName,
   toHoursDayLabel,
   toUsualSpoken,
-  USUAL_TITLE,
   weekdayOf,
 } from './calendar-agenda-copy';
 import type { UsualSegment } from './calendar-hours';
@@ -82,7 +81,7 @@ const toUsualBlock = (
   return {
     ...span,
     id: usualIdOf(segment),
-    title: USUAL_TITLE,
+    title: usual.groupName,
     time: from,
     label: toUsualSpoken(
       usual.groupName,

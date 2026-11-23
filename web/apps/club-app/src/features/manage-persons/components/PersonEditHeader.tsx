@@ -1,7 +1,7 @@
-import { KkAvatar } from '@furria/ui/KkAvatar';
 import { KkMeta } from '@furria/ui/KkMeta';
 import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
+import { PortraitAvatar } from '@/features/portrait-view/components/PortraitAvatar';
 import { usePersonIdentity } from '../hooks/use-person-identity';
 import type { PersonDetails } from '../schemas';
 
@@ -19,9 +19,10 @@ export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
   return (
     <KkScreenHeader>
       <KkScreenHeader.Visual>
-        <KkAvatar
+        <PortraitAvatar
+          name={identity.name}
           initials={identity.initials}
-          image={identity.portrait}
+          picture={person.portrait?.picture ?? null}
           size="header"
           standing={identity.standing}
           arrival

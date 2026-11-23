@@ -13,6 +13,8 @@ public sealed class Group : ITimestamped
 
     public bool IsRecruiting { get; set; }
 
+    public bool IsManagementGroup { get; set; }
+
     public int? GroupKindId { get; set; }
 
     public int? FoundedYear { get; set; }

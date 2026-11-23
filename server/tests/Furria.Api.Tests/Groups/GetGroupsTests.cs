@@ -27,6 +27,36 @@ public sealed class GetGroupsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_SayWhichGroupsAreManagementGroups_When_OneIsListed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroup("vorstandsrunde", "Vorstandsrunde", isManagementGroup: true)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await client.GETAsync<GetGroups, GetGroupsResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [("Tanzgarde", false), ("Vorstandsrunde", true)],
+            result.Groups.Select(group => (group.Name, group.IsManagementGroup))
+        );
+    }
+
+    [Fact]
     public async Task Should_CarryTheGroupWithItsPeople_When_AnAffiliatedPersonReadsTheList()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -399,6 +429,7 @@ public sealed class GetGroupsTests : IClassFixture<ApiTestFixture>
                 "picture",
                 "description",
                 "isRecruiting",
+                "isManagementGroup",
                 "groupKindName",
                 "foundedYear",
                 "tone",

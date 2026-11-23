@@ -177,7 +177,7 @@ public sealed class GetPublicClubTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CountOnlyGroupsThatAreNotArchived_When_TheClubIsRead()
+    public async Task Should_CountOnlyActiveNonManagementGroups_When_TheClubIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
         await _fixture.BuildAsync(
@@ -187,6 +187,7 @@ public sealed class GetPublicClubTests : IClassFixture<ApiTestFixture>
                         .AddGroup("tanzgarde", "Tanzgarde")
                         .AddGroup("elferrat", "Elferrat")
                         .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedIn2020)
+                        .AddGroup("vorstandsrunde", "Vorstandsrunde", isManagementGroup: true)
                 ),
             ct
         );

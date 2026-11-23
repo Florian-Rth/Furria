@@ -61,6 +61,7 @@ public sealed class GroupService
             group.Name,
             group.Description,
             group.IsRecruiting,
+            group.IsManagementGroup,
             group.GroupKindId,
             group.GroupKind!.Name,
             group.FoundedYear,
@@ -160,6 +161,7 @@ public sealed class GroupService
                 group.Name,
                 group.Description,
                 group.IsRecruiting,
+                group.IsManagementGroup,
                 group.GroupKind!.Name,
                 group.FoundedYear,
                 group.Tone,
@@ -529,6 +531,7 @@ public sealed class GroupService
         group.Name = command.Name ?? group.Name;
         group.Description = command.Description;
         group.IsRecruiting = command.IsRecruiting;
+        group.IsManagementGroup = command.IsManagementGroup ?? group.IsManagementGroup;
         group.GroupKindId = command.GroupKindId;
         group.FoundedYear = command.FoundedYear;
         group.Tone = command.Tone;
@@ -888,6 +891,7 @@ public sealed class GroupService
             Name = row.Name,
             Description = row.Description,
             IsRecruiting = row.IsRecruiting,
+            IsManagementGroup = row.IsManagementGroup,
             GroupKindId = row.GroupKindId,
             GroupKindName = row.GroupKindName,
             FoundedYear = row.FoundedYear,
@@ -993,6 +997,7 @@ public sealed class GroupService
             Name = row.Name,
             Description = row.Description,
             IsRecruiting = row.IsRecruiting,
+            IsManagementGroup = row.IsManagementGroup,
             GroupKindName = row.GroupKindName,
             FoundedYear = row.FoundedYear,
             Tone = row.Tone,
@@ -1014,6 +1019,7 @@ public sealed class GroupService
         string Name,
         string Description,
         bool IsRecruiting,
+        bool IsManagementGroup,
         string? GroupKindName,
         int? FoundedYear,
         GroupTone? Tone,
@@ -1029,6 +1035,7 @@ public sealed class GroupService
         string Name,
         string Description,
         bool IsRecruiting,
+        bool IsManagementGroup,
         int? GroupKindId,
         string? GroupKindName,
         int? FoundedYear,

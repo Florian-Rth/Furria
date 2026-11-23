@@ -2307,6 +2307,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("icon");
 
+                    b.Property<bool>("IsManagementGroup")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_management_group");
+
                     b.Property<bool>("IsRecruiting")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")

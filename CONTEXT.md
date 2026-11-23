@@ -217,7 +217,13 @@ one of ten suggested presets or a free colour — and travels as `#RRGGBB`; the 
 shades from it. The presets stay clear of the status tones (green = ok/paid, gold = warning, red =
 action), but a free colour may land near one, so status is never read from a group tone alone. A
 role coin's tone is the same kind of colour.
-_UI copy_: Gruppe; Steckbrief, Gründungsjahr, Gruppenfarbe, Übliche Trainingszeit, Jubiläum
+A group is a **management group** (`Group.IsManagementGroup`, off by default) when `groups.manage`
+marks it as one the club only keeps for its own organising (a board round, a planning team) — not
+a dance group or any other group of the club's life. It keeps its members, admins, hub and
+calendar, but it is left out of the public website, of every *we have n groups* count and of the
+**Sessionsauftritte**: no act can be filed under it, and its acts leave the planners' catalogue
+(ruled 2026-11-23).
+_UI copy_: Gruppe; Steckbrief, Gründungsjahr, Gruppenfarbe, Übliche Trainingszeit, Jubiläum, Verwaltungsgruppe
 _Avoid_: team, squad, gating anything on membership by default, recurring appointment /
 recurrence rule (for the usual training time), storing the anniversary, age group (ruled out
 2026-09-21 — the name and the description say it, and it would lie about the children's guard's

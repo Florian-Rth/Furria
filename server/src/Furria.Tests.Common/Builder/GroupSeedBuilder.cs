@@ -35,7 +35,8 @@ public sealed class GroupSeedBuilder
         string? groupKindAlias = null,
         int? foundedYear = null,
         GroupTone? tone = null,
-        ClubIcon? icon = null
+        ClubIcon? icon = null,
+        bool isManagementGroup = false
     )
     {
         _groups.Add(
@@ -48,7 +49,8 @@ public sealed class GroupSeedBuilder
                 groupKindAlias,
                 foundedYear,
                 tone,
-                icon
+                icon,
+                isManagementGroup
             )
         );
         return this;
@@ -107,7 +109,8 @@ public sealed class GroupSeedBuilder
         string? GroupKindAlias,
         int? FoundedYear,
         GroupTone? Tone,
-        ClubIcon? Icon
+        ClubIcon? Icon,
+        bool IsManagementGroup
     );
 
     internal sealed record GroupMembershipIntent(

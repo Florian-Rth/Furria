@@ -59,7 +59,7 @@ public sealed class PutGroupInfo : Endpoint<PutGroupInfoRequest>
     ) =>
         await _authorizer.CanAdministerGroupAsync(accountId, req.GroupId, ct)
         && (
-            req.Name is null
+            (req.Name is null && req.IsManagementGroup is null)
             || await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct)
         );
 
@@ -70,6 +70,7 @@ public sealed class PutGroupInfo : Endpoint<PutGroupInfoRequest>
             Name = req.Name,
             Description = req.Description,
             IsRecruiting = req.IsRecruiting,
+            IsManagementGroup = req.IsManagementGroup,
             GroupKindId = req.GroupKindId,
             FoundedYear = req.FoundedYear,
             Tone = req.Tone,
@@ -87,6 +88,8 @@ public sealed record PutGroupInfoRequest
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public bool? IsManagementGroup { get; init; }
 
     public required int? GroupKindId { get; init; }
 

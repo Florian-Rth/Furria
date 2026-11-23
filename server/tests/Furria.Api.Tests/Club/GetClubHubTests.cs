@@ -258,7 +258,7 @@ public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveOutArchivedGroups_When_TheStripIsRead()
+    public async Task Should_LeaveOutArchivedAndManagementGroups_When_TheStripIsRead()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -341,6 +341,7 @@ public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
                         groups
                             .AddGroup("tanzgarde", "Tanzgarde")
                             .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedIn2020)
+                            .AddGroup("vorstandsrunde", "Vorstandsrunde", isManagementGroup: true)
                     ),
             ct
         );

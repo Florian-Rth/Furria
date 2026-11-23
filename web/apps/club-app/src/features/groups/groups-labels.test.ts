@@ -27,6 +27,7 @@ const summary = (overrides: Partial<GroupSummary> & { groupId: number }): GroupS
   picture: null,
   description: '',
   isRecruiting: false,
+  isManagementGroup: false,
   groupKindName: null,
   foundedYear: null,
   tone: null,
