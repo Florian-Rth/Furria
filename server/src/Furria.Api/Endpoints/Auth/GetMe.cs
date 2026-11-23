@@ -11,6 +11,7 @@ using Furria.Core.Media;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Registry;
+using Furria.Infrastructure.WhatsApp;
 
 namespace Furria.Api.Endpoints.Auth;
 
@@ -19,16 +20,19 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
     private readonly AccountService _accountService;
     private readonly PictureService _pictureService;
     private readonly PersonHonoursQuery _honoursQuery;
+    private readonly WhatsAppGroupKeeping _groupKeeping;
 
     public GetMe(
         AccountService accountService,
         PictureService pictureService,
-        PersonHonoursQuery honoursQuery
+        PersonHonoursQuery honoursQuery,
+        WhatsAppGroupKeeping groupKeeping
     )
     {
         _accountService = accountService;
         _pictureService = pictureService;
         _honoursQuery = honoursQuery;
+        _groupKeeping = groupKeeping;
     }
 
     public override void Configure()
@@ -60,13 +64,19 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             ? await _honoursQuery.OfPersonAsync(holder.Id, ct)
             : PersonHonoursDetails.None;
 
-        await Send.OkAsync(ToResponse(account.Value, portrait, honours), cancellation: ct);
+        var keepsClubGroup = await _groupKeeping.IsOnAsync(ct);
+
+        await Send.OkAsync(
+            ToResponse(account.Value, portrait, honours, keepsClubGroup),
+            cancellation: ct
+        );
     }
 
     private static GetMeResponse ToResponse(
         AccountDetails account,
         PictureEditingDetails? portrait,
-        PersonHonoursDetails honours
+        PersonHonoursDetails honours,
+        bool keepsClubGroup
     ) =>
         new()
         {
@@ -81,6 +91,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             AppSince = account.AppSince,
             Passkeys = [.. account.Passkeys.Select(ToDto)],
             Honours = PersonHonoursDto.From(honours),
+            KeepsClubGroup = keepsClubGroup,
         };
 
     private static MePasskeyDto ToDto(PasskeyDetails passkey) =>
@@ -160,6 +171,8 @@ public sealed record GetMeResponse
     public required IReadOnlyList<MePasskeyDto> Passkeys { get; init; }
 
     public required PersonHonoursDto Honours { get; init; }
+
+    public required bool KeepsClubGroup { get; init; }
 }
 
 public sealed record MePasskeyDto

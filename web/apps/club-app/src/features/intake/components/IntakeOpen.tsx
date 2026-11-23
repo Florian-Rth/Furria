@@ -23,6 +23,7 @@ export const IntakeOpen: FC<IntakeOpenProps> = ({ page }) => {
   const clubLine =
     intake.clubName === null ? null : <KkEyebrow tone="muted">{intake.clubName}</KkEyebrow>;
   const address = intake.addressRequired ? <IntakeAddressFields form={control.form} /> : null;
+  const clubGroup = intake.keepsClubGroup ? <IntakeClubGroupField form={control.form} /> : null;
   const rejection = control.rejection === null ? null : <KkAlert>{control.rejection}</KkAlert>;
 
   return (
@@ -37,7 +38,7 @@ export const IntakeOpen: FC<IntakeOpenProps> = ({ page }) => {
         <IntakeAboutFields form={control.form} />
         {address}
         <IntakeContactFields form={control.form} />
-        <IntakeClubGroupField form={control.form} />
+        {clubGroup}
         <IntakePortraitField portrait={control.portrait} uploadShare={control.uploadShare} />
         {rejection}
         <KkButton type="submit" fullWidth loading={control.isSending} disabled={!control.canSubmit}>

@@ -12,6 +12,7 @@ export const IntakeLinkLookupSchema = z.object({
   clubName: z.string().nullable(),
   state: IntakeLinkStateSchema,
   addressRequired: z.boolean(),
+  keepsClubGroup: z.boolean(),
 });
 export type IntakeLinkLookup = z.infer<typeof IntakeLinkLookupSchema>;
 

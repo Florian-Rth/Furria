@@ -12,6 +12,7 @@ export interface OpenIntake {
   token: string;
   clubName: string | null;
   addressRequired: boolean;
+  keepsClubGroup: boolean;
 }
 
 export interface OpenIntakePage {
@@ -58,6 +59,7 @@ export const useIntakePage = (): IntakePage => {
               token,
               clubName: lookup.data.clubName,
               addressRequired: lookup.data.addressRequired,
+              keepsClubGroup: lookup.data.keepsClubGroup,
             },
             submission,
             recheck,

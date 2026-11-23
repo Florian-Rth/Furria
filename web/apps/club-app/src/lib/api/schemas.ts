@@ -136,6 +136,7 @@ export const MeSchema = z.object({
   appSince: z.iso.date().nullable(),
   passkeys: z.array(MePasskeySchema),
   honours: HonoursSchema,
+  keepsClubGroup: z.boolean(),
 });
 export type Me = z.infer<typeof MeSchema>;
 
