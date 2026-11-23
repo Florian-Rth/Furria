@@ -88,6 +88,22 @@ public sealed class WhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
         Assert.Single(_fixture.Waha.Sent);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Should_TellHerWhetherTheClubGroupTakesMembers_When_SheReadsHerself(
+        bool keepsMembers
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        await SwitchKeepingAsync(ctx, keepsMembers, ct);
+
+        var me = await MeOfAsync(ctx, "alice", ct);
+
+        Assert.Equal(keepsMembers, me.KeepsClubGroup);
+    }
+
     [Fact]
     public async Task Should_StageAFewAddsAtATime_When_ManyConsentAtOnce()
     {
@@ -300,6 +316,18 @@ public sealed class WhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
         var (response, start) = await client.GETAsync<GetStart, GetStartResponse>();
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         return start;
+    }
+
+    private static async Task<GetMeResponse> MeOfAsync(
+        SeededContext ctx,
+        string login,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync(login, ct);
+        var (response, me) = await client.GETAsync<GetMe, GetMeResponse>();
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        return me;
     }
 
     private static async Task<GetWhatsAppResponse> OverviewAsync(

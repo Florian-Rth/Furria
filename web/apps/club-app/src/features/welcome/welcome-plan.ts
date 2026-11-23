@@ -166,4 +166,4 @@ export const owedWelcomeOf = (me: Me): WelcomeMember | null =>
   me.welcomeSeenAt === null ? welcomeMemberOf(me) : null;
 
 export const asksClubGroupConsentOf = (me: Me): boolean =>
-  me.person !== null && !me.person.clubGroupConsent;
+  me.keepsClubGroup && me.person !== null && !me.person.clubGroupConsent;

@@ -48,6 +48,17 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
     me.data?.person?.id ?? null,
     new Date(),
   );
+  const clubGroupConsentSwitch =
+    me.data?.keepsClubGroup === true ? (
+      <KkSwitchRow
+        label={CLUB_GROUP_CONSENT_LABEL}
+        description={clubGroupConsentHint}
+        checked={clubGroupConsent.checked}
+        onChange={clubGroupConsent.onChange}
+        busy={clubGroupConsent.busy}
+        disabled={clubGroupConsent.decidesHerself}
+      />
+    ) : null;
   const contactChangeNote = contactChange === undefined ? null : <KkNote>{contactChange}</KkNote>;
   const address = formatAddress(person.street, person.zip, person.city);
   const landingKey = toLandingKey('person', person.personId);
@@ -79,14 +90,7 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
           onChange={visibility.onChange}
           busy={visibility.busy}
         />
-        <KkSwitchRow
-          label={CLUB_GROUP_CONSENT_LABEL}
-          description={clubGroupConsentHint}
-          checked={clubGroupConsent.checked}
-          onChange={clubGroupConsent.onChange}
-          busy={clubGroupConsent.busy}
-          disabled={clubGroupConsent.decidesHerself}
-        />
+        {clubGroupConsentSwitch}
       </KkPanel>
     </KkPanelSection>
   );
