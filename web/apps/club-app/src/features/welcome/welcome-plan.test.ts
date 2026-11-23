@@ -117,6 +117,7 @@ const ME: Me = {
   appSince: null,
   passkeys: [],
   honours: { sessions: 12, functions: [] },
+  keepsClubGroup: true,
 };
 
 describe('owedWelcomeOf', () => {
@@ -142,6 +143,11 @@ describe('asksClubGroupConsentOf', () => {
       asks: false,
     },
     { name: 'a managing login', me: { ...ME, person: null }, asks: false },
+    {
+      name: 'anyone while the club group takes nobody',
+      me: { ...ME, keepsClubGroup: false },
+      asks: false,
+    },
   ])('asks $name: $asks', ({ me, asks }) => {
     expect(asksClubGroupConsentOf(me)).toBe(asks);
   });

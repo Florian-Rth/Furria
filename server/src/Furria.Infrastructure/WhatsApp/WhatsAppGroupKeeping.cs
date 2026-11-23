@@ -56,6 +56,9 @@ public sealed class WhatsAppGroupKeeping
         return Result.Success();
     }
 
+    public async Task<bool> IsOnAsync(CancellationToken ct) =>
+        _options.Value.IsConfigured && await KeptChatIdAsync(ct) is not null;
+
     public async Task StageAddsAsync(CancellationToken ct)
     {
         if (!_options.Value.IsConfigured || await KeptChatIdAsync(ct) is not { } chatId)

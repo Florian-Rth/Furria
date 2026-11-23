@@ -4,16 +4,19 @@ using Furria.Api.RateLimiting;
 using Furria.Application.Intakes;
 using Furria.Core.Intakes;
 using Furria.Infrastructure.Intakes;
+using Furria.Infrastructure.WhatsApp;
 
 namespace Furria.Api.Endpoints.Intakes;
 
 public sealed class LookUpIntakeLink : Endpoint<LookUpIntakeLinkRequest, LookUpIntakeLinkResponse>
 {
     private readonly IntakeService _intakeService;
+    private readonly WhatsAppGroupKeeping _groupKeeping;
 
-    public LookUpIntakeLink(IntakeService intakeService)
+    public LookUpIntakeLink(IntakeService intakeService, WhatsAppGroupKeeping groupKeeping)
     {
         _intakeService = intakeService;
+        _groupKeeping = groupKeeping;
     }
 
     public override void Configure()
@@ -32,15 +35,21 @@ public sealed class LookUpIntakeLink : Endpoint<LookUpIntakeLinkRequest, LookUpI
             return;
         }
 
-        await Send.OkAsync(ToResponse(link), cancellation: ct);
+        var keepsClubGroup = await _groupKeeping.IsOnAsync(ct);
+
+        await Send.OkAsync(ToResponse(link, keepsClubGroup), cancellation: ct);
     }
 
-    private static LookUpIntakeLinkResponse ToResponse(IntakeLinkLookup link) =>
+    private static LookUpIntakeLinkResponse ToResponse(
+        IntakeLinkLookup link,
+        bool keepsClubGroup
+    ) =>
         new()
         {
             ClubName = link.ClubName,
             State = link.State,
             AddressRequired = link.AddressRequired,
+            KeepsClubGroup = keepsClubGroup,
         };
 }
 
@@ -64,4 +73,6 @@ public sealed record LookUpIntakeLinkResponse
     public required IntakeLinkState State { get; init; }
 
     public required bool AddressRequired { get; init; }
+
+    public required bool KeepsClubGroup { get; init; }
 }

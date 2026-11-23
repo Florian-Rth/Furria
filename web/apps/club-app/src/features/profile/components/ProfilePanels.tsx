@@ -31,6 +31,7 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
   const { highlightedKey } = useLanding();
   const birthDate = person.birthDate === null ? EMPTY_VALUE : formatIsoDay(person.birthDate);
   const beerListPanel = me.isAffiliated ? <ProfileBeerListPanel /> : null;
+  const clubGroupPanel = me.keepsClubGroup ? <ProfileClubGroupPanel person={person} /> : null;
 
   return (
     <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
@@ -38,7 +39,7 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
         <KkPanelStack>
           <ProfileContactPanel person={person} highlightedKey={highlightedKey} />
           <ProfileVisibilityPanel person={person} />
-          <ProfileClubGroupPanel person={person} />
+          {clubGroupPanel}
         </KkPanelStack>
       </Grid>
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>

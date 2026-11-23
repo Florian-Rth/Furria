@@ -258,6 +258,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'groupMembership',
     'groupAdmin',
     'beerListEnrollment',
+    'whatsApp',
   ],
   invitationLookup: [],
   passkeySupport: [],
