@@ -60,6 +60,7 @@ internal static class GroupSeedMaterializer
                 Name = intent.Name,
                 Description = intent.Description,
                 IsRecruiting = intent.IsRecruiting,
+                IsManagementGroup = intent.IsManagementGroup,
                 ArchivedOn = intent.ArchivedOn,
                 GroupKindId = OptionalId(groupKindIds, intent.GroupKindAlias, "GroupKind"),
                 FoundedYear = intent.FoundedYear,

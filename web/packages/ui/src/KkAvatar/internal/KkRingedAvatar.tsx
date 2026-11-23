@@ -4,6 +4,7 @@ import type { KkGroupTone } from '../../internal/group-tone';
 import type { KkRingedAvatarSize } from '../../internal/honours/honour-metrics';
 import type { KkHonours, KkStanding } from '../../internal/honours/honour-types';
 import type { KkSx } from '../../kk-sx';
+import type { KkAvatarOpen } from './avatar-open';
 import { avatarMetrics } from './avatar-tier';
 import { KkAvatarKit } from './KkAvatarKit';
 import { SASH_KEY, useRingedAvatar } from './use-ringed-avatar';
@@ -18,6 +19,7 @@ interface KkRingedAvatarProps {
   honours?: KkHonours;
   standing?: KkStanding;
   arrival: boolean;
+  open?: KkAvatarOpen;
   component?: ElementType;
   sx?: KkSx;
 }
@@ -30,6 +32,7 @@ export const KkRingedAvatar: FC<KkRingedAvatarProps> = ({
   honours,
   standing,
   arrival,
+  open,
   component,
   sx,
 }) => {
@@ -87,8 +90,14 @@ export const KkRingedAvatar: FC<KkRingedAvatarProps> = ({
         play={view.play}
       />
     );
+  const openButton =
+    open === undefined ? null : (
+      <KkAvatarKit.Spot x={CENTER} y={CENTER} share={view.faceShare}>
+        <KkAvatarKit.OpenButton label={open.label} onOpen={open.onOpen} />
+      </KkAvatarKit.Spot>
+    );
   const sashButton =
-    view.sash === null || !metrics.interactive ? null : (
+    view.sash === null || !metrics.interactive || open !== undefined ? null : (
       <KkAvatarKit.Spot x={CENTER} y={CENTER} share={view.faceShare}>
         <KkAvatarKit.SashButton
           label={view.sash.label}
@@ -131,6 +140,7 @@ export const KkRingedAvatar: FC<KkRingedAvatarProps> = ({
         {standingDot}
         {metal}
       </KkAvatarKit.Canvas>
+      {openButton}
       {sashButton}
       {coins}
     </KkAvatarKit>

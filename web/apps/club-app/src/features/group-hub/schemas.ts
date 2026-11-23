@@ -61,6 +61,7 @@ export const GroupHubSchema = z.object({
   pictureEditing: PictureEditingSchema.nullable(),
   description: z.string(),
   isRecruiting: z.boolean(),
+  isManagementGroup: z.boolean(),
   groupKindId: z.number().int().nullable(),
   groupKindName: z.string().nullable(),
   foundedYear: z.number().int().nullable(),
@@ -111,6 +112,7 @@ export const GroupSettingsFormSchema = z.object({
     .max(GROUP_NAME_MAX_LENGTH, GROUP_NAME_TOO_LONG_MESSAGE),
   description: z.string().max(DESCRIPTION_MAX_LENGTH, DESCRIPTION_TOO_LONG_MESSAGE),
   isRecruiting: z.boolean(),
+  isManagementGroup: z.boolean(),
   groupKindId: z.string(),
   foundedYear: z
     .string()

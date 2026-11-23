@@ -34,6 +34,15 @@ public sealed class GroupExpectations
                 Assert.Equal(isRecruiting, (await SingleAsync(dbContext, ct)).IsRecruiting)
         );
 
+    public Expected ToBeManagementGroup(bool isManagementGroup) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    isManagementGroup,
+                    (await SingleAsync(dbContext, ct)).IsManagementGroup
+                )
+        );
+
     public Expected ToHaveGroupKind(int? groupKindId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

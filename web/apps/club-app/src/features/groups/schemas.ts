@@ -9,6 +9,7 @@ export const GroupSummarySchema = z.object({
   picture: PictureSchema.nullable(),
   description: z.string(),
   isRecruiting: z.boolean(),
+  isManagementGroup: z.boolean(),
   groupKindName: z.string().nullable(),
   foundedYear: z.number().int().nullable(),
   tone: GroupToneSchema.nullable(),

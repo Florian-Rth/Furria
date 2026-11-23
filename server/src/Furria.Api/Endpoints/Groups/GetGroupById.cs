@@ -117,6 +117,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             PictureEditing = PictureEditingDto.From(managerView.PictureEditing),
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
+            IsManagementGroup = group.IsManagementGroup,
             GroupKindId = group.GroupKindId,
             GroupKindName = group.GroupKindName,
             FoundedYear = group.FoundedYear,
@@ -217,6 +218,8 @@ public sealed record GetGroupByIdResponse
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public required bool IsManagementGroup { get; init; }
 
     public required int? GroupKindId { get; init; }
 

@@ -19,6 +19,8 @@ public sealed class ActService
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht mehr im Verzeichnis.";
     private const string ArchivedGroupMessage =
         "Eine archivierte Gruppe lässt sich keinem Auftritt zuordnen.";
+    private const string ManagementGroupMessage =
+        "Einer Verwaltungsgruppe lässt sich kein Auftritt zuordnen.";
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string AddedAndRemovedMessage =
         "Eine Person kann nicht zugleich hinzugefügt und herausgenommen werden.";
@@ -228,6 +230,7 @@ public sealed class ActService
 
         return act =>
             (groupIds == null || (act.GroupId != null && groupIds.Contains(act.GroupId.Value)))
+            && (act.GroupId == null || !act.Group!.IsManagementGroup)
             && (act.SessionYear == sessionYear || (withTimeless && act.SessionYear == null));
     }
 
@@ -272,11 +275,12 @@ public sealed class ActService
         var group = await _dbContext
             .Groups.AsNoTracking()
             .Where(row => row.Id == groupId)
-            .Select(row => new { row.ArchivedOn })
+            .Select(row => new { row.ArchivedOn, row.IsManagementGroup })
             .SingleOrDefaultAsync(ct);
 
         return group is null ? UnknownGroupMessage
             : group.ArchivedOn is not null ? ArchivedGroupMessage
+            : group.IsManagementGroup ? ManagementGroupMessage
             : null;
     }
 

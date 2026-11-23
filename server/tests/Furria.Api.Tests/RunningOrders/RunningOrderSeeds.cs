@@ -15,6 +15,7 @@ internal static class RunningOrderSeeds
     internal const string GardeAdmin = "gerd";
     internal const string Elferrat = "elferrat";
     internal const string ArchivedGroup = "alte-garde";
+    internal const string ManagementGroup = "vorstandsrunde";
     internal const string Gala = "gala";
     internal const string SummerParty = "sommerfest";
     internal const int GalaInDays = 30;
@@ -106,6 +107,15 @@ internal static class RunningOrderSeeds
                         .AddGroup(Elferrat, "Elferrat")
                         .AddGroupAdmin("gerd-leitet", Garde, GardeAdmin, "Trainer")
                 );
+        };
+
+    internal static Action<SeedContextBuilder> PlannerWithManagementGroup(DateOnly today) =>
+        builder =>
+        {
+            PlannerWithGala(today)(builder);
+            builder.Groups(groups =>
+                groups.AddGroup(ManagementGroup, "Vorstandsrunde", isManagementGroup: true)
+            );
         };
 
     private static DateTimeOffset EveningOf(DateOnly day) =>

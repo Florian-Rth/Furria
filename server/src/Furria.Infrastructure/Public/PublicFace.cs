@@ -16,7 +16,7 @@ namespace Furria.Infrastructure.Public;
 public sealed class PublicFace
 {
     private static readonly Expression<Func<Group, bool>> IsShownGroup = group =>
-        group.ArchivedOn == null;
+        group.ArchivedOn == null && !group.IsManagementGroup;
 
     private static readonly Expression<Func<Album, bool>> IsPublishedAlbum = album =>
         album.PublishedAt != null && album.BinnedAt == null;

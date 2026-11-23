@@ -217,6 +217,7 @@ export type GroupSettingsPayload = {
   name: string | null;
   description: string;
   isRecruiting: boolean;
+  isManagementGroup: boolean | null;
   groupKindId: number | null;
   foundedYear: number | null;
   tone: GroupTone | null;
@@ -230,6 +231,7 @@ export const toGroupSettingsPayload = (
   name: renames ? form.name : null,
   description: form.description,
   isRecruiting: form.isRecruiting,
+  isManagementGroup: renames ? form.isManagementGroup : null,
   groupKindId: toGroupKindId(form.groupKindId),
   foundedYear: form.foundedYear === '' ? null : Number(form.foundedYear),
   tone: form.tone === '' ? null : form.tone,
@@ -240,6 +242,7 @@ export const toGroupSettingsFormValues = (hub: GroupHub): GroupSettingsForm => (
   name: hub.name,
   description: hub.description,
   isRecruiting: hub.isRecruiting,
+  isManagementGroup: hub.isManagementGroup,
   groupKindId: toGroupKindValue(hub.groupKindId),
   foundedYear: hub.foundedYear === null ? '' : String(hub.foundedYear),
   tone: hub.tone ?? '',

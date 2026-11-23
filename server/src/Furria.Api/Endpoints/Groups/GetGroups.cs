@@ -56,6 +56,7 @@ public sealed class GetGroups : EndpointWithoutRequest<GetGroupsResponse>
             Picture = PictureDto.From(group.Picture),
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
+            IsManagementGroup = group.IsManagementGroup,
             GroupKindName = group.GroupKindName,
             FoundedYear = group.FoundedYear,
             Tone = group.Tone,
@@ -93,6 +94,8 @@ public sealed record GroupSummaryDto
     public required string Description { get; init; }
 
     public required bool IsRecruiting { get; init; }
+
+    public required bool IsManagementGroup { get; init; }
 
     public required string? GroupKindName { get; init; }
 

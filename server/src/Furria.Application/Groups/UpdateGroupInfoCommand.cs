@@ -13,6 +13,8 @@ public sealed record UpdateGroupInfoCommand
 
     public required bool IsRecruiting { get; init; }
 
+    public required bool? IsManagementGroup { get; init; }
+
     public required int? GroupKindId { get; init; }
 
     public required int? FoundedYear { get; init; }

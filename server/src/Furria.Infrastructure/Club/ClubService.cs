@@ -113,7 +113,10 @@ public sealed partial class ClubService
         );
 
     private Task<int> GroupCountAsync(CancellationToken ct) =>
-        _dbContext.Groups.CountAsync(group => group.ArchivedOn == null, ct);
+        _dbContext.Groups.CountAsync(
+            group => group.ArchivedOn == null && !group.IsManagementGroup,
+            ct
+        );
 
     private sealed record SessionRow(int? Number, string? Motto, SessionLogoRow? Logo);
 }

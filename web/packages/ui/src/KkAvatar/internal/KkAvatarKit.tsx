@@ -8,6 +8,7 @@ import { KkHonourSashButton } from '../../internal/honours/ui/KkHonourSashButton
 import { KkAvatarCanvas } from './layout/KkAvatarCanvas';
 import { KkAvatarFrame } from './layout/KkAvatarFrame';
 import { KkAvatarFace } from './ui/KkAvatarFace';
+import { KkAvatarOpenButton } from './ui/KkAvatarOpenButton';
 import { KkAvatarStanding } from './ui/KkAvatarStanding';
 import { KkAvatarStandingDot } from './ui/KkAvatarStandingDot';
 
@@ -23,4 +24,5 @@ export const KkAvatarKit = Object.assign(KkAvatarFrame, {
   Spot: KkHonourSpot,
   Coin: KkHonourCoin,
   SashButton: KkHonourSashButton,
+  OpenButton: KkAvatarOpenButton,
 });

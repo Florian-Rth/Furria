@@ -259,6 +259,7 @@
     "./KkPlanStatusStrip": "./src/KkPlanStatusStrip/KkPlanStatusStrip.tsx",
     "./KkPlanToolRail": "./src/KkPlanToolRail.tsx",
     "./KkPlanTouch": "./src/KkPlanTouch/KkPlanTouch.tsx",
+    "./KkPortraitViewer": "./src/KkPortraitViewer/KkPortraitViewer.tsx",
     "./KkPosterBackdrop": "./src/KkPosterBackdrop/KkPosterBackdrop.tsx",
     "./KkPressBar": "./src/KkPressBar/KkPressBar.tsx",
     "./KkPressRow": "./src/KkPressRow/KkPressRow.tsx",

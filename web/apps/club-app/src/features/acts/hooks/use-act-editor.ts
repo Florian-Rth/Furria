@@ -148,13 +148,15 @@ export const useActEditor = ({
     act !== null && act.group?.groupId === draft.groupId ? membersOfAct(act) : NO_MEMBERS;
   const members: readonly PortraitPersonRef[] = hubData?.members ?? fallbackMembers;
   const listedGroups = knownGroupsOf(
-    (groups.data?.groups ?? []).map((group) => ({
-      groupId: group.groupId,
-      name: group.name,
-      tone: group.tone,
-      icon: group.icon,
-      picture: group.picture,
-    })),
+    (groups.data?.groups ?? [])
+      .filter((group) => !group.isManagementGroup)
+      .map((group) => ({
+        groupId: group.groupId,
+        name: group.name,
+        tone: group.tone,
+        icon: group.icon,
+        picture: group.picture,
+      })),
     acts,
   );
   const hubGroup: ActGroup | null =

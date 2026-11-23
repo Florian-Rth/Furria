@@ -883,6 +883,91 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_MarkAManagementGroup_When_TheKeyHolderSwitchesItOn()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde", OldDescription)),
+            ct
+        );
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await PutInfoAsManagementGroupAsync(client, tanzgarde, true);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.Group(tanzgarde).ToBeManagementGroup(true).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_MakeItANormalGroupAgain_When_TheKeyHolderSwitchesItOff()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Groups(groups =>
+                    groups.AddGroup("vorstandsrunde", "Vorstandsrunde", isManagementGroup: true)
+                ),
+            ct
+        );
+        var vorstandsrunde = ctx.Groups.Groups.IdOf("vorstandsrunde");
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await PutInfoAsManagementGroupAsync(client, vorstandsrunde, false);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.Group(vorstandsrunde).ToBeManagementGroup(false).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnForbiddenAndWriteNothing_When_AGroupAdminWithoutGroupsManageSendsTheSwitch()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithTanzgardeAdminAsync(ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await PutInfoAsManagementGroupAsync(client, tanzgarde, true);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await ctx.Expected.Group(tanzgarde).ToBeManagementGroup(false).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepItANormalGroup_When_AGroupAdminSavesWithoutTheSwitch()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithTanzgardeAdminAsync(ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await PutInfoWithNameAsync(client, tanzgarde, null);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.Group(tanzgarde).ToBeManagementGroup(false).AssertAsync(ct);
+    }
+
+    private static Task<HttpResponseMessage> PutInfoAsManagementGroupAsync(
+        HttpClient client,
+        int groupId,
+        bool isManagementGroup
+    ) =>
+        client.PUTAsync<PutGroupInfo, PutGroupInfoRequest>(
+            new()
+            {
+                GroupId = groupId,
+                Description = OldDescription,
+                IsRecruiting = false,
+                GroupKindId = null,
+                FoundedYear = null,
+                Tone = null,
+                Icon = null,
+                IsManagementGroup = isManagementGroup,
+            }
+        );
+
     private Task<SeededContext> BuildWithTanzgardeAdminAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>

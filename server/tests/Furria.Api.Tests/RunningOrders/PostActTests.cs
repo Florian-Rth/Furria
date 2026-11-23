@@ -193,6 +193,29 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_RefuseTheAct_When_ItsGroupIsAManagementGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithManagementGroup(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(Planner, ct);
+
+        var (response, _) = await PostAsync(
+            client,
+            "Vorstandstanz",
+            ctx.Groups.Groups.IdOf(ManagementGroup),
+            [],
+            [],
+            []
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal(
+            "Einer Verwaltungsgruppe lässt sich kein Auftritt zuordnen.",
+            await RefusalOfAsync(response)
+        );
+    }
+
     [Theory]
     [InlineData("added-and-removed")]
     [InlineData("removed-without-group")]
