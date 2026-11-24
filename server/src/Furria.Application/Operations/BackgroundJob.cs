@@ -18,4 +18,5 @@ public enum BackgroundJob
     WhatsAppInbox = 15,
     WhatsAppDispatcher = 16,
     WhatsAppReplies = 17,
+    ClubAssistantAnswers = 18,
 }

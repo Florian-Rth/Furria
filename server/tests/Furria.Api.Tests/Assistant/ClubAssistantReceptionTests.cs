@@ -53,8 +53,8 @@ public sealed class ClubAssistantReceptionTests : IClassFixture<ApiTestFixture>
 
         await ReceiveAsync(
             ct,
-            Message(AlicesChatId, "Ist der Vereinsraum", Now.AddSeconds(-20)),
-            Message(AlicesChatId, "Samstag um 14 Uhr frei?", Now.AddSeconds(-16))
+            Message(AlicesChatId, "Ist der Vereinsraum", Now.AddSeconds(-4)),
+            Message(AlicesChatId, "Samstag um 14 Uhr frei?", Now)
         );
 
         var question = Assert.Single(await _fixture.ClubAssistantQuestionsAsync(ct));
@@ -170,8 +170,7 @@ public sealed class ClubAssistantReceptionTests : IClassFixture<ApiTestFixture>
             Message(AlicesChatId, "Und wo?", Now)
         );
 
-        var told = Assert.Single(_fixture.Waha.Sent);
-        Assert.Contains("Morgen gern wieder", told.Text);
+        Assert.Contains("Morgen gern wieder", _fixture.Waha.Sent[^1].Text);
         Assert.Single(await _fixture.ClubAssistantQuestionsAsync(ct));
     }
 
@@ -214,6 +213,7 @@ public sealed class ClubAssistantReceptionTests : IClassFixture<ApiTestFixture>
             var received = await DeliverAsync(client, body, $"message-{Guid.NewGuid():N}", ct);
             Assert.Equal(HttpStatusCode.OK, received.StatusCode);
             await _fixture.WhatsAppInboxDrainedAsync(ct);
+            await _fixture.ClubAssistantAnsweredAsync(ct);
         }
 
         await _fixture.WhatsAppOutboxDrainedAsync(ct);

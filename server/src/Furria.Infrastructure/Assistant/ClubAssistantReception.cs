@@ -50,7 +50,7 @@ public sealed class ClubAssistantReception
         )
             return;
 
-        var settings = await SettingsAsync(ct);
+        var settings = await _dbContext.ClubAssistantSettingsAsync(ct);
         if (!settings.IsEnabled || !_options.Value.IsConfigured)
             await _notices.TellAsync(message.ChatId, ClubAssistantNoticeKind.SwitchedOff, ct);
         else if (await AffiliatedAskerAsync(message.ChatId, ct) is not { } personId)
@@ -87,12 +87,6 @@ public sealed class ClubAssistantReception
         else
             await _conversations.AskAsync(personId, message, ct);
     }
-
-    private async Task<ClubAssistantSettings> SettingsAsync(CancellationToken ct) =>
-        await _dbContext
-            .ClubAssistantSettingsRows.AsNoTracking()
-            .SingleOrDefaultAsync(row => row.Id == ClubAssistantSettings.TheOnlyId, ct)
-        ?? new ClubAssistantSettings();
 
     private async Task<int?> AffiliatedAskerAsync(string chatId, CancellationToken ct)
     {

@@ -23,6 +23,22 @@ namespace Furria.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantAcquaintance", b =>
+                {
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("IntroducedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("introduced_at");
+
+                    b.HasKey("PersonId")
+                        .HasName("pk_club_assistant_acquaintance");
+
+                    b.ToTable("club_assistant_acquaintance", (string)null);
+                });
+
             modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantModelCall", b =>
                 {
                     b.Property<long>("Id")
@@ -137,6 +153,10 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasIndex("AskedAt")
                         .HasDatabaseName("ix_club_assistant_question_asked_at");
+
+                    b.HasIndex("LastMessageAt")
+                        .HasDatabaseName("ix_club_assistant_question_unanswered_last_message_at")
+                        .HasFilter("answered_at IS NULL");
 
                     b.HasIndex("PersonId", "AskedAt")
                         .HasDatabaseName("ix_club_assistant_question_person_id_asked_at");
@@ -6849,6 +6869,18 @@ namespace Furria.Infrastructure.Migrations
                         .HasName("pk_account_token");
 
                     b.ToTable("account_token", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantAcquaintance", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_club_assistant_acquaintance_person_person_id");
+
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantQuestion", b =>

@@ -288,6 +288,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<OutboxSignal>(serviceProvider =>
             serviceProvider.GetRequiredService<WhatsAppReplySignal>()
         );
+        services.AddSingleton<ClubAssistantSignal>();
+        services.AddSingleton<OutboxSignal>(serviceProvider =>
+            serviceProvider.GetRequiredService<ClubAssistantSignal>()
+        );
         services.AddSingleton<MediaFileReaperSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>
             serviceProvider.GetRequiredService<MediaFileReaperSignal>()

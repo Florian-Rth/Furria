@@ -21,10 +21,15 @@ public static class ClubAssistantConversation
         Capped(question + "\n" + message);
 
     [Pure]
-    public static string Capped(string text) =>
-        text.Length <= ClubAssistantQuestion.LongestText
-            ? text
-            : text[..CutBefore(text, ClubAssistantQuestion.LongestText)];
+    public static string Capped(string text) => CappedTo(text, ClubAssistantQuestion.LongestText);
+
+    [Pure]
+    public static string CappedAnswer(string text) =>
+        CappedTo(text, ClubAssistantQuestion.LongestAnswer);
+
+    [Pure]
+    private static string CappedTo(string text, int length) =>
+        text.Length <= length ? text : text[..CutBefore(text, length)];
 
     [Pure]
     private static int CutBefore(string text, int length) =>

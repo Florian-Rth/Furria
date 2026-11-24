@@ -10,6 +10,10 @@ public static class ClubAssistantLines
     public const string UnknownSender =
         "Ich kann nur Vereinsmitgliedern antworten, deren Handynummer in Furria hinterlegt ist.";
 
+    public const string Disclosure =
+        "Kurz vorweg: Ich bin der KI-Assistent des Vereins. 🤖 Ich antworte aus den Daten der "
+        + "Vereins-App – und auch eine Narrenkappe kann sich mal irren.";
+
     private const string NotText =
         "Sprachnachrichten, Bilder und Sticker kann ich nicht lesen – ich bin ein reiner "
         + "Schriftgelehrter. ✍️ Tipp mir deine Frage einfach.";
@@ -29,6 +33,18 @@ public static class ClubAssistantLines
             ClubAssistantNoticeKind.BudgetUsedUp => BudgetUsedUp(appUrl, today),
             _ => throw new ArgumentOutOfRangeException(nameof(kind), kind, null),
         };
+
+    [Pure]
+    public static string ProviderFailed(string appUrl) =>
+        "Huch, mir ist gerade die Pappnase verrutscht. 🤡 Ich komme nicht an meine Unterlagen – "
+        + $"frag mich bitte später nochmal oder schau in die App: {appUrl}";
+
+    [Pure]
+    public static string Introduced(string answer) => $"{Disclosure}\n\n{answer}";
+
+    [Pure]
+    public static string AnswerFor(string reply, bool isIntroduced) =>
+        ClubAssistantConversation.CappedAnswer(isIntroduced ? reply : Introduced(reply));
 
     [Pure]
     private static string SwitchedOff(string appUrl) =>

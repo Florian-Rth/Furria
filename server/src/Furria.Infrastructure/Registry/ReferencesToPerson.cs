@@ -95,6 +95,11 @@ public static class ReferencesToPerson
             OnAbsorption.MovesToKeeperUnlessSheHoldsOne,
             OnErasure.ErasedWithHer
         ),
+        Reference<ClubAssistantAcquaintance>(
+            nameof(ClubAssistantAcquaintance.PersonId),
+            OnAbsorption.MovesToKeeperUnlessSheHoldsOne,
+            OnErasure.ErasedWithHer
+        ),
         Reference<ClubAssistantQuestion>(
             nameof(ClubAssistantQuestion.PersonId),
             OnAbsorption.MovesToKeeper,

@@ -12,11 +12,13 @@ using Furria.Application.Website;
 using Furria.Application.WhatsApp;
 using Furria.Core.Halls;
 using Furria.Core.Roles;
+using Furria.Infrastructure.Assistant;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Push;
 using Furria.Infrastructure.WhatsApp;
+using Furria.Tests.Common.Assistant;
 using Furria.Tests.Common.Push;
 using Furria.Tests.Common.WhatsApp;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
@@ -45,6 +47,8 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
     public FakePushService PushService { get; } = new();
 
     public FakeWahaService Waha { get; } = new();
+
+    public FakeModelService Model { get; } = new();
 
     public string Database => _database;
 
@@ -275,6 +279,10 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
             services
                 .AddHttpClient<WahaClient>()
                 .ConfigurePrimaryHttpMessageHandler(() => Waha)
+                .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
+            services
+                .AddHttpClient(ClubAssistantModel.HttpClientName)
+                .ConfigurePrimaryHttpMessageHandler(() => Model)
                 .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
         });
     }

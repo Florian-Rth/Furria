@@ -36,33 +36,52 @@ public sealed class UsualTrainingService
         if (await _authorizer.ActivePersonIdAsync(query.ViewerAccountId, ct) is null)
             return Result<IReadOnlyList<UsualTrainingSummary>>.Forbidden(NoPersonMessage);
 
+        return Result<IReadOnlyList<UsualTrainingSummary>>.Success(
+            await UsualTrainingsBetweenAsync(query.From, query.To, query.OwnerGroupId, ct)
+        );
+    }
+
+    public Task<IReadOnlyList<UsualTrainingSummary>> GetUsualTrainingsBetweenAsync(
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct
+    ) => UsualTrainingsBetweenAsync(from, to, ownerGroupId: null, ct);
+
+    private async Task<IReadOnlyList<UsualTrainingSummary>> UsualTrainingsBetweenAsync(
+        DateOnly requestedFrom,
+        DateOnly to,
+        int? ownerGroupId,
+        CancellationToken ct
+    )
+    {
         var today = ClubClock.Today(_timeProvider);
-        var from = query.From < today ? today : query.From;
+        var from = requestedFrom < today ? today : requestedFrom;
 
-        if (from > query.To)
-            return Result<IReadOnlyList<UsualTrainingSummary>>.Success([]);
+        if (from > to)
+            return [];
 
-        var usualTimes = await RunningGroupUsualTimesAsync(query.OwnerGroupId, ct);
+        var usualTimes = await RunningGroupUsualTimesAsync(ownerGroupId, ct);
 
         if (usualTimes.Count == 0)
-            return Result<IReadOnlyList<UsualTrainingSummary>>.Success([]);
+            return [];
 
         var plannedDays = await PlannedTrainingDaysAsync(
             [.. usualTimes.Select(usualTime => usualTime.GroupId).Distinct()],
             from,
-            query.To,
+            to,
             ct
         );
         var usualTimesById = usualTimes.ToDictionary(usualTime => usualTime.Id);
 
-        return Result<IReadOnlyList<UsualTrainingSummary>>.Success([
+        return
+        [
             .. UsualTrainingOccurrences
-                .Between(usualTimes, from, query.To)
+                .Between(usualTimes, from, to)
                 .Where(occurrence => !plannedDays.Contains(DayKeyOf(occurrence)))
                 .Select(occurrence =>
                     ToSummary(occurrence, usualTimesById[occurrence.UsualTrainingTimeId])
                 ),
-        ]);
+        ];
     }
 
     private async Task<IReadOnlyList<UsualTrainingTime>> RunningGroupUsualTimesAsync(

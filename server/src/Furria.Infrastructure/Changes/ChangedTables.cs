@@ -162,6 +162,7 @@ public static class ChangedTables
         typeof(WhatsAppLateAnswer),
         typeof(ClubAssistantQuestion),
         typeof(ClubAssistantNotice),
+        typeof(ClubAssistantAcquaintance),
         typeof(LogEntry),
         typeof(MediaJob),
         typeof(MediaFileTombstone),

@@ -143,6 +143,9 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<ClubAssistantNotice> ClubAssistantNotices => Set<ClubAssistantNotice>();
 
+    public DbSet<ClubAssistantAcquaintance> ClubAssistantAcquaintances =>
+        Set<ClubAssistantAcquaintance>();
+
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<OutboxMail> OutboxMails => Set<OutboxMail>();

@@ -45,5 +45,9 @@ public sealed class ClubAssistantQuestionConfiguration
 
         builder.HasIndex(question => new { question.PersonId, question.AskedAt });
         builder.HasIndex(question => question.AskedAt);
+        builder
+            .HasIndex(question => question.LastMessageAt)
+            .HasFilter("answered_at IS NULL")
+            .HasDatabaseName("ix_club_assistant_question_unanswered_last_message_at");
     }
 }

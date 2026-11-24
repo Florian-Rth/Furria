@@ -111,13 +111,14 @@ Goal: the bot receives private text messages and answers every case that needs n
 
 ### Phase 3 — The answer loop and the first tools
 Goal: matched members get real answers about the calendar and training.
-- [ ] Assistant loop over `IChatClient` with function tools; budget check before each call, usage booked after
-- [ ] Answer worker takes a question once its last message is older than the merge window; the answer is written only if `last_message_at` is unchanged (a message merged during the model call re-asks), never holding the row lock across the model call; typing indicator while the model works
-- [ ] System prompt (German, *du*, humour, facts first, WhatsApp formatting, links, „weiß ich nicht"), one-time AI disclosure per person
-- [ ] Tool context: the asker's visibility (person, groups, permissions) resolved once per question
-- [ ] Tools: club basics, calendar entries, usual training times
-- [ ] Provider errors → apology line, no retry
-- [ ] Tests: tools return only what the asker may see; budget stop mid-question
+- [x] Assistant loop over `IChatClient` with function tools; budget check before each call, usage booked after
+- [x] Answer worker takes a question once its last message is older than the merge window; the answer is written only if `last_message_at` is unchanged (a message merged during the model call re-asks), never holding the row lock across the model call; typing indicator while the model works
+- [x] System prompt (German, *du*, humour, facts first, WhatsApp formatting, links, „weiß ich nicht"), one-time AI disclosure per person
+- [x] Tool context: the asker's visibility (person, groups, permissions) resolved once per question
+- [x] Tools: club basics, calendar entries, usual training times
+- [x] Provider errors → apology line, no retry
+- [x] Tests: tools return only what the asker may see; budget stop mid-question
+- Built 2026-11-24: answer worker *Fragen an den Vereinsassistenten beantworten* (every 2 s, woken on saves); own loop (≤ 6 model calls) instead of automatic function invocation so the budget is checked before and booked after every call; the OpenAI client's retry policy is off. The disclosure line goes before the first reply per person (kept in `club_assistant_acquaintance`, not purged). Visibility is resolved per person (`PermissionAuthorizer.GrantedKeysOfPersonAsync`), so askers without an account get what their memberships and groups show; calendar entries go through the app's own `VisibleTo` + ties rules. *Usual training times* returns the occurrences in a range (weekday, time, duration, venue), skipping days with a planned training. Tool results go to the model as compact JSON with club wall-clock dates and times, never UTC; people audiences read *ausgewählte Personen*.
 
 ### Phase 4 — Venues, events, groups, announcements, news
 Goal: the everyday club questions are covered.

@@ -35,6 +35,7 @@ using Furria.Infrastructure.WhatsApp;
 using Furria.MediaWorker;
 using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
+using Furria.Tests.Common.Assistant;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
 using Furria.Tests.Common.Push;
@@ -159,6 +160,8 @@ public sealed class ApiTestFixture : IAsyncLifetime
 
     public FakeWahaService Waha => Host.Waha;
 
+    public FakeModelService Model => Host.Model;
+
     public IServiceProvider Services => Host.Services;
 
     public DateOnly Today => ClubClock.Today(TimeProvider);
@@ -203,6 +206,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
         TimeProvider.SetUtcNow(WholeSecondNow());
         PushService.Forget();
         Waha.Forget();
+        Model.Forget();
         EmptyMediaRoot();
 
         await using var scope = Services.CreateAsyncScope();
@@ -485,6 +489,27 @@ public sealed class ApiTestFixture : IAsyncLifetime
             .ToListAsync(ct);
     }
 
+    public Task ClubAssistantAnsweredAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var settledBefore =
+                    TimeProvider.GetUtcNow() - ClubAssistantConversation.MergeWindow;
+                return await db.ClubAssistantQuestions.AnyAsync(
+                    question =>
+                        question.AnsweredAt == null && question.LastMessageAt <= settledBefore,
+                    token
+                )
+                    ? null
+                    : db;
+            },
+            OutboxDrainTimeout,
+            "The club assistant still owes answers",
+            ct
+        );
+
     public async Task PurgeClubAssistantConversationsAsync(CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();
@@ -603,6 +628,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
     {
         await ResetDatabaseAsync(ct);
         Waha.Forget();
+        Model.Forget();
 
         var recorded = new SeedContextBuilder();
         configure(recorded);

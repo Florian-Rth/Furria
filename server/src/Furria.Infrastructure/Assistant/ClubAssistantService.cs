@@ -30,11 +30,7 @@ public sealed class ClubAssistantService
 
     public async Task<ClubAssistantDetails> GetAsync(CancellationToken ct)
     {
-        var settings =
-            await _dbContext
-                .ClubAssistantSettingsRows.AsNoTracking()
-                .SingleOrDefaultAsync(row => row.Id == ClubAssistantSettings.TheOnlyId, ct)
-            ?? new ClubAssistantSettings();
+        var settings = await _dbContext.ClubAssistantSettingsAsync(ct);
 
         return new ClubAssistantDetails(
             settings.IsEnabled,
