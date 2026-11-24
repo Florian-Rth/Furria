@@ -8,6 +8,8 @@ public sealed class WhatsAppOptions
 
     private static readonly TimeSpan DefaultSendGap = TimeSpan.FromSeconds(4);
     private static readonly TimeSpan DefaultSendGapJitter = TimeSpan.FromSeconds(4);
+    private static readonly TimeSpan DefaultReplyDelay = TimeSpan.FromSeconds(1);
+    private static readonly TimeSpan DefaultReplyDelayJitter = TimeSpan.FromSeconds(1);
 
     public string BaseUrl { get; set; } = "";
 
@@ -20,6 +22,10 @@ public sealed class WhatsAppOptions
     public TimeSpan SendGap { get; set; } = DefaultSendGap;
 
     public TimeSpan SendGapJitter { get; set; } = DefaultSendGapJitter;
+
+    public TimeSpan ReplyDelay { get; set; } = DefaultReplyDelay;
+
+    public TimeSpan ReplyDelayJitter { get; set; } = DefaultReplyDelayJitter;
 
     public bool IsSwitchedOff => BaseUrl.Length == 0;
 

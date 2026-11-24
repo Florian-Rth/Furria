@@ -160,6 +160,8 @@ public static class ChangedTables
         typeof(OutboxWhatsApp),
         typeof(WhatsAppMessage),
         typeof(WhatsAppLateAnswer),
+        typeof(ClubAssistantQuestion),
+        typeof(ClubAssistantNotice),
         typeof(LogEntry),
         typeof(MediaJob),
         typeof(MediaFileTombstone),

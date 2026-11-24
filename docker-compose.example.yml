@@ -165,7 +165,7 @@ services:
       WAHA_DASHBOARD_ENABLED: "false"
       WHATSAPP_SWAGGER_ENABLED: "false"
       WHATSAPP_HOOK_URL: http://api:8080/api/whatsapp/webhook
-      WHATSAPP_HOOK_EVENTS: session.status,poll.vote,poll.vote.failed,event.response,group.v2.participants
+      WHATSAPP_HOOK_EVENTS: session.status,poll.vote,poll.vote.failed,event.response,group.v2.participants,message
       WHATSAPP_HOOK_HMAC_KEY: ${WHATSAPP_WEBHOOK_HMAC_KEY:?set WHATSAPP_WEBHOOK_HMAC_KEY (>= 32 chars) in .env}
     volumes:
       # The session keys: losing them unlinks the bot and makes every vote on an earlier poll

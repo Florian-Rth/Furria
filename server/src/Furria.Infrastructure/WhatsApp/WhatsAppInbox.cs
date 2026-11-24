@@ -45,11 +45,18 @@ public sealed class WhatsAppInbox
             || WahaWebhookEnvelope.Read(command.Body) is not { } envelope
         )
             return Result.Validation(UnreadableMessage);
+        if (IsIgnoredMessage(envelope, command.Body))
+            return Result.Success();
 
         await StoreOnceAsync(command, envelope, ct);
         _signal.Ring();
         return Result.Success();
     }
+
+    private bool IsIgnoredMessage(WahaWebhookEnvelope envelope, byte[] body) =>
+        envelope.Event == WahaEvents.Message
+        && WahaPrivateMessages.Read(Encoding.UTF8.GetString(body), _timeProvider.GetUtcNow())
+            is null;
 
     private Task StoreOnceAsync(
         ReceiveWhatsAppWebhookCommand command,

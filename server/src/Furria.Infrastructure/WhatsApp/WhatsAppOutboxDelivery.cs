@@ -18,6 +18,7 @@ public sealed class WhatsAppOutboxDelivery
     private readonly AppDbContext _dbContext;
     private readonly WahaClient _waha;
     private readonly WhatsAppGroupKeeping _keeping;
+    private readonly WhatsAppPacing _pacing;
     private readonly IOptions<WhatsAppOptions> _options;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<WhatsAppOutboxDelivery> _logger;
@@ -26,6 +27,7 @@ public sealed class WhatsAppOutboxDelivery
         AppDbContext dbContext,
         WahaClient waha,
         WhatsAppGroupKeeping keeping,
+        WhatsAppPacing pacing,
         IOptions<WhatsAppOptions> options,
         TimeProvider timeProvider,
         ILogger<WhatsAppOutboxDelivery> logger
@@ -34,19 +36,23 @@ public sealed class WhatsAppOutboxDelivery
         _dbContext = dbContext;
         _waha = waha;
         _keeping = keeping;
+        _pacing = pacing;
         _options = options;
         _timeProvider = timeProvider;
         _logger = logger;
     }
 
-    public async Task<WhatsAppSendOutcome> SendNextAsync(CancellationToken ct)
+    public async Task<WhatsAppSendOutcome> SendNextAsync(
+        WhatsAppSendLane lane,
+        CancellationToken ct
+    )
     {
         if (!_options.Value.IsConfigured || await IsSessionDownAsync(ct))
             return WhatsAppSendOutcome.Idle;
 
         var now = _timeProvider.GetUtcNow();
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        var operation = await ClaimDueAsync(now, ct);
+        var operation = await ClaimDueAsync(lane, now, ct);
         if (operation is null)
             return WhatsAppSendOutcome.Idle;
 
@@ -97,17 +103,25 @@ public sealed class WhatsAppOutboxDelivery
             ct
         );
 
-    private Task<OutboxWhatsApp?> ClaimDueAsync(DateTimeOffset now, CancellationToken ct) =>
-        _dbContext
+    private Task<OutboxWhatsApp?> ClaimDueAsync(
+        WhatsAppSendLane lane,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        var isPrivateReply = lane == WhatsAppSendLane.PrivateReplies;
+        return _dbContext
             .OutboxWhatsApps.FromSql(
                 $"""
                 SELECT * FROM outbox_whatsapp AS head
                 WHERE head.failed_at IS NULL
                   AND (head.next_attempt_at IS NULL OR head.next_attempt_at <= {now})
+                  AND (head.operation = 'PrivateReply') = {isPrivateReply}
                   AND NOT EXISTS (
                       SELECT 1 FROM outbox_whatsapp AS earlier
                       WHERE earlier.chat_id = head.chat_id
                         AND (earlier.operation = 'AddParticipant') = (head.operation = 'AddParticipant')
+                        AND (earlier.operation = 'PrivateReply') = (head.operation = 'PrivateReply')
                         AND earlier.failed_at IS NULL
                         AND earlier.id < head.id
                   )
@@ -117,6 +131,7 @@ public sealed class WhatsAppOutboxDelivery
                 """
             )
             .SingleOrDefaultAsync(ct);
+    }
 
     private async Task<WhatsAppSent> SendAsync(OutboxWhatsApp operation, CancellationToken ct)
     {
@@ -137,12 +152,37 @@ public sealed class WhatsAppOutboxDelivery
             case WhatsAppOperation.Delete:
                 await _waha.DeleteMessageAsync(operation.ChatId, TargetOf(operation), ct);
                 return WhatsAppSent.Message(null);
+            case WhatsAppOperation.PrivateReply:
+                return WhatsAppSent.Message(await ReplyPrivatelyAsync(operation, ct));
             case WhatsAppOperation.AddParticipant:
                 return WhatsAppSent.Add(
                     await _waha.AddParticipantAsync(operation.ChatId, operation.Text, ct)
                 );
             default:
                 return WhatsAppSent.Message(await _waha.SendTextAsync(TextOf(operation), ct));
+        }
+    }
+
+    private async Task<string?> ReplyPrivatelyAsync(OutboxWhatsApp operation, CancellationToken ct)
+    {
+        await TryTypingAsync(() => _waha.StartTypingAsync(operation.ChatId, ct), ct);
+        await Task.Delay(_pacing.ReplyDelay(), ct);
+        await TryTypingAsync(() => _waha.StopTypingAsync(operation.ChatId, ct), ct);
+        return await _waha.SendTextAsync(TextOf(operation), ct);
+    }
+
+    private async Task TryTypingAsync(Func<Task> typing, CancellationToken ct)
+    {
+        try
+        {
+            await typing();
+        }
+        catch (Exception exception)
+            when (exception is WahaCallFailedException or HttpRequestException
+                || (exception is TaskCanceledException && !ct.IsCancellationRequested)
+            )
+        {
+            _logger.LogInformation(exception, "WhatsApp typing indicator could not be shown");
         }
     }
 

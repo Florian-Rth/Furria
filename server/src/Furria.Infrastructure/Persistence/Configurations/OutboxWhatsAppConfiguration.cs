@@ -34,6 +34,7 @@ public sealed class OutboxWhatsAppConfiguration : IEntityTypeConfiguration<Outbo
             .Targeting.Prepend(WhatsAppOperation.PostText)
             .Append(WhatsAppOperation.AddParticipant)
             .Append(WhatsAppOperation.DirectText)
+            .Append(WhatsAppOperation.PrivateReply)
             .Select(operation => $"'{operation}'")
     );
 
@@ -75,6 +76,10 @@ public sealed class OutboxWhatsAppConfiguration : IEntityTypeConfiguration<Outbo
                 table.HasCheckConstraint(
                     "ck_outbox_whatsapp_person_add",
                     $"(operation = '{nameof(WhatsAppOperation.AddParticipant)}') = (host_kind = '{nameof(WhatsAppHostKind.Person)}')"
+                );
+                table.HasCheckConstraint(
+                    "ck_outbox_whatsapp_private_reply",
+                    $"(operation = '{nameof(WhatsAppOperation.PrivateReply)}') = (host_kind = '{nameof(WhatsAppHostKind.ClubAssistant)}')"
                 );
                 table.HasCheckConstraint(
                     "ck_outbox_whatsapp_target_message",

@@ -17,6 +17,7 @@ public sealed class FakeWahaService : HttpMessageHandler
     private readonly ConcurrentDictionary<string, string> _groups = new();
     private readonly ConcurrentDictionary<string, string> _contactNames = new();
     private readonly ConcurrentQueue<FakeWahaSend> _sent = new();
+    private readonly ConcurrentQueue<string> _typedIn = new();
     private readonly ConcurrentDictionary<
         string,
         ConcurrentDictionary<string, string?>
@@ -28,6 +29,8 @@ public sealed class FakeWahaService : HttpMessageHandler
     private (HttpStatusCode Status, string Body)? _sendRefusal;
 
     public IReadOnlyList<FakeWahaSend> Sent => [.. _sent];
+
+    public IReadOnlyList<string> TypedIn => [.. _typedIn];
 
     public void JoinGroup(string chatId, string name) => _groups[chatId] = name;
 
@@ -60,6 +63,7 @@ public sealed class FakeWahaService : HttpMessageHandler
         _groups.Clear();
         _contactNames.Clear();
         _sent.Clear();
+        _typedIn.Clear();
         _participants.Clear();
         lock (_sessionLock)
         {
@@ -122,6 +126,8 @@ public sealed class FakeWahaService : HttpMessageHandler
                 Route(path),
                 body
             ),
+            ("POST", "startTyping") => Typing(body),
+            ("POST", "stopTyping") => Json("{}"),
             ("GET", "participants") => Json(ParticipantsJson(GroupChatIdOf(path))),
             ("POST", "add-participants") => AddParticipants(GroupChatIdOf(path), body),
             ("GET", "invite-code") => Json(JsonSerializer.Serialize(InviteLink)),
@@ -138,6 +144,8 @@ public sealed class FakeWahaService : HttpMessageHandler
             "/api/sendImage" => "sendImage",
             "/api/sendPoll" => "sendPoll",
             "/api/contacts" => "contacts",
+            "/api/startTyping" => "startTyping",
+            "/api/stopTyping" => "stopTyping",
             _ when path.Contains("/lids/", StringComparison.Ordinal) => "lids",
             _ when path.Contains("/messages/", StringComparison.Ordinal) => "message",
             _ when path.EndsWith("/participants/v2", StringComparison.Ordinal) => "participants",
@@ -197,6 +205,13 @@ public sealed class FakeWahaService : HttpMessageHandler
         var messageId = $"true_{chatId}_FAKE{++_sentCount}";
         _sent.Enqueue(SentOf(kind, chatId, root, messageId));
         return Json(JsonSerializer.Serialize(new { id = messageId }));
+    }
+
+    private HttpResponseMessage Typing(string body)
+    {
+        using var document = JsonDocument.Parse(body);
+        _typedIn.Enqueue(document.RootElement.GetProperty("chatId").GetString() ?? "");
+        return Json("{}");
     }
 
     private HttpResponseMessage Change(string kind, string path, string text)

@@ -23,6 +23,7 @@ public static class BackgroundJobSchedule
         [BackgroundJob.IntakeExpirySweep] = TimeSpan.FromMinutes(15),
         [BackgroundJob.WhatsAppInbox] = TimeSpan.FromSeconds(5),
         [BackgroundJob.WhatsAppDispatcher] = TimeSpan.FromSeconds(5),
+        [BackgroundJob.WhatsAppReplies] = TimeSpan.FromSeconds(5),
     };
 
     private static readonly IReadOnlyDictionary<BackgroundJob, TimeSpan> FirstRunDelays =

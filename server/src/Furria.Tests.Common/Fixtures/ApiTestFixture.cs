@@ -473,6 +473,24 @@ public sealed class ApiTestFixture : IAsyncLifetime
         await scope.ServiceProvider.GetRequiredService<ClubAssistantBudget>().BookAsync(tokens, ct);
     }
 
+    public async Task<IReadOnlyList<ClubAssistantQuestion>> ClubAssistantQuestionsAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db
+            .ClubAssistantQuestions.AsNoTracking()
+            .OrderBy(question => question.Id)
+            .ToListAsync(ct);
+    }
+
+    public async Task PurgeClubAssistantConversationsAsync(CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<ClubAssistantReception>().PurgeAsync(ct);
+    }
+
     public async Task<bool> ClubAssistantHasBudgetLeftAsync(CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();

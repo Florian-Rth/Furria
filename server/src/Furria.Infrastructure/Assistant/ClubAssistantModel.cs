@@ -17,6 +17,10 @@ public static class ClubAssistantModel
     {
         services.AddScoped<ClubAssistantBudget>();
         services.AddScoped<ClubAssistantService>();
+        services.AddScoped<ClubAssistantReplies>();
+        services.AddScoped<ClubAssistantNotices>();
+        services.AddScoped<ClubAssistantConversations>();
+        services.AddScoped<ClubAssistantReception>();
 
         var options = configuration
             .GetSection(ClubAssistantOptions.SectionName)

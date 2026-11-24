@@ -1,3 +1,4 @@
+using Furria.Infrastructure.Assistant;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -12,6 +13,7 @@ public sealed class WhatsAppInboxProcessor
     private readonly WhatsAppSessionTracker _sessionTracker;
     private readonly WhatsAppAnswers _answers;
     private readonly WhatsAppGroupKeeping _keeping;
+    private readonly ClubAssistantReception _assistant;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<WhatsAppInboxProcessor> _logger;
 
@@ -20,6 +22,7 @@ public sealed class WhatsAppInboxProcessor
         WhatsAppSessionTracker sessionTracker,
         WhatsAppAnswers answers,
         WhatsAppGroupKeeping keeping,
+        ClubAssistantReception assistant,
         TimeProvider timeProvider,
         ILogger<WhatsAppInboxProcessor> logger
     )
@@ -28,6 +31,7 @@ public sealed class WhatsAppInboxProcessor
         _sessionTracker = sessionTracker;
         _answers = answers;
         _keeping = keeping;
+        _assistant = assistant;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -71,6 +75,7 @@ public sealed class WhatsAppInboxProcessor
             WahaEvents.PollVote or WahaEvents.EventResponse => _answers.ApplyAsync(inboxEvent, ct),
             WahaEvents.PollVoteFailed => LoggedFailedVote(inboxEvent),
             WahaEvents.GroupParticipants => _keeping.RecordJoinAsync(inboxEvent, ct),
+            WahaEvents.Message => _assistant.ReceiveAsync(inboxEvent, ct),
             _ => Task.CompletedTask,
         };
 

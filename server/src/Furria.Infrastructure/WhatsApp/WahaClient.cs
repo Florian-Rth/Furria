@@ -84,6 +84,12 @@ public sealed class WahaClient
             )
         );
 
+    public Task StartTypingAsync(string chatId, CancellationToken ct) =>
+        PostAsync("api/startTyping", new ChatAction(_sessionName, chatId), ct);
+
+    public Task StopTypingAsync(string chatId, CancellationToken ct) =>
+        PostAsync("api/stopTyping", new ChatAction(_sessionName, chatId), ct);
+
     public async Task<string?> SendImageAsync(WahaOutgoingImage image, CancellationToken ct) =>
         WahaJson.MessageIdOf(
             await PostAsync(
@@ -307,6 +313,8 @@ public sealed class WahaClient
     private sealed record SessionCreation(string Name, bool Start = true);
 
     private sealed record PairingCodeRequest(string PhoneNumber);
+
+    private sealed record ChatAction(string Session, string ChatId);
 
     private sealed record TextMessage(
         string Session,

@@ -232,6 +232,14 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
             TimeSpan.Zero.ToString("c", CultureInfo.InvariantCulture)
         );
         builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.ReplyDelay)}",
+            TimeSpan.Zero.ToString("c", CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.ReplyDelayJitter)}",
+            TimeSpan.Zero.ToString("c", CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
             $"{ClubAssistantOptions.SectionName}:{nameof(ClubAssistantOptions.ApiKey)}",
             ApiTestFixture.ClubAssistantApiKey
         );

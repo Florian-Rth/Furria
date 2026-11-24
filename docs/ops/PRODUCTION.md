@@ -336,8 +336,10 @@ challenge solved in the 10 minutes before a restart can be spent once more.
 The club's WhatsApp group is reached through a bot ([ADR-0042](../adr/0042-the-club-reaches-whatsapp-through-a-self-hosted-waha-bot.md)):
 the club's own number, linked as a device to the `waha` container (WAHA, GOWS engine). The API
 calls it at `http://waha:3000` with `WAHA_API_KEY`; WAHA posts `session.status`, `poll.vote`,
-`poll.vote.failed`, `event.response` and `group.v2.participants` to
-`http://api:8080/api/whatsapp/webhook`, signed with `WHATSAPP_WEBHOOK_HMAC_KEY`. Neither has a
+`poll.vote.failed`, `event.response`, `group.v2.participants` and `message` (private messages
+for the club assistant) to `http://api:8080/api/whatsapp/webhook`, signed with
+`WHATSAPP_WEBHOOK_HMAC_KEY`. A host whose compose file still lacks `message` in
+`WHATSAPP_HOOK_EVENTS` simply never hears private messages. Neither has a
 port on the host, and both app nginx answer the webhook route with 404. The image is pinned in
 the compose file and never moved by Watchtower: update it by hand, after reading WAHA's changelog
 for the GOWS engine, and check a vote flows back afterwards.

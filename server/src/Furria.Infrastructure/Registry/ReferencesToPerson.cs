@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using Furria.Core.Assistant;
 using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Gallery;
@@ -92,6 +93,11 @@ public static class ReferencesToPerson
         Reference<WhatsAppGroupAdd>(
             nameof(WhatsAppGroupAdd.PersonId),
             OnAbsorption.MovesToKeeperUnlessSheHoldsOne,
+            OnErasure.ErasedWithHer
+        ),
+        Reference<ClubAssistantQuestion>(
+            nameof(ClubAssistantQuestion.PersonId),
+            OnAbsorption.MovesToKeeper,
             OnErasure.ErasedWithHer
         ),
         HerAct<AccountEvent>(nameof(AccountEvent.ActorPersonId)),

@@ -13,5 +13,6 @@ public static class WhatsAppOperations
 
     [Pure]
     public static bool IsKeptAsPost(WhatsAppOperation operation) =>
-        operation != WhatsAppOperation.DirectText && !Targeting.Contains(operation);
+        operation is not (WhatsAppOperation.DirectText or WhatsAppOperation.PrivateReply)
+        && !Targeting.Contains(operation);
 }

@@ -36,6 +36,16 @@ public sealed class WhatsAppPacing
             + TimeSpan.FromTicks((long)(jitter.Ticks * Random.Shared.NextDouble()));
     }
 
+    public TimeSpan ReplyDelay()
+    {
+        lock (_lock)
+            _rateSignalsInARow = 0;
+
+        var jitter = _options.Value.ReplyDelayJitter;
+        return _options.Value.ReplyDelay
+            + TimeSpan.FromTicks((long)(jitter.Ticks * Random.Shared.NextDouble()));
+    }
+
     public TimeSpan BackOff()
     {
         lock (_lock)

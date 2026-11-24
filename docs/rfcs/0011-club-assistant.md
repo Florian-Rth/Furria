@@ -101,16 +101,18 @@ Goal: the club can switch the assistant on and set its budget; the API can talk 
 
 ### Phase 2 — Private messages in, gate replies out
 Goal: the bot receives private text messages and answers every case that needs no model.
-- [ ] WAHA `message` webhook subscribed; inbox applies only private-chat messages not sent by the bot
-- [ ] Sender → person via **WhatsApp match**, affiliation check
-- [ ] Gate replies: unknown/unaffiliated (once a day per number), switched off, non-text, daily limit reached, budget used up
-- [ ] Outbox: private reply operation sent right away with 1–2 s jitter, outside the group spacing; *schreibt…* indicator
-- [ ] Conversation store: messages per person, quick successive messages merged, 30-minute continuation, 7-day purge
-- [ ] Tests: gating decisions, merging and continuation rules, daily limit, purge
+- [x] WAHA `message` webhook subscribed; inbox applies only private-chat messages not sent by the bot
+- [x] Sender → person via **WhatsApp match**, affiliation check
+- [x] Gate replies: unknown/unaffiliated (once a day per number), switched off, non-text, daily limit reached, budget used up
+- [x] Outbox: private reply operation sent right away with 1–2 s jitter, outside the group spacing; *schreibt…* indicator
+- [x] Conversation store: messages per person, quick successive messages merged, 30-minute continuation, 7-day purge
+- [x] Tests: gating decisions, merging and continuation rules, daily limit, purge
+- Built 2026-11-24: `message` added to `WHATSAPP_HOOK_EVENTS` (live compose edit owed, needs approval); group/own/empty messages are dropped before the inbox. Gate notices go out at most once per club day per number and kind (non-text: once per 30 min); the switched-off line goes to any sender. Merge window 8 s; private replies run in their own outbox lane and job (*Private WhatsApp-Antworten senden*) with best-effort typing, sharing only the rate back-off with the group lane.
 
 ### Phase 3 — The answer loop and the first tools
 Goal: matched members get real answers about the calendar and training.
 - [ ] Assistant loop over `IChatClient` with function tools; budget check before each call, usage booked after
+- [ ] Answer worker takes a question once its last message is older than the merge window; the answer is written only if `last_message_at` is unchanged (a message merged during the model call re-asks), never holding the row lock across the model call; typing indicator while the model works
 - [ ] System prompt (German, *du*, humour, facts first, WhatsApp formatting, links, „weiß ich nicht"), one-time AI disclosure per person
 - [ ] Tool context: the asker's visibility (person, groups, permissions) resolved once per question
 - [ ] Tools: club basics, calendar entries, usual training times

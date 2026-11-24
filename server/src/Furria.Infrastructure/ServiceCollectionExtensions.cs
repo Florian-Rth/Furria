@@ -249,6 +249,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WhatsAppGroupAddQuery>();
         services.AddSingleton<WhatsAppPacing>();
         services.AddHostedService<WhatsAppDispatcher>();
+        services.AddHostedService<WhatsAppReplyDispatcher>();
         services.AddClubAssistant(configuration);
         services.AddSingleton<ChangeFeed>();
         services.AddHostedService<ChangeListener>();
@@ -282,6 +283,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<WhatsAppOutboxSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>
             serviceProvider.GetRequiredService<WhatsAppOutboxSignal>()
+        );
+        services.AddSingleton<WhatsAppReplySignal>();
+        services.AddSingleton<OutboxSignal>(serviceProvider =>
+            serviceProvider.GetRequiredService<WhatsAppReplySignal>()
         );
         services.AddSingleton<MediaFileReaperSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>
