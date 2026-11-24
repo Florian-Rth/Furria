@@ -2,6 +2,7 @@ import type { KkStatusTone } from '@furria/ui/KkStatusLine';
 import type { UnassignedCopy } from '@/features/calendar/whatsapp-answers';
 import { toIsoDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';
+import { formatEuros } from '@/lib/money';
 import type { WhatsAppState } from './schemas';
 
 export const WHATSAPP_TITLE = 'WhatsApp';
@@ -46,6 +47,21 @@ export const toGroupKeepingNotice = (keepsMembers: boolean): string =>
 export const toRefusedAddMeta = (phone: string | null, refusedAt: string): string =>
   `${phone ?? NO_PHONE_VALUE} · blockiert seit ${formatIsoDay(toIsoDay(new Date(refusedAt)))}`;
 
+export const CLUB_ASSISTANT_TITLE = 'Vereinsassistent';
+export const CLUB_ASSISTANT_LABEL = 'Vereinsassistent';
+export const CLUB_ASSISTANT_DESCRIPTION =
+  'Beantwortet private Nachrichten von Mitgliedern mit Daten aus Furria.';
+export const CLUB_ASSISTANT_NO_KEY =
+  'Für den Vereinsassistenten fehlt noch der Zugang zum KI-Anbieter.';
+export const CLUB_ASSISTANT_USED_LABEL = 'Diesen Monat verbraucht';
+export const CLUB_ASSISTANT_BUDGET_LABEL = 'Budget pro Monat in €';
+export const CLUB_ASSISTANT_QUESTIONS_LABEL = 'Fragen pro Person und Tag';
+export const CLUB_ASSISTANT_SAVE_LABEL = 'Speichern';
+export const CLUB_ASSISTANT_SAVED_NOTICE = 'Vereinsassistent gespeichert.';
+export const CLUB_ASSISTANT_FAILED_MESSAGE = 'Der Vereinsassistent konnte nicht geladen werden.';
+export const CLUB_ASSISTANT_BUDGET_INVALID = 'Ganze Euro von 0 bis 1000.';
+export const CLUB_ASSISTANT_QUESTIONS_INVALID = 'Eine ganze Zahl von 1 bis 500.';
+
 export const START_LINKING_LABEL = 'Bot verknüpfen';
 export const LINKING_STARTED_NOTICE = 'Verknüpfung gestartet.';
 
@@ -75,3 +91,6 @@ export const UNASSIGNED_COPY: UnassignedCopy = {
   label: UNASSIGNED_TAB_LABEL,
   unknownSender: UNKNOWN_SENDER_NAME,
 };
+
+export const toClubAssistantUsage = (usedEuros: number, budgetEuros: number): string =>
+  `${formatEuros(usedEuros)} von ${formatEuros(budgetEuros)}`;

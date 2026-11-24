@@ -45,3 +45,19 @@ export type WhatsAppQrCode = z.infer<typeof WhatsAppQrCodeSchema>;
 
 export const WhatsAppPairingCodeSchema = z.object({ code: z.string() });
 export type WhatsAppPairingCode = z.infer<typeof WhatsAppPairingCodeSchema>;
+
+export const ClubAssistantSchema = z.object({
+  isEnabled: z.boolean(),
+  monthlyBudgetEuros: z.number().nonnegative(),
+  questionsPerPersonPerDay: z.number().int().positive(),
+  usedThisMonthEuros: z.number().nonnegative(),
+  isModelConfigured: z.boolean(),
+});
+export type ClubAssistant = z.infer<typeof ClubAssistantSchema>;
+
+export const ClubAssistantSettingsSchema = ClubAssistantSchema.pick({
+  isEnabled: true,
+  monthlyBudgetEuros: true,
+  questionsPerPersonPerDay: true,
+});
+export type ClubAssistantSettings = z.infer<typeof ClubAssistantSettingsSchema>;

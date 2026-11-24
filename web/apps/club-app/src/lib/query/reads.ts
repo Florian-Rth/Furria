@@ -146,6 +146,7 @@ export const READ_NAMES = [
   'whatsAppOverview',
   'whatsAppReach',
   'whatsAppQrCode',
+  'clubAssistant',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -242,6 +243,7 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   whatsAppOverview: ['whatsapp', 'overview'],
   whatsAppReach: ['whatsapp', 'reach'],
   whatsAppQrCode: ['whatsapp', 'qr-code'],
+  clubAssistant: ['whatsapp', 'assistant'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -584,6 +586,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   whatsAppOverview: ['whatsApp'],
   whatsAppReach: ['whatsApp'],
   whatsAppQrCode: [],
+  clubAssistant: ['whatsApp'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -710,4 +713,5 @@ export const queryKeys = {
   whatsAppOverview: READ_ROOTS.whatsAppOverview,
   whatsAppReach: READ_ROOTS.whatsAppReach,
   whatsAppQrCode: READ_ROOTS.whatsAppQrCode,
+  clubAssistant: READ_ROOTS.clubAssistant,
 } as const;

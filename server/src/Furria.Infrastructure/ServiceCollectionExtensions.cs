@@ -2,6 +2,7 @@ using Furria.Application.Changes;
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.WhatsApp;
+using Furria.Infrastructure.Assistant;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Changes;
@@ -248,6 +249,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WhatsAppGroupAddQuery>();
         services.AddSingleton<WhatsAppPacing>();
         services.AddHostedService<WhatsAppDispatcher>();
+        services.AddClubAssistant(configuration);
         services.AddSingleton<ChangeFeed>();
         services.AddHostedService<ChangeListener>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>

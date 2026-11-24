@@ -10,12 +10,14 @@ using Furria.Application.Operations;
 using Furria.Application.Push;
 using Furria.Application.Results;
 using Furria.Application.Website;
+using Furria.Core.Assistant;
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.RunningOrders;
+using Furria.Infrastructure.Assistant;
 using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Changes;
 using Furria.Infrastructure.Club;
@@ -127,6 +129,10 @@ public sealed class ApiTestFixture : IAsyncLifetime
     internal const string WahaApiKey = "furria-test-waha-api-key";
     public const string WhatsAppWebhookHmacKey = "furria-test-whatsapp-webhook-hmac-key";
     public const string WhatsAppSession = "furria";
+    internal const string ClubAssistantApiKey = "furria-test-assistant-key";
+    internal const decimal ClubAssistantInputEurosPerMillion = 1m;
+    internal const decimal ClubAssistantCachedInputEurosPerMillion = 0.1m;
+    internal const decimal ClubAssistantOutputEurosPerMillion = 4m;
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
@@ -456,6 +462,23 @@ public sealed class ApiTestFixture : IAsyncLifetime
             setters => setters.SetProperty(row => row.SentAt, row => row.SentAt - age),
             ct
         );
+    }
+
+    public async Task BookClubAssistantCallAsync(
+        ClubAssistantTokens tokens,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<ClubAssistantBudget>().BookAsync(tokens, ct);
+    }
+
+    public async Task<bool> ClubAssistantHasBudgetLeftAsync(CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        return await scope
+            .ServiceProvider.GetRequiredService<ClubAssistantBudget>()
+            .HasBudgetLeftAsync(ct);
     }
 
     public async Task StageWhatsAppGroupAddsAsync(CancellationToken ct = default)

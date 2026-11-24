@@ -1,7 +1,7 @@
 ---
 rfc: 0011
 title: The club assistant on WhatsApp
-status: draft
+status: in-progress
 github_issue: 104
 branch: feat/rfc-104-club-assistant
 created: 2026-11-24
@@ -92,12 +92,12 @@ Each phase leaves the system intact (builds, tests pass) and fits a ~120k-token 
 
 ### Phase 1 — Settings, budget and the model connection
 Goal: the club can switch the assistant on and set its budget; the API can talk to the model.
-- [ ] `ClubAssistantSettings` (enabled, monthly budget €, questions per person/day) + migration
-- [ ] Optional config `ClubAssistant` (provider endpoint, API key, model id, € per 1M input/cached/output tokens); `IChatClient` registered only when a key is set
-- [ ] Budget ledger: per-call usage rows (tokens, €) and the month's sum; check-before-call service
-- [ ] Endpoints: read/update the settings incl. used-this-month and „key configured" (admins)
-- [ ] Club app: System → WhatsApp → *Vereinsassistent* section (switch, budget, used, daily limit; disabled without key)
-- [ ] Tests: budget arithmetic and month rollover, settings permissions
+- [x] `ClubAssistantSettings` (enabled, monthly budget €, questions per person/day) + migration
+- [x] Optional config `ClubAssistant` (provider endpoint, API key, model id, € per 1M input/cached/output tokens); `IChatClient` registered only when a key is set
+- [x] Budget ledger: per-call usage rows (tokens, €) and the month's sum; check-before-call service
+- [x] Endpoints: read/update the settings incl. used-this-month and „key configured" (admins)
+- [x] Club app: System → WhatsApp → *Vereinsassistent* section (switch, budget, used, daily limit; disabled without key)
+- [x] Tests: budget arithmetic and month rollover, settings permissions
 
 ### Phase 2 — Private messages in, gate replies out
 Goal: the bot receives private text messages and answers every case that needs no model.

@@ -23,6 +23,82 @@ namespace Furria.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantModelCall", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("CachedInputTokens")
+                        .HasColumnType("integer")
+                        .HasColumnName("cached_input_tokens");
+
+                    b.Property<DateTimeOffset>("CalledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("called_at");
+
+                    b.Property<decimal>("CostEuros")
+                        .HasPrecision(12, 6)
+                        .HasColumnType("numeric(12,6)")
+                        .HasColumnName("cost_euros");
+
+                    b.Property<int>("InputTokens")
+                        .HasColumnType("integer")
+                        .HasColumnName("input_tokens");
+
+                    b.Property<int>("OutputTokens")
+                        .HasColumnType("integer")
+                        .HasColumnName("output_tokens");
+
+                    b.HasKey("Id")
+                        .HasName("pk_club_assistant_model_call");
+
+                    b.HasIndex("CalledAt")
+                        .HasDatabaseName("ix_club_assistant_model_call_called_at");
+
+                    b.ToTable("club_assistant_model_call", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_club_assistant_model_call_counts", "input_tokens >= 0 AND cached_input_tokens >= 0 AND output_tokens >= 0 AND cost_euros >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("IsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_enabled");
+
+                    b.Property<decimal>("MonthlyBudgetEuros")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)")
+                        .HasColumnName("monthly_budget_euros");
+
+                    b.Property<int>("QuestionsPerPersonPerDay")
+                        .HasColumnType("integer")
+                        .HasColumnName("questions_per_person_per_day");
+
+                    b.HasKey("Id")
+                        .HasName("pk_club_assistant_settings");
+
+                    b.ToTable("club_assistant_settings", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_club_assistant_settings_monthly_budget", "monthly_budget_euros BETWEEN 0 AND 1000");
+
+                            t.HasCheckConstraint("ck_club_assistant_settings_questions_per_person_per_day", "questions_per_person_per_day BETWEEN 1 AND 500");
+
+                            t.HasCheckConstraint("ck_club_assistant_settings_single", "id = 1");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.BeerList.BeerCrate", b =>
                 {
                     b.Property<int>("Id")

@@ -1,6 +1,7 @@
 import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
 import type { WhatsAppOverview } from '../schemas';
+import { WhatsAppAssistantSection } from './WhatsAppAssistantSection';
 import { WhatsAppClubGroupPanel } from './WhatsAppClubGroupPanel';
 import { WhatsAppConnectionPanel } from './WhatsAppConnectionPanel';
 import { WhatsAppGroupKeepingPanel } from './WhatsAppGroupKeepingPanel';
@@ -35,6 +36,7 @@ export const WhatsAppPanels: FC<WhatsAppPanelsProps> = ({ overview }) => {
       {clubGroupPanel}
       {keepingPanel}
       {refusedPanel}
+      <WhatsAppAssistantSection />
     </KkPanelStack>
   );
 };

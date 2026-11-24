@@ -2,6 +2,7 @@ using System.Globalization;
 using Furria.Api.Altcha;
 using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
+using Furria.Application.Assistant;
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.Mail;
@@ -229,6 +230,24 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
         builder.UseSetting(
             $"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.SendGapJitter)}",
             TimeSpan.Zero.ToString("c", CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{ClubAssistantOptions.SectionName}:{nameof(ClubAssistantOptions.ApiKey)}",
+            ApiTestFixture.ClubAssistantApiKey
+        );
+        builder.UseSetting(
+            $"{ClubAssistantOptions.SectionName}:{nameof(ClubAssistantOptions.InputEurosPerMillion)}",
+            ApiTestFixture.ClubAssistantInputEurosPerMillion.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{ClubAssistantOptions.SectionName}:{nameof(ClubAssistantOptions.CachedInputEurosPerMillion)}",
+            ApiTestFixture.ClubAssistantCachedInputEurosPerMillion.ToString(
+                CultureInfo.InvariantCulture
+            )
+        );
+        builder.UseSetting(
+            $"{ClubAssistantOptions.SectionName}:{nameof(ClubAssistantOptions.OutputEurosPerMillion)}",
+            ApiTestFixture.ClubAssistantOutputEurosPerMillion.ToString(CultureInfo.InvariantCulture)
         );
         builder.ConfigureServices(services =>
         {
