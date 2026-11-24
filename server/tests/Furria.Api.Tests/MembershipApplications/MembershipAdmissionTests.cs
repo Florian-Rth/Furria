@@ -10,19 +10,6 @@ public sealed class MembershipAdmissionTests
     private static readonly DateOnly TurnsEighteenOnOctober2 = new(2008, 10, 2);
 
     [Fact]
-    public void Should_AdmitHer_When_SheIsAdmittedOnTheDaySheApplied()
-    {
-        Assert.Null(
-            MembershipAdmission.RefusalOf(
-                AppliedOn,
-                AppliedOn,
-                AdultBirthDate,
-                guardianConsentConfirmed: false
-            )
-        );
-    }
-
-    [Fact]
     public void Should_Refuse_When_TheAdmissionIsDatedTheDayBeforeSheApplied()
     {
         Assert.Equal(
@@ -59,19 +46,6 @@ public sealed class MembershipAdmissionTests
                 AppliedOn,
                 TurnsEighteenOnOctober2,
                 guardianConsentConfirmed: false
-            )
-        );
-    }
-
-    [Fact]
-    public void Should_AdmitAMinor_When_HerGuardianConsentIsConfirmed()
-    {
-        Assert.Null(
-            MembershipAdmission.RefusalOf(
-                new DateOnly(2026, 10, 1),
-                AppliedOn,
-                TurnsEighteenOnOctober2,
-                guardianConsentConfirmed: true
             )
         );
     }

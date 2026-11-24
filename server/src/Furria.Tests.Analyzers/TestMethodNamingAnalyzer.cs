@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Furria.Tests.Analyzers;
 
-// MET003 — `[Fact]`/`[Theory]` methods must read as Should_<Expected>_When_<Scenario>.
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class TestMethodNamingAnalyzer : DiagnosticAnalyzer
 {

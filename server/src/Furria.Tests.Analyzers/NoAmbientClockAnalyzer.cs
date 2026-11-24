@@ -6,10 +6,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Furria.Tests.Analyzers;
 
-// MET006 — production code must not read the wall clock through `DateTime`/`DateTimeOffset`
-// `.Now`/`.UtcNow`; inject `TimeProvider` so `FakeTimeProvider` can control time in tests. The
-// rule is scoped to production code: test projects (build_property.IsTestProject == true) are
-// skipped, and Tests.Common is never wired with the analyzer at all.
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class NoAmbientClockAnalyzer : DiagnosticAnalyzer
 {

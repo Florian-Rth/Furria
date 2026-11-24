@@ -1,107 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { CommitPlan, DeskSource } from './inbox-desk';
-import {
-  commitPlanOf,
-  defaultSlotsOf,
-  deskOf,
-  isDeskCleared,
-  reconcileCulling,
-} from './inbox-desk';
-import type { CullState, CullVerdict } from './light-table';
-import { cull, startCulling } from './light-table';
-
-const item = (
-  mediaItemId: number,
-  capturedAt: string | null,
-  state: DeskSource['state'] = 'ready',
-): DeskSource => ({
-  mediaItemId,
-  state,
-  isStalled: false,
-  capturedAt,
-  uploadedAt: '2026-02-15T09:00:00Z',
-});
-
-describe('deskOf', () => {
-  it('lays ready, unhidden items out by capture time and splits scenes at gaps', () => {
-    const desk = deskOf(
-      [
-        item(3, '2026-02-14T20:10:00Z'),
-        item(1, '2026-02-14T20:00:00Z'),
-        item(2, '2026-02-14T20:00:30Z'),
-        item(4, '2026-02-14T20:11:00Z', 'processing'),
-        item(5, '2026-02-14T20:10:20Z'),
-      ],
-      new Set([5]),
-    );
-    expect(desk.frames).toEqual([
-      { id: 1, scene: 0 },
-      { id: 2, scene: 0 },
-      { id: 3, scene: 1 },
-    ]);
-    expect(desk.developing).toBe(1);
-  });
-
-  it('tells developing, stuck and failed items apart', () => {
-    const desk = deskOf(
-      [
-        item(1, null, 'processing'),
-        { ...item(2, null, 'processing'), isStalled: true },
-        item(3, null, 'failed'),
-        item(4, null),
-      ],
-      new Set(),
-    );
-    expect({ developing: desk.developing, stalled: desk.stalled, failed: desk.failed }).toEqual({
-      developing: 1,
-      stalled: 1,
-      failed: 1,
-    });
-  });
-
-  it('lists failed items that are not hidden yet', () => {
-    const desk = deskOf(
-      [item(1, null, 'failed'), item(2, null, 'failed'), item(3, null)],
-      new Set([2]),
-    );
-    expect(desk.failedIds).toEqual([1]);
-  });
-});
-
-describe('isDeskCleared', () => {
-  it.each<[string, { developing: number; failed: number }, number, boolean]>([
-    ['nothing left', { developing: 0, failed: 0 }, 0, true],
-    ['open frames', { developing: 0, failed: 0 }, 2, false],
-    ['developing items', { developing: 1, failed: 0 }, 0, false],
-    ['failed items', { developing: 0, failed: 1 }, 0, false],
-  ])('decides with %s', (_, desk, openFrames, cleared) => {
-    expect(isDeskCleared(desk, openFrames)).toBe(cleared);
-  });
-});
-
-describe('reconcileCulling', () => {
-  it('keeps verdicts and the current frame across new arrivals and departures', () => {
-    const before = cull(
-      cull(
-        startCulling([
-          { id: 1, scene: 0 },
-          { id: 2, scene: 0 },
-          { id: 3, scene: 0 },
-        ]),
-        { kind: 'reject', wholeScene: false },
-      ),
-      { kind: 'file', slot: 1, wholeScene: false },
-    );
-    const after = reconcileCulling(before, [
-      { id: 2, scene: 0 },
-      { id: 3, scene: 0 },
-      { id: 9, scene: 1 },
-    ]);
-    expect(after.verdicts).toEqual({ 2: { kind: 'filed', slot: 1 } });
-    expect(after.frames[after.cursor]?.id).toBe(3);
-    expect(after.history.map((step) => step.changed.map((change) => change.id))).toEqual([[2]]);
-  });
-});
+import type { CommitPlan } from './inbox-desk';
+import { commitPlanOf } from './inbox-desk';
+import type { CullState } from './light-table';
+import { startCulling } from './light-table';
 
 describe('commitPlanOf', () => {
   it.each<[string, (number | null)[], CommitPlan]>([
@@ -115,11 +16,6 @@ describe('commitPlanOf', () => {
         ],
         rejects: [3],
       },
-    ],
-    [
-      'leaves frames filed into an empty slot',
-      [10, null, null],
-      { placements: [{ albumId: 10, mediaItemIds: [1, 4] }], rejects: [3] },
     ],
   ])('%s', (_, slots, expected) => {
     const state: CullState = {
@@ -138,51 +34,5 @@ describe('commitPlanOf', () => {
       },
     };
     expect(commitPlanOf(state, slots)).toEqual(expected);
-  });
-});
-
-describe('commitPlanOf at many frames per basket', () => {
-  it('keeps every filed frame in capture order', () => {
-    const ids = Array.from({ length: 3000 }, (_, index) => index + 1);
-    const state: CullState = {
-      ...startCulling(ids.map((id) => ({ id, scene: 0 }))),
-      verdicts: Object.fromEntries(
-        ids.map((id): [number, CullVerdict] => [
-          id,
-          id % 3 === 0 ? { kind: 'rejected' } : { kind: 'filed', slot: id % 3 },
-        ]),
-      ),
-    };
-
-    const plan = commitPlanOf(state, [null, 10, 20]);
-
-    expect({
-      first: plan.placements.map((placed) => placed.mediaItemIds.slice(0, 2)),
-      sizes: plan.placements.map((placed) => placed.mediaItemIds.length),
-      rejects: plan.rejects.length,
-    }).toEqual({
-      first: [
-        [1, 4],
-        [2, 5],
-      ],
-      sizes: [1000, 1000],
-      rejects: 1000,
-    });
-  });
-});
-
-describe('defaultSlotsOf', () => {
-  it('picks the newest albums first', () => {
-    expect(
-      defaultSlotsOf(
-        [
-          { albumId: 1, createdAt: '2026-01-01T00:00:00Z' },
-          { albumId: 2, createdAt: '2026-03-01T00:00:00Z' },
-          { albumId: 3, createdAt: '2026-02-01T00:00:00Z' },
-          { albumId: 4, createdAt: '2025-12-01T00:00:00Z' },
-        ],
-        3,
-      ),
-    ).toEqual([2, 3, 1]);
   });
 });

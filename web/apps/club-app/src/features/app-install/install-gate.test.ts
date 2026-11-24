@@ -12,33 +12,11 @@ const PHONE_TAB = {
 describe('isInstallGateClosed', () => {
   it.each([
     { label: 'a phone browser tab', input: PHONE_TAB, expected: true },
-    { label: 'a tablet browser tab', input: { ...PHONE_TAB, device: 'tablet' }, expected: true },
     { label: 'a desktop browser', input: { ...PHONE_TAB, device: 'desktop' }, expected: false },
     { label: 'the installed app', input: { ...PHONE_TAB, isStandalone: true }, expected: false },
-    { label: 'the native shell', input: { ...PHONE_TAB, isNative: true }, expected: false },
-    {
-      label: 'browser mode for testing',
-      input: { ...PHONE_TAB, isBrowserMode: true },
-      expected: false,
-    },
     {
       label: 'a password reset link from a mail',
       input: { ...PHONE_TAB, pathname: '/reset-password' },
-      expected: false,
-    },
-    {
-      label: 'an upload link from the group chat',
-      input: { ...PHONE_TAB, pathname: '/photos' },
-      expected: false,
-    },
-    {
-      label: 'an intake link a newcomer scanned',
-      input: { ...PHONE_TAB, pathname: '/intake' },
-      expected: false,
-    },
-    {
-      label: 'the pallet code on the beer pallet',
-      input: { ...PHONE_TAB, pathname: '/beer-list/book' },
       expected: false,
     },
     {
@@ -52,26 +30,10 @@ describe('isInstallGateClosed', () => {
       expected: false,
     },
     {
-      label: 'the invitation entry',
-      input: { ...PHONE_TAB, pathname: '/invitation' },
-      expected: false,
-    },
-    {
       label: 'a page that only starts like an invitation',
       input: { ...PHONE_TAB, pathname: '/invitations' },
       expected: true,
     },
-    {
-      label: 'the claim window from the projector code',
-      input: { ...PHONE_TAB, pathname: '/claim-window' },
-      expected: false,
-    },
-    {
-      label: 'the access request from the closed claim window',
-      input: { ...PHONE_TAB, pathname: '/request-access' },
-      expected: false,
-    },
-    { label: 'the login page', input: { ...PHONE_TAB, pathname: '/login' }, expected: true },
   ] as const)('$label', ({ input, expected }) => {
     expect(isInstallGateClosed(input)).toBe(expected);
   });

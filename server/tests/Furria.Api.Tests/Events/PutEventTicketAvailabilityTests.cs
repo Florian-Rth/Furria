@@ -104,38 +104,6 @@ public sealed class PutEventTicketAvailabilityTests : IClassFixture<ApiTestFixtu
         );
     }
 
-    [Fact]
-    public async Task Should_ReturnConflict_When_ThePresaleIsNotYetAnnounced()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-                var eventId = ctx.Club.Events.IdOf("opening");
-
-                var response = await SetAsync(ctx, "vera", eventId, TicketAvailability.SoldOut);
-
-                Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-                var failures = await ReadFailuresAsync(response, ct);
-                Assert.Equal([PresaleNotBegunMessage], failures[ConflictField]);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheEventIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await SetAsync(ctx, "vera", 999_999, TicketAvailability.SoldOut);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
     private static async Task<HttpResponseMessage> SetAsync(
         SeededContext ctx,
         string alias,

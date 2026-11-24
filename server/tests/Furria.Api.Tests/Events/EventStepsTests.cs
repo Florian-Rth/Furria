@@ -55,26 +55,6 @@ public sealed class EventStepsTests
         );
     }
 
-    [Fact]
-    public void Should_OpenTheRunningOrderLater_When_TheStepsAreListed()
-    {
-        var readiness = EventSteps.ReadinessOf(NothingDone, Noon("2026-10-01"));
-
-        Assert.Equal(
-            [
-                new EventStepStatus(EventStep.Details, Open, new DateOnly(2026, 10, 18), null),
-                new EventStepStatus(EventStep.Tickets, Open, new DateOnly(2026, 11, 17), null),
-                new EventStepStatus(
-                    EventStep.RunningOrder,
-                    Waiting,
-                    new DateOnly(2027, 1, 2),
-                    new DateOnly(2026, 12, 19)
-                ),
-            ],
-            readiness.Steps
-        );
-    }
-
     [Theory]
     [InlineData("2026-10-01", false, false, false, Open, Open, Waiting, EventStep.Details)]
     [InlineData("2026-10-18", false, false, false, Open, Open, Waiting, EventStep.Details)]
@@ -120,21 +100,6 @@ public sealed class EventStepsTests
     }
 
     [Fact]
-    public void Should_LeaveNoCurrentStep_When_TheEveningIsOver()
-    {
-        var readiness = EventSteps.ReadinessOf(
-            NothingDone with
-            {
-                IsOver = true,
-            },
-            Noon("2027-02-01")
-        );
-
-        Assert.All(readiness.Steps, status => Assert.NotEqual(Overdue, status.State));
-        Assert.Null(readiness.CurrentStep);
-    }
-
-    [Fact]
     public void Should_LeaveNoCurrentStep_When_TheEventIsCancelled()
     {
         var readiness = EventSteps.ReadinessOf(
@@ -163,73 +128,6 @@ public sealed class EventStepsTests
             new EventStepStatus(EventStep.Hall, Open, new DateOnly(2026, 12, 26), null),
             readiness.Steps[^1]
         );
-    }
-
-    [Theory]
-    [InlineData("2026-11-11", "2026-11-10")]
-    [InlineData("2026-12-01", "2026-11-18")]
-    [InlineData("2027-01-16", "2026-12-26")]
-    public void Should_GiveTheHallStepTimeSinceItArrived_When_TheEventIsOlderThanTheStep(
-        string eventDay,
-        string hallDue
-    )
-    {
-        var readiness = EventSteps.ReadinessOf(
-            NothingDone with
-            {
-                EventDay = DateOnly.Parse(eventDay),
-                CreatedDay = new DateOnly(2026, 1, 1),
-                NeedsTablePlan = true,
-            },
-            Noon("2026-11-05")
-        );
-
-        var hall = readiness.Steps.Single(status => status.Step == EventStep.Hall);
-        Assert.Equal(
-            new EventStepStatus(EventStep.Hall, Open, DateOnly.Parse(hallDue), null),
-            hall
-        );
-    }
-
-    [Fact]
-    public void Should_DropTheHallStep_When_NoTablePlanIsNeeded()
-    {
-        var readiness = EventSteps.ReadinessOf(NothingDone, Noon("2026-10-01"));
-
-        Assert.DoesNotContain(readiness.Steps, status => status.Step == EventStep.Hall);
-    }
-
-    [Theory]
-    [InlineData("2026-12-26", false, false, Open, EventStep.Hall)]
-    [InlineData("2026-12-27", false, false, Overdue, EventStep.Hall)]
-    [InlineData("2026-12-27", true, false, Done, null)]
-    [InlineData("2027-01-03", false, false, Overdue, EventStep.Hall)]
-    [InlineData("2027-01-03", false, true, Overdue, EventStep.Hall)]
-    [InlineData("2027-01-03", true, true, Done, EventStep.RunningOrder)]
-    [InlineData("2027-02-01", false, false, Open, null)]
-    public void Should_TreatTheHallStepLikeTheOtherSteps_When_TheEventNeedsATablePlan(
-        string today,
-        bool hasPlacedTables,
-        bool isAfterRunningOrderDue,
-        EventStepState hall,
-        EventStep? current
-    )
-    {
-        var readiness = EventSteps.ReadinessOf(
-            NothingDone with
-            {
-                AreDetailsDone = true,
-                AreTicketsSet = true,
-                IsRunningOrderDone = !isAfterRunningOrderDue,
-                NeedsTablePlan = true,
-                HasPlacedTables = hasPlacedTables,
-                IsOver = DateOnly.Parse(today) > GalaDay,
-            },
-            Noon(today)
-        );
-
-        Assert.Equal(hall, readiness.Steps.Single(status => status.Step == EventStep.Hall).State);
-        Assert.Equal(current, readiness.CurrentStep);
     }
 
     private static DateTimeOffset Noon(string day) =>

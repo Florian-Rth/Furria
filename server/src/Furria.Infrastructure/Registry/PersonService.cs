@@ -387,8 +387,6 @@ public sealed class PersonService
             .People.AsNoTracking()
             .Where(person => person.ArchivedOn == null)
             .Where(person =>
-                // keep in sync with GermanFold.Expand / GermanFold.Strip — EF cannot translate
-                // the method onto the column side.
                 EF.Functions.ILike(
                     (person.FirstName + " " + person.LastName)
                         .ToLower()

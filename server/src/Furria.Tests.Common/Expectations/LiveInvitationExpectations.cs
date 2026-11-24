@@ -40,27 +40,6 @@ public sealed class LiveInvitationExpectations
             }
         );
 
-    public Expected ToBeSelfRequested() =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var invitation = await dbContext
-                    .Invitations.AsNoTracking()
-                    .SingleAsync(
-                        row =>
-                            row.PersonId == _personId
-                            && row.RedeemedAt == null
-                            && row.VoidedAt == null,
-                        ct
-                    );
-
-                Assert.Equal(InvitationPurpose.Onboarding, invitation.Purpose);
-                Assert.Equal(InvitationChannel.Request, invitation.Channel);
-                Assert.False(invitation.IsReminder);
-                Assert.Null(invitation.IssuedByPersonId);
-            }
-        );
-
     public Expected ToBeRecoveryIssuedBy(int? issuedByPersonId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

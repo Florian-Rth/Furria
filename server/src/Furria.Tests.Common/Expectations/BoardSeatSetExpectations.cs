@@ -24,18 +24,4 @@ public sealed class BoardSeatSetExpectations
                         .CountAsync(row => row.BoardOfficeId == _boardOfficeId, ct)
                 )
         );
-
-    public Expected ToHaveOpenCount(int count) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    count,
-                    await dbContext
-                        .BoardSeats.AsNoTracking()
-                        .CountAsync(
-                            row => row.BoardOfficeId == _boardOfficeId && row.UntilOn == null,
-                            ct
-                        )
-                )
-        );
 }

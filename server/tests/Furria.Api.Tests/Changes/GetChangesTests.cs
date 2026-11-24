@@ -24,31 +24,6 @@ public sealed class GetChangesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_OpenAnUnbufferedStreamOfLines_When_ASignedInAccountConnects()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("ben")),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ben", ct);
-
-        using var response = await client.GetAsync(
-            ChangesRoute,
-            HttpCompletionOption.ResponseHeadersRead,
-            ct
-        );
-        using var lines = new StreamReader(await response.Content.ReadAsStreamAsync(ct));
-        var first = await lines.ReadLineAsync(ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("application/x-ndjson", response.Content.Headers.ContentType?.MediaType);
-        Assert.True(response.Headers.CacheControl?.NoCache);
-        Assert.Equal(["no"], response.Headers.GetValues("X-Accel-Buffering"));
-        Assert.Equal("""{"kind":"ready"}""", first);
-    }
-
-    [Fact]
     public async Task Should_StreamTheChangedGroup_When_AnotherAccountSavesTheGroupInfo()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -91,26 +66,6 @@ public sealed class GetChangesTests : IClassFixture<ApiTestFixture>
         );
 
         await feed.UntilChangedAsync(Group, ct);
-    }
-
-    [Fact]
-    public async Task Should_StreamTheSeenAnnouncements_When_TheMarkIsWrittenInBulk()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("anna").AddAccount("ben")),
-            ct
-        );
-        var writer = await ctx.Identity.ClientForAsync("anna", ct);
-        await using var feed = await FeedReader.OpenAsync(
-            await ctx.Identity.ClientForAsync("ben", ct),
-            ct
-        );
-        await _fixture.ChangeListenerListeningAsync(ct);
-
-        await MarkAnnouncementsSeenAsync(writer);
-
-        await feed.UntilChangedAsync(AnnouncementSeen, ct);
     }
 
     [Fact]

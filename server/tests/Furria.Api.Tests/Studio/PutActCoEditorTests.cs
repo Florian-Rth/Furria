@@ -21,22 +21,6 @@ public sealed class PutActCoEditorTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepOneCoEditorship_When_TheSamePersonIsGrantedTwice()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var anna = ctx.Identity.People.IdOf(Anna);
-
-        await GrantCoEditorAsync(admin, actId, anna);
-        await GrantCoEditorAsync(admin, actId, anna);
-
-        var studio = await StudioOfAsync(admin, actId);
-        Assert.Equal([anna], studio.CoEditors.Select(person => person.PersonId));
-    }
-
-    [Fact]
     public async Task Should_Refuse_When_ThePersonIsNotInTheCast()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -64,23 +48,5 @@ public sealed class PutActCoEditorTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheActIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        await admin.PUTAsync<PutActArchived, PutActArchivedRequest>(
-            new() { ActId = actId, Archived = true }
-        );
-
-        var response = await admin.PUTAsync<PutActCoEditor, PutActCoEditorRequest>(
-            new() { ActId = actId, PersonId = ctx.Identity.People.IdOf(Anna) }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 }

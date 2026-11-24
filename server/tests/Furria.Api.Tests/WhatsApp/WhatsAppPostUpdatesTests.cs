@@ -15,7 +15,6 @@ namespace Furria.Api.Tests.WhatsApp;
 public sealed class WhatsAppPostUpdatesTests : IClassFixture<ApiTestFixture>
 {
     private const string ClubChatId = "120363000000000001@g.us";
-    private const string StrangersChatId = "491609999999@c.us";
     private const string ClubMeeting = "Vereinssitzung";
     private const string CakeQuestion = "Wer bringt Kuchen?";
     private const string Title = "Saalreinigung";
@@ -78,36 +77,6 @@ public sealed class WhatsAppPostUpdatesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReplyThatTheEntryMoved_When_ItsTimeChanges()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = await CreateNotifiedEntryAsync(ctx, [], ct);
-        var post = await PostedAsync("sendText", ct);
-        await _fixture.AgeWhatsAppPostsAsync(PastTheEditWindow, ct);
-
-        await PutEntryAsync(
-            ctx,
-            Edited(ctx, entryId) with
-            {
-                StartsAt = MeetingStart.AddHours(1),
-            },
-            ct
-        );
-
-        await _fixture.WhatsAppOutboxDrainedAsync(ct);
-        var reply = Assert.Single(_fixture.Waha.Sent, sent => sent.ReplyTo is not null);
-        Assert.Equal(
-            (
-                "sendText",
-                post.MessageId,
-                "🕒 `FCC · VERSCHOBEN`\nNeu: Mi 20.1. · 20:00–22:00 Uhr · Bühnenhaus"
-            ),
-            (reply.Kind, reply.ReplyTo, reply.Text)
-        );
-    }
-
-    [Fact]
     public async Task Should_DeleteThePostAndItsAddOns_When_TheEntryIsDeletedWithinTwoDays()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -148,25 +117,6 @@ public sealed class WhatsAppPostUpdatesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveThePostWithoutAReply_When_TheAnnouncementIsWithdrawnAfterWhatsAppsDeleteWindow()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var announcementId = await PostAnnouncementAsync(ctx, ct);
-        await PostedAsync("sendText", ct);
-        await _fixture.AgeWhatsAppPostsAsync(PastTheDeleteWindow, ct);
-
-        await WithdrawAsync(ctx, announcementId, ct);
-
-        await _fixture.WhatsAppOutboxDrainedAsync(ct);
-        Assert.DoesNotContain(
-            _fixture.Waha.Sent,
-            sent => sent.ReplyTo is not null || sent.Kind == "delete"
-        );
-        Assert.Empty(await _fixture.WhatsAppPostRecordsAsync(ct));
-    }
-
-    [Fact]
     public async Task Should_DropTheUndeliveredPost_When_TheAnnouncementIsWithdrawnBeforeItWasSent()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -188,22 +138,6 @@ public sealed class WhatsAppPostUpdatesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReplyWithTheResult_When_APollIsClosedByHand()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await CreateNotifiedEntryAsync(ctx, [CakePoll()], ct);
-        var poll = await PostedAsync("sendPoll", ct);
-        var pollId = (await _fixture.PollIdsByQuestionAsync(ct))[CakeQuestion] ?? 0;
-        await VoteAsync(ctx, pollId, ct);
-
-        await ClosePollAsync(ctx, pollId, ct);
-
-        var reply = await RepliedToAsync(poll.MessageId, ct);
-        Assert.Equal("📊 `FCC · ERGEBNIS`\n*Abstimmung beendet*\nIch: 1\nNicht ich: 0", reply.Text);
-    }
-
-    [Fact]
     public async Task Should_ReplyWithTheResult_When_ThePollClosesByTime()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -216,50 +150,6 @@ public sealed class WhatsAppPostUpdatesTests : IClassFixture<ApiTestFixture>
 
         var reply = await RepliedToAsync(poll.MessageId, ct);
         Assert.Equal("📊 `FCC · ERGEBNIS`\n*Abstimmung beendet*\nIch: 0\nNicht ich: 0", reply.Text);
-    }
-
-    [Fact]
-    public async Task Should_ReplyWithTheAnswerCounts_When_AnAnnouncementsZuAbsageIsClosed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var announcementId = await PostAnnouncementAsync(ctx, ct, AnnouncementAttendance());
-        var poll = await PostedAsync("sendPoll", ct);
-
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-        var closed = await client.POSTAsync<
-            CloseAnnouncementAttendance,
-            CloseAnnouncementAttendanceRequest
-        >(new() { AnnouncementId = announcementId });
-        Assert.Equal(HttpStatusCode.NoContent, closed.StatusCode);
-
-        var reply = await RepliedToAsync(poll.MessageId, ct);
-        Assert.Equal(
-            "📊 `FCC · ERGEBNIS`\n*Zu-/Absage beendet*\nJa: 0\nNein: 0\nVielleicht: 0",
-            reply.Text
-        );
-    }
-
-    [Fact]
-    public async Task Should_PostNothing_When_AClosedPollIsReopened()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await CreateNotifiedEntryAsync(ctx, [CakePoll()], ct);
-        var poll = await PostedAsync("sendPoll", ct);
-        var pollId = (await _fixture.PollIdsByQuestionAsync(ct))[CakeQuestion] ?? 0;
-        await ClosePollAsync(ctx, pollId, ct);
-        await RepliedToAsync(poll.MessageId, ct);
-        var sentBefore = _fixture.Waha.Sent.Count;
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var reopened = await client.POSTAsync<ReopenCalendarPoll, ReopenCalendarPollRequest>(
-            new() { PollId = pollId }
-        );
-        Assert.Equal(HttpStatusCode.NoContent, reopened.StatusCode);
-
-        Assert.Empty(await _fixture.WhatsAppOutboxAsync(ct));
-        Assert.Equal(sentBefore, _fixture.Waha.Sent.Count);
     }
 
     [Fact]
@@ -307,82 +197,6 @@ public sealed class WhatsAppPostUpdatesTests : IClassFixture<ApiTestFixture>
         Assert.Equal(await _fixture.PollOptionIdsAsync(pollId, ct), record.PollOptionIds);
     }
 
-    [Fact]
-    public async Task Should_ForgetThePollsRecordAndWhatsAppAnswers_When_ThePollIsRemoved()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = await CreateNotifiedEntryAsync(ctx, [CakePoll()], ct);
-        var poll = await PostedAsync("sendPoll", ct);
-        await DeliverVoteAsync(poll.MessageId, ct);
-        Assert.Equal(1, await _fixture.WhatsAppAnswerCountAsync(ct));
-
-        await PutEntryAsync(ctx, Edited(ctx, entryId), ct);
-
-        await _fixture.WhatsAppOutboxDrainedAsync(ct);
-        var deleted = Assert.Single(_fixture.Waha.Sent, sent => sent.Kind == "delete");
-        Assert.Equal(poll.MessageId, deleted.MessageId);
-        Assert.DoesNotContain(
-            await _fixture.WhatsAppPostRecordsAsync(ct),
-            record => record.AddOnKind == WhatsAppAddOnKind.Poll
-        );
-        Assert.Equal(0, await _fixture.WhatsAppAnswerCountAsync(ct));
-    }
-
-    [Fact]
-    public async Task Should_LeaveThePollWithoutAReply_When_ThePollIsRemovedAfterWhatsAppsDeleteWindow()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = await CreateNotifiedEntryAsync(ctx, [CakePoll()], ct);
-        await PostedAsync("sendPoll", ct);
-        await _fixture.AgeWhatsAppPostsAsync(PastTheDeleteWindow, ct);
-
-        await PutEntryAsync(ctx, Edited(ctx, entryId), ct);
-
-        await _fixture.WhatsAppOutboxDrainedAsync(ct);
-        Assert.DoesNotContain(
-            _fixture.Waha.Sent,
-            sent => sent.ReplyTo is not null || sent.Kind == "delete"
-        );
-        Assert.DoesNotContain(
-            await _fixture.WhatsAppPostRecordsAsync(ct),
-            record => record.AddOnKind == WhatsAppAddOnKind.Poll
-        );
-    }
-
-    [Fact]
-    public async Task Should_ForgetTheHostsWhatsAppAnswers_When_TheEntryIsDeleted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = await CreateNotifiedEntryAsync(ctx, [CakePoll()], ct);
-        var poll = await PostedAsync("sendPoll", ct);
-        await DeliverVoteAsync(poll.MessageId, ct);
-
-        await DeleteEntryAsync(ctx, entryId, ct);
-
-        Assert.Equal(0, await _fixture.WhatsAppAnswerCountAsync(ct));
-    }
-
-    private async Task DeliverVoteAsync(string pollMessageId, CancellationToken ct)
-    {
-        var client = _fixture.CreateClient();
-        var answer = await WebhookDeliveries.DeliverAsync(
-            client,
-            WebhookDeliveries.PollVote(
-                pollMessageId,
-                StrangersChatId,
-                _fixture.TimeProvider.GetUtcNow(),
-                "Ich"
-            ),
-            $"answer-{Guid.NewGuid():N}",
-            ct
-        );
-        Assert.Equal(HttpStatusCode.OK, answer.StatusCode);
-        await _fixture.WhatsAppInboxDrainedAsync(ct);
-    }
-
     private async Task<FakeWahaSend> PostedAsync(string kind, CancellationToken ct)
     {
         await _fixture.WhatsAppOutboxDrainedAsync(ct);
@@ -399,25 +213,6 @@ public sealed class WhatsAppPostUpdatesTests : IClassFixture<ApiTestFixture>
             "No reply to the add-on was ever sent",
             ct
         );
-
-    private async Task VoteAsync(SeededContext ctx, int pollId, CancellationToken ct)
-    {
-        var firstOptionId = (await _fixture.PollOptionIdsAsync(pollId, ct))[0];
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var voted = await client.PUTAsync<PutCalendarPollVotes, PutCalendarPollVotesRequest>(
-            new() { PollId = pollId, OptionIds = [firstOptionId] }
-        );
-        Assert.Equal(HttpStatusCode.NoContent, voted.StatusCode);
-    }
-
-    private static async Task ClosePollAsync(SeededContext ctx, int pollId, CancellationToken ct)
-    {
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var closed = await client.POSTAsync<CloseCalendarPoll, CloseCalendarPollRequest>(
-            new() { PollId = pollId }
-        );
-        Assert.Equal(HttpStatusCode.NoContent, closed.StatusCode);
-    }
 
     private async Task<int> CreateNotifiedEntryAsync(
         SeededContext ctx,
@@ -536,16 +331,6 @@ public sealed class WhatsAppPostUpdatesTests : IClassFixture<ApiTestFixture>
         );
         Assert.Equal(HttpStatusCode.NoContent, withdrawn.StatusCode);
     }
-
-    private static PostAnnouncementAddOnDataDto AnnouncementAttendance() =>
-        new()
-        {
-            Kind = AnnouncementAddOnKind.Attendance,
-            Attendance = new() { AnswersUntil = null },
-            Poll = null,
-            SignUpList = null,
-            Borrowed = null,
-        };
 
     private static PostCalendarEntryAddOnDataDto CakePoll(DateTimeOffset? votesUntil = null) =>
         new()

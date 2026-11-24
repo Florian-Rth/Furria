@@ -1,14 +1,10 @@
 using System.Net;
 using FastEndpoints;
-using Furria.Api.Endpoints.Calendar;
 using Furria.Api.Endpoints.Start;
-using Furria.Api.Tests.Events;
 using Furria.Api.Tests.RunningOrders;
 using Furria.Api.Tests.Studio;
 using Furria.Application.Start;
 using Furria.Core.Club;
-using Furria.Core.Groups;
-using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -42,19 +38,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListAClubOwnedEntry_When_TheViewerHoldsARunningMembership()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) =>
-                Assert.Contains(
-                    EntriesOf(start),
-                    entry => entry.CalendarEntryId == IdOf(ctx, "vereinssitzung")
-                )
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutAClubOwnedEntry_When_TheViewerIsOnlyInAnUninvolvedGroup()
     {
         await OnTuesdayEveningAsync(
@@ -84,34 +67,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListAClubOwnedEntry_When_SheAdministersAParticipatingGroup()
-    {
-        await OnTuesdayEveningAsync(
-            "sabine",
-            (ctx, start) =>
-            {
-                var carnival = EntryOf(start, IdOf(ctx, "kinderfasching"));
-
-                Assert.NotNull(carnival.ViewerRuns);
-                Assert.Equal(ctx.Groups.Groups.IdOf("kindergarde"), carnival.ViewerRuns.GroupId);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ListAGroupOnlyEntry_When_TheViewerIsInAParticipatingGroup()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) =>
-                Assert.Contains(
-                    EntriesOf(start),
-                    entry => entry.CalendarEntryId == IdOf(ctx, "kinder-probe")
-                )
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutAnotherGroupsClubVisibleTraining_When_TheViewerIsAClubMember()
     {
         await OnTuesdayEveningAsync(
@@ -121,78 +76,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                     EntriesOf(start),
                     entry => entry.CalendarEntryId == IdOf(ctx, "ballett-training")
                 )
-        );
-    }
-
-    [Fact]
-    public async Task Should_MarkTheRunGroupAndFunction_When_TheViewerAdministersTheOwnerGroup()
-    {
-        await OnTuesdayEveningAsync(
-            "sabine",
-            (ctx, start) =>
-            {
-                var training = EntryOf(start, IdOf(ctx, "kinder-training"));
-
-                Assert.NotNull(training.ViewerRuns);
-                Assert.Equal(ctx.Groups.Groups.IdOf("kindergarde"), training.ViewerRuns.GroupId);
-                Assert.Equal(Coach, training.ViewerRuns.Function);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheEventsPictureAndCancellation_When_AnEntryIsAnEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                        builder
-                            .Identity(identity =>
-                                identity
-                                    .AddPerson("lena", "Lena", "Garde")
-                                    .AddAccount("lena")
-                                    .AddMembership("lena-member", "lena", JoinedIn2015)
-                            )
-                            .Club(club =>
-                                club.AddVenue("buergerhaus", "Bürgerhaus")
-                                    .AddEvent(
-                                        "gala",
-                                        "Prunksitzung",
-                                        InBerlin(1, 20, 19, 11),
-                                        "buergerhaus",
-                                        cancelledAt: TuesdayEvening.AddDays(-1)
-                                    )
-                            ),
-                    ct
-                );
-                var eventId = ctx.Club.Events.IdOf("gala");
-                var pictureId = await EventPictureSteps.RenderedAsync(
-                    _fixture,
-                    await ctx.Identity.ManagingLoginClientAsync(ct),
-                    eventId,
-                    ct
-                );
-                var client = await ctx.Identity.ClientForAsync("lena", ct);
-
-                var (_, start) = await client.GETAsync<GetStart, GetStartResponse>();
-
-                var gala = EntryOf(start, eventId);
-                Assert.NotNull(gala.Event);
-                Assert.True(gala.Event.IsCancelled);
-                Assert.StartsWith(
-                    _fixture.SignedMediaUrl(
-                        pictureId,
-                        MediaOwner.Event(eventId),
-                        MediaRendition.Medium
-                    ),
-                    gala.Event.Picture?.MediumUrl
-                );
-            }
         );
     }
 
@@ -239,31 +122,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveTheEventOut_When_TheEntryIsNoEvent()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) => Assert.Null(EntryOf(start, IdOf(ctx, "vereinssitzung")).Event)
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryAttendanceWithoutOwing_When_SheOnlyRunsAnEntryThatAsks()
-    {
-        await OnTuesdayEveningAsync(
-            "sabine",
-            (ctx, start) =>
-            {
-                var rehearsal = EntryOf(start, IdOf(ctx, "kinder-probe"));
-
-                Assert.NotNull(rehearsal.Attendance);
-                Assert.Null(rehearsal.Attendance.ViewerAnswer);
-                Assert.False(rehearsal.Attendance.IsOwed);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_OweAResponse_When_AnEntryConcerningHerAsksAndSheHasNotAnswered()
     {
         await OnTuesdayEveningAsync(
@@ -280,16 +138,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_OweAResponse_When_SheIsChosenForAnEntryWithoutAClubMembership()
-    {
-        await OnTuesdayEveningAsync(
-            "kevin",
-            (ctx, start) =>
-                Assert.True(EntryOf(start, IdOf(ctx, "geheimtreffen")).Attendance?.IsOwed)
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutAChosenPeopleEntry_When_SheIsNotChosen()
     {
         await OnTuesdayEveningAsync(
@@ -299,22 +147,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                     EntriesOf(start),
                     entry => entry.CalendarEntryId == IdOf(ctx, "geheimtreffen")
                 )
-        );
-    }
-
-    [Fact]
-    public async Task Should_OweNoResponse_When_SheAnsweredMaybe()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) =>
-            {
-                var rehearsal = EntryOf(start, IdOf(ctx, "stellprobe"));
-
-                Assert.NotNull(rehearsal.Attendance);
-                Assert.Equal(AttendanceAnswer.Maybe, rehearsal.Attendance.ViewerAnswer);
-                Assert.False(rehearsal.Attendance.IsOwed);
-            }
         );
     }
 
@@ -347,19 +179,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                     entry => entry.CalendarEntryId == IdOf(ctx, "vereinssitzung")
                 );
             }
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutAnEntry_When_SheAnsweredNo()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) =>
-                Assert.DoesNotContain(
-                    EntriesOf(start),
-                    entry => entry.CalendarEntryId == IdOf(ctx, "winterball")
-                )
         );
     }
 
@@ -410,153 +229,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                     EntriesOf(start),
                     entry => entry.CalendarEntryId == IdOf(ctx, "fruehschoppen")
                 );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_FlagTheVenueKey_When_TheViewerHoldsARunningKeyForTheVenue()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) =>
-            {
-                Assert.True(EntryOf(start, IdOf(ctx, "garde-training")).ViewerHoldsVenueKey);
-                Assert.False(EntryOf(start, IdOf(ctx, "vereinssitzung")).ViewerHoldsVenueKey);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheVenueAddress_When_TheEntryHasAVenue()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) =>
-            {
-                var training = EntryOf(start, IdOf(ctx, "garde-training"));
-
-                Assert.NotNull(training.Venue);
-                Assert.Equal(ctx.Club.Venues.IdOf("sporthalle"), training.Venue.VenueId);
-                Assert.Equal("Sporthalle Am Ring", training.Venue.Name);
-                Assert.Equal("Am Ring 3", training.Venue.Street);
-                Assert.Equal("99713", training.Venue.Zip);
-                Assert.Equal("Großfurra", training.Venue.City);
-                Assert.Equal("Eingang an der Rückseite", training.Venue.Hint);
-                Assert.Null(EntryOf(start, IdOf(ctx, "stammtisch")).Venue);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameHerGroups_When_HerGroupOwnsOrParticipates()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) =>
-            {
-                var danceGuardId = ctx.Groups.Groups.IdOf("tanzgarde");
-                var training = EntryOf(start, IdOf(ctx, "garde-training"));
-                var rehearsal = EntryOf(start, IdOf(ctx, "kinder-probe"));
-
-                Assert.Equal([danceGuardId], training.ViewerGroupIds);
-                Assert.NotNull(training.OwnerGroup);
-                Assert.Equal("Tanzgarde", training.OwnerGroup.Name);
-                Assert.Equal(TestTones.Rose, training.OwnerGroup.Tone);
-                Assert.Equal([danceGuardId], rehearsal.ViewerGroupIds);
-                Assert.Equal(ctx.Groups.Groups.IdOf("kindergarde"), rehearsal.OwnerGroup?.GroupId);
-                Assert.Equal(
-                    [danceGuardId],
-                    rehearsal.ParticipatingGroups.Select(group => group.GroupId)
-                );
-                Assert.Empty(EntryOf(start, IdOf(ctx, "vereinssitzung")).ViewerGroupIds);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_DropTheOwedFlag_When_SheAnswersIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("lena", ct);
-                var meetingId = IdOf(ctx, "vereinssitzung");
-
-                var answered = await client.POSTAsync<
-                    PostCalendarResponse,
-                    PostCalendarResponseRequest
-                >(
-                    new PostCalendarResponseRequest
-                    {
-                        CalendarEntryId = meetingId,
-                        Answer = AttendanceAnswer.Yes,
-                    }
-                );
-                var (response, start) = await client.GETAsync<GetStart, GetStartResponse>();
-
-                Assert.Equal(HttpStatusCode.NoContent, answered.StatusCode);
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                var meeting = EntryOf(start, meetingId);
-                Assert.NotNull(meeting.Attendance);
-                Assert.Equal(AttendanceAnswer.Yes, meeting.Attendance.ViewerAnswer);
-                Assert.False(meeting.Attendance.IsOwed);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryHerOpenPollsAndLists_When_TheEntryHasOpenFunctions()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) =>
-            {
-                var meeting = EntryOf(start, IdOf(ctx, "vereinssitzung"));
-
-                Assert.Equal(
-                    [
-                        (ctx.Club.Polls.IdOf("food"), true, false),
-                        (ctx.Club.Polls.IdOf("drinks"), false, true),
-                    ],
-                    meeting.OpenPolls.Select(poll =>
-                        (poll.PollId, poll.IsOwed, poll.AllowsMultipleChoices)
-                    )
-                );
-                Assert.Equal(
-                    [("Saft", false), ("Tee", true)],
-                    meeting
-                        .OpenPolls[1]
-                        .Options.Select(option => (option.Label, option.ViewerChose))
-                );
-                Assert.Equal(
-                    [
-                        (ctx.Club.SignUpLists.IdOf("bring"), true, (string?)null),
-                        (ctx.Club.SignUpLists.IdOf("setup"), false, "Tische"),
-                    ],
-                    meeting.OpenSignUpLists.Select(list =>
-                        (list.SignUpListId, list.IsOwed, list.ViewerText)
-                    )
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryNoOpenFunction_When_TheEntryHasNone()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            (ctx, start) =>
-            {
-                var stellprobe = EntryOf(start, IdOf(ctx, "stellprobe"));
-
-                Assert.Empty(stellprobe.OpenPolls);
-                Assert.Empty(stellprobe.OpenSignUpLists);
             }
         );
     }

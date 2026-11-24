@@ -6,7 +6,6 @@ import type { CastPerson } from '@/features/running-order/schemas';
 import {
   EMPTY_APPEARANCE,
   eveningCastOf,
-  eveningChangesOf,
   eveningChoreographyStateOf,
   eveningSavedOf,
   eveningStudioOf,
@@ -92,25 +91,10 @@ describe('eveningStudioOf', () => {
       shown.choreography?.version,
     ]).toEqual([[9, null], 2]);
   });
-
-  it('keeps the session outside an evening', () => {
-    const studio = studioWith(null);
-
-    expect(eveningStudioOf(studio, studio, null, [])).toBe(studio);
-  });
-});
-
-describe('eveningSavedOf without an appearance', () => {
-  it('leaves an evening the act has not joined alone when nothing differs', () => {
-    const studio = studioWith(null);
-
-    expect(eveningSavedOf(studio, 5, eveningViewOf(studio, 5), false)).toBe(studio);
-  });
 });
 
 describe('eveningChoreographyStateOf', () => {
   it.each([
-    [null, 'session'],
     [4, 'own'],
     [3, 'behind'],
   ] as const)('reads a copy made from version %s as %s', (copiedFrom, state) => {
@@ -121,18 +105,6 @@ describe('eveningChoreographyStateOf', () => {
     };
 
     expect(eveningChoreographyStateOf(appearance, { version: 4, tracks: [] })).toBe(state);
-  });
-});
-
-describe('eveningChangesOf', () => {
-  it('names every kind of difference the evening holds', () => {
-    expect(
-      eveningChangesOf({
-        ...EMPTY_APPEARANCE,
-        added: [person(9)],
-        choreography: { version: 1, copiedFromVersion: null, tracks: [] },
-      }),
-    ).toEqual(['cast', 'choreography']);
   });
 });
 
@@ -179,34 +151,12 @@ describe('eveningSavedOf', () => {
       after.evenings[0]?.appearance?.choreography,
     ]).toEqual([[null, 7], null]);
   });
-
-  it('carries the saved version onto an existing copy', () => {
-    const studio = studioWith({
-      ...EMPTY_APPEARANCE,
-      choreography: { version: 2, copiedFromVersion: 4, tracks: [] },
-    });
-
-    const after = eveningSavedOf(
-      studio,
-      5,
-      saved(studio, { choreography: { version: 3, tracks: [] } }),
-      true,
-    );
-
-    expect(after.evenings[0]?.appearance?.choreography).toEqual({
-      version: 3,
-      copiedFromVersion: 4,
-      tracks: [],
-    });
-  });
 });
 
 describe('withEveningDancer', () => {
   it.each([
     [7, false, [7], []],
-    [7, true, [], []],
     [9, true, [], [9]],
-    [9, false, [], []],
   ] as const)(
     'marks person %s dancing=%s as removed %j and added %j',
     (id, dances, removed, added) => {

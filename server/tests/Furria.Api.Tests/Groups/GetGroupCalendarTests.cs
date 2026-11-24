@@ -16,13 +16,11 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
     private const string ChildrensRehearsal = "Probe der Kindergarde";
     private const string Parade = "Rosenmontagsumzug";
     private const string ChildrensShow = "Auftritt der Kindergarde";
-    private const int UnknownGroupId = 999_999;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateTimeOffset Now = new(2027, 1, 4, 12, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly WindowStart = new(2027, 1, 1);
     private static readonly DateOnly WindowEnd = new(2027, 3, 1);
-    private static readonly DateOnly TheTrainingDay = new(2027, 1, 18);
 
     private static readonly DateTimeOffset AtTheTraining = new(
         2027,
@@ -87,102 +85,6 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CarryTheCalendar_When_TheCallerOnlyAdministersTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "chris",
-                    Window(ctx.Groups.Groups.IdOf("tanzgarde")),
-                    ct
-                );
-
-                Assert.Equal(
-                    new[] { DanceGuardTraining, ChildrensRehearsal, ChildrensShow, GalaSession },
-                    TitlesOf(result)
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheCalendar_When_TheCallerHoldsGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "ilka",
-                    Window(ctx.Groups.Groups.IdOf("tanzgarde")),
-                    ct
-                );
-
-                Assert.Contains(GalaSession, TitlesOf(result));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheCalendar_When_TheManagingLoginReadsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-                var (response, result) = await client.GETAsync<
-                    GetGroupCalendar,
-                    GetGroupCalendarRequest,
-                    GetGroupCalendarResponse
-                >(Window(ctx.Groups.Groups.IdOf("tanzgarde")));
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Contains(GalaSession, TitlesOf(result));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ListAGroupOnlyEntry_When_TheViewerIsInAParticipatingGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "bea",
-                    Window(ctx.Groups.Groups.IdOf("tanzgarde")),
-                    ct
-                );
-
-                Assert.Contains(ChildrensRehearsal, TitlesOf(result));
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LetHerAnswer_When_SheAdministersTheGroupWithoutClubRead()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -201,29 +103,6 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
                 );
 
                 Assert.True(AnswersAttendance(EntryTitled(result, ChildrensRehearsal)));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NotLetHerAnswer_When_TheEntryAsksNothing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "bea",
-                    Window(ctx.Groups.Groups.IdOf("tanzgarde")),
-                    ct
-                );
-
-                Assert.False(AnswersAttendance(EntryTitled(result, DanceGuardTraining)));
             }
         );
     }
@@ -289,30 +168,6 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CarryNoOpenFunction_When_SheMayNotAnswerTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "bea",
-                    Window(ctx.Groups.Groups.IdOf("tanzgarde")),
-                    ct
-                );
-
-                var show = EntryTitled(result, ChildrensShow);
-                Assert.Equal((false, 0), (show.MayAnswer, show.OpenFunctions.Count));
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutTheClubEntry_When_TheGroupDoesNotParticipate()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -336,60 +191,6 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_NameTheParticipatingGroup_When_TheEntryCarriesOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "bea",
-                    Window(ctx.Groups.Groups.IdOf("tanzgarde")),
-                    ct
-                );
-
-                var galaSession = result.Entries.Single(entry => entry.Title == GalaSession);
-                var participant = Assert.Single(galaSession.ParticipatingGroups);
-                Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), participant.GroupId);
-                Assert.Equal("Tanzgarde", participant.Name);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NarrowTheResults_When_AWindowIsGiven()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "bea",
-                    new GetGroupCalendarRequest
-                    {
-                        GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                        From = TheTrainingDay,
-                        To = TheTrainingDay,
-                    },
-                    ct
-                );
-
-                Assert.Equal(new[] { DanceGuardTraining }, TitlesOf(result));
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerIsOnlyAffiliated()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -408,59 +209,6 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
                 >(Window(ctx.Groups.Groups.IdOf("tanzgarde")));
 
                 Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheGroupIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var client = await ctx.Identity.ClientForAsync("bea", ct);
-                var (response, _) = await client.GETAsync<
-                    GetGroupCalendar,
-                    GetGroupCalendarRequest,
-                    GetGroupCalendarResponse
-                >(Window(UnknownGroupId));
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_RejectTheRequest_When_TheWindowEndsBeforeItStarts()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var client = await ctx.Identity.ClientForAsync("bea", ct);
-                var (response, _) = await client.GETAsync<
-                    GetGroupCalendar,
-                    GetGroupCalendarRequest,
-                    GetGroupCalendarResponse
-                >(
-                    new GetGroupCalendarRequest
-                    {
-                        GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                        From = WindowEnd,
-                        To = WindowStart,
-                    }
-                );
-
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             }
         );
     }

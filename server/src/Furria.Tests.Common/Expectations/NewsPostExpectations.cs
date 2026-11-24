@@ -29,16 +29,6 @@ public sealed class NewsPostExpectations
             }
         );
 
-    public Expected ToBeTiedTo(int? eventId, int? albumId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var post = await SingleAsync(dbContext, ct);
-                Assert.Equal(eventId, post.EventId);
-                Assert.Equal(albumId, post.AlbumId);
-            }
-        );
-
     public Expected ToHavePendingChanges(string title, string text) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -82,22 +72,6 @@ public sealed class NewsPostExpectations
                 Assert.Equal(personId, (await SingleAsync(dbContext, ct)).AuthorPersonId)
         );
 
-    public Expected ToBeLastSavedBy(int? personId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(personId, (await SingleAsync(dbContext, ct)).LastSavedByPersonId)
-        );
-
-    public Expected ToBeADraft() =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var post = await SingleAsync(dbContext, ct);
-                Assert.Null(post.PublishedAt);
-                Assert.Null(post.Slug);
-            }
-        );
-
     public Expected ToBePublished(DateTimeOffset publishedAt, string slug) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -107,12 +81,6 @@ public sealed class NewsPostExpectations
                 Assert.Equal(slug, post.Slug);
                 Assert.Null(post.WithdrawnAt);
             }
-        );
-
-    public Expected ToBeWithdrawnAt(DateTimeOffset withdrawnAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(withdrawnAt, (await SingleAsync(dbContext, ct)).WithdrawnAt)
         );
 
     public Expected ToMention(params Mention[] mentions) =>
@@ -133,12 +101,6 @@ public sealed class NewsPostExpectations
                     stored.OrderBy(mention => mention.Kind).ThenBy(mention => mention.TargetId)
                 );
             }
-        );
-
-    public Expected ToNotExist() =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.False(await dbContext.NewsPosts.AnyAsync(row => row.Id == _newsPostId, ct))
         );
 
     private Task<NewsPost> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

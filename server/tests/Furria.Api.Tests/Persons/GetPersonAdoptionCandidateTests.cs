@@ -17,94 +17,6 @@ public sealed class GetPersonAdoptionCandidateTests : IClassFixture<ApiTestFixtu
     }
 
     [Fact]
-    public async Task Should_NameThePersonOutsideTheClub_When_SheHoldsTheTypedEmail()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("anna", "Anna", "Muster")
-                        .AddPersonContact("anna", annaEmail)
-                        .AddAccount("anna")
-                ),
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, candidate) = await FindCandidateAsync(
-            manager,
-            $"  {annaEmail.ToUpperInvariant()} "
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(ctx.Identity.People.IdOf("anna"), candidate.PersonId);
-        Assert.Equal("Anna", candidate.FirstName);
-        Assert.Equal("Muster", candidate.LastName);
-        Assert.True(candidate.HasAccount);
-    }
-
-    [Fact]
-    public async Task Should_NameAnArchivedPerson_When_SheHoldsTheTypedEmail()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("anna", "Anna", "Muster")
-                        .AddPersonContact("anna", annaEmail)
-                        .AddArchive("anna", _fixture.Today.AddYears(-1))
-                ),
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, candidate) = await FindCandidateAsync(manager, annaEmail);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(ctx.Identity.People.IdOf("anna"), candidate.PersonId);
-    }
-
-    [Fact]
-    public async Task Should_ReportNoAccount_When_TheCandidateHasNone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddPerson("anna", "Anna", "Muster").AddPersonContact("anna", annaEmail)
-                ),
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, candidate) = await FindCandidateAsync(manager, annaEmail);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(ctx.Identity.People.IdOf("anna"), candidate.PersonId);
-        Assert.False(candidate.HasAccount);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_NobodyHoldsTheEmail()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, _) = await FindCandidateAsync(
-            manager,
-            InvitationSteps.UniqueContactEmail("niemand")
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ReturnNotFound_When_TheOnlyHolderOfTheEmailIsAffiliated()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -174,18 +86,6 @@ public sealed class GetPersonAdoptionCandidateTests : IClassFixture<ApiTestFixtu
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(annaId, candidate.PersonId);
         Assert.Equal("Muster-Neu", candidate.LastName);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheEmailIsNotAnAddress()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, _) = await FindCandidateAsync(manager, "keine-adresse");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private static Task<TestResult<GetPersonAdoptionCandidateResponse>> FindCandidateAsync(

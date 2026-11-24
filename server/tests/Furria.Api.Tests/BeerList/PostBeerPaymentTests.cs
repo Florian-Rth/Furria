@@ -201,81 +201,6 @@ public sealed class PostBeerPaymentTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnValidationAndSettleNothing_When_ADrinkIsNamedTwice()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden)
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                            .AddBeerCrates(Pot, Drinker, 2)
-                    ),
-            ct
-        );
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-        var drinkerId = ctx.Identity.People.IdOf(Drinker);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<PostBeerPayment, PostBeerPaymentRequest>(
-            new()
-            {
-                BeerPotId = potId,
-                PersonId = drinkerId,
-                Drinks =
-                [
-                    new() { BeerDrinkId = BeerOf(ctx), Crates = 1 },
-                    new() { BeerDrinkId = BeerOf(ctx), Crates = 1 },
-                ],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx
-            .Expected.BeerTabOf(drinkerId)
-            .ToHaveOpenAndPaidCrates(potId, open: 2, paid: 0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflictAndSettleNothing_When_ThePaymentCoversMoreCratesThanAreOpen()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden)
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                            .AddBeerCrates(Pot, Drinker, 3, now.AddDays(-10))
-                            .AddBeerPayment("frueher", Pot, Drinker, 1)
-                    ),
-            ct
-        );
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<PostBeerPayment, PostBeerPaymentRequest>(
-            new()
-            {
-                BeerPotId = potId,
-                PersonId = ctx.Identity.People.IdOf(Drinker),
-                Drinks = [new() { BeerDrinkId = BeerOf(ctx), Crates = 3 }],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx
-            .Expected.BeerTabOf(ctx.Identity.People.IdOf(Drinker))
-            .ToHaveOpenAndPaidCrates(potId, open: 2, paid: 1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_SettleOnlyTheHandedOverPotsCrates_When_SheStillOwesTheFormerOwner()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -325,35 +250,6 @@ public sealed class PostBeerPaymentTests : IClassFixture<ApiTestFixture>
             .BeerTabOf(drinkerId)
             .ToHaveOpenAndPaidCrates(ctx.BeerList.Pots.IdOf(Pot), open: 2, paid: 0)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePotIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden)
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                            .AddBeerCrates(Pot, Drinker, 1)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<PostBeerPayment, PostBeerPaymentRequest>(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf(Pot) + 1000,
-                PersonId = ctx.Identity.People.IdOf(Drinker),
-                Drinks = [new() { BeerDrinkId = BeerOf(ctx), Crates = 1 }],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]

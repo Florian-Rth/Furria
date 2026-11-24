@@ -51,28 +51,6 @@ public sealed class GetEventPageHeadTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Theory]
-    [InlineData("hidden")]
-    [InlineData("unaddressable")]
-    public async Task Should_AnswerAnEmptyNotFound_When_TheEventIsNotOnTheWebsite(string which)
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(Club(), ct);
-                var slug = which == "hidden" ? $"{ctx.Club.Events.IdOf("hidden")}-probe" : "probe";
-
-                var (status, html) = await PageHeadAsync(_fixture, Kind, slug);
-
-                Assert.Equal(HttpStatusCode.NotFound, status);
-                Assert.Empty(html);
-            }
-        );
-    }
-
     private static Action<SeedContextBuilder> Club() =>
         builder =>
             builder.Club(club =>

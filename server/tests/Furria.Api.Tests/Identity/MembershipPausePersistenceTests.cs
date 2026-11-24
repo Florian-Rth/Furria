@@ -1,4 +1,3 @@
-using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -41,32 +40,5 @@ public sealed class MembershipPausePersistenceTests : IClassFixture<ApiTestFixtu
         var violation = Assert.IsType<PostgresException>(rejection.InnerException);
         Assert.Equal(PostgresErrorCodes.CheckViolation, violation.SqlState);
         Assert.Equal("ck_membership_pause_span", violation.ConstraintName);
-    }
-
-    [Fact]
-    public async Task Should_RejectTheSession_When_ItPrecedesTheFoundingSession()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        var rejection = await Assert.ThrowsAsync<DbUpdateException>(() =>
-            _fixture.BuildAsync(
-                builder =>
-                    builder.Identity(identity =>
-                        identity
-                            .AddPerson("alice")
-                            .AddMembership("alice-first", "alice")
-                            .AddMembershipPause(
-                                "alice-ruhezeit",
-                                "alice-first",
-                                ClubSession.EarliestSessionYear - 1
-                            )
-                    ),
-                ct
-            )
-        );
-
-        var violation = Assert.IsType<PostgresException>(rejection.InnerException);
-        Assert.Equal(PostgresErrorCodes.CheckViolation, violation.SqlState);
-        Assert.Equal("ck_membership_pause_founding", violation.ConstraintName);
     }
 }

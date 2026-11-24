@@ -6,11 +6,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Furria.Tests.Analyzers;
 
-// MET004 — a test class that consumes the integration host (injects `ApiTestFixture` through its
-// constructor) must own it as `IClassFixture<ApiTestFixture>` and join no `[Collection]`: every
-// class gets its own host and its own database cloned from the migrated template, so classes run
-// in parallel. A shared collection would serialize its members onto one host again. Scoping the
-// rule to ApiTestFixture injection keeps pure unit-test projects out of scope (no false positives).
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class IntegrationClassFixtureAnalyzer : DiagnosticAnalyzer
 {

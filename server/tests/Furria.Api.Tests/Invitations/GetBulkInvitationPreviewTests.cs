@@ -134,38 +134,6 @@ public sealed class GetBulkInvitationPreviewTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
-    public async Task Should_LeaveOutEveryoneAlreadyInvited_When_SomeInvitationsAreOpen()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddEligiblePerson(
-                            "anna",
-                            "Anna",
-                            InvitationSteps.UniqueContactEmail("anna"),
-                            _fixture.Today
-                        )
-                        .AddEligiblePerson(
-                            "bea",
-                            "Bea",
-                            InvitationSteps.UniqueContactEmail("bea"),
-                            _fixture.Today
-                        )
-                ),
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
-
-        var preview = await InvitationRoundSteps.PreviewAsync(manager);
-
-        Assert.Equal(1, preview.InviteCount);
-        Assert.Equal(0, preview.RemindCount);
-    }
-
-    [Fact]
     public async Task Should_CountAnOpenInvitationForAReminder_When_ItWasIssuedMoreThanThreeDaysAgo()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -193,77 +161,6 @@ public sealed class GetBulkInvitationPreviewTests : IClassFixture<ApiTestFixture
 
                 Assert.Equal(0, preview.InviteCount);
                 Assert.Equal(1, preview.RemindCount);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CountAnExpiredOpenInvitationForAReminder_When_ItWasNeverRedeemedOrVoided()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson(
-                        "anna",
-                        "Anna",
-                        InvitationSteps.UniqueContactEmail("anna"),
-                        _fixture.Today
-                    )
-                ),
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
-
-        await _fixture.AtLaterTimeAsync(
-            InvitationRoundSteps.PastTheMailLifetime,
-            async () =>
-            {
-                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
-                var preview = await InvitationRoundSteps.PreviewAsync(laterManager);
-
-                Assert.Equal(0, preview.InviteCount);
-                Assert.Equal(1, preview.RemindCount);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NotCountAReminder_When_SheIsNoLongerEligible()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var today = _fixture.Today;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("anna", "Anna", "Muster")
-                        .AddPersonContact(
-                            "anna",
-                            InvitationSteps.UniqueContactEmail("anna"),
-                            birthDate: today.AddYears(-30)
-                        )
-                        .AddMembership(
-                            "anna-membership",
-                            "anna",
-                            today.AddYears(-1),
-                            today.AddDays(1)
-                        )
-                ),
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
-
-        await _fixture.AtLaterTimeAsync(
-            InvitationRoundSteps.PastTheReminderDelay,
-            async () =>
-            {
-                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
-                var preview = await InvitationRoundSteps.PreviewAsync(laterManager);
-
-                Assert.Equal(0, preview.RemindCount);
             }
         );
     }

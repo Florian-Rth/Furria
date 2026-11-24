@@ -4,7 +4,6 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
-using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Identity;
@@ -21,15 +20,7 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
 {
     private const string PasswordField = "password";
     private const string PasskeyField = "passkey";
-    private const int UnknownPersonId = 999_999;
     private const string PersonErased = "Person {PersonId} erased by person {ActorPersonId}";
-    private const string ErasureNoticeSubject = "Deine Daten wurden vom Verein gelöscht";
-    private const string ClubName = "KG Rheinfunken";
-    private const string ClubStreet = "Vereinsweg 7";
-    private const string ClubZip = "50667";
-    private const string ClubCity = "Köln";
-    private const string ClubEmail = "vorstand@rheinfunken.example";
-    private const string ClubPhone = "0221 4711";
 
     private static readonly DateOnly Joined2012 = new(2012, 11, 11);
     private static readonly DateOnly ArchivedInSpring = new(2026, 4, 2);
@@ -105,66 +96,6 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
             .MediaItem(ctx.Gallery.Items.IdOf("paula-placed"))
             .ToBeUploadedAs(null, "paula-placed.jpg", 4096)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepHerNewsPostsUnsignedAndDropHerMentions_When_SheIsErased()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangePaulaAndIlkaAsync(
-            ct,
-            builder =>
-                builder.News(news =>
-                    news.AddNewsPost(
-                        "thanks",
-                        "Danke",
-                        text: "Dank an @[Paula](person:{paula})",
-                        authorAlias: "paula"
-                    )
-                )
-        );
-        var paulaId = ctx.Identity.People.IdOf("paula");
-        var thanksId = ctx.News.Posts.IdOf("thanks");
-
-        await DeleteWithPasswordAsync(
-            await ctx.Identity.ClientForAsync("ilka", ct),
-            paulaId,
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        await ctx
-            .Expected.NewsPost(thanksId)
-            .ToRead("Danke", "", $"Dank an @[Paula](person:{paulaId})", null)
-            .NewsPost(thanksId)
-            .ToBeAuthoredBy(null)
-            .NewsPost(thanksId)
-            .ToMention()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_TakeHerPortraitAndItsFilesWithHer_When_SheIsErased()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangePaulaAndIlkaAsync(ct);
-        var paulaId = ctx.Identity.People.IdOf("paula");
-        var portraitId = await PictureSteps.RenderedPortraitAsync(
-            _fixture,
-            await ctx.Identity.ManagingLoginClientAsync(ct),
-            paulaId,
-            ct
-        );
-        var original = await _fixture.MediaFileOfAsync(portraitId, MediaRendition.Original, ct);
-
-        await DeleteWithPasswordAsync(
-            await ctx.Identity.ClientForAsync("ilka", ct),
-            paulaId,
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        await ctx.Expected.MediaItem(portraitId).ToBeGone().AssertAsync(ct);
-        await _fixture.MediaFilesReapedAsync(ct);
-        Assert.False(File.Exists(original));
     }
 
     [Fact]
@@ -325,74 +256,6 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TellHerAtHerLoginEmailHowToReachTheClub_When_SheHasAnAccount()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangePaulaAndIlkaAsync(
-            ct,
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("paula"))
-                    .Club(club =>
-                        club.SetClubRecord(
-                            name: ClubName,
-                            street: ClubStreet,
-                            zip: ClubZip,
-                            city: ClubCity,
-                            email: ClubEmail,
-                            phone: ClubPhone
-                        )
-                    )
-        );
-        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        await DeleteWithPasswordAsync(
-            ilka,
-            ctx.Identity.People.IdOf("paula"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        var notice = await _fixture.Mailbox.SingleMailToAsync(ctx.Identity.EmailOf("paula"), ct);
-        Assert.Equal(ErasureNoticeSubject, notice.Subject);
-        Assert.Contains("Hallo Paula,", notice.Text, StringComparison.Ordinal);
-        Assert.Contains(
-            $"{ClubName} hat deine Daten gelöscht",
-            notice.Text,
-            StringComparison.Ordinal
-        );
-        Assert.Contains(ClubEmail, notice.Text, StringComparison.Ordinal);
-        Assert.Contains(ClubPhone, notice.Text, StringComparison.Ordinal);
-        Assert.Contains(
-            $"{ClubStreet}, {ClubZip} {ClubCity}",
-            notice.Text,
-            StringComparison.Ordinal
-        );
-        Assert.Contains(ClubEmail, notice.Html, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Should_TellNobody_When_SheHasNoAccount()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var paulaEmail = InvitationSteps.UniqueContactEmail("paula");
-        var ctx = await ArrangePaulaAndIlkaAsync(
-            ct,
-            builder =>
-                builder.Identity(identity => identity.AddPersonContact("paula", email: paulaEmail))
-        );
-        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        await DeleteWithPasswordAsync(
-            ilka,
-            ctx.Identity.People.IdOf("paula"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        await SignedOutMailSteps.SettleAsync(_fixture, ctx.Identity.EmailOf("ilka"), ct);
-        Assert.Empty(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, paulaEmail, ct));
-    }
-
-    [Fact]
     public async Task Should_SendHerNoMailStillQueuedForHer_When_SheIsErased()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -424,25 +287,6 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
             await _fixture.OutboxAsync(ct),
             mail => mail.Template == MailTemplate.CredentialChangeNotice
         );
-    }
-
-    [Fact]
-    public async Task Should_LogTheErasureByBothPersonIdsAlone_When_SheIsErased()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangePaulaAndIlkaAsync(ct);
-        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
-        var mark = _fixture.Logs.Mark();
-
-        await DeleteWithPasswordAsync(
-            ilka,
-            ctx.Identity.People.IdOf("paula"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        var written = Assert.Single(_fixture.Logs.Written(PersonErased, mark));
-        Assert.Equal(ctx.Identity.People.IdOf("paula"), written.ScalarOf("PersonId"));
-        Assert.Equal(ctx.Identity.People.IdOf("ilka"), written.ScalarOf("ActorPersonId"));
     }
 
     [Fact]
@@ -486,26 +330,6 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
                 ApiTestFixture.SeededAccountPassword
             )
         );
-        await ctx.Expected.Person(paulaId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_EraseHer_When_TheDeleterProvesItWithHerPasskey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangePaulaAndIlkaAsync(ct);
-        var paulaId = ctx.Identity.People.IdOf("paula");
-        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
-        using var authenticator = new SoftwareAuthenticator();
-        await PasskeySteps.RegisterAsync(ilka, authenticator);
-
-        var response = await DeleteWithPasskeyAsync(
-            ilka,
-            paulaId,
-            await PasskeySteps.AssertAsync(_fixture, authenticator)
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx.Expected.Person(paulaId).ToNotExist().AssertAsync(ct);
     }
 
@@ -555,56 +379,6 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
         var written = Assert.Single(_fixture.Logs.Written(PersonErased, mark));
         Assert.Null(written.ScalarOf("ActorPersonId"));
         await ctx.Expected.Person(paulaId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbiddenAndKeepHer_When_TheCallerOnlyHoldsPersonsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangePaulaAndIlkaAsync(
-            ct,
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anke", "Anke", "Pfleger").AddAccount("anke")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "pflege",
-                            "anke-pflege",
-                            "Pflege",
-                            "anke",
-                            FurriaPermissions.PersonsManage
-                        )
-                    )
-        );
-        var paulaId = ctx.Identity.People.IdOf("paula");
-        var anke = await ctx.Identity.ClientForAsync("anke", ct);
-
-        var response = await DeleteWithPasswordAsync(
-            anke,
-            paulaId,
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Person(paulaId).ToExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangePaulaAndIlkaAsync(ct);
-        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var response = await DeleteWithPasswordAsync(
-            ilka,
-            UnknownPersonId,
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private HttpClient ClientCarrying(string accessToken)

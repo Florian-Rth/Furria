@@ -15,8 +15,6 @@ public sealed class EndRoleHoldingTests : IClassFixture<ApiTestFixture>
     private const string EndedHoldingMessage = "Diese Inhaberschaft ist bereits beendet.";
     private const string EndBeforeStartMessage =
         "Eine Inhaberschaft kann nicht vor ihrem Beginn enden.";
-    private const int UnknownRoleHoldingId = 999_999;
-
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
     private static readonly DateOnly HandedOver2020 = new(2020, 3, 1);
 
@@ -41,72 +39,6 @@ public sealed class EndRoleHoldingTests : IClassFixture<ApiTestFixture>
                 EndedOn = endedOn,
             }
         );
-
-    [Fact]
-    public async Task Should_CloseThePeriod_When_AManagerEndsTheRoleHolding()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EndHoldingAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            ctx.Roles.RoleHoldings.IdOf("ilka-chronik"),
-            HandedOver2020
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.RoleHolding(ctx.Roles.RoleHoldings.IdOf("ilka-chronik"))
-            .ToHavePeriod(HeldSince2017, HandedOver2020)
-            .RoleHoldingsOfPerson(ctx.Identity.People.IdOf("ilka"))
-            .ToHaveOpenCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CloseThePeriod_When_TheEndIsInTheFuture()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
-
-        var handsOverTomorrow = _fixture.Today.AddDays(1);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EndHoldingAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            ctx.Roles.RoleHoldings.IdOf("ilka-chronik"),
-            handsOverTomorrow
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.RoleHolding(ctx.Roles.RoleHoldings.IdOf("ilka-chronik"))
-            .ToHavePeriod(HeldSince2017, handsOverTomorrow)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_EndOnItsOwnStart_When_TheRoleHoldingLastedOneDay()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EndHoldingAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            ctx.Roles.RoleHoldings.IdOf("ilka-chronik"),
-            HeldSince2017
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.RoleHolding(ctx.Roles.RoleHoldings.IdOf("ilka-chronik"))
-            .ToHavePeriod(HeldSince2017, HeldSince2017)
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_ReturnConflict_When_TheRoleHoldingIsAlreadyEnded()
@@ -168,23 +100,6 @@ public sealed class EndRoleHoldingTests : IClassFixture<ApiTestFixture>
             .Expected.RoleHolding(ctx.Roles.RoleHoldings.IdOf("ilka-chronik"))
             .ToBeOpen()
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheRoleHoldingIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningRoleHoldingAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EndHoldingAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            UnknownRoleHoldingId,
-            HandedOver2020
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]

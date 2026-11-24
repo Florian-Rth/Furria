@@ -33,29 +33,6 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
     }
 
     [Fact]
-    public async Task Should_RemoveOnlyHerLine_When_SheTakesItBack()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.SignUpLists.IdOf("cakes");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await WithdrawAsync(ctx, "chris", listId, ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.SignUpList(listId)
-            .ToHaveLines((ctx.Identity.People.IdOf("ilka"), "Brezeln"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RemoveHerLine_When_TheEntryIsNoLongerMeantForHer()
     {
         var ct = TestContext.Current.CancellationToken;

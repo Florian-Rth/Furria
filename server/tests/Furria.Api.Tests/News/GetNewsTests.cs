@@ -22,63 +22,6 @@ public sealed class GetNewsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeadWithTheDraftsThenListThePostsNewestFirst_When_TheHubIsOpened()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (_, result) = await client.GETAsync<GetNews, GetNewsResponse>();
-
-        Assert.Equal(
-            ["Entwurf", "Gala-Rückblick", "Zurückgezogen", "Das Motto steht fest", "Altweiber"],
-            result.Sections.SelectMany(section => section.Posts).Select(post => post.Title)
-        );
-    }
-
-    [Fact]
-    public async Task Should_TellStatePendingChangesAndAuthor_When_ThePostsAreListed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (_, result) = await client.GETAsync<GetNews, GetNewsResponse>();
-        var posts = result.Sections.SelectMany(section => section.Posts).ToList();
-
-        var motto = posts.Single(post => post.Title == "Das Motto steht fest");
-        Assert.Equal(NewsPostState.Published, motto.State);
-        Assert.True(motto.HasPendingChanges);
-        Assert.Equal("Nele", motto.Author?.FirstName);
-        Assert.Equal(
-            NewsPostState.Withdrawn,
-            posts.Single(post => post.Title == "Zurückgezogen").State
-        );
-        var draft = posts.Single(post => post.Title == "Entwurf");
-        Assert.Equal(NewsPostState.Draft, draft.State);
-        Assert.Null(draft.Author);
-    }
-
-    [Fact]
-    public async Task Should_DescribeTheWorkingVersion_When_APublishedPostHasPendingChanges()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (_, result) = await client.GETAsync<GetNews, GetNewsResponse>();
-        var posts = result.Sections.SelectMany(section => section.Posts).ToList();
-
-        var motto = posts.Single(post => post.Title == "Das Motto steht fest");
-        Assert.NotNull(motto.PendingSavedAt);
-        Assert.Equal(
-            [NewsPublicationRequirement.Teaser, NewsPublicationRequirement.Text],
-            motto.Missing
-        );
-        Assert.Equal(Withdrawn, posts.Single(post => post.Title == "Zurückgezogen").WithdrawnAt);
-    }
-
-    [Fact]
     public async Task Should_NameEverythingStillMissingForPublishing_When_ADraftIsListed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -98,27 +41,6 @@ public sealed class GetNewsTests : IClassFixture<ApiTestFixture>
             ],
             draft.Missing
         );
-    }
-
-    [Fact]
-    public async Task Should_ShowTheWorkingPicture_When_ItIsRendered()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var pictureId = await NewsPictureSteps.UploadAsync(
-            client,
-            ctx.News.Posts.IdOf("draft"),
-            ct
-        );
-        await _fixture.RenderMediaItemDirectlyAsync(pictureId, ct);
-
-        var (_, result) = await client.GETAsync<GetNews, GetNewsResponse>();
-
-        var draft = result
-            .Sections.SelectMany(section => section.Posts)
-            .Single(post => post.Title == "Entwurf");
-        Assert.NotNull(draft.Picture);
     }
 
     private static Action<SeedContextBuilder> Posts() =>

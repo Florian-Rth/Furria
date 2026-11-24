@@ -43,18 +43,6 @@ public sealed class CalendarEntryExpectations
                 Assert.Equal(audience, (await SingleAsync(dbContext, ct)).Audience)
         );
 
-    public Expected ToBeOwnedBy(int? ownerGroupId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(ownerGroupId, (await SingleAsync(dbContext, ct)).OwnerGroupId)
-        );
-
-    public Expected ToBeHeldAt(int? venueId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(venueId, (await SingleAsync(dbContext, ct)).VenueId)
-        );
-
     public Expected ToAskForResponse(bool asksForResponse) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -74,71 +62,6 @@ public sealed class CalendarEntryExpectations
                     )
                 );
             }
-        );
-
-    public Expected ToHavePollsAt(params (int Position, string Question, string Options)[] polls) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    polls,
-                    (
-                        await dbContext
-                            .Polls.AsNoTracking()
-                            .Where(poll => poll.CalendarEntryId == _calendarEntryId)
-                            .OrderBy(poll => poll.Position)
-                            .Select(poll => new
-                            {
-                                poll.Position,
-                                poll.Question,
-                                Options = poll
-                                    .Options.OrderBy(option => option.Position)
-                                    .Select(option => option.Label)
-                                    .ToList(),
-                            })
-                            .ToListAsync(ct)
-                    ).Select(poll =>
-                        (poll.Position, poll.Question, string.Join(", ", poll.Options))
-                    )
-                )
-        );
-
-    public Expected ToHaveSignUpListsAt(
-        params (int Position, string Title, string? Hint)[] lists
-    ) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    lists,
-                    (
-                        await dbContext
-                            .SignUpLists.AsNoTracking()
-                            .Where(list => list.CalendarEntryId == _calendarEntryId)
-                            .OrderBy(list => list.Position)
-                            .Select(list => new
-                            {
-                                list.Position,
-                                list.Title,
-                                list.Hint,
-                            })
-                            .ToListAsync(ct)
-                    ).Select(list => (list.Position, list.Title, list.Hint))
-                )
-        );
-
-    public Expected ToHaveDaySchedulesAt(params (int Position, string? Title)[] schedules) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    schedules,
-                    (
-                        await dbContext
-                            .CalendarDaySchedules.AsNoTracking()
-                            .Where(schedule => schedule.CalendarEntryId == _calendarEntryId)
-                            .OrderBy(schedule => schedule.Position)
-                            .Select(schedule => new { schedule.Position, schedule.Title })
-                            .ToListAsync(ct)
-                    ).Select(schedule => (schedule.Position, schedule.Title))
-                )
         );
 
     public Expected ToHaveDayScheduleSteps(
@@ -203,20 +126,6 @@ public sealed class CalendarEntryExpectations
     public Expected ToCarryNoParticipatingGroup() =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Empty(await ParticipatingGroupIdsAsync(dbContext, ct))
-        );
-
-    public Expected ToCarryAudienceGroups(params int[] groupIds) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    [.. groupIds.Order()],
-                    await dbContext
-                        .CalendarEntryAudienceGroups.AsNoTracking()
-                        .Where(link => link.CalendarEntryId == _calendarEntryId)
-                        .Select(link => link.GroupId)
-                        .OrderBy(groupId => groupId)
-                        .ToListAsync(ct)
-                )
         );
 
     public Expected ToChoosePeople(params int[] personIds) =>

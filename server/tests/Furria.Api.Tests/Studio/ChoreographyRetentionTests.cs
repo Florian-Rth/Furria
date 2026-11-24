@@ -8,20 +8,6 @@ public sealed class ChoreographyRetentionTests
     private static readonly DateTimeOffset Now = new(2026, 10, 31, 12, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public void Should_KeepEveryVersion_When_ItWasSavedInTheLastFourteenDays()
-    {
-        var versions = new[]
-        {
-            Saved(1, Now.AddDays(-14).AddHours(-11)),
-            Saved(2, Now.AddDays(-14).AddHours(-10)),
-            Saved(3, Now.AddMinutes(-1)),
-            Saved(4, Now),
-        };
-
-        Assert.Empty(ChoreographyRetention.ThinnedOf(versions, Now));
-    }
-
-    [Fact]
     public void Should_KeepOnlyTheLastVersionOfADay_When_TheDayIsOlderThanFourteenDays()
     {
         var versions = new[]

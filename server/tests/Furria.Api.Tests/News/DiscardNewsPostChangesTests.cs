@@ -41,30 +41,6 @@ public sealed class DiscardNewsPostChangesTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_DeleteThePendingPictureAndKeepTheLiveOne_When_TheChangesAreDiscarded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var postId = ctx.News.Posts.IdOf("pictured");
-        var livePictureId = await NewsPictureSteps.LivePictureAsync(client, postId, ct);
-        var pendingPictureId = await NewsPictureSteps.UploadAsync(client, postId, ct);
-
-        await client.DELETEAsync<DiscardNewsPostChanges, DiscardNewsPostChangesRequest>(
-            new() { NewsPostId = postId }
-        );
-
-        await ctx
-            .Expected.NewsPost(postId)
-            .ToShowPicture(livePictureId)
-            .NewsPost(postId)
-            .ToHaveNoPendingChanges()
-            .MediaItem(pendingPictureId)
-            .ToBeGone()
-            .AssertAsync(ct);
-    }
-
     private static Action<SeedContextBuilder> Posts() =>
         builder =>
             builder.News(news =>

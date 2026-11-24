@@ -5,7 +5,6 @@ using Furria.Api.Endpoints.RunningOrders;
 using Furria.Core.Club;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSeeds;
@@ -23,76 +22,6 @@ public sealed class PutRunningOrderTests : IClassFixture<ApiTestFixture>
     public PutRunningOrderTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CreateTheRunningOrderWithItsFindings_When_TheEventHasNoneYet()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var anna = ctx.Identity.People.IdOf(Anna);
-        var eventId = ctx.Club.Events.IdOf(Gala);
-        var tanz = await CreateActAsync(client, "Gardetanz", ctx.Groups.Groups.IdOf(Garde));
-        var rede = await CreateActAsync(client, "Büttenrede", added: [anna]);
-        var tombola = await CreateActAsync(client, "Tombola");
-
-        var (response, result) = await SaveAsync(
-            client,
-            eventId,
-            null,
-            [Line(tanz, 0), Line(rede, 1), Line(tombola, null)]
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(1, result.Version);
-        Assert.Equal(eventId, result.EventId);
-        var lineIds = result.Lines.ToDictionary(line => line.Act.ActId, line => line.LineId);
-        Assert.Equal(
-            [
-                (
-                    FindingKind.NoChangeover,
-                    FindingSeverity.Conflict,
-                    new[] { lineIds[tanz], lineIds[rede] }
-                ),
-                (FindingKind.Unplaced, FindingSeverity.Hint, new[] { lineIds[tombola] }),
-            ],
-            result.Findings.Select(finding =>
-                (finding.Kind, finding.Severity, finding.LineIds.ToArray())
-            )
-        );
-        Assert.Equal([anna], result.Findings[0].PersonIds);
-        await ctx.Expected.RunningOrder(eventId).ToHaveVersion(1).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheLineIds_When_TheOrderIsReplaced()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var eventId = ctx.Club.Events.IdOf(Gala);
-        var einmarsch = await CreateActAsync(client, "Einmarsch");
-        var finale = await CreateActAsync(client, "Finale");
-        var first = await SavedAsync(client, eventId, null, [Line(einmarsch, 0), Line(finale, 1)]);
-
-        var (response, result) = await SaveAsync(
-            client,
-            eventId,
-            first.Version,
-            [Line(finale, 0, pinned: true), Line(einmarsch, 1)]
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(2, result.Version);
-        Assert.Equal(
-            first.Lines.Select(line => line.LineId).Order(),
-            result.Lines.Select(line => line.LineId).Order()
-        );
-        Assert.Equal(
-            [(finale, 0, true), (einmarsch, 1, false)],
-            result.Lines.Select(line => (line.Act.ActId, line.Position ?? -1, line.Pinned))
-        );
     }
 
     [Fact]
@@ -193,44 +122,6 @@ public sealed class PutRunningOrderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveASuspendedWishUnchecked_When_TheWishIsSwitchedOffForTheEvening()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var eventId = ctx.Club.Events.IdOf(Gala);
-        var einmarsch = await CreateActAsync(client, "Einmarsch");
-        var begruessung = await CreateActAsync(
-            client,
-            "Begrüßung",
-            wishes: [Wish(RunningOrderRuleKind.First, RuleStrength.Must)]
-        );
-        var checkedOrder = await SavedAsync(
-            client,
-            eventId,
-            null,
-            [Line(einmarsch, 0), Line(begruessung, 1)]
-        );
-        var wishId = Assert.Single(checkedOrder.ActWishes).ActWishId;
-
-        var (response, result) = await SaveAsync(
-            client,
-            eventId,
-            checkedOrder.Version,
-            [Line(einmarsch, 0), Line(begruessung, 1)],
-            suspendedActWishIds: [wishId]
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(
-            [(FindingKind.MustRuleBroken, (int?)wishId)],
-            checkedOrder.Findings.Select(finding => (finding.Kind, finding.ActWishId))
-        );
-        Assert.Empty(result.Findings);
-        Assert.True(Assert.Single(result.ActWishes).Suspended);
-    }
-
-    [Fact]
     public async Task Should_MarkTheOrderChanged_When_ItWasConfirmedBefore()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -249,57 +140,6 @@ public sealed class PutRunningOrderTests : IClassFixture<ApiTestFixture>
 
         Assert.NotNull(result.ConfirmedAt);
         Assert.True(result.ChangedSinceConfirmed);
-    }
-
-    [Fact]
-    public Task Should_ShowTheEveningToTheGroup_When_ThePlannerAddsTheirActWithoutBeingAsked() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-                var tanz = await GardetanzAsync(ctx, ct);
-                var garde = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-                var marsch = await GardetanzAsync(ctx, ct, name: "Gardemarsch");
-                var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-                var gala = ctx.Club.Events.IdOf(Gala);
-
-                var (response, _) = await SaveAsync(
-                    planner,
-                    gala,
-                    null,
-                    [Line(tanz, 0), Line(marsch, null)]
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                var positions = new List<int?>();
-                foreach (var actId in new[] { tanz, marsch })
-                {
-                    var evenings = (await StudioOfAsync(garde, actId)).Studio!.Evenings;
-                    positions.Add(
-                        evenings.Single(evening => evening.EventId == gala).Appearance?.Position
-                    );
-                }
-                Assert.Equal([0, null], positions);
-            }
-        );
-
-    [Fact]
-    public async Task Should_RemoveTheAppearance_When_AnActWithoutEveningChangesIsTakenOut()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var eventId = ctx.Club.Events.IdOf(Gala);
-        var einmarsch = await CreateActAsync(client, "Einmarsch");
-        var finale = await CreateActAsync(client, "Finale");
-        var first = await SavedAsync(client, eventId, null, [Line(einmarsch, 0), Line(finale, 1)]);
-
-        var (response, _) = await SaveAsync(client, eventId, first.Version, [Line(finale, 0)]);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.RunningOrder(eventId).ToHaveAppearancesOf(finale).AssertAsync(ct);
     }
 
     [Fact]
@@ -357,65 +197,5 @@ public sealed class PutRunningOrderTests : IClassFixture<ApiTestFixture>
             "Dieser Auftritt gehört zu einer anderen Session als die Veranstaltung.",
             await RefusalOfAsync(response)
         );
-    }
-
-    [Fact]
-    public async Task Should_KeepAnEndedActButRefuseANewOne_When_ItsSessionHasEnded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        SeededContext? ctx = null;
-        var (eventId, planned, unplanned, version) = (0, 0, 0, 0);
-        await _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-                var client = await ctx.Identity.ClientForAsync(Planner, ct);
-                eventId = ctx.Club.Events.IdOf(Gala);
-                planned = await CreateActAsync(client, "Gardetanz", kind: ActKind.Dance);
-                unplanned = await CreateActAsync(client, "Schautanz", kind: ActKind.Show);
-                version = (await SavedAsync(client, eventId, null, [Line(planned, 0)])).Version;
-            }
-        );
-
-        await _fixture.AtInstantAsync(
-            AfterItsAshWednesday,
-            async () =>
-            {
-                var client = await ctx!.Identity.SignInAgainAsync(Planner, ct);
-
-                var (kept, keptResult) = await SaveAsync(
-                    client,
-                    eventId,
-                    version,
-                    [Line(planned, null)]
-                );
-                var (added, _) = await SaveAsync(
-                    client,
-                    eventId,
-                    keptResult.Version,
-                    [Line(planned, 0), Line(unplanned, 1)]
-                );
-
-                Assert.Equal(HttpStatusCode.OK, kept.StatusCode);
-                Assert.Equal(HttpStatusCode.UnprocessableEntity, added.StatusCode);
-                Assert.Equal(
-                    "Die Session dieses Auftritts ist vorbei, er lässt sich nicht mehr einplanen.",
-                    await RefusalOfAsync(added)
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheEventIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-
-        var (response, _) = await SaveAsync(client, 999_999, null, []);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

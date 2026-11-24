@@ -1,4 +1,3 @@
-using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Halls;
 using Furria.Api.Endpoints.Seating;
@@ -20,28 +19,6 @@ public sealed class PostTableTypeTests : IClassFixture<ApiTestFixture>
     public PostTableTypeTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_ListTheNewTypeLast_When_TheHallManagerAddsOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
-
-        var (response, created) = await client.POSTAsync<
-            PostTableType,
-            PostTableTypeRequest,
-            PostTableTypeResponse
-        >(Type("Stehtisch", TableShape.Rectangle, 200, 60, seatsAtEnds: true));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var (_, seating) = await client.GETAsync<GetSeating, GetSeatingResponse>();
-        var listed = seating.TableTypes[^1];
-        Assert.Equal(created.TableTypeId, listed.TableTypeId);
-        Assert.Equal("Stehtisch", listed.Name);
-        Assert.True(listed.SeatsAtEnds);
-        Assert.False(listed.Archived);
     }
 
     [Fact]

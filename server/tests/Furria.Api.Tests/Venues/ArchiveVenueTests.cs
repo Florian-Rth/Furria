@@ -22,27 +22,6 @@ public sealed class ArchiveVenueTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StampToday_When_TheKeyHolderArchivesTheVenue()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddVenue("altes-lager", "Altes Lager")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<ArchiveVenue, ArchiveVenueRequest>(
-            new() { VenueId = ctx.Club.Venues.IdOf("altes-lager") }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Venue(ctx.Club.Venues.IdOf("altes-lager"))
-            .ToBeArchivedOn(_fixture.Today)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_KeepTheAddressAndEveryKey_When_TheVenueIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;

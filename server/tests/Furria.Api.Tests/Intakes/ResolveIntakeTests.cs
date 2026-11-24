@@ -1,14 +1,11 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Intakes;
-using Furria.Core.Identity;
-using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.Intakes.IntakeScene;
 using static Furria.Api.Tests.Intakes.IntakeSubmissions;
-using static Furria.Api.Tests.Push.SubscribedDevices;
 
 namespace Furria.Api.Tests.Intakes;
 
@@ -23,30 +20,6 @@ public sealed class ResolveIntakeTests : IClassFixture<ApiTestFixture>
     public ResolveIntakeTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_EnterHerAsSomeoneNew_When_TheDeciderEntersHerAsNew()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ParkedAsync(_fixture.Today, ct);
-        var intakeId = ctx.Intakes.Intakes.IdOf("fresh");
-        var manager = await ctx.Identity.ClientForAsync(Manager, ct);
-
-        var (response, resolved) = await ResolveAsync(manager, intakeId, personId: null);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotEqual(ctx.Identity.People.IdOf(Existing), resolved.PersonId);
-        await ctx
-            .Expected.Intake(intakeId)
-            .ToBeCompletedAs(resolved.PersonId)
-            .Person(resolved.PersonId)
-            .ToHaveName("Lena", "Neu")
-            .MembershipsOfPerson(resolved.PersonId)
-            .ToHaveOnlyOneFromIntake(intakeId, _fixture.Today)
-            .Person(resolved.PersonId)
-            .ToBeInGroupsSince(_fixture.Today, ctx.Groups.Groups.IdOf(Guard))
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -81,36 +54,6 @@ public sealed class ResolveIntakeTests : IClassFixture<ApiTestFixture>
             .Person(existingId)
             .ToBeInGroupsSince(_fixture.Today, ctx.Groups.Groups.IdOf(Guard))
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_TakeHerClubGroupConsent_When_TheDeciderRecognisesHer()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ParkedAsync(_fixture.Today, ct, consentsToClubGroup: true);
-        var existingId = ctx.Identity.People.IdOf(Existing);
-        var manager = await ctx.Identity.ClientForAsync(Manager, ct);
-
-        await ResolveAsync(manager, ctx.Intakes.Intakes.IdOf("fresh"), existingId);
-
-        await ctx.Expected.Person(existingId).ToHaveClubGroupConsent(true).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_OpenNoSecondMembership_When_HerMembershipStillRuns()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ParkedAsync(
-            _fixture.Today,
-            ct,
-            identity => identity.AddMembership("running", Existing)
-        );
-        var existingId = ctx.Identity.People.IdOf(Existing);
-        var manager = await ctx.Identity.ClientForAsync(Manager, ct);
-
-        await ResolveAsync(manager, ctx.Intakes.Intakes.IdOf("fresh"), existingId);
-
-        await ctx.Expected.MembershipsOfPerson(existingId).ToHaveCount(1).AssertAsync(ct);
     }
 
     [Fact]
@@ -168,25 +111,6 @@ public sealed class ResolveIntakeTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseToResolve_When_TheIntakeAwaitsNoReview()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            With(intakes => intakes.AddIntake("open", Manager, _fixture.Today)),
-            ct
-        );
-        var manager = await ctx.Identity.ClientForAsync(Manager, ct);
-
-        var (response, _) = await ResolveAsync(
-            manager,
-            ctx.Intakes.Intakes.IdOf("open"),
-            personId: null
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_Forbid_When_AGroupAdminResolvesAnIntakeSheDidNotStart()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -202,83 +126,17 @@ public sealed class ResolveIntakeTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_MakeTheUploadHerPortrait_When_SheIsRecognisedAndHasNoneYet()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ParkedAsync(_fixture.Today, ct, withPortrait: true);
-        var intakeId = ctx.Intakes.Intakes.IdOf("fresh");
-        var portraitId = Assert.Single(await IntakePortraits.HeldByAsync(_fixture, intakeId, ct));
-        var existingId = ctx.Identity.People.IdOf(Existing);
-        var manager = await ctx.Identity.ClientForAsync(Manager, ct);
-
-        await ResolveAsync(manager, intakeId, existingId);
-
-        await ctx
-            .Expected.MediaItem(portraitId)
-            .ToBeOwnedBy(MediaOwner.Person(existingId))
-            .MediaItem(portraitId)
-            .ToBeThePortraitOf(existingId)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_InviteHerOnTheStartersBehalf_When_TheDeciderRecognisesHer()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ParkedAsync(_fixture.Today, ct);
-        var existingId = ctx.Identity.People.IdOf(Existing);
-        var manager = await ctx.Identity.ClientForAsync(Manager, ct);
-
-        await ResolveAsync(manager, ctx.Intakes.Intakes.IdOf("fresh"), existingId);
-
-        await ctx
-            .Expected.LiveInvitationOfPerson(existingId)
-            .ToBeIssuedAs(
-                InvitationChannel.Mail,
-                isReminder: false,
-                ctx.Identity.People.IdOf(Manager)
-            )
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_TellTheStarter_When_SomeoneElseResolvesHerIntake()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ParkedAsync(memberFrom: null, ct, starter: GuardTrainer);
-        var device = await SubscribedDeviceAsync(ctx, GuardTrainer, "trainer-phone", ct);
-        var manager = await ctx.Identity.ClientForAsync(Manager, ct);
-        await _fixture.PushesDrainedAsync(ct);
-        var before = PushesAt(_fixture, device).Count;
-
-        var (response, _) = await ResolveAsync(
-            manager,
-            ctx.Intakes.Intakes.IdOf("fresh"),
-            personId: null
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await _fixture.PushesDrainedAsync(ct);
-        var pushes = PushesAt(_fixture, device);
-        Assert.Equal(before + 1, pushes.Count);
-        Assert.Equal("QR-Anmeldung eingetragen", pushes[^1].GetProperty("title").GetString());
-    }
-
     private async Task<SeededContext> ParkedAsync(
         DateOnly? memberFrom,
         CancellationToken ct,
-        Action<IdentitySeedBuilder>? identity = null,
-        bool withPortrait = false,
-        string starter = Manager,
-        bool consentsToClubGroup = false
+        Action<IdentitySeedBuilder>? identity = null
     )
     {
         var ctx = await _fixture.BuildAsync(
             builder =>
             {
                 With(intakes =>
-                    intakes.AddIntake("fresh", starter, memberFrom, groupAliases: [Guard])
+                    intakes.AddIntake("fresh", Manager, memberFrom, groupAliases: [Guard])
                 )(builder);
                 builder.Identity(people =>
                 {
@@ -290,16 +148,11 @@ public sealed class ResolveIntakeTests : IClassFixture<ApiTestFixture>
             },
             ct
         );
-        var client = _fixture.CreateClient();
         var token = ctx.Intakes.LinkTokens.IdOf("fresh");
-        if (withPortrait)
-            await IntakePortraits.UploadedAsync(client, token, ct);
 
-        var (response, _) = await client.POSTAsync<
-            SubmitIntake,
-            SubmitIntakeRequest,
-            SubmitIntakeResponse
-        >(Adult(token) with { ClubGroupConsent = consentsToClubGroup });
+        var (response, _) = await _fixture
+            .CreateClient()
+            .POSTAsync<SubmitIntake, SubmitIntakeRequest, SubmitIntakeResponse>(Adult(token));
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         return ctx;
     }

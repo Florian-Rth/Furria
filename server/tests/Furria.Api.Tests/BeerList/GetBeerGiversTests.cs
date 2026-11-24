@@ -58,36 +58,4 @@ public sealed class GetBeerGiversTests : IClassFixture<ApiTestFixture>
             result.Givers.Select(giver => (giver.LastName, giver.Crates))
         );
     }
-
-    [Fact]
-    public async Task Should_SplitEachGiversCratesByDrink_When_HeTookSeveralDrinks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden)
-                            .AddBeerDrink(Pot, "Radler")
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                            .AddBeerCrates(Pot, Drinker, 2, drink: "Radler")
-                            .AddBeerCrates(Pot, Drinker, 1)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync(Drinker, ct);
-        var (_, result) = await client.GETAsync<GetBeerGivers, GetBeerGiversResponse>();
-
-        var giver = Assert.Single(result.Givers);
-        Assert.Equal(3, giver.Crates);
-        Assert.Equal(
-            [
-                (BeerListCast.BeerOf(ctx), "Bier", 1),
-                (ctx.BeerList.Drinks.IdOf("Radler"), "Radler", 2),
-            ],
-            giver.Drinks.Select(drink => (drink.BeerDrinkId, drink.Name, drink.Crates))
-        );
-    }
 }

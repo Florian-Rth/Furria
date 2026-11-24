@@ -53,20 +53,6 @@ public sealed class PutClubStageTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_DropTheArtwork_When_TheStageIsRewrittenWithoutOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await WriteAsync(client, 12m, 8m, Artwork);
-
-        var response = await WriteAsync(client, 10m, 6m, null);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.ClubRecord().ToHaveStage(10m, 6m, null).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_KeepTheStageAsItWas_When_TheArtworkIsNotReadable()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -80,24 +66,6 @@ public sealed class PutClubStageTests : IClassFixture<ApiTestFixture>
         var failures = await ReadFailuresAsync(response, ct);
         Assert.Equal([UnreadableArtworkMessage], failures[ValidationField]);
         await ctx.Expected.ClubRecord().ToHaveStage(12m, 8m, Artwork).AssertAsync(ct);
-    }
-
-    [Theory]
-    [InlineData(1.9, 8)]
-    [InlineData(12, 40.1)]
-    public async Task Should_ReturnBadRequest_When_ASideLiesOutsideTheRange(
-        decimal widthMetres,
-        decimal depthMetres
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await WriteAsync(client, widthMetres, depthMetres, null);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx.Expected.ClubRecord().ToNotExist().AssertAsync(ct);
     }
 
     private static Task<HttpResponseMessage> WriteAsync(

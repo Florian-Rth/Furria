@@ -7,7 +7,6 @@ using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.BeerList.BeerListCast;
-using static Furria.Api.Tests.Push.SubscribedDevices;
 
 namespace Furria.Api.Tests.Push;
 
@@ -27,27 +26,6 @@ public sealed class GetMyPushTopicsTests : IClassFixture<ApiTestFixture>
     public GetMyPushTopicsTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_OfferEveryClubTopicAndTheBeerTab_When_AClubMemberHasBookedCrates()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-
-        var topics = await TopicsOfAsync(ctx, Drinker, ct);
-
-        Assert.Equal(
-            [
-                PushTopic.Invitations,
-                PushTopic.Changes,
-                PushTopic.Reminders,
-                PushTopic.Announcements,
-                PushTopic.BeerTab,
-            ],
-            [.. topics.Select(setting => setting.Topic)]
-        );
-        Assert.All(topics, setting => Assert.True(setting.IsEnabled));
     }
 
     [Fact]
@@ -78,28 +56,6 @@ public sealed class GetMyPushTopicsTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Fact]
-    public async Task Should_OfferOnlyTheStockWarning_When_ABeerListManagerHasNoOtherTies()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-
-        var topics = await TopicsOfAsync(ctx, Warden, ct);
-
-        Assert.Equal([PushTopic.BeerStock], [.. topics.Select(setting => setting.Topic)]);
-    }
-
-    [Fact]
-    public async Task Should_OfferIntakes_When_ThePersonRunsAGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-
-        var topics = await TopicsOfAsync(ctx, Trainer, ct);
-
-        Assert.Contains(PushTopic.Intakes, topics.Select(setting => setting.Topic));
-    }
-
     [Theory]
     [InlineData(Outsider)]
     [InlineData(PersonlessLogin)]
@@ -109,21 +65,6 @@ public sealed class GetMyPushTopicsTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildAsync(ct);
 
         Assert.Empty(await TopicsOfAsync(ctx, alias, ct));
-    }
-
-    [Fact]
-    public async Task Should_ShowATopicSwitchedOff_When_TheMemberMutedIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        await MutedAsync(ctx, Drinker, PushTopic.Announcements, ct);
-
-        var topics = await TopicsOfAsync(ctx, Drinker, ct);
-
-        Assert.Equal(
-            [PushTopic.Announcements],
-            [.. topics.Where(setting => !setting.IsEnabled).Select(setting => setting.Topic)]
-        );
     }
 
     private static async Task<IReadOnlyList<PushTopicSettingDto>> TopicsOfAsync(

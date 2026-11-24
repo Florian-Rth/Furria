@@ -14,8 +14,6 @@ internal static class MembershipApplicationSteps
     public const string ConfirmationLinkPrefix =
         $"{ApiTestFixture.WebsiteBaseUrl}/join/confirm#token=";
     public const string ArrivalNoticeSubject = "Neuer Beitrittsantrag von Mia Schwarzwälder";
-    public const string ApplicationLinkPrefix =
-        $"{ApiTestFixture.ClubAppBaseUrl}/manage/applications/";
 
     public static PostMembershipApplicationRequest ApplicationOf(
         string email,

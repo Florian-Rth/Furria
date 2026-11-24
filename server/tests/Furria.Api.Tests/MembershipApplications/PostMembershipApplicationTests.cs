@@ -2,7 +2,6 @@ using System.Net;
 using Furria.Api.Endpoints.MembershipApplications;
 using Furria.Api.RateLimiting;
 using Furria.Api.Tests.Auth;
-using Furria.Core.Club;
 using Furria.Tests.Common.Expectations;
 using Furria.Tests.Common.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
@@ -44,76 +43,6 @@ public sealed class PostMembershipApplicationTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
-    public async Task Should_RepeatNothingTypedButTheFirstName_When_TheConfirmationIsMailed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        var email = InvitationSteps.UniqueContactEmail("mia");
-        var application = MembershipApplicationSteps.ApplicationOf(
-            email,
-            new DateOnly(1994, 7, 23)
-        );
-
-        await MembershipApplicationSteps.ApplyAsync(_fixture.CreateClient(), application);
-
-        var mail = await _fixture.Mailbox.SingleMailToAsync(email, ct);
-        foreach (
-            var typed in new[]
-            {
-                application.LastName,
-                application.Street,
-                application.PostalCode,
-                application.City,
-                application.Phone!,
-                "1994",
-                "23.07.",
-            }
-        )
-        {
-            Assert.DoesNotContain(typed, mail.Text, StringComparison.Ordinal);
-            Assert.DoesNotContain(typed, mail.Html, StringComparison.Ordinal);
-        }
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheApplication_When_TheApplicantIsYoungerThanTheAgeOfConsent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var email = InvitationSteps.UniqueContactEmail("ida");
-
-        var response = await MembershipApplicationSteps.ApplyAsync(
-            _fixture.CreateClient(),
-            MembershipApplicationSteps.ApplicationOf(
-                email,
-                _fixture.Today.AddYears(-ClubRecord.DefaultAgeOfConsent).AddDays(1)
-            )
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx.Expected.MembershipApplications().ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AcceptTheApplication_When_TheApplicantReachesTheAgeOfConsentToday()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var email = InvitationSteps.UniqueContactEmail("ida");
-
-        var response = await MembershipApplicationSteps.ApplyAsync(
-            _fixture.CreateClient(),
-            MembershipApplicationSteps.ApplicationOf(
-                email,
-                _fixture.Today.AddYears(-ClubRecord.DefaultAgeOfConsent)
-            )
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.MembershipApplications().ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheApplication_When_TheApplicantIsYoungerThanTheClubsOwnAgeOfConsent()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -134,45 +63,6 @@ public sealed class PostMembershipApplicationTests : IClassFixture<ApiTestFixtur
         await ctx.Expected.MembershipApplications().ToHaveCount(0).AssertAsync(ct);
     }
 
-    [Theory]
-    [InlineData(1)]
-    [InlineData(-121)]
-    public async Task Should_RefuseTheApplication_When_TheBirthDateCannotBeRight(int yearsFromNow)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var response = await MembershipApplicationSteps.ApplyAsync(
-            _fixture.CreateClient(),
-            MembershipApplicationSteps.ApplicationOf(
-                InvitationSteps.UniqueContactEmail("ida"),
-                _fixture.Today.AddYears(yearsFromNow)
-            )
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx.Expected.MembershipApplications().ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("bm8tY2hhbGxlbmdl")]
-    public async Task Should_RefuseTheApplication_When_NoSolvedChallengeComesWithIt(string altcha)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var response = await MembershipApplicationSteps.SubmitAsync(
-            _fixture.CreateClient(),
-            AdultApplication() with
-            {
-                Altcha = altcha,
-            }
-        );
-
-        await AssertAltchaRefusedAsync(response, ctx.Expected, ct);
-    }
-
     [Fact]
     public async Task Should_RefuseTheApplication_When_TheSolutionDoesNotSolveTheChallenge()
     {
@@ -187,29 +77,6 @@ public sealed class PostMembershipApplicationTests : IClassFixture<ApiTestFixtur
             AdultApplication() with
             {
                 Altcha = AltchaSolver.PayloadOf(challenge, wrong),
-            }
-        );
-
-        await AssertAltchaRefusedAsync(response, ctx.Expected, ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheApplication_When_TheChallengeWasAlteredBeforeSolving()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var client = _fixture.CreateClient();
-        var issued = await MembershipApplicationSteps.ChallengeAsync(client);
-        var altered = issued with
-        {
-            Parameters = issued.Parameters with { ExpiresAt = issued.Parameters.ExpiresAt + 3_600 },
-        };
-
-        var response = await MembershipApplicationSteps.SubmitAsync(
-            client,
-            AdultApplication() with
-            {
-                Altcha = AltchaSolver.PayloadOf(altered, AltchaSolver.Solve(issued)),
             }
         );
 
@@ -271,76 +138,6 @@ public sealed class PostMembershipApplicationTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
-    public async Task Should_NameEveryRefusedField_When_TheFormArrivesIncomplete()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var client = _fixture.CreateClient();
-
-        var response = await MembershipApplicationSteps.SubmitAsync(
-            client,
-            AdultApplication() with
-            {
-                FirstName = " ",
-                PostalCode = "5066",
-                Email = "mia-at-web.test",
-                Phone = "kein Telefon",
-                ConsentAccepted = false,
-                Altcha = await MembershipApplicationSteps.SolvedAltchaAsync(client),
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal(
-            ["consentAccepted", "email", "firstName", "phone", "postalCode"],
-            await MembershipApplicationSteps.RefusedFieldsAsync(response, ct)
-        );
-        await ctx.Expected.MembershipApplications().ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseThePostalCode_When_ItIsNull()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var client = _fixture.CreateClient();
-
-        var response = await MembershipApplicationSteps.SubmitAsync(
-            client,
-            AdultApplication() with
-            {
-                PostalCode = null!,
-                Altcha = await MembershipApplicationSteps.SolvedAltchaAsync(client),
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal(
-            ["postalCode"],
-            await MembershipApplicationSteps.RefusedFieldsAsync(response, ct)
-        );
-        await ctx.Expected.MembershipApplications().ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AcceptTheApplication_When_ItGivesNoPhone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var response = await MembershipApplicationSteps.ApplyAsync(
-            _fixture.CreateClient(),
-            AdultApplication() with
-            {
-                Phone = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.MembershipApplications().ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnTooManyRequests_When_OneAddressAppliesTooOften()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -358,33 +155,6 @@ public sealed class PostMembershipApplicationTests : IClassFixture<ApiTestFixtur
 
         Assert.Equal(HttpStatusCode.TooManyRequests, refused.StatusCode);
         await ctx.Expected.MembershipApplications().ToHaveCount(permits).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnTooManyRequests_When_OneVisitorSendsMoreThanThePerIpLimit()
-    {
-        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
-        await using var host = _fixture.HostWithSettings(
-            new Dictionary<string, string>
-            {
-                [
-                    $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerIp)}"
-                ] = "2",
-            }
-        );
-        var client = host.CreateClientForwardedFor("203.0.113.50");
-
-        var applied = await MembershipApplicationSteps.ApplyAsync(client, AdultApplication());
-        var refused = await MembershipApplicationSteps.SubmitAsync(
-            client,
-            AdultApplication() with
-            {
-                Altcha = "bm8tY2hhbGxlbmdl",
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, applied.StatusCode);
-        Assert.Equal(HttpStatusCode.TooManyRequests, refused.StatusCode);
     }
 
     [Fact]

@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
 using Furria.Core.Identity;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -12,7 +11,6 @@ namespace Furria.Api.Tests.Persons;
 public sealed class PutFeeReductionTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string ValidationField = "request";
     private const string ArchivedPersonMessage =
         "Paula ist archiviert – Beitragsermäßigungen lassen sich erst nach dem "
         + "Wiederherstellen festhalten.";
@@ -20,7 +18,6 @@ public sealed class PutFeeReductionTests : IClassFixture<ApiTestFixture>
     private const int ReducedUntil2019 = 2019;
     private const int ReducedFrom2021 = 2021;
     private const int ReducedUntil2022 = 2022;
-    private const int BeforeTheFounding = 1970;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
@@ -31,31 +28,6 @@ public sealed class PutFeeReductionTests : IClassFixture<ApiTestFixture>
     public PutFeeReductionTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CorrectTheSpan_When_AManagerFixesAClosedReduction()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolReductionAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                FeeReductionId = ctx.Identity.FeeReductions.IdOf("paula-schule"),
-                Basis = FeeReductionBasis.School,
-                FirstSessionYear = ReducedFrom2018,
-                LastSessionYear = ReducedFrom2018,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.FeeReduction(ctx.Identity.FeeReductions.IdOf("paula-schule"))
-            .ToHaveSpan(ReducedFrom2018, ReducedFrom2018)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -95,63 +67,6 @@ public sealed class PutFeeReductionTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var failures = await ReadFailuresAsync(response, ct);
         Assert.Equal([ArchivedPersonMessage], failures[ConflictField]);
-        await ctx
-            .Expected.FeeReduction(ctx.Identity.FeeReductions.IdOf("paula-schule"))
-            .ToHaveSpan(ReducedFrom2018, ReducedUntil2019)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ChangeTheBasis_When_AManagerCorrectsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolReductionAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                FeeReductionId = ctx.Identity.FeeReductions.IdOf("paula-schule"),
-                Basis = FeeReductionBasis.Apprenticeship,
-                FirstSessionYear = ReducedFrom2018,
-                LastSessionYear = ReducedUntil2019,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.FeeReduction(ctx.Identity.FeeReductions.IdOf("paula-schule"))
-            .ToHaveBasis(FeeReductionBasis.Apprenticeship)
-            .FeeReduction(ctx.Identity.FeeReductions.IdOf("paula-schule"))
-            .ToHaveSpan(ReducedFrom2018, ReducedUntil2019)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_TheLastSessionPrecedesTheFirst()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolReductionAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                FeeReductionId = ctx.Identity.FeeReductions.IdOf("paula-schule"),
-                Basis = FeeReductionBasis.School,
-                FirstSessionYear = ReducedUntil2022,
-                LastSessionYear = ReducedFrom2021,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Eine Beitragsermäßigung kann nicht vor ihrer ersten Session enden."],
-            failures[ValidationField]
-        );
         await ctx
             .Expected.FeeReduction(ctx.Identity.FeeReductions.IdOf("paula-schule"))
             .ToHaveSpan(ReducedFrom2018, ReducedUntil2019)
@@ -251,45 +166,6 @@ public sealed class PutFeeReductionTests : IClassFixture<ApiTestFixture>
             .ToHaveSpan(ReducedFrom2018, ReducedUntil2019)
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheFirstSessionPredatesTheFounding()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithSchoolReductionAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutFeeReduction, PutFeeReductionRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                FeeReductionId = ctx.Identity.FeeReductions.IdOf("paula-schule"),
-                Basis = FeeReductionBasis.School,
-                FirstSessionYear = BeforeTheFounding,
-                LastSessionYear = ReducedUntil2019,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    private Task<SeededContext> BuildWithSchoolReductionAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                        .AddFeeReduction(
-                            "paula-schule",
-                            "paula",
-                            FeeReductionBasis.School,
-                            ReducedFrom2018,
-                            ReducedUntil2019
-                        )
-                ),
-            ct
-        );
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,

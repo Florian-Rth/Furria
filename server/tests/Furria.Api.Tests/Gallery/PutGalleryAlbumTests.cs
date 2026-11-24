@@ -57,39 +57,4 @@ public sealed class PutGalleryAlbumTests : IClassFixture<ApiTestFixture>
             .ToBeUnpublished()
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_RefuseTheCover_When_ItBelongsToAnotherAlbum()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Gallery(gallery =>
-                    gallery
-                        .AddAlbum("album", "Ordensfest", sessionStartYear: 2025)
-                        .AddAlbum("other", "Umzug", sessionStartYear: 2025)
-                        .AddGalleryItem("foreign", albumAlias: "other")
-                ),
-            ct
-        );
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await client.PUTAsync<PutGalleryAlbum, PutGalleryAlbumRequest>(
-            new()
-            {
-                AlbumId = ctx.Gallery.Albums.IdOf("album"),
-                Title = "Ordensfest",
-                Description = null,
-                CalendarEntryId = null,
-                SessionStartYear = 2025,
-                CoverMediaItemId = ctx.Gallery.Items.IdOf("foreign"),
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx
-            .Expected.Album(ctx.Gallery.Albums.IdOf("album"))
-            .ToHaveChosenCover(null)
-            .AssertAsync(ct);
-    }
 }

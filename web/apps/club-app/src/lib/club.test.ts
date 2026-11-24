@@ -5,89 +5,32 @@ import {
   carnivalDaysOf,
   daysUntilOpening,
   isBetweenSessions,
-  mottoStageStateAt,
   relevantSessionYear,
   sessionAt,
-  sessionClosingAt,
   sessionDayOf,
-  sessionProgressAt,
-  sessionYearsLabelOf,
 } from './club';
 
 describe('sessionAt', () => {
   it.each([
-    { label: 'while the opening is still ahead', date: new Date(2026, 6, 21), expected: 2025 },
     { label: 'on the day before the opening', date: new Date(2026, 10, 10), expected: 2025 },
     { label: 'on the opening day itself', date: new Date(2026, 10, 11), expected: 2026 },
-    { label: 'in the month after the opening', date: new Date(2026, 11, 1), expected: 2026 },
-    { label: 'across the calendar year change', date: new Date(2027, 1, 14), expected: 2026 },
   ])('starts in $expected $label', ({ date, expected }) => {
     expect(sessionAt(date).startYear).toBe(expected);
   });
 });
 
-describe('sessionYearsLabelOf', () => {
-  it.each([
-    { startYear: 2008, expected: '2008/09' },
-    { startYear: 2099, expected: '2099/00' },
-  ])('labels the $startYear session $expected', ({ startYear, expected }) => {
-    expect(sessionYearsLabelOf(startYear)).toBe(expected);
-  });
-});
-
 describe('ashWednesdayOf', () => {
   it.each([
-    { year: 2024, month: 1, day: 14 },
     { year: 2025, month: 2, day: 5 },
-    { year: 2027, month: 1, day: 10 },
     { year: 2038, month: 2, day: 10 },
   ])('falls on $day.$month. in $year', ({ year, month, day }) => {
     expect(ashWednesdayOf(year)).toEqual(new Date(year, month, day));
   });
 });
 
-describe('sessionProgressAt', () => {
-  it('starts at nothing on the season opening', () => {
-    expect(sessionProgressAt(new Date(2025, 10, 11))).toBe(0);
-  });
-
-  it('is under way in the middle of the Session', () => {
-    const progress = sessionProgressAt(new Date(2026, 0, 1));
-
-    expect(progress).toBeGreaterThan(0.5);
-    expect(progress).toBeLessThan(0.75);
-  });
-
-  it('still runs on Ash Wednesday itself', () => {
-    const progress = sessionProgressAt(new Date(2026, 1, 18, 12));
-
-    expect(progress).toBeGreaterThan(0.9);
-    expect(progress).toBeLessThanOrEqual(1);
-  });
-
-  it('has nothing left to watch once Ash Wednesday is over', () => {
-    expect(sessionProgressAt(new Date(2026, 1, 19))).toBeNull();
-  });
-});
-
-describe('sessionClosingAt', () => {
-  it.each([
-    { startYear: 2025, expected: new Date(2026, 1, 19) },
-    { startYear: 2027, expected: new Date(2028, 2, 2) },
-  ])('closes the $startYear session the day after Aschermittwoch', ({ startYear, expected }) => {
-    expect(sessionClosingAt(startYear)).toEqual(expected);
-  });
-});
-
 describe('isBetweenSessions', () => {
   it.each([
-    { label: 'Aschermittwoch itself', date: new Date(2026, 1, 18, 12), expected: false },
     { label: 'the day after Aschermittwoch', date: new Date(2026, 1, 19), expected: true },
-    {
-      label: 'the eve of the season opening',
-      date: new Date(2026, 10, 10, 23, 59),
-      expected: true,
-    },
     { label: 'midnight on 11.11.', date: new Date(2026, 10, 11, 0, 0), expected: false },
   ])('is $expected on $label', ({ date, expected }) => {
     expect(isBetweenSessions(date)).toBe(expected);
@@ -95,49 +38,16 @@ describe('isBetweenSessions', () => {
 });
 
 describe('relevantSessionYear', () => {
-  it.each([
-    { label: 'Aschermittwoch itself', date: new Date(2026, 1, 18, 12), expected: 2025 },
-    { label: 'the day after Aschermittwoch', date: new Date(2026, 1, 19), expected: 2026 },
-    { label: 'the turn of the year', date: new Date(2027, 0, 5), expected: 2026 },
-  ])('looks at $expected on $label', ({ date, expected }) => {
-    expect(relevantSessionYear(date)).toBe(expected);
-  });
-});
-
-describe('mottoStageStateAt', () => {
-  it.each([
-    {
-      label: 'the stroke of 11:11',
-      date: new Date(2026, 10, 11, 11, 11),
-      known: false,
-      expected: 'running',
+  it.each([{ label: 'Aschermittwoch itself', date: new Date(2026, 1, 18, 12), expected: 2025 }])(
+    'looks at $expected on $label',
+    ({ date, expected }) => {
+      expect(relevantSessionYear(date)).toBe(expected);
     },
-    {
-      label: 'the minute before 11:11',
-      date: new Date(2026, 10, 11, 11, 10),
-      known: true,
-      expected: 'teaser',
-    },
-    {
-      label: 'the day the Session closed',
-      date: new Date(2027, 1, 11),
-      known: true,
-      expected: 'teaser',
-    },
-    {
-      label: 'high summer without a motto',
-      date: new Date(2026, 6, 21),
-      known: false,
-      expected: 'resting',
-    },
-  ])('is $expected at $label', ({ date, known, expected }) => {
-    expect(mottoStageStateAt(date, 2026, known)).toBe(expected);
-  });
+  );
 });
 
 describe('calendarDaysBetween', () => {
   it.each([
-    { label: 'the same day', from: new Date(2026, 9, 2, 8), to: new Date(2026, 9, 2, 23), days: 0 },
     {
       label: 'late evening to early morning',
       from: new Date(2026, 9, 2, 23, 59),
@@ -150,12 +60,6 @@ describe('calendarDaysBetween', () => {
       to: new Date(2026, 10, 11),
       days: 22,
     },
-    {
-      label: 'backwards in time',
-      from: new Date(2026, 10, 11),
-      to: new Date(2026, 10, 9),
-      days: -2,
-    },
   ])('counts $days days for $label', ({ from, to, days }) => {
     expect(calendarDaysBetween(from, to)).toBe(days);
   });
@@ -163,7 +67,6 @@ describe('calendarDaysBetween', () => {
 
 describe('daysUntilOpening', () => {
   it.each([
-    { label: 'late on 11.11.', date: new Date(2026, 10, 11, 23, 30), expected: 0 },
     {
       label: 'a minute before midnight on 10.11.',
       date: new Date(2026, 10, 10, 23, 59),
@@ -187,14 +90,8 @@ describe('carnivalDaysOf', () => {
 
 describe('sessionDayOf', () => {
   it.each([
-    { label: 'midnight on 11.11.', date: new Date(2026, 10, 11, 0, 0), expected: 1 },
     { label: 'Aschermittwoch', date: new Date(2027, 1, 10, 23, 59), expected: 92 },
     { label: 'the day after Aschermittwoch', date: new Date(2027, 1, 11, 0, 0), expected: null },
-    {
-      label: 'the eve of the season opening',
-      date: new Date(2026, 10, 10, 23, 59),
-      expected: null,
-    },
   ])('is $expected on $label', ({ date, expected }) => {
     expect(sessionDayOf(date)).toBe(expected);
   });

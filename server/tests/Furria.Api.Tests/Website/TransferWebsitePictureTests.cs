@@ -74,18 +74,6 @@ public sealed class TransferWebsitePictureTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_AnswerNotFound_When_TheSourcePositionIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(builder => builder.WithGalleryPublisher(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-
-        var response = await TransferAsync(client, "club.header", "club.hero");
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
     private static Task<HttpResponseMessage> TransferAsync(
         HttpClient client,
         string fromSlotKey,

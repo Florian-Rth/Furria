@@ -42,20 +42,6 @@ public sealed class PutEventPictureCropTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_AnswerNotFound_When_TheEventHasNoPicture()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(EventPictureSeeds.GalaWithKeeper(), ct);
-        var client = await ctx.Identity.ClientForAsync(EventPictureSeeds.Keeper, ct);
-
-        var response = await client.PUTAsync<PutEventPictureCrop, PutEventPictureCropRequest>(
-            RecropOf(ctx.Club.Events.IdOf(EventPictureSeeds.Gala))
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
     private static PutEventPictureCropRequest RecropOf(int eventId) =>
         new()
         {

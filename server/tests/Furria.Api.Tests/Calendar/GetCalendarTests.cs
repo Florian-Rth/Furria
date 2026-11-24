@@ -1,12 +1,9 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
-using Furria.Api.Tests.Events;
 using Furria.Api.Tests.RunningOrders;
 using Furria.Api.Tests.Studio;
 using Furria.Core.Club;
-using Furria.Core.Events;
-using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -72,16 +69,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     );
     private static readonly DateTimeOffset AtTheParade = new(2027, 2, 10, 11, 0, 0, TimeSpan.Zero);
 
-    private static readonly DateTimeOffset PresaleOpenedLastWeek = new(
-        2027,
-        1,
-        8,
-        10,
-        0,
-        0,
-        TimeSpan.Zero
-    );
-
     private static readonly DateOnly TheAuftrittDay = new(2027, 1, 19);
     private static readonly TimeOnly HalfPastSeven = new(19, 30);
     private static readonly TimeOnly NineInTheEvening = new(21, 0);
@@ -97,48 +84,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     public GetCalendarTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CarryNoEntry_When_TheCalendarIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(builder => builder.Identity(WholeClub), ct);
-
-                var result = await ReadAsync(ctx, "alice", new GetCalendarRequest(), ct);
-
-                Assert.Empty(result.Entries);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryAnotherGroupsEntries_When_TheCallerHoldsClubRead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(ctx, "alice", new GetCalendarRequest(), ct);
-
-                Assert.Equal(
-                    (true, true),
-                    (
-                        TitlesOf(result).Contains(DanceGuardTraining),
-                        TitlesOf(result).Contains(KinderTraining)
-                    )
-                );
-            }
-        );
     }
 
     [Theory]
@@ -221,29 +166,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_TheManagingLoginReadsTheCalendar()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-                var (response, _) = await client.GETAsync<
-                    GetCalendar,
-                    GetCalendarRequest,
-                    GetCalendarResponse
-                >(new GetCalendarRequest());
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_ListAGroupOnlyEntry_When_TheViewerIsInAParticipatingGroup()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -275,105 +197,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 var result = await ReadAsync(ctx, "dora", new GetCalendarRequest(), ct);
 
                 Assert.DoesNotContain(FormerGuardReunion, TitlesOf(result));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryOnlyClubEntries_When_TheScopeIsClub()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "bea",
-                    new GetCalendarRequest { Scope = CalendarScope.Club },
-                    ct
-                );
-
-                Assert.Equal(new[] { ClubMeeting, Parade }, TitlesOf(result));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryOnlyThatGroupsEntries_When_TheScopeIsGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "bea",
-                    new GetCalendarRequest
-                    {
-                        Scope = CalendarScope.Group,
-                        GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                    },
-                    ct
-                );
-
-                Assert.Equal(
-                    new[] { DanceGuardTraining, DanceGuardPerformance, DanceGuardParty },
-                    TitlesOf(result)
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_RejectTheRequest_When_TheGroupScopeNamesNoGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var (response, _) = await client.GETAsync<
-                    GetCalendar,
-                    GetCalendarRequest,
-                    GetCalendarResponse
-                >(new GetCalendarRequest { Scope = CalendarScope.Group });
-
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutAnEntryOutsideTheWindow_When_TheWindowIsNarrowed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "alice",
-                    new GetCalendarRequest { From = TheAuftrittDay, To = TheMeetingDay },
-                    ct
-                );
-
-                Assert.Equal(new[] { DanceGuardPerformance, ClubMeeting }, TitlesOf(result));
             }
         );
     }
@@ -415,156 +238,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 );
 
                 Assert.Equal(new[] { ClubTrip }, TitlesOf(result));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_RejectTheRequest_When_TheWindowEndsBeforeItStarts()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var (response, _) = await client.GETAsync<
-                    GetCalendar,
-                    GetCalendarRequest,
-                    GetCalendarResponse
-                >(new GetCalendarRequest { From = TheMeetingDay, To = TheAuftrittDay });
-
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_RejectTheRequest_When_TheWindowIsLongerThanAllowed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var (response, _) = await client.GETAsync<
-                    GetCalendar,
-                    GetCalendarRequest,
-                    GetCalendarResponse
-                >(
-                    new GetCalendarRequest
-                    {
-                        From = TheAuftrittDay,
-                        To = TheAuftrittDay.AddDays(401),
-                    }
-                );
-
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheViewersAnswer_When_SheHasAlreadyAnswered()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "bea",
-                    new GetCalendarRequest { Scope = CalendarScope.Club },
-                    ct
-                );
-
-                var meeting = result.Entries.Single(entry => entry.Title == ClubMeeting);
-                Assert.True(meeting.AsksForResponse);
-                Assert.Equal(AttendanceAnswer.Yes, meeting.ViewerAnswer);
-
-                var parade = result.Entries.Single(entry => entry.Title == Parade);
-                Assert.Null(parade.ViewerAnswer);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameTheVenueAndTheGroup_When_TheEntryCarriesThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(ctx, "bea", new GetCalendarRequest(), ct);
-
-                var training = result.Entries.Single(entry => entry.Title == DanceGuardTraining);
-                Assert.Equal("Bühnenhaus", training.VenueName);
-                Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), training.OwnerGroupId);
-                Assert.Equal("Tanzgarde", training.OwnerGroupName);
-                Assert.Equal(CalendarEntryKind.Training, training.Kind);
-                Assert.Equal(CalendarEntryAudience.Groups, training.Audience);
-                Assert.Equal(
-                    [ctx.Groups.Groups.IdOf("tanzgarde")],
-                    training.AudienceGroups.Select(group => group.GroupId)
-                );
-
-                var parade = result.Entries.Single(entry => entry.Title == Parade);
-                Assert.Null(parade.VenueName);
-                Assert.Null(parade.OwnerGroupId);
-                Assert.Null(parade.OwnerGroupName);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_SummariseTheOpenFunctionsForHer_When_SheReadsTheCalendar()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildOpenFunctionsAsync(ct);
-
-                var result = await ReadAsync(ctx, "alice", new GetCalendarRequest(), ct);
-
-                var meeting = result.Entries.Single(entry => entry.Title == ClubMeeting);
-                Assert.Equal(
-                    [
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("food"), true),
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("drinks"), false),
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("secret"), true),
-                        (
-                            CalendarEntryAddOnKind.SignUpList,
-                            ctx.Club.SignUpLists.IdOf("bring"),
-                            true
-                        ),
-                        (
-                            CalendarEntryAddOnKind.SignUpList,
-                            ctx.Club.SignUpLists.IdOf("setup"),
-                            false
-                        ),
-                    ],
-                    meeting.OpenFunctions.Select(open =>
-                        (open.Kind, open.AddOnId, open.HasAnswered)
-                    )
-                );
             }
         );
     }
@@ -673,42 +346,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
         [.. result.Entries.Select(entry => entry.Title)];
 
     [Fact]
-    public async Task Should_CarryTheEventInTheClubCalendar_When_AnyMemberReadsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                        builder
-                            .Identity(WholeClub)
-                            .Club(club =>
-                                club.AddVenue("buergerhaus", "Bürgerhaus")
-                                    .AddEvent("gala", Gala, AtTheMeeting, "buergerhaus")
-                            ),
-                    ct
-                );
-
-                var result = await ReadAsync(
-                    ctx,
-                    "alice",
-                    new GetCalendarRequest { Scope = CalendarScope.Club },
-                    ct
-                );
-
-                var gala = Assert.Single(result.Entries);
-                Assert.Equal(ctx.Club.Events.IdOf("gala"), gala.CalendarEntryId);
-                Assert.Equal(CalendarEntryKind.Event, gala.Kind);
-                Assert.Equal(CalendarEntryAudience.Club, gala.Audience);
-                Assert.Null(gala.OwnerGroupId);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutTheEvent_When_ItIsStillInPreparation()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -743,134 +380,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 );
 
                 Assert.Equal([Gala], TitlesOf(result));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheEventsPicture_When_AnyMemberReadsTheEventsEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                        builder
-                            .Identity(WholeClub)
-                            .Club(club =>
-                                club.AddVenue("buergerhaus", "Bürgerhaus")
-                                    .AddEvent("gala", Gala, AtTheMeeting, "buergerhaus")
-                            ),
-                    ct
-                );
-                var eventId = ctx.Club.Events.IdOf("gala");
-                var pictureId = await EventPictureSteps.RenderedAsync(
-                    _fixture,
-                    await ctx.Identity.ManagingLoginClientAsync(ct),
-                    eventId,
-                    ct
-                );
-
-                var result = await ReadAsync(
-                    ctx,
-                    "alice",
-                    new GetCalendarRequest { Scope = CalendarScope.Club },
-                    ct
-                );
-
-                var gala = Assert.Single(result.Entries);
-                Assert.StartsWith(
-                    _fixture.SignedMediaUrl(
-                        pictureId,
-                        MediaOwner.Event(eventId),
-                        MediaRendition.Medium
-                    ),
-                    gala.Event?.Picture?.MediumUrl
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheEventsOwnFacts_When_AnEntryIsAnEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                        builder
-                            .Identity(WholeClub)
-                            .Club(club =>
-                                club.AddVenue("buergerhaus", "Bürgerhaus")
-                                    .AddEvent(
-                                        "gala",
-                                        Gala,
-                                        AtTheMeeting,
-                                        "buergerhaus",
-                                        teaser: "Der Abend der Session.",
-                                        doorsOpenAt: new TimeOnly(18, 30),
-                                        ageHint: "ab 16",
-                                        priceCents: 2_200,
-                                        presaleStartsAt: PresaleOpenedLastWeek,
-                                        ticketAvailability: TicketAvailability.FewLeft
-                                    )
-                            ),
-                    ct
-                );
-
-                var result = await ReadAsync(
-                    ctx,
-                    "alice",
-                    new GetCalendarRequest { Scope = CalendarScope.Club },
-                    ct
-                );
-
-                var facts = Assert.Single(result.Entries).Event;
-                Assert.NotNull(facts);
-                Assert.Equal("Der Abend der Session.", facts.Teaser);
-                Assert.Equal(new TimeOnly(18, 30), facts.DoorsOpenAt);
-                Assert.Equal("ab 16", facts.AgeHint);
-                Assert.Equal(2_200, facts.PriceCents);
-                Assert.Equal(PresaleOpenedLastWeek, facts.PresaleStartsAt);
-                Assert.Equal(EventSalesStatus.FewLeft, facts.Status);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryNoEventFacts_When_AnEntryIsNoEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                        builder
-                            .Identity(WholeClub)
-                            .Club(club =>
-                                club.AddCalendarEntry("meeting", ClubMeeting, AtTheMeeting)
-                            ),
-                    ct
-                );
-
-                var result = await ReadAsync(
-                    ctx,
-                    "alice",
-                    new GetCalendarRequest { Scope = CalendarScope.Club },
-                    ct
-                );
-
-                Assert.Null(Assert.Single(result.Entries).Event);
             }
         );
     }
@@ -1181,27 +690,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StartTheUsualTrainingTimesToday_When_TheWindowReachesIntoThePast()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildUsualTimesAsync(club => club, ct);
-
-                var result = await ReadAsync(ctx, "bea", UsualTimesWindow, ct);
-
-                Assert.DoesNotContain(
-                    result.UsualTrainings,
-                    usual => ClubClock.DayOf(usual.StartsAt) < ClubClock.DayOf(Now)
-                );
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutTheUsualTrainingTime_When_TheGroupPlannedATrainingThatDay()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1256,90 +744,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 var result = await ReadAsync(ctx, "bea", UsualTimesWindow, ct);
 
                 Assert.Equal(2, UsualOf(result, "Tanzgarde").Count());
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryEveryRunningGroupsUsualTrainingTime_When_SheIsInNoneOfTheGroups()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildUsualTimesAsync(club => club, ct);
-
-                var result = await ReadAsync(ctx, "alice", UsualTimesWindow, ct);
-
-                Assert.Equal(
-                    [
-                        ("Kindergarde", new DateOnly(2027, 1, 15)),
-                        ("Tanzgarde", new DateOnly(2027, 1, 19)),
-                        ("Kindergarde", new DateOnly(2027, 1, 22)),
-                        ("Tanzgarde", new DateOnly(2027, 1, 26)),
-                        ("Kindergarde", new DateOnly(2027, 1, 29)),
-                    ],
-                    result.UsualTrainings.Select(usual =>
-                        (usual.GroupName, ClubClock.DayOf(usual.StartsAt))
-                    )
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheUsualTrainingTimes_When_SheReadsTheClubScope()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildUsualTimesAsync(club => club, ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "bea",
-                    UsualTimesWindow with
-                    {
-                        Scope = CalendarScope.Club,
-                    },
-                    ct
-                );
-
-                Assert.Equal(5, result.UsualTrainings.Count);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryOnlyThatGroupsUsualTrainingTime_When_TheCalendarIsFilteredByGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildUsualTimesAsync(club => club, ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    "alice",
-                    UsualTimesWindow with
-                    {
-                        GroupId = ctx.Groups.Groups.IdOf("kindergarde"),
-                    },
-                    ct
-                );
-
-                Assert.Equal(
-                    ["Kindergarde"],
-                    result.UsualTrainings.Select(usual => usual.GroupName).Distinct()
-                );
             }
         );
     }

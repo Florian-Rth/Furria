@@ -20,7 +20,6 @@ describe('toAudienceReach', () => {
   ];
 
   it.each([
-    [true, true, CLUB],
     [true, false, CLUB],
     [false, true, EVERY_GROUP],
     [false, false, TANZGARDE_ONLY],
@@ -38,12 +37,9 @@ describe('toOfferedAudiences', () => {
       CalendarEntryAudience[],
     ]
   >([
-    [CLUB, null, 'plain', ['club', 'groups', 'people']],
     [TANZGARDE_ONLY, null, 'plain', ['groups', 'people']],
-    [EVERY_GROUP, 'groups', 'trip', ['groups', 'people']],
     [TANZGARDE_ONLY, 'club', 'plain', ['club', 'groups', 'people']],
     [CLUB, null, 'training', ['groups', 'people']],
-    [CLUB, 'club', 'training', ['groups', 'people']],
   ])('%o holding %s for a %s → %o', (reach, held, kind, expected) => {
     expect(toOfferedAudiences(reach, held, kind)).toEqual(expected);
   });
@@ -58,21 +54,16 @@ describe('toReachablePool', () => {
     ],
   } as const;
 
-  it.each<[CalendarAudienceReach, number[]]>([
-    [CLUB, [1, 2]],
-    [EVERY_GROUP, [1, 2]],
-    [TANZGARDE_ONLY, [1]],
-  ])('%o → %o', (reach, expected) => {
-    const reachable = toReachablePool(pool, reach);
+  it.each<[CalendarAudienceReach, number[]]>([[TANZGARDE_ONLY, [1]]])(
+    '%o → %o',
+    (reach, expected) => {
+      const reachable = toReachablePool(pool, reach);
 
-    expect(
-      reachable.state === 'ready' ? reachable.groups.map((group) => group.groupId) : [],
-    ).toEqual(expected);
-  });
-
-  it('keeps a failed pool failed', () => {
-    expect(toReachablePool({ state: 'failed' }, TANZGARDE_ONLY)).toEqual({ state: 'failed' });
-  });
+      expect(
+        reachable.state === 'ready' ? reachable.groups.map((group) => group.groupId) : [],
+      ).toEqual(expected);
+    },
+  );
 });
 
 describe('toReachablePeople', () => {
@@ -83,7 +74,6 @@ describe('toReachablePeople', () => {
   ];
 
   it.each<[CalendarAudienceReach, number[]]>([
-    [CLUB, [10, 11, 12]],
     [EVERY_GROUP, [10, 11]],
     [TANZGARDE_ONLY, [10]],
   ])('%o → %o', (reach, expected) => {

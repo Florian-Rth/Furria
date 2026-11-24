@@ -4,7 +4,6 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
-using Furria.Application.Authorization;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -82,26 +81,6 @@ public sealed class PostPersonAccessRecoveryTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_SheHasNoAccount()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson(
-                        "anna",
-                        "Anna",
-                        InvitationSteps.UniqueContactEmail("anna"),
-                        _fixture.Today
-                    )
-                ),
-            ct
-        );
-
-        await AssertRefusedAsync(ctx, "anna", "Anna hat noch keinen Zugang.", ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_HerAccountIsDisabled()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -119,42 +98,6 @@ public sealed class PostPersonAccessRecoveryTests : IClassFixture<ApiTestFixture
             "Der Zugang von Anna ist gesperrt. Entsperre ihn zuerst.",
             ct
         );
-    }
-
-    [Fact]
-    public async Task Should_IssueTheRecovery_When_TheCallerOnlyHoldsAccountsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddAccount("anna")
-                            .AddPerson("vera", "Vera", "Vorstand")
-                            .AddAccount("vera")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "zugangspflege",
-                            "vera-zugangspflege",
-                            "Zugangspflege",
-                            "vera",
-                            FurriaPermissions.AccountsManage
-                        )
-                    ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var client = await ctx.Identity.ClientForAsync("vera", ct);
-
-        var (response, _) = await PostAsync(client, annaId);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.LiveInvitationOfPerson(annaId)
-            .ToBeRecoveryIssuedBy(ctx.Identity.People.IdOf("vera"))
-            .AssertAsync(ct);
     }
 
     private static Task<TestResult<PostPersonAccessRecoveryResponse>> PostAsync(

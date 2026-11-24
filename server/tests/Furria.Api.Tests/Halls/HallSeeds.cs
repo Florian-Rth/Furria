@@ -15,7 +15,6 @@ internal static class HallSeeds
     internal const string KinderGala = "kindersitzung";
     internal const int GalaInDays = 30;
     internal const int BeerTableId = 1;
-    internal const int PlainTableId = 2;
     internal const int RoundTableId = 3;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);

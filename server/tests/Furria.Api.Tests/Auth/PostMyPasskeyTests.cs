@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.Json;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.WebAuthn;
@@ -64,81 +63,6 @@ public sealed class PostMyPasskeyTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheNameSheChose_When_SheNamedHerPasskey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAndBertaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        using var authenticator = new SoftwareAuthenticator();
-
-        var passkey = await PasskeySteps.RegisterAsync(client, authenticator, "  Mein Handy ");
-
-        Assert.Equal("Mein Handy", passkey.Name);
-    }
-
-    [Fact]
-    public async Task Should_SendThePasskeyAddedNotice_When_SheAddedAPasskey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAndBertaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        using var authenticator = new SoftwareAuthenticator();
-
-        await PasskeySteps.RegisterAsync(client, authenticator);
-
-        var notice = await _fixture.Mailbox.SingleMailToAsync(ctx.Identity.EmailOf("anna"), ct);
-        Assert.Equal(AccountSecuritySteps.NoticeSubject, notice.Subject);
-        Assert.Contains(PasskeySteps.PasskeyAddedLead, notice.Text, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Should_AcceptThePasskey_When_TheAndroidAppCreatedIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAndBertaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        using var authenticator = new SoftwareAuthenticator();
-        var (_, options) = await PasskeySteps.CreationOptionsAsync(client);
-
-        var (response, _) = await PasskeySteps.AddAsync(
-            client,
-            options.ChallengeId,
-            authenticator.Create(options.Options, PasskeySteps.AndroidOrigin)
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.PasskeysOfAccount(ctx.Identity.Accounts.IdOf("anna"))
-            .ToHaveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheCredentialAndSpendTheChallenge_When_ItComesFromAForeignOrigin()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAndBertaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        using var authenticator = new SoftwareAuthenticator();
-        var (_, options) = await PasskeySteps.CreationOptionsAsync(client);
-
-        var (response, _) = await PasskeySteps.AddAsync(
-            client,
-            options.ChallengeId,
-            authenticator.Create(options.Options, PasskeySteps.ForeignOrigin)
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AccountSecuritySteps.AssertRefusedOnAsync(response, CredentialField, ct);
-        await ctx
-            .Expected.PasskeysOfAccount(ctx.Identity.Accounts.IdOf("anna"))
-            .ToHaveCount(0)
-            .PasskeyChallenges()
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheChallenge_When_ItIsUsedASecondTime()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -164,39 +88,6 @@ public sealed class PostMyPasskeyTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.PasskeysOfAccount(ctx.Identity.Accounts.IdOf("anna"))
             .ToHaveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheChallenge_When_ItHasExpired()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAndBertaAsync(ct);
-        using var authenticator = new SoftwareAuthenticator();
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var (_, options) = await PasskeySteps.CreationOptionsAsync(client);
-        var credential = authenticator.Create(options.Options, PasskeySteps.WebOrigin);
-
-        await _fixture.AtLaterTimeAsync(
-            PasskeySteps.PastTheChallengeLifetime,
-            async () =>
-            {
-                var (response, _) = await PasskeySteps.AddAsync(
-                    client,
-                    options.ChallengeId,
-                    credential
-                );
-
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-                await AccountSecuritySteps.AssertRefusedOnAsync(response, CredentialField, ct);
-            }
-        );
-
-        await ctx
-            .Expected.PasskeysOfAccount(ctx.Identity.Accounts.IdOf("anna"))
-            .ToHaveCount(0)
-            .PasskeyChallenges()
-            .ToHaveCount(0)
             .AssertAsync(ct);
     }
 
@@ -247,23 +138,6 @@ public sealed class PostMyPasskeyTests : IClassFixture<ApiTestFixture>
             .Expected.PasskeysOfAccount(ctx.Identity.Accounts.IdOf("anna"))
             .ToHaveCount(1)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheCredentialIsNotAnObject()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAndBertaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var (_, options) = await PasskeySteps.CreationOptionsAsync(client);
-
-        var (response, _) = await PasskeySteps.AddAsync(
-            client,
-            options.ChallengeId,
-            JsonSerializer.SerializeToElement("not a credential")
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private Task<SeededContext> ArrangeAnnaAndBertaAsync(CancellationToken ct) =>

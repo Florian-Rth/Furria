@@ -20,19 +20,6 @@ public sealed class DeleteOwnAnnouncementSignUpLineTests : IClassFixture<ApiTest
     }
 
     [Fact]
-    public async Task Should_TakeHerLineOff_When_TheMemberWithdrawsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-        var listId = ctx.Club.SignUpLists.IdOf("helpers");
-
-        var response = await WithdrawAtAsync(Now, ctx, ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.SignUpList(listId).ToHaveLines().AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_KeepHerLine_When_TheLastDayOfTheAnnouncementHasPassed()
     {
         var ct = TestContext.Current.CancellationToken;

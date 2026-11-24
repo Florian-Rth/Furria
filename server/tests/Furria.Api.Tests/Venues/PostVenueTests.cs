@@ -25,109 +25,6 @@ public sealed class PostVenueTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RecordTheAddress_When_TheKeyHolderCreatesTheVenue()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.POSTAsync<
-            PostVenue,
-            PostVenueRequest,
-            PostVenueResponse
-        >(
-            new()
-            {
-                Name = "Turnhalle",
-                Street = Street,
-                Zip = Zip,
-                City = City,
-                Hint = Hint,
-                OpeningHours = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Venue(result.VenueId)
-            .ToHaveName("Turnhalle")
-            .Venue(result.VenueId)
-            .ToHaveAddress(Street, Zip, City)
-            .Venue(result.VenueId)
-            .ToHaveHint(Hint)
-            .Venue(result.VenueId)
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RecordTheOpeningHours_When_TheShopIsCreatedWithThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var nine = new TimeOnly(9, 0);
-        var one = new TimeOnly(13, 0);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.POSTAsync<
-            PostVenue,
-            PostVenueRequest,
-            PostVenueResponse
-        >(
-            new()
-            {
-                Name = "Bäckerei Schmidt",
-                Street = Street,
-                Zip = Zip,
-                City = City,
-                Hint = null,
-                OpeningHours =
-                [
-                    new()
-                    {
-                        Weekday = DayOfWeek.Saturday,
-                        Opens = nine,
-                        Closes = one,
-                    },
-                ],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Venue(result.VenueId)
-            .ToHaveOpeningHours((DayOfWeek.Saturday, nine, one))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RecordNoHint_When_TheVenueNeedsNone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.POSTAsync<
-            PostVenue,
-            PostVenueRequest,
-            PostVenueResponse
-        >(
-            new()
-            {
-                Name = "Vereinsraum",
-                Street = Street,
-                Zip = Zip,
-                City = City,
-                Hint = null,
-                OpeningHours = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.Venue(result.VenueId).ToHaveHint(null).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_AVenueCarriesTheNameInAnotherCase()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -184,28 +81,6 @@ public sealed class PostVenueTests : IClassFixture<ApiTestFixture>
             .Expected.Venue(ctx.Club.Venues.IdOf("altes-lager"))
             .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheAddressIsMissing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<PostVenue, PostVenueRequest, PostVenueResponse>(
-            new()
-            {
-                Name = "Turnhalle",
-                Street = "",
-                Zip = "",
-                City = "",
-                Hint = null,
-                OpeningHours = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

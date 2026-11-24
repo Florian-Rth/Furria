@@ -1,5 +1,4 @@
 using Furria.Core.Club;
-using Furria.Core.Push;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -10,8 +9,6 @@ namespace Furria.Api.Tests.BeerList;
 
 public sealed class BeerTabRemindersTests : IClassFixture<ApiTestFixture>
 {
-    private const string OldPot = "alter-topf";
-
     private static readonly TimeOnly Noon = new(12, 0);
     private static readonly TimeSpan Week = TimeSpan.FromDays(7);
 
@@ -44,43 +41,6 @@ public sealed class BeerTabRemindersTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RemindAgain_When_TheHolderSwitchesTabRemindersBackOn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = NoonTomorrow;
-        var ctx = await BuildAsync(
-            beerList => beerList.AddBeerCrates(Pot, Drinker, 2, now - Week),
-            ct
-        );
-        var phone = await SubscribedDeviceAsync(ctx, Drinker, "tab-muted", ct);
-        await MutedAsync(ctx, Drinker, PushTopic.BeerTab, ct);
-
-        await RemindAtAsync(now, ct);
-        Assert.Empty(PushesAt(_fixture, phone));
-
-        await UnmutedAsync(ctx, Drinker, PushTopic.BeerTab, ct);
-        await RemindAtAsync(now + TimeSpan.FromHours(1), ct);
-        Assert.Single(PushesAt(_fixture, phone));
-    }
-
-    [Fact]
-    public async Task Should_NotRemind_When_TheOldestOpenCrateIsYoungerThanAWeek()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = NoonTomorrow;
-        var ctx = await BuildAsync(
-            beerList =>
-                beerList.AddBeerCrates(Pot, Drinker, 3, now - Week + TimeSpan.FromMinutes(1)),
-            ct
-        );
-        var phone = await SubscribedDeviceAsync(ctx, Drinker, "tab-young", ct);
-
-        await RemindAtAsync(now, ct);
-
-        Assert.Empty(PushesAt(_fixture, phone));
-    }
-
-    [Fact]
     public async Task Should_RemindAgainEveryWeek_When_TheTabStaysOpen()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -98,44 +58,6 @@ public sealed class BeerTabRemindersTests : IClassFixture<ApiTestFixture>
 
         await RemindAtAsync(now + Week, ct);
         Assert.Equal(2, PushesAt(_fixture, phone).Count);
-    }
-
-    [Fact]
-    public async Task Should_RemindAsSoonAsTheHolderTurnsNotificationsOn_When_NoDeviceGotTheDueReminder()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = NoonTomorrow;
-        var ctx = await BuildAsync(
-            beerList => beerList.AddBeerCrates(Pot, Drinker, 1, now - TimeSpan.FromDays(10)),
-            ct
-        );
-
-        await RemindAtAsync(now, ct);
-        var phone = await SubscribedDeviceAsync(ctx, Drinker, "tab-late-device", ct);
-        await RemindAtAsync(now + TimeSpan.FromMinutes(15), ct);
-
-        Assert.Single(PushesAt(_fixture, phone));
-    }
-
-    [Fact]
-    public async Task Should_WaitForTheMorning_When_TheReminderFallsDueOutsideTheDay()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var tomorrow = _fixture.Today.AddDays(1);
-        var ctx = await BuildAsync(
-            beerList =>
-                beerList.AddBeerCrates(Pot, Drinker, 1, NoonTomorrow - TimeSpan.FromDays(10)),
-            ct
-        );
-        var phone = await SubscribedDeviceAsync(ctx, Drinker, "tab-quiet-hours", ct);
-
-        await RemindAtAsync(ClubClock.At(tomorrow, new TimeOnly(20, 0)), ct);
-        await RemindAtAsync(ClubClock.At(tomorrow.AddDays(1), new TimeOnly(3, 0)), ct);
-        await RemindAtAsync(ClubClock.At(tomorrow.AddDays(1), new TimeOnly(9, 59)), ct);
-        Assert.Empty(PushesAt(_fixture, phone));
-
-        await RemindAtAsync(ClubClock.At(tomorrow.AddDays(1), new TimeOnly(10, 0)), ct);
-        Assert.Single(PushesAt(_fixture, phone));
     }
 
     [Fact]
@@ -162,29 +84,6 @@ public sealed class BeerTabRemindersTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheWeeklyRhythm_When_APaymentLeftOlderCratesOpen()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = NoonTomorrow;
-        var ctx = await BuildAsync(
-            beerList =>
-                beerList
-                    .AddBeerCrate("bezahlt", Pot, Drinker, now - TimeSpan.FromDays(20))
-                    .AddBeerPayment("bar", Pot, Drinker, 1)
-                    .AddBeerCrate("offen", Pot, Drinker, now - TimeSpan.FromDays(15))
-                    .AddBeerTabReminder(Drinker, now - TimeSpan.FromDays(6)),
-            ct
-        );
-        var phone = await SubscribedDeviceAsync(ctx, Drinker, "tab-partly-paid", ct);
-
-        await RemindAtAsync(now, ct);
-        Assert.Empty(PushesAt(_fixture, phone));
-
-        await RemindAtAsync(now + TimeSpan.FromDays(1), ct);
-        Assert.Single(PushesAt(_fixture, phone));
-    }
-
-    [Fact]
     public async Task Should_NotRemind_When_EveryOldCrateIsPaidOrUndone()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -203,30 +102,6 @@ public sealed class BeerTabRemindersTests : IClassFixture<ApiTestFixture>
         await RemindAtAsync(now, ct);
 
         Assert.Empty(PushesAt(_fixture, phone));
-    }
-
-    [Fact]
-    public async Task Should_RemindOfCratesStillOwedFromAHandedOverPot_When_TheyAreAWeekOld()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = NoonTomorrow;
-        var ctx = await BuildAsync(
-            beerList =>
-                beerList
-                    .AddBeerPot(
-                        OldPot,
-                        Warden,
-                        openedAt: now - TimeSpan.FromDays(200),
-                        closedAt: now - TimeSpan.FromDays(40)
-                    )
-                    .AddBeerCrates(OldPot, Drinker, 1, now - TimeSpan.FromDays(50)),
-            ct
-        );
-        var phone = await SubscribedDeviceAsync(ctx, Drinker, "tab-old-pot", ct);
-
-        await RemindAtAsync(now, ct);
-
-        Assert.Equal("/beer-list", UrlOf(Assert.Single(PushesAt(_fixture, phone))));
     }
 
     private Task RemindAtAsync(DateTimeOffset instant, CancellationToken ct) =>

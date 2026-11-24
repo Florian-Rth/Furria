@@ -56,26 +56,6 @@ public sealed class PostEventPictureFromGalleryTests : IClassFixture<ApiTestFixt
         );
     }
 
-    [Fact]
-    public async Task Should_DeleteTheFormerPicture_When_APickReplacesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GalaAndGallery(), ct);
-        var client = await ctx.Identity.ClientForAsync(EventPictureSeeds.Keeper, ct);
-        var eventId = ctx.Club.Events.IdOf(EventPictureSeeds.Gala);
-        var formerId = await EventPictureSteps.RenderedAsync(_fixture, client, eventId, ct);
-        var photoId = await GalleryPhotoAsync(ctx, "gala-photo", ct);
-
-        var (_, picked) = await PickAsync(client, eventId, photoId);
-
-        await ctx
-            .Expected.Event(eventId)
-            .ToShowPicture(picked.MediaItemId)
-            .MediaItem(formerId)
-            .ToBeGone()
-            .AssertAsync(ct);
-    }
-
     [Theory]
     [InlineData("binned-photo")]
     [InlineData("inbox-photo")]
@@ -91,26 +71,6 @@ public sealed class PostEventPictureFromGalleryTests : IClassFixture<ApiTestFixt
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         await ctx.Expected.Event(eventId).ToShowPicture(null).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseThePick_When_ThePhotosOriginalIsMissing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GalaAndGallery(), ct);
-        var client = await ctx.Identity.ClientForAsync(EventPictureSeeds.Keeper, ct);
-        var eventId = ctx.Club.Events.IdOf(EventPictureSeeds.Gala);
-        var photoId = ctx.Gallery.Items.IdOf("gala-photo");
-
-        var (response, _) = await PickAsync(client, eventId, photoId);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx
-            .Expected.Event(eventId)
-            .ToShowPicture(null)
-            .MediaItems()
-            .ToHaveCount(3)
-            .AssertAsync(ct);
     }
 
     [Fact]

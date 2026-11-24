@@ -12,12 +12,6 @@ public sealed class RoleSetExpectations
         _expected = expected;
     }
 
-    public Expected ToHaveCount(int count) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(count, await dbContext.Roles.AsNoTracking().CountAsync(ct))
-        );
-
     public Expected ToHaveNameCount(string name, int count) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

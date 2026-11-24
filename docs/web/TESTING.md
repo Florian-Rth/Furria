@@ -5,7 +5,14 @@ one rule, two binding limits, ten corollaries, and a list of what that leaves in
 
 ## The rule
 
-> **A test asserts the return value of a pure function for explicit inputs. Nothing else.**
+> **A test asserts the return value of a pure domain function for explicit inputs. Nothing else.**
+
+*Domain* means the rule would still be true if there were no UI at all. A pure function that
+computes what a screen shows — a view model, a hub/board/tile selector, a label, tone or
+variant, display sorting or grouping, layout, geometry, scroll, scrub, gesture, animation or
+stage machine, player controls — is UI logic and is not tested, however pure it is. No mocks,
+fakes, stubs or spies (`vi.fn`, `vi.mock`, `vi.spyOn`, `vi.stubGlobal`, fake servers, storage
+or transports): a test against a fake tests the fake. If in doubt, it is UI — don't test it.
 
 The UI is not tested. There are no component tests, no route tests, no rendering, no Testing
 Library, no DOM. `vitest` runs on `environment: 'node'` with no setup file.
@@ -23,8 +30,9 @@ Library, no DOM. `vitest` runs on `environment: 'node'` with no setup file.
    (a `…Kind`/`…Variant` function plus a copy map) and test the discriminant; if it is not
    worth restructuring, it is not tested.
 
-What survives is real logic: branching, arithmetic, date math, parsing, scoring, state
-machines, motion and geometry maths.
+What survives is domain logic: business rules, calculations (money, stock, scoring, counts,
+music/count math), date and time math, scheduling and conflict rules, boundary parsing that
+coerces data, and security guards (return-to, token parsing).
 
 ## Why
 
@@ -87,16 +95,17 @@ speed, but so the suite only fails when behaviour is wrong.
 
 ## What we test
 
-Date, money and session formatting · sales-status and capacity derivation · the order-flow
-step machine · matcher scoring, progress and exclusion · membership derivation from a birth
-date · form payload building and search-param parsing · Zod coercion and normalisation ·
-storage read/write helpers · geometry, layout and motion math · the shell's chrome maths
-(below).
+Money, stock and forecast calculations · session, season and Berlin date math · matcher
+scoring · membership, age and consent rules · archive, permission and self-lockout rules ·
+running-order planning and conflict rules · studio music, count, cut and choreography data
+math, save plan and merge · Zod coercion and normalisation · open-redirect and token guards.
 
 ## What we never test
 
 Rendering · routing and redirects · a11y roles and labels · MUI wiring · React Query wiring ·
-React Hook Form wiring · copy, labels and sentences · that a constant equals itself · that
+React Hook Form wiring · view models and display selectors · layout, geometry, gestures,
+scroll, scrub and motion maths · animation and stage machines · HTTP client plumbing ·
+anything that needs a mock or fake · copy, labels and sentences · that a constant equals itself · that
 placeholder seed data has N entries · that a required Zod field is required · that a screen
 declares the right layers · a template string, a trim, a zero-pad or a lookup.
 
@@ -114,19 +123,8 @@ single entry while a screen is searching, and a `fullscreen` screen cannot omit 
 There is nothing to assert here that `pnpm typecheck` does not already prove, and a test that
 mounted a screen to check which layers appeared would be asserting the type system.
 
-**Pure modules own the maths.** Every value the chrome animates or measures is computed by a
-module a test imports directly, never inside a component:
-
-| Module | Answers |
-|---|---|
-| `internal/chrome-density.ts` | `chromeDensityAt(scrollOffset, motion)` → 0…1, and `chromeMaterialAt(density)` → tint, blur, hairline and shadow at that density, both schemes |
-| `KkShell/internal/logic/handover.ts` | `handoverAt(scrollOffset, motion)` → the header's fade and drift against the bar title's rise |
-| `KkShell/internal/logic/keyboard-inset.ts` | `keyboardInsetOf(metrics)` → the occluded pixels, `0` below the threshold |
-| `lib/letter-position.ts` | `hasPassedTheToolbar(clearance)` → whether a letter divider has taken the chrome line |
-
-`motion` is the argument that makes reduced motion testable: under
-`prefers-reduced-motion` the shell passes `'instant'` and both ramps collapse to their end
-states, which is an assertion, not a screenshot.
+**Nothing else owns the chrome.** Chrome maths (density, handover, keyboard inset) lives in
+pure modules so the components stay thin, but it is presentation and is not tested.
 
 **Screenshots own the layout.** Neither gate can see that a correct declaration renders badly
 on a real viewport, and both chrome defects that survived the build were found this way: five
@@ -143,12 +141,11 @@ for one kind of change.
 ## The studio
 
 `@furria/studio` ([ADR-0035](../adr/0035-the-studio-is-its-own-package-and-owns-its-domain-components.md))
-follows the same split. Every decision behind touch, playback and saving is a pure module with
-its own test: `gestures/` (recogniser, hit priority, pan bounds and momentum targets, lift
-placement, drag readout), `timeline/` and `stage/` (geometry, centre scrub, zoom, grid snap),
-`engine/` (mix schedule, video sync, count-in) and `document/` (patches, history, save plan and
-run, autosave — [ADR-0036](../adr/0036-the-studio-edits-a-local-document-saved-in-the-background.md)).
-The hooks and views only move motion values and call them.
+follows the same split. Its domain — music timeline and counts, cuts and final-track
+mapping, formation and movement data, the document's patches, history, save plan and run
+([ADR-0036](../adr/0036-the-studio-edits-a-local-document-saved-in-the-background.md)) — is
+tested as pure modules. Gestures, timeline/stage geometry, scrub, zoom, practice controls and
+desk state are UI and are not.
 
 **Devices own the feel.** Whether a drag lifts, glides and snaps right on iPhone, Pixel and
 iPad Safari is not something Chromium or a test can see. Touch work ends on the devices, and
@@ -174,7 +171,7 @@ config carries the TanStack Router plugin (which regenerates `routeTree.gen.ts`)
 plugin and the React Compiler Babel preset, none of which a pure-function test needs. The
 test config holds only the `@` alias, `environment: 'node'`, `pool: 'threads'` and
 `isolate: false` — pure modules share no state, so one module graph per worker is safe and
-skips re-importing it per file. A test that stubs a global must restore it in `afterEach`.
+skips re-importing it per file. Nothing is stubbed or mocked.
 
 ## Running
 

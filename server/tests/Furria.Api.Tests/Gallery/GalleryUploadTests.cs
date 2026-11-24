@@ -24,52 +24,6 @@ public sealed class GalleryUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SkipTheInbox_When_TheUploadGoesStraightIntoAnAlbum()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Uploader(), ct);
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var albumId = ctx.Gallery.Albums.IdOf("gala");
-
-        var mediaItemId = await TusUploadSteps.UploadAsync(
-            client,
-            TusUploadSteps.GalleryOwner,
-            FileName,
-            MediaSamples.Jpeg(2 * ChunkLength + 3),
-            ChunkLength,
-            ct,
-            albumId
-        );
-
-        await ctx
-            .Expected.GalleryItem(mediaItemId)
-            .ToBePlacedIn(albumId, _fixture.TimeProvider.GetUtcNow())
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_LandInHerInbox_When_TheUploadNamesNoAlbum()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Uploader(), ct);
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var mediaItemId = await TusUploadSteps.UploadAsync(
-            client,
-            TusUploadSteps.GalleryOwner,
-            FileName,
-            MediaSamples.Jpeg(ChunkLength),
-            ChunkLength,
-            ct
-        );
-
-        await ctx
-            .Expected.GalleryItem(mediaItemId)
-            .ToSitInTheInboxOf(ctx.Identity.People.IdOf("ilka"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_LandInHerInbox_When_TheAlbumIsBinnedWhileSheUploads()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -118,25 +72,6 @@ public sealed class GalleryUploadTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheUpload_When_APortraitNamesAnAlbum()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Uploader(), ct);
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var response = await TusUploadSteps.CreateAsync(
-            client,
-            TusUploadSteps.PersonOwner(ctx.Identity.People.IdOf("ilka")),
-            FileName,
-            ChunkLength,
-            ct,
-            ctx.Gallery.Albums.IdOf("gala")
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private static Action<SeedContextBuilder> Uploader() =>

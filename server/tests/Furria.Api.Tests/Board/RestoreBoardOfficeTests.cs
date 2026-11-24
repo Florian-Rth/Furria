@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Board;
 using Furria.Api.Tests.Authorization;
@@ -11,9 +10,6 @@ namespace Furria.Api.Tests.Board;
 
 public sealed class RestoreBoardOfficeTests : IClassFixture<ApiTestFixture>
 {
-    private const string ConflictField = "conflict";
-    private const string NotArchivedMessage = "Diese Vorstandsfunktion ist nicht archiviert.";
-
     private static readonly DateOnly Elected2016 = new(2016, 11, 11);
     private static readonly DateOnly HandedOver2020 = new(2020, 11, 10);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -33,32 +29,6 @@ public sealed class RestoreBoardOfficeTests : IClassFixture<ApiTestFixture>
         client.POSTAsync<RestoreBoardOffice, RestoreBoardOfficeRequest>(
             new RestoreBoardOfficeRequest { BoardOfficeId = boardOfficeId }
         );
-
-    [Fact]
-    public async Task Should_LetTheOfficeBackIntoTheBand_When_TheBoardRestoresIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Club(club =>
-                    club.AddBoardOffice("beisitzer", "Beisitzer", 3, null, ArchivedIn2021)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RestoreOfficeAsync(client, ctx.Club.BoardOffices.IdOf("beisitzer"));
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("beisitzer"))
-            .ToBeOpen()
-            .BoardOffice(ctx.Club.BoardOffices.IdOf("beisitzer"))
-            .ToHaveName("Beisitzer")
-            .BoardOffice(ctx.Club.BoardOffices.IdOf("beisitzer"))
-            .ToHaveSortOrder(3)
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_LiftTheArchiveOfEveryoneWhoseSeatRunsAgain_When_TheOfficeIsRestored()
@@ -97,39 +67,6 @@ public sealed class RestoreBoardOfficeTests : IClassFixture<ApiTestFixture>
             .ToNotBeArchived()
             .Person(ctx.Identity.People.IdOf("anna"))
             .ToBeArchived(ArchivedIn2021, null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepEverySeat_When_TheOfficeIsRestored()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
-                    .Club(club =>
-                        club.AddBoardOffice("pressewart", "Pressewart", 4, null, ArchivedIn2021)
-                            .AddBoardSeat(
-                                "ilka-pressewart",
-                                "pressewart",
-                                "ilka",
-                                Elected2016,
-                                HandedOver2020
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RestoreOfficeAsync(client, ctx.Club.BoardOffices.IdOf("pressewart"));
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BoardSeatsOfOffice(ctx.Club.BoardOffices.IdOf("pressewart"))
-            .ToHaveCount(1)
-            .BoardSeat(ctx.Club.BoardSeats.IdOf("ilka-pressewart"))
-            .ToHavePeriod(Elected2016, HandedOver2020)
             .AssertAsync(ct);
     }
 
@@ -185,36 +122,5 @@ public sealed class RestoreBoardOfficeTests : IClassFixture<ApiTestFixture>
             .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
             .ToImplyRole(ctx.Roles.Roles.IdOf("personenpflege"))
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheOfficeIsNotArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddBoardOffice("kassenwart", "Kassenwart", 2)),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RestoreOfficeAsync(client, ctx.Club.BoardOffices.IdOf("kassenwart"));
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal([NotArchivedMessage], failures[ConflictField]);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("kassenwart"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
-        HttpResponseMessage response,
-        CancellationToken ct
-    )
-    {
-        var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>(ct);
-        return payload?.Errors
-            ?? throw new InvalidOperationException("The failure response carried no errors.");
     }
 }

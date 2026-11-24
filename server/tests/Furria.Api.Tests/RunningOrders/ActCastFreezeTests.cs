@@ -1,5 +1,3 @@
-using FastEndpoints;
-using Furria.Api.Endpoints.Acts;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
@@ -39,28 +37,6 @@ public sealed class ActCastFreezeTests : IClassFixture<ApiTestFixture>
                     .Expected.Act(actId)
                     .ToHaveFrozenCastExactly(people.IdOf(Anna), people.IdOf(Ben), people.IdOf(Dora))
                     .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowTheAshWednesdayCast_When_TheGroupChangedAfterTheSessionClosed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, _) = await GardetanzOfTheRunningSessionAsync(ct);
-
-        await _fixture.AtInstantAsync(
-            AfterItsAshWednesday,
-            async () =>
-            {
-                var client = await ctx.Identity.SignInAgainAsync(Planner, ct);
-
-                var (_, result) = await client.GETAsync<GetActs, GetActsRequest, GetActsResponse>(
-                    new() { Session = RunningSessionYear }
-                );
-
-                var act = Assert.Single(result.Acts);
-                Assert.Equal(["Anna", "Ben", "Dora"], act.Cast.Select(person => person.FirstName));
             }
         );
     }

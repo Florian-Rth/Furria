@@ -11,12 +11,6 @@ export interface LetterPosition {
   markLetter: (letter: string) => void;
 }
 
-/**
- * The shell publishes its head clearance as the document's `scroll-padding-top`, so every
- * `scrollIntoView` lands below the chrome. Reading that one value back keeps the index in step
- * with the list at every width and through every chrome change, where a constant would only
- * ever be right at the one height it was measured at.
- */
 const toBarClearance = (): number =>
   Number.parseFloat(window.getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
 

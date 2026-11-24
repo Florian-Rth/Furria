@@ -148,18 +148,6 @@ public sealed class MediaItemExpectations
                 )
         );
 
-    public Expected ToBeThePictureOfGroup(int groupId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    _mediaItemId,
-                    await dbContext
-                        .Groups.Where(group => group.Id == groupId)
-                        .Select(group => group.PictureId)
-                        .SingleAsync(ct)
-                )
-        );
-
     public Expected ToBeCroppedTo(PictureCrop crop) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

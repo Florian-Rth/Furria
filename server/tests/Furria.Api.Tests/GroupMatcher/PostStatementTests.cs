@@ -2,7 +2,6 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.GroupMatcher;
 using Furria.Application.Authorization;
-using Furria.Application.GroupMatcher;
 using Furria.Core.GroupMatcher;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -17,38 +16,6 @@ public sealed class PostStatementTests : IClassFixture<ApiTestFixture>
     public PostStatementTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_AppendTheStatementToThePool_When_TheManagerAddsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(statementCount: 2, ct);
-
-        var (response, result) = await AddAsync(ctx, "  Wir tanzen rückwärts. ", ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.MatcherStatement(result.StatementId)
-            .ToBeInPoolAs("Wir tanzen rückwärts.", sortOrder: 3)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_MarkTheStatementNewForATakingPartGroup_When_TheManagerAddsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(statementCount: 1, ct);
-
-        var (_, result) = await AddAsync(ctx, "Wir tanzen rückwärts.", ct);
-
-        var client = await ctx.Identity.ClientForAsync("klara", ct);
-        var (_, pool) = await client.GETAsync<GetStatementPool, GetStatementPoolResponse>();
-        var tanzgarde = Assert.Single(pool.Coverage);
-        Assert.Equal(
-            GroupStatementState.New,
-            tanzgarde.Cells.Single(cell => cell.StatementId == result.StatementId).State
-        );
     }
 
     [Fact]

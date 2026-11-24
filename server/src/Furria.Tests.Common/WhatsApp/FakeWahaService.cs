@@ -10,60 +10,32 @@ public sealed class FakeWahaService : HttpMessageHandler
     public const string ScanningQrValue = "2@fake-waha-qr,linking";
     public const string PairingCode = "ABCD-EFGH";
     public const string InviteLink = "https://chat.whatsapp.com/FakeInvite";
-    public const int PrivacyRefusal = 403;
 
     private const string ScanningStatus = "SCAN_QR_CODE";
     private const string WorkingStatus = "WORKING";
 
     private readonly ConcurrentDictionary<string, string> _groups = new();
-    private readonly ConcurrentDictionary<string, string> _phoneIdsOfLids = new();
     private readonly ConcurrentDictionary<string, string> _contactNames = new();
     private readonly ConcurrentQueue<FakeWahaSend> _sent = new();
     private readonly ConcurrentDictionary<
         string,
         ConcurrentDictionary<string, string?>
     > _participants = new();
-    private readonly ConcurrentDictionary<string, byte> _refusingAdds = new();
     private readonly Lock _sessionLock = new();
     private string? _sessionStatus;
     private string? _botAccountId;
-    private volatile bool _isOffline;
-    private string? _pairingPhoneNumber;
-    private string? _lastSessionCall;
     private int _sentCount;
     private (HttpStatusCode Status, string Body)? _sendRefusal;
-
-    public string? PairingPhoneNumber
-    {
-        get
-        {
-            lock (_sessionLock)
-                return _pairingPhoneNumber;
-        }
-    }
-
-    public string? LastSessionCall
-    {
-        get
-        {
-            lock (_sessionLock)
-                return _lastSessionCall;
-        }
-    }
 
     public IReadOnlyList<FakeWahaSend> Sent => [.. _sent];
 
     public void JoinGroup(string chatId, string name) => _groups[chatId] = name;
-
-    public void KnowLid(string lid, string phoneId) => _phoneIdsOfLids[lid] = phoneId;
 
     public void SeatParticipant(string groupChatId, string participantId, string? phoneId = null) =>
         _participants.GetOrAdd(groupChatId, _ => new())[participantId] = phoneId;
 
     public void Unseat(string groupChatId, string participantId) =>
         _participants.GetOrAdd(groupChatId, _ => new()).TryRemove(participantId, out _);
-
-    public void RefuseAddingOf(string participantId) => _refusingAdds[participantId] = 0;
 
     public void KnowContact(string contactId, string pushName) =>
         _contactNames[contactId] = pushName;
@@ -72,12 +44,6 @@ public sealed class FakeWahaService : HttpMessageHandler
     {
         lock (_sessionLock)
             _sendRefusal = (status, body);
-    }
-
-    public void HoldSession(string status)
-    {
-        lock (_sessionLock)
-            _sessionStatus = status;
     }
 
     public void LinkBot(string botAccountId)
@@ -89,24 +55,17 @@ public sealed class FakeWahaService : HttpMessageHandler
         }
     }
 
-    public void GoOffline() => _isOffline = true;
-
     public void Forget()
     {
         _groups.Clear();
-        _phoneIdsOfLids.Clear();
         _contactNames.Clear();
         _sent.Clear();
         _participants.Clear();
-        _refusingAdds.Clear();
         lock (_sessionLock)
         {
             _sendRefusal = null;
             _sessionStatus = null;
             _botAccountId = null;
-            _isOffline = false;
-            _pairingPhoneNumber = null;
-            _lastSessionCall = null;
         }
     }
 
@@ -115,9 +74,6 @@ public sealed class FakeWahaService : HttpMessageHandler
         CancellationToken cancellationToken
     )
     {
-        if (_isOffline)
-            throw new HttpRequestException("The fake WAHA service is offline.");
-
         var path = request.RequestUri?.AbsolutePath ?? "";
         var body = request.Content is null
             ? ""
@@ -135,7 +91,7 @@ public sealed class FakeWahaService : HttpMessageHandler
             : ContactOf(ContactIdOf(query));
 
     private HttpResponseMessage PhoneOfLid(string lid) =>
-        Json(JsonSerializer.Serialize(new { lid, pn = _phoneIdsOfLids.GetValueOrDefault(lid) }));
+        Json(JsonSerializer.Serialize(new { lid, pn = (string?)null }));
 
     private HttpResponseMessage ContactOf(string contactId) =>
         _contactNames.TryGetValue(contactId, out var pushName)
@@ -157,11 +113,11 @@ public sealed class FakeWahaService : HttpMessageHandler
         {
             ("GET", "groups") => Json(GroupsJson()),
             ("GET", "session") => SessionJson(),
-            ("POST", "sessions" or "start" or "restart") => StartScanning(Route(path)),
+            ("POST", "sessions" or "start" or "restart") => StartScanning(),
             ("GET", "qr") => ScanningOnly(() =>
                 Json(JsonSerializer.Serialize(new { value = ScanningQrValue }))
             ),
-            ("POST", "request-code") => ScanningOnly(() => RequestPairingCode(body)),
+            ("POST", "request-code") => ScanningOnly(RequestPairingCode),
             ("POST", "sendText" or "sendImage" or "sendPoll" or "events") => Send(
                 Route(path),
                 body
@@ -213,9 +169,8 @@ public sealed class FakeWahaService : HttpMessageHandler
                 )
             );
 
-    private HttpResponseMessage StartScanning(string call)
+    private HttpResponseMessage StartScanning()
     {
-        _lastSessionCall = call;
         _sessionStatus = ScanningStatus;
         return Json("{}");
     }
@@ -225,12 +180,8 @@ public sealed class FakeWahaService : HttpMessageHandler
             ? answer()
             : new HttpResponseMessage(HttpStatusCode.UnprocessableEntity);
 
-    private HttpResponseMessage RequestPairingCode(string body)
-    {
-        using var document = JsonDocument.Parse(body);
-        _pairingPhoneNumber = document.RootElement.GetProperty("phoneNumber").GetString();
-        return Json(JsonSerializer.Serialize(new { code = PairingCode }));
-    }
+    private static HttpResponseMessage RequestPairingCode() =>
+        Json(JsonSerializer.Serialize(new { code = PairingCode }));
 
     private HttpResponseMessage Send(string kind, string body)
     {
@@ -363,17 +314,12 @@ public sealed class FakeWahaService : HttpMessageHandler
         foreach (var participantId in participantIds)
         {
             _sent.Enqueue(new FakeWahaSend("add", groupChatId, participantId, [], ""));
-            if (!_refusingAdds.ContainsKey(participantId))
-                SeatParticipant(groupChatId, participantId);
+            SeatParticipant(groupChatId, participantId);
         }
 
         return Json(
             JsonSerializer.Serialize(
-                participantIds.Select(participantId => new
-                {
-                    JID = participantId,
-                    Error = _refusingAdds.ContainsKey(participantId) ? PrivacyRefusal : 0,
-                })
+                participantIds.Select(participantId => new { JID = participantId, Error = 0 })
             )
         );
     }

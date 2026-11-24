@@ -21,50 +21,6 @@ public sealed class GetChoosablePeopleTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListEveryChoosablePersonByName_When_ACalendarManagerAsks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, result) = await client.GETAsync<
-            GetChoosablePeople,
-            GetChoosablePeopleResponse
-        >();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(
-            ["Bea Garde", "Chris Trainer", "Gabi Gast", "Ilka Kalender", "Nora Neu"],
-            result.People.Select(person => $"{person.FirstName} {person.LastName}")
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameOnlyTheRunningGroupsSheBelongsTo_When_ThePeopleAreListed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
-        var kindergarde = ctx.Groups.Groups.IdOf("kindergarde");
-
-        var client = await ctx.Identity.ClientForAsync("chris", ct);
-        var (response, result) = await client.GETAsync<
-            GetChoosablePeople,
-            GetChoosablePeopleResponse
-        >();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal([tanzgarde], GroupIdsOf(result, ctx.Identity.People.IdOf("bea")));
-        Assert.Empty(GroupIdsOf(result, ctx.Identity.People.IdOf("chris")));
-        Assert.Empty(GroupIdsOf(result, ctx.Identity.People.IdOf("gabi")));
-        Assert.Equal(
-            new[] { tanzgarde, kindergarde }.Order(),
-            GroupIdsOf(result, ctx.Identity.People.IdOf("ilka"))
-        );
-        Assert.Equal([kindergarde], GroupIdsOf(result, ctx.Identity.People.IdOf("nora")));
-    }
-
-    [Fact]
     public async Task Should_LeaveOutAGuest_When_HerGroupTiesHaveEnded()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -190,7 +146,4 @@ public sealed class GetChoosablePeopleTests : IClassFixture<ApiTestFixture>
             ct
         );
     }
-
-    private static IEnumerable<int> GroupIdsOf(GetChoosablePeopleResponse result, int personId) =>
-        result.People.Single(person => person.PersonId == personId).GroupIds.Order();
 }

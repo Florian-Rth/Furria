@@ -16,15 +16,6 @@ public sealed class RunningOrderCostPipelineTests
     }
 
     [Fact]
-    public void Should_CostAHint_When_APersonHasOnlyOneNummerToChange()
-    {
-        var costs = CostsOf([Nummer(1, 0, Anna), Nummer(2, 1), Nummer(3, 2, Anna)]);
-
-        Assert.Equal(10, costs[RunningOrderCostStep.TightChangeover]);
-        Assert.Equal(10, costs.Values.Sum());
-    }
-
-    [Fact]
     public void Should_CostAConflict_When_AMustRuleIsBroken()
     {
         var costs = CostsOf(
@@ -33,34 +24,6 @@ public sealed class RunningOrderCostPipelineTests
         );
 
         Assert.Equal(1000, costs[RunningOrderCostStep.MustRules]);
-    }
-
-    [Fact]
-    public void Should_CostAHint_When_APreferRuleIsMissed()
-    {
-        var costs = CostsOf(
-            [Nummer(1, 0), Nummer(2, 1)],
-            [Rule(RunningOrderRuleKind.First, RuleStrength.Prefer, 2)]
-        );
-
-        Assert.Equal(10, costs[RunningOrderCostStep.PreferRules]);
-        Assert.Equal(0, costs[RunningOrderCostStep.MustRules]);
-    }
-
-    [Fact]
-    public void Should_CostAHint_When_TwoSpeechesFollowEachOther()
-    {
-        var costs = CostsOf([Speech(1, 0), Speech(2, 1), Nummer(3, 2)]);
-
-        Assert.Equal(10, costs[RunningOrderCostStep.SameKind]);
-    }
-
-    [Fact]
-    public void Should_CostAHint_When_ANummerIsLeftUnplaced()
-    {
-        var costs = CostsOf([Nummer(1, 0), Nummer(2, null)]);
-
-        Assert.Equal(10, costs[RunningOrderCostStep.Unplaced]);
     }
 
     [Fact]

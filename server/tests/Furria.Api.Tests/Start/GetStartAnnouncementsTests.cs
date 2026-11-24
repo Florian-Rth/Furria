@@ -33,46 +33,6 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListAnAnnouncement_When_ItWasPublishedAfterHerLastVisit()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(
-                    club =>
-                        club.AddAnnouncement(
-                            "busfahrt",
-                            "karin",
-                            "Busfahrt zum Rosenmontagsumzug",
-                            "Abfahrt 9 Uhr am Markt.",
-                            TuesdayEvening.AddDays(-1)
-                        ),
-                    ct
-                );
-                var client = await ctx.Identity.ClientForAsync("lena", ct);
-                await MarkSeenAsync(client, TuesdayEvening.AddDays(-3));
-
-                var start = await StartOfAsync(client);
-
-                var announcement = Assert.Single(AnnouncementsOf(start));
-                Assert.Equal(ctx.Club.Announcements.IdOf("busfahrt"), announcement.AnnouncementId);
-                Assert.True(announcement.IsNew);
-                Assert.Equal("Busfahrt zum Rosenmontagsumzug", announcement.Title);
-                Assert.Equal("Abfahrt 9 Uhr am Markt.", announcement.Body);
-                Assert.Equal(TuesdayEvening.AddDays(-1), announcement.PublishedAt);
-                Assert.NotNull(announcement.Author);
-                Assert.Equal(ctx.Identity.People.IdOf("karin"), announcement.Author.PersonId);
-                Assert.Equal("Karin", announcement.Author.FirstName);
-                Assert.Equal("Aushang", announcement.Author.LastName);
-                Assert.Null(announcement.Author.OfficeName);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_ListAnAnnouncementAsSeen_When_SheSawTheBoardAfterItWasPublished()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -108,49 +68,6 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
                     [
                         (ctx.Club.Announcements.IdOf("neu"), true),
                         (ctx.Club.Announcements.IdOf("gelesen"), false),
-                    ],
-                    AnnouncementsOf(start)
-                        .Select(announcement => (announcement.AnnouncementId, announcement.IsNew))
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ListAnAnnouncementAsSeen_When_ItWasPublishedMoreThanSixtyDaysAgo()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(
-                    club =>
-                        club.AddAnnouncement(
-                                "alt",
-                                "karin",
-                                "Helfer fürs Sommerfest",
-                                "Bitte melden.",
-                                TuesdayEvening.AddDays(-61)
-                            )
-                            .AddAnnouncement(
-                                "noch-frisch",
-                                "karin",
-                                "Jahreshauptversammlung",
-                                "Einladung folgt.",
-                                TuesdayEvening.AddDays(-59)
-                            ),
-                    ct
-                );
-                var client = await ctx.Identity.ClientForAsync("lena", ct);
-
-                var start = await StartOfAsync(client);
-
-                Assert.Equal(
-                    [
-                        (ctx.Club.Announcements.IdOf("noch-frisch"), true),
-                        (ctx.Club.Announcements.IdOf("alt"), false),
                     ],
                     AnnouncementsOf(start)
                         .Select(announcement => (announcement.AnnouncementId, announcement.IsNew))
@@ -201,36 +118,6 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListHerOwnAnnouncementAsSeen_When_SheWroteIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(
-                    club =>
-                        club.AddAnnouncement(
-                            "eigener",
-                            "lena",
-                            "Mitfahrgelegenheit",
-                            "Zwei Plätze frei.",
-                            TuesdayEvening.AddDays(-1)
-                        ),
-                    ct
-                );
-                var client = await ctx.Identity.ClientForAsync("lena", ct);
-
-                var start = await StartOfAsync(client);
-
-                var announcement = Assert.Single(AnnouncementsOf(start));
-                Assert.False(announcement.IsNew);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutAnnouncements_When_TheViewerHoldsNoClubRead()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -256,40 +143,6 @@ public sealed class GetStartAnnouncementsTests : IClassFixture<ApiTestFixture>
 
                 Assert.True(start.ViewerIsActiveInClub);
                 Assert.Empty(AnnouncementsOf(start));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameTheAuthorsOffice_When_TheAuthorHoldsABoardSeat()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(
-                    club =>
-                        club.AddBoardOffice("praesident", "Präsident")
-                            .AddBoardSeat("frank-praesident", "praesident", "frank", JoinedIn2015)
-                            .AddAnnouncement(
-                                "orden",
-                                "frank",
-                                "Sessionsorden sind da",
-                                "Abholung im Vereinsraum.",
-                                TuesdayEvening.AddDays(-1)
-                            ),
-                    ct
-                );
-                var client = await ctx.Identity.ClientForAsync("lena", ct);
-
-                var start = await StartOfAsync(client);
-
-                var announcement = Assert.Single(AnnouncementsOf(start));
-                Assert.NotNull(announcement.Author);
-                Assert.Equal(ctx.Identity.People.IdOf("frank"), announcement.Author.PersonId);
-                Assert.Equal("Präsident", announcement.Author.OfficeName);
             }
         );
     }

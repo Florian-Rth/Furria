@@ -50,9 +50,6 @@ public static class SoundSamples
         return new SoundSignal(samples, Rate);
     }
 
-    public static SoundSignal Silence(double seconds) =>
-        new(new float[(int)(seconds * Rate)], Rate);
-
     public static SoundSignal RecordedInAHall(SoundSignal music, double roomSecondsBefore, int seed)
     {
         var random = new Random(seed);

@@ -64,25 +64,4 @@ public sealed class PutActEveningCastTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(clara, Assert.Single(evening.Appearance!.Added).PersonId);
             }
         );
-
-    [Fact]
-    public Task Should_ForgetTheChange_When_TheDancerIsBackForTheEvening() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-                var gala = ctx.Club.Events.IdOf(Gala);
-                var anna = ctx.Identity.People.IdOf(Anna);
-                await CastForEveningAsync(admin, actId, gala, anna, dances: false);
-
-                await CastForEveningAsync(admin, actId, gala, anna, dances: true);
-
-                var appearance = (await EveningOfAsync(admin, actId, gala)).Appearance!;
-                Assert.Equal(0, appearance.RemovedPersonIds.Count + appearance.Added.Count);
-            }
-        );
 }

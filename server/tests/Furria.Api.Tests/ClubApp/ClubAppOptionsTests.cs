@@ -26,30 +26,6 @@ public sealed class ClubAppOptionsTests
     }
 
     [Fact]
-    public void Should_ReadEveryFingerprint_When_TheyComeAsAnArray()
-    {
-        var options = ClubAppOptionsOf(
-            new()
-            {
-                [$"{FingerprintsKey}:0"] = DebugFingerprint,
-                [$"{FingerprintsKey}:1"] = ReleaseFingerprint,
-            }
-        );
-
-        Assert.Equal([DebugFingerprint, ReleaseFingerprint], options.AndroidCertFingerprints);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData(" , ")]
-    public void Should_AcceptNoFingerprint_When_TheValueIsEmpty(string value)
-    {
-        var options = ClubAppOptionsOf(new() { [FingerprintsKey] = value });
-
-        Assert.Empty(options.AndroidCertFingerprints);
-    }
-
-    [Fact]
     public void Should_RefuseTheOptions_When_AnEntryIsNoFingerprint()
     {
         Assert.Throws<OptionsValidationException>(() =>

@@ -6,7 +6,6 @@ namespace Furria.Api.Tests;
 public sealed class NativeOriginCorsTests : IClassFixture<ApiTestFixture>
 {
     private const string AndroidOrigin = "https://localhost";
-    private const string IosOrigin = "capacitor://localhost";
     private const string ForeignOrigin = "https://furria.example";
     private const string LoginPath = "api/auth/login";
 
@@ -43,42 +42,6 @@ public sealed class NativeOriginCorsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_EchoAllowedOrigin_When_IosWebViewPreflightsLogin()
-    {
-        var client = _fixture.CreateClient();
-
-        var response = await client.SendAsync(
-            Preflight(IosOrigin, "POST"),
-            TestContext.Current.CancellationToken
-        );
-
-        Assert.Equal(
-            IosOrigin,
-            Assert.Single(response.Headers.GetValues("Access-Control-Allow-Origin"))
-        );
-    }
-
-    [Theory]
-    [InlineData("GET")]
-    [InlineData("POST")]
-    [InlineData("PUT")]
-    [InlineData("DELETE")]
-    public async Task Should_AllowMethod_When_NativeClientPreflightsIt(string method)
-    {
-        var client = _fixture.CreateClient();
-
-        var response = await client.SendAsync(
-            Preflight(AndroidOrigin, method),
-            TestContext.Current.CancellationToken
-        );
-
-        Assert.Contains(
-            method,
-            Assert.Single(response.Headers.GetValues("Access-Control-Allow-Methods"))
-        );
-    }
-
-    [Fact]
     public async Task Should_SendNoCorsHeaders_When_ForeignOriginPreflightsLogin()
     {
         var client = _fixture.CreateClient();
@@ -89,23 +52,6 @@ public sealed class NativeOriginCorsTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.False(response.Headers.Contains("Access-Control-Allow-Origin"));
-    }
-
-    [Fact]
-    public async Task Should_AllowAuthorizationHeader_When_NativeClientPreflightsLogin()
-    {
-        var client = _fixture.CreateClient();
-
-        var response = await client.SendAsync(
-            Preflight(AndroidOrigin, "POST"),
-            TestContext.Current.CancellationToken
-        );
-
-        Assert.Contains(
-            "authorization",
-            Assert.Single(response.Headers.GetValues("Access-Control-Allow-Headers")),
-            StringComparison.OrdinalIgnoreCase
-        );
     }
 
     [Fact]

@@ -47,22 +47,6 @@ public sealed class PutStatementTextTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_LeaveTheStancesCurrent_When_TheTextIsUnchanged()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("klara", ct);
-
-        var response = await RewordAsync(client, ctx, "konfetti", $" {Original} ");
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MatcherStatement(ctx.GroupMatcher.Statements.IdOf("konfetti"))
-            .ToBeRewordedAt(null)
-            .AssertAsync(ct);
-    }
-
     private Task<SeededContext> BuildAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>

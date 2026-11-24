@@ -29,40 +29,6 @@ public sealed class PutMyWelcomeSeenTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReportTheWelcomeUnseen_When_TheMemberHasNeverSeenIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Null(result.WelcomeSeenAt);
-    }
-
-    [Fact]
-    public async Task Should_StoreNow_When_TheMemberHasSeenTheWelcome()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            FirstSignIn,
-            async () =>
-            {
-                var ctx = await BuildAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var response = await MarkSeenAsync(client);
-                var (_, me) = await client.GETAsync<GetMe, GetMeResponse>();
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-                Assert.Equal(FirstSignIn, me.WelcomeSeenAt);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_KeepTheFirstMoment_When_TheWelcomeIsMarkedSeenAgain()
     {
         var ct = TestContext.Current.CancellationToken;

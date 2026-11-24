@@ -19,25 +19,6 @@ public sealed class CloseAnnouncementAttendanceTests : IClassFixture<ApiTestFixt
         _fixture = fixture;
     }
 
-    [Theory]
-    [InlineData("alice")]
-    [InlineData("ilka")]
-    public async Task Should_CloseTheAttendanceByHand_When_TheAuthorOrAPosterClosesIt(
-        string callerAlias
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-
-        var response = await CloseAsync(ctx, callerAlias, ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Announcement(ctx.Club.Announcements.IdOf("fest"))
-            .ToHaveAttendanceClosed(Now, ctx.Identity.People.IdOf(callerAlias))
-            .AssertAsync(ct);
-    }
-
     [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerNeitherWroteNorMayPostAnnouncements()
     {

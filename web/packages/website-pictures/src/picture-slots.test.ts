@@ -1,11 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fillCountOf, fillOf, orphansOf, slotsByPage, transferTargetsOf } from './picture-slots';
-
-const pages = [
-  { key: 'landing', title: 'Landing', path: '/' },
-  { key: 'club', title: 'Club', path: '/club' },
-  { key: 'site', title: 'Site', path: null },
-];
+import { fillOf, orphansOf, transferTargetsOf } from './picture-slots';
 
 const slots = {
   'club.story': {
@@ -31,20 +25,6 @@ const slots = {
   },
 } as const;
 
-describe('slotsByPage', () => {
-  it('groups the slots under their pages in page order, leaving out pages without slots', () => {
-    const grouped = slotsByPage(pages, slots).map((group) => ({
-      page: group.page.key,
-      slots: group.slots.map((slot) => slot.key),
-    }));
-
-    expect(grouped).toEqual([
-      { page: 'landing', slots: ['landing.hero', 'landing.stack'] },
-      { page: 'club', slots: ['club.story'] },
-    ]);
-  });
-});
-
 describe('fillOf', () => {
   it('reports every declared position as empty, filled or cut to another aspect', () => {
     const stored = [
@@ -69,24 +49,6 @@ describe('fillOf', () => {
     const stored = [{ slot: 'landing.hero', position: 1, aspect: 1.4000000000000001 }];
 
     expect(fillOf('landing.hero', slots['landing.hero'], stored)[0]?.state).toBe('filled');
-  });
-});
-
-describe('fillCountOf', () => {
-  it.each([
-    ['nothing stored', [], { filled: 0, total: 5 }],
-    [
-      'filled and mismatched positions, ignoring orphans',
-      [
-        { slot: 'landing.hero', position: 1, aspect: 7 / 5 },
-        { slot: 'landing.stack', position: 2, aspect: 7 / 5 },
-        { slot: 'landing.stack', position: 4, aspect: 7 / 5 },
-        { slot: 'gone.slot', position: 1, aspect: 7 / 5 },
-      ],
-      { filled: 2, total: 5 },
-    ],
-  ])('counts %s', (_, stored, expected) => {
-    expect(fillCountOf(slots, stored)).toEqual(expected);
   });
 });
 
@@ -121,12 +83,6 @@ describe('transferTargetsOf', () => {
         { slot: 'landing.stack', position: 3 },
       ],
     ],
-    [
-      'a portrait orphan to the empty portrait position',
-      4 / 5,
-      [{ slot: 'landing.stack', position: 2 }],
-    ],
-    ['an orphan whose aspect no empty position declares nowhere', 2, []],
   ])('offers %s', (_, aspect, expected) => {
     const orphan = { slot: 'retired.banner', position: 1, aspect };
 

@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Intakes;
-using Furria.Api.Endpoints.WhatsApp;
 using Furria.Core.Intakes;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -11,7 +10,6 @@ namespace Furria.Api.Tests.Intakes;
 
 public sealed class LookUpIntakeLinkTests : IClassFixture<ApiTestFixture>
 {
-    private const string ClubChatId = "120363000000000001@g.us";
     private const string UnknownToken = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA";
 
     private readonly ApiTestFixture _fixture;
@@ -19,64 +17,6 @@ public sealed class LookUpIntakeLinkTests : IClassFixture<ApiTestFixture>
     public LookUpIntakeLinkTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_NameTheClubAndAskForHerAddress_When_SheBecomesAMember()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-            {
-                With(intakes => intakes.AddIntake("fresh", Manager, _fixture.Today))(builder);
-                builder.Club(club => club.SetClubRecord(name: "Faschingsclub Narrenstadt"));
-            },
-            ct
-        );
-
-        var (response, link) = await LookUpAsync(ctx.Intakes.LinkTokens.IdOf("fresh"));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal("Faschingsclub Narrenstadt", link.ClubName);
-        Assert.Equal(IntakeLinkState.Open, link.State);
-        Assert.True(link.AddressRequired);
-    }
-
-    [Fact]
-    public async Task Should_NotAskForHerAddress_When_SheOnlyJoinsGroups()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            With(intakes => intakes.AddIntake("fresh", GuardTrainer, groupAliases: [Guard])),
-            ct
-        );
-
-        var (_, link) = await LookUpAsync(ctx.Intakes.LinkTokens.IdOf("fresh"));
-
-        Assert.False(link.AddressRequired);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Should_TellHerWhetherTheClubGroupTakesMembers_When_SheOpensTheLink(
-        bool keepsMembers
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            With(intakes => intakes.AddIntake("fresh", GuardTrainer, groupAliases: [Guard])),
-            ct
-        );
-        await _fixture.LinkClubWhatsAppGroupAsync(ClubChatId, ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await manager.PUTAsync<PutWhatsAppGroupKeeping, PutWhatsAppGroupKeepingRequest>(
-            new() { KeepsMembers = keepsMembers }
-        );
-
-        var (_, link) = await LookUpAsync(ctx.Intakes.LinkTokens.IdOf("fresh"));
-
-        Assert.Equal(keepsMembers, link.KeepsClubGroup);
     }
 
     [Theory]

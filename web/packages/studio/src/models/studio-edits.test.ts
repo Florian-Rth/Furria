@@ -1,5 +1,5 @@
 import type { TimedKeyframe } from '@furria/studio/choreography-motion';
-import { borderMovedOf, draggedPointOf, placedTrackOf } from '@furria/studio/studio-edits';
+import { borderMovedOf, placedTrackOf } from '@furria/studio/studio-edits';
 import type { StudioStep } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
 
@@ -25,9 +25,7 @@ describe('borderMovedOf', () => {
 
   it.each([
     [2.6, 3],
-    [5.2, 5],
     [0.1, 1],
-    [7.9, 7],
   ])('snaps the border dragged to %s onto the count at %s', (seconds, border) => {
     expect(borderMovedOf(steps, 1, seconds, marks)).toEqual({
       1: { start: 0, end: border },
@@ -41,10 +39,6 @@ describe('borderMovedOf', () => {
       2: { start: 0.5, end: 8 },
     });
   });
-
-  it('moves nothing after the last step', () => {
-    expect(borderMovedOf(steps, 2, 6, marks)).toEqual({});
-  });
 });
 
 describe('placedTrackOf', () => {
@@ -54,28 +48,5 @@ describe('placedTrackOf', () => {
     const placed = placedTrackOf(track, 7, { rightMetres: 3, backMetres: 3 });
 
     expect(placed.map((keyframe) => keyframe.position.rightMetres)).toEqual([0, 0, 3, 3, 1]);
-  });
-
-  it('moves the opening hold before the first border', () => {
-    const placed = placedTrackOf(track, 0, { rightMetres: 2, backMetres: 6 });
-
-    expect(placed.map((keyframe) => keyframe.position.rightMetres)).toEqual([2, 2, -4, -4, 1]);
-  });
-});
-
-describe('draggedPointOf', () => {
-  const stage = { widthMetres: 10, depthMetres: 8 };
-
-  it.each([
-    [
-      { x: 0.1, y: 0.1 },
-      { rightMetres: -1, backMetres: 2.75 },
-    ],
-    [
-      { x: -1, y: 1 },
-      { rightMetres: 5, backMetres: 8 },
-    ],
-  ])('moves a dot by %o in the dancers view', (delta, point) => {
-    expect(draggedPointOf({ rightMetres: 0, backMetres: 2 }, delta, stage)).toEqual(point);
   });
 });

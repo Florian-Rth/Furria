@@ -6,9 +6,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Furria.Tests.Analyzers;
 
-// MET002 — bans the EF Core InMemory provider. `UseInMemoryDatabase(...)` calls and
-// `using Microsoft.EntityFrameworkCore.InMemory;` directives are both flagged; every test
-// runs against real Postgres.
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class NoInMemoryDatabaseAnalyzer : DiagnosticAnalyzer
 {

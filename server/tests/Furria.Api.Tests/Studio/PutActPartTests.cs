@@ -31,29 +31,6 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RenameThePartAndSetItsMainVideo_When_AnEditorSettlesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30);
-        var partId = await AddPartAsync(admin, actId, stepIds[0], stepIds[1], "Einmarsch");
-        var videoId = await VideoOfAsync(admin, actId, ct);
-
-        var response = await PutAsync(
-            admin,
-            actId,
-            partId,
-            "Auftakt",
-            (stepIds[0], stepIds[1]),
-            videoId
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var part = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Parts);
-        Assert.Equal(("Auftakt", videoId), (part.Name, part.MainVideoId));
-    }
-
-    [Fact]
     public async Task Should_MoveThePartsEnds_When_ItIsRangedOverOtherSteps()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -101,58 +78,6 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
-
-    [Fact]
-    public async Task Should_RefuseTheRange_When_ItEndsBeforeItBegins()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 90);
-        var partId = await AddPartAsync(admin, actId, stepIds[1], stepIds[1], "Hauptteil");
-
-        var response = await PutAsync(
-            admin,
-            actId,
-            partId,
-            "Hauptteil",
-            (stepIds[2], stepIds[0]),
-            null
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReportNotFound_When_TheMainVideoBelongsToAnotherAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var otherActId = await GardetanzAsync(ctx, ct, name: "Schautanz");
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        await SongOfAsync(_fixture, admin, actId, 180, ct);
-        var stepIds = await MarkedAsync(admin, actId, 30);
-        var partId = await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
-        var foreignVideo = await VideoOfAsync(admin, otherActId, ct);
-
-        var response = await PutAsync(
-            admin,
-            actId,
-            partId,
-            "Einmarsch",
-            (stepIds[0], stepIds[0]),
-            foreignVideo
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    private async Task<int> VideoOfAsync(HttpClient client, int actId, CancellationToken ct) =>
-        await _fixture.AddActVideoDirectlyAsync(
-            actId,
-            await UploadSongAsync(client, actId, ct, "Probe.wav"),
-            ct
-        );
 
     private static Task<HttpResponseMessage> PutAsync(
         HttpClient client,

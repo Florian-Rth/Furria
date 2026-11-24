@@ -16,17 +16,6 @@ public sealed class GroupKindExpectations
         _groupKindId = groupKindId;
     }
 
-    public Expected ToNotExist() =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.False(
-                    await dbContext
-                        .GroupKinds.AsNoTracking()
-                        .AnyAsync(row => row.Id == _groupKindId, ct),
-                    $"Expected no GroupKind with id {_groupKindId}."
-                )
-        );
-
     public Expected ToHaveName(string name) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(name, (await SingleAsync(dbContext, ct)).Name)

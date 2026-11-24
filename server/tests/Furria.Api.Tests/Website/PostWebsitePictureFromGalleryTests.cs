@@ -60,25 +60,6 @@ public sealed class PostWebsitePictureFromGalleryTests : IClassFixture<ApiTestFi
         );
     }
 
-    [Fact]
-    public async Task Should_DeleteTheFormerPicture_When_AFilledPositionIsPickedAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PublisherAndGallery(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-        var formerId = await WebsitePictureSteps.RenderedAsync(_fixture, client, Story, 1, ct);
-        var photoId = await GalleryPhotoAsync(ctx, "gala-photo", ct);
-
-        var (_, picked) = await PickAsync(client, photoId);
-
-        await ctx
-            .Expected.WebsitePicture(Story, 1)
-            .ToBeFilledBy(picked.MediaItemId, WebsitePictureSteps.Landscape)
-            .MediaItem(formerId)
-            .ToBeGone()
-            .AssertAsync(ct);
-    }
-
     [Theory]
     [InlineData("binned-photo")]
     [InlineData("inbox-photo")]

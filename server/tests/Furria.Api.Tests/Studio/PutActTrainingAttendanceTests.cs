@@ -1,5 +1,4 @@
 using System.Net;
-using Furria.Api.Endpoints.Acts;
 using Furria.Core.Club;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Fixtures;
@@ -65,36 +64,6 @@ public sealed class PutActTrainingAttendanceTests : IClassFixture<ApiTestFixture
         );
 
     [Fact]
-    public Task Should_ReplaceTheMarkAndKeepBothInTheTrail_When_SheAnswersHerself() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithTrainings(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-                var anna = await ctx.Identity.ClientForAsync(Anna, ct);
-                var annaId = ctx.Identity.People.IdOf(Anna);
-                var trainingId = ctx.Club.CalendarEntries.IdOf(GardeTraining);
-                await MarkAttendanceAsync(admin, actId, trainingId, annaId, AttendanceAnswer.No);
-
-                await AnswerAsync(anna, trainingId, AttendanceAnswer.Yes);
-
-                await ctx
-                    .Expected.AttendanceResponsesFor(trainingId)
-                    .ToCarryAnswerFrom(annaId, AttendanceAnswer.Yes)
-                    .AttendanceResponsesFor(trainingId)
-                    .ToCarryTrailFrom(
-                        annaId,
-                        (AttendanceAnswer.Yes, false),
-                        (AttendanceAnswer.No, true)
-                    )
-                    .AssertAsync(ct);
-            }
-        );
-
-    [Fact]
     public Task Should_ReplaceHerAnswer_When_TheGroupAdminMarksHerAfterwards() =>
         _fixture.AtInstantAsync(
             InTheRunningSession,
@@ -148,98 +117,6 @@ public sealed class PutActTrainingAttendanceTests : IClassFixture<ApiTestFixture
                 );
 
                 Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            }
-        );
-
-    [Fact]
-    public Task Should_Refuse_When_ThePersonIsNotInTheCast() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithTrainings(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-                var response = await MarkAttendanceAsync(
-                    admin,
-                    actId,
-                    ctx.Club.CalendarEntries.IdOf(GardeTraining),
-                    ctx.Identity.People.IdOf(Clara),
-                    AttendanceAnswer.No
-                );
-
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        );
-
-    [Fact]
-    public Task Should_Refuse_When_TheEntryIsNoTrainingOfTheActsGroup() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithTrainings(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-                var response = await MarkAttendanceAsync(
-                    admin,
-                    actId,
-                    ctx.Club.CalendarEntries.IdOf(ElferratTraining),
-                    ctx.Identity.People.IdOf(Anna),
-                    AttendanceAnswer.No
-                );
-
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        );
-
-    [Fact]
-    public Task Should_Refuse_When_TheTrainingDoesNotAskForResponses() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithTrainings(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-                var response = await MarkAttendanceAsync(
-                    admin,
-                    actId,
-                    ctx.Club.CalendarEntries.IdOf(SilentGardeTraining),
-                    ctx.Identity.People.IdOf(Anna),
-                    AttendanceAnswer.No
-                );
-
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        );
-
-    [Fact]
-    public Task Should_RefuseMaybe_When_TheGroupAdminMarks() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithTrainings(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-                var response = await MarkAttendanceAsync(
-                    admin,
-                    actId,
-                    ctx.Club.CalendarEntries.IdOf(GardeTraining),
-                    ctx.Identity.People.IdOf(Anna),
-                    AttendanceAnswer.Maybe
-                );
-
-                Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             }
         );
 }

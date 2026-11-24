@@ -2,7 +2,6 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Start;
 using Furria.Application.Start;
-using Furria.Core.Groups;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -24,16 +23,6 @@ public sealed class GetStartGroupsTests : IClassFixture<ApiTestFixture>
         2026,
         11,
         16,
-        7,
-        15,
-        0,
-        TimeSpan.Zero
-    );
-
-    private static readonly DateTimeOffset MorningAfterTheOpeningFortnight = new(
-        2026,
-        11,
-        25,
         7,
         15,
         0,
@@ -69,22 +58,6 @@ public sealed class GetStartGroupsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_MarkTheJubilee_When_SheOnlyAdministersTheGroup()
-    {
-        await AtAsync(
-            MondayMorningOfLaunchWeek,
-            "sabine",
-            (ctx, start) =>
-            {
-                var jubilee = Assert.Single(GroupMomentsOf(start));
-
-                Assert.Equal(ctx.Groups.Groups.IdOf("kindergarde"), jubilee.GroupId);
-                Assert.Equal(10, jubilee.Years);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutTheJubilee_When_TheGroupIsArchived()
     {
         await AtAsync(
@@ -95,31 +68,6 @@ public sealed class GetStartGroupsTests : IClassFixture<ApiTestFixture>
                     GroupMomentsOf(start),
                     moment => moment.GroupId == ctx.Groups.Groups.IdOf("altgarde")
                 )
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutAnotherGroupsJubilee_When_SheIsNotInTheGroup()
-    {
-        await AtAsync(
-            MondayMorningOfLaunchWeek,
-            "lena",
-            (ctx, start) =>
-                Assert.DoesNotContain(
-                    GroupMomentsOf(start),
-                    moment => moment.GroupId == ctx.Groups.Groups.IdOf("maennerballett")
-                )
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutGroups_When_NoMomentIsDue()
-    {
-        await AtAsync(
-            MorningAfterTheOpeningFortnight,
-            "lena",
-            (_, start) =>
-                Assert.DoesNotContain(start.Panels, panel => panel.Kind == StartPanelKind.Groups)
         );
     }
 

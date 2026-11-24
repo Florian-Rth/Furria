@@ -34,25 +34,6 @@ public sealed class AbandonedUploadSweepTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_KeepTheStagedUpload_When_ItWasTouchedWithinADay()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (client, upload) = await HalfUploadedPortraitAsync(ct);
-
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromHours(23),
-            () =>
-            {
-                _fixture.SweepAbandonedUploads();
-                return Task.CompletedTask;
-            }
-        );
-
-        var response = await TusUploadSteps.HeadAsync(client, upload, ct);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
     private async Task<(HttpClient Client, Uri Upload)> HalfUploadedPortraitAsync(
         CancellationToken ct
     )

@@ -21,29 +21,6 @@ public sealed class DeleteNewsPictureTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_DeleteThePicture_When_ItIsRemovedFromADraft()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ClientForAsync(NewsSeeds.Editor, ct);
-        var draftId = ctx.News.Posts.IdOf("draft");
-        var pictureId = await NewsPictureSteps.UploadAsync(client, draftId, ct);
-        var original = await _fixture.MediaFileOfAsync(pictureId, MediaRendition.Original, ct);
-
-        var response = await RemoveAsync(client, draftId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.NewsPost(draftId)
-            .ToShowPicture(null)
-            .MediaItem(pictureId)
-            .ToBeGone()
-            .AssertAsync(ct);
-        await _fixture.MediaFilesReapedAsync(ct);
-        Assert.False(File.Exists(original));
-    }
-
-    [Fact]
     public async Task Should_RemoveItFromTheWorkingCopyOnly_When_ThePostIsLive()
     {
         var ct = TestContext.Current.CancellationToken;

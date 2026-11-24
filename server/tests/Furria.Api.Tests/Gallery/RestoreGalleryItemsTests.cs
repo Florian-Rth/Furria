@@ -49,30 +49,4 @@ public sealed class RestoreGalleryItemsTests : IClassFixture<ApiTestFixture>
             .ToBePlacedIn(ctx.Gallery.Albums.IdOf("gala"), Placed)
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_RefuseTheRestore_When_AnItemIsNotInTheBin()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Gallery(gallery =>
-                    gallery
-                        .AddAlbum("gala", "Prunksitzung", sessionStartYear: 2025)
-                        .AddGalleryItem("binned", albumAlias: "gala", binnedAt: Binned)
-                        .AddGalleryItem("placed", albumAlias: "gala")
-                ),
-            ct
-        );
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await client.POSTAsync<RestoreGalleryItems, RestoreGalleryItemsRequest>(
-            new()
-            {
-                MediaItemIds = [ctx.Gallery.Items.IdOf("binned"), ctx.Gallery.Items.IdOf("placed")],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
 }

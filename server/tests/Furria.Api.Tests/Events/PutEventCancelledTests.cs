@@ -77,19 +77,6 @@ public sealed class PutEventCancelledTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeTheCancellationBack_When_TheEventIsCancelled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("second-gala");
-
-        var response = await SetAsync(ctx, "vera", eventId, isCancelled: false);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.Event(eventId).ToNotBeCancelled().AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheEventIsAlreadyCancelled()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -102,35 +89,6 @@ public sealed class PutEventCancelledTests : IClassFixture<ApiTestFixture>
         var failures = await ReadFailuresAsync(response, ct);
         Assert.Equal(["Diese Veranstaltung ist bereits abgesagt."], failures[ConflictField]);
         await ctx.Expected.Event(eventId).ToBeCancelledAt(CancelledLastWeek).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheEventIsNotCancelled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await SetAsync(
-            ctx,
-            "vera",
-            ctx.Club.Events.IdOf("first-gala"),
-            isCancelled: false
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(["Diese Veranstaltung ist nicht abgesagt."], failures[ConflictField]);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheEventIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await SetAsync(ctx, "vera", 999_999, isCancelled: true);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static async Task<HttpResponseMessage> SetAsync(

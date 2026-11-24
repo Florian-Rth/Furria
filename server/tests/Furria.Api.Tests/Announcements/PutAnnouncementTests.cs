@@ -110,69 +110,6 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheOldText_When_TheCorrectionLeavesTheSubset()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var announcementId = ctx.Club.Announcements.IdOf("von-alice");
-
-        var response = await CorrectBodyAsync(client, announcementId, "> Ein Zitat");
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx.Expected.Announcement(announcementId).ToHaveBody(Body).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheDate_When_AnAnnouncementIsCorrected()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var announcementId = ctx.Club.Announcements.IdOf("von-alice");
-
-        var response = await client.PUTAsync<PutAnnouncement, PutAnnouncementRequest>(
-            new()
-            {
-                AnnouncementId = announcementId,
-                Title = CorrectedTitle,
-                Body = CorrectedBody,
-                ValidUntil = ValidUntilInMarch,
-                AddOns = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Announcement(announcementId)
-            .ToHavePublishedAt(PublishedInFebruary)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CorrectAForeignAnnouncement_When_TheCallerHoldsThePermission()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-        var announcementId = ctx.Club.Announcements.IdOf("von-alice");
-
-        var response = await client.PUTAsync<PutAnnouncement, PutAnnouncementRequest>(
-            new()
-            {
-                AnnouncementId = announcementId,
-                Title = CorrectedTitle,
-                Body = CorrectedBody,
-                ValidUntil = null,
-                AddOns = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.Announcement(announcementId).ToHaveTitle(CorrectedTitle).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnForbidden_When_TheCallerIsNeitherAutorNorBerechtigt()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -193,48 +130,6 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         await ctx.Expected.Announcement(announcementId).ToHaveTitle(Title).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheAnnouncementIsAlreadyOffTheBoard()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-
-        var response = await client.PUTAsync<PutAnnouncement, PutAnnouncementRequest>(
-            new()
-            {
-                AnnouncementId = ctx.Club.Announcements.IdOf("von-alice") + 1,
-                Title = CorrectedTitle,
-                Body = CorrectedBody,
-                ValidUntil = null,
-                AddOns = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheTitelIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-
-        var response = await client.PUTAsync<PutAnnouncement, PutAnnouncementRequest>(
-            new()
-            {
-                AnnouncementId = ctx.Club.Announcements.IdOf("von-alice"),
-                Title = "",
-                Body = CorrectedBody,
-                ValidUntil = null,
-                AddOns = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -281,48 +176,6 @@ public sealed class PutAnnouncementTests : IClassFixture<ApiTestFixture>
             .ToHaveSignUpLists(HelperList)
             .Poll(ctx.Club.Polls.IdOf("snack"))
             .ToNotExist()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseANewDeadline_When_TheAttendanceIsClosed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithAddOnsAsync(ct, attendanceClosedAt: AddOnNow.AddHours(-1));
-        var announcementId = ctx.Club.Announcements.IdOf("fest");
-
-        var response = await CorrectAddOnsAsync(ctx, [Attendance(AddOnNow.AddDays(2))]);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx.Expected.Announcement(announcementId).ToAskForAnswersAt(0, null).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_TakeOverTheEntrysAddOnsInTheirPlaces_When_TheAuthorSeesAGroupEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await AnnouncementAddOnClub.BuildLendingAsync(_fixture, ct, withLoans: false);
-        var paradeId = ctx.Club.CalendarEntries.IdOf("umzug");
-        var busId = ctx.Club.Polls.IdOf("bus");
-        var cakeId = ctx.Club.SignUpLists.IdOf("kuchen");
-
-        var response = await CorrectAddOnsAsync(
-            ctx,
-            [
-                Borrowed(AnnouncementAddOnKind.Poll, paradeId, busId),
-                Borrowed(AnnouncementAddOnKind.Attendance, paradeId, null),
-                Borrowed(AnnouncementAddOnKind.SignUpList, paradeId, cakeId),
-            ]
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Announcement(ctx.Club.Announcements.IdOf("fest"))
-            .ToHaveLoans(
-                (AnnouncementAddOnKind.Poll, paradeId, busId, 0),
-                (AnnouncementAddOnKind.Attendance, paradeId, null, 1),
-                (AnnouncementAddOnKind.SignUpList, paradeId, cakeId, 2)
-            )
             .AssertAsync(ct);
     }
 

@@ -44,18 +44,6 @@ internal static class SignInLimitSteps
             await LogInAsync(client, email, WrongPassword);
     }
 
-    public static Task<TestResult<LoginWithPasskeyResponse>> LogInWithPasskeyAsync(
-        HttpClient client,
-        PasskeyAssertionAttempt attempt
-    ) =>
-        client.POSTAsync<LoginWithPasskey, LoginWithPasskeyRequest, LoginWithPasskeyResponse>(
-            new LoginWithPasskeyRequest
-            {
-                ChallengeId = attempt.ChallengeId,
-                Credential = attempt.Credential,
-            }
-        );
-
     public static Task<TestResult<RefreshResponse>> RefreshAsync(
         HttpClient client,
         string refreshToken

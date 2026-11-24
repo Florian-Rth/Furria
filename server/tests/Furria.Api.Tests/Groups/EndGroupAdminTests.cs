@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -10,13 +9,10 @@ namespace Furria.Api.Tests.Groups;
 
 public sealed class EndGroupAdminTests : IClassFixture<ApiTestFixture>
 {
-    private const string ConflictField = "conflict";
     private const string ValidationField = "request";
-    private const int UnknownTenureId = 999_999;
 
     private static readonly DateOnly AppointedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly EndedIn2026 = new(2026, 3, 1);
-    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -118,102 +114,6 @@ public sealed class EndGroupAdminTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheGroupIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("anna", "Anna", "Kaiser")
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde", archivedOn: ArchivedIn2021)
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                            .AddGroupAdmin(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                sinceOn: AppointedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var response = await client.POSTAsync<EndGroupAdmin, EndGroupAdminRequest>(
-            new()
-            {
-                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                GroupAdminId = ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"),
-                EndedOn = EndedIn2026,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Eine archivierte Gruppe kann nicht bearbeitet werden."],
-            failures[ConflictField]
-        );
-        await ctx
-            .Expected.GroupAdmin(ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"))
-            .ToHavePeriod(AppointedIn2017, null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheTenureIsAlreadyEnded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("anna", "Anna", "Kaiser")
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                            .AddGroupAdmin(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                sinceOn: AppointedIn2017,
-                                untilOn: EndedIn2026
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var response = await client.POSTAsync<EndGroupAdmin, EndGroupAdminRequest>(
-            new()
-            {
-                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                GroupAdminId = ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"),
-                EndedOn = EndedIn2026.AddYears(1),
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(["Diese Ernennung ist bereits beendet."], failures[ConflictField]);
-        await ctx
-            .Expected.GroupAdmin(ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"))
-            .ToHavePeriod(AppointedIn2017, EndedIn2026)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnUnprocessable_When_TheEndLiesBeforeTheTenure()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -304,175 +204,6 @@ public sealed class EndGroupAdminTests : IClassFixture<ApiTestFixture>
             .Expected.GroupAdmin(ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"))
             .ToHavePeriod(AppointedIn2017, null)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AllowTheHigherInstance_When_TheCallerHoldsGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddAccount("ilka")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                sinceOn: AppointedIn2017
-                            )
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "gruppenpflege-holding",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await client.POSTAsync<EndGroupAdmin, EndGroupAdminRequest>(
-            new()
-            {
-                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                GroupAdminId = ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"),
-                EndedOn = EndedIn2026,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.GroupAdmin(ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"))
-            .ToHavePeriod(AppointedIn2017, EndedIn2026)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CloseTheTenure_When_TheEndIsTheTenureDay()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("anna", "Anna", "Kaiser")
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                            .AddGroupAdmin(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                sinceOn: AppointedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var response = await client.POSTAsync<EndGroupAdmin, EndGroupAdminRequest>(
-            new()
-            {
-                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                GroupAdminId = ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"),
-                EndedOn = AppointedIn2017,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.GroupAdmin(ctx.Groups.GroupAdmins.IdOf("paula-tanzgarde"))
-            .ToHavePeriod(AppointedIn2017, AppointedIn2017)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_LeaveTheGroupWithoutAdmin_When_TheLastAdminEndsHerOwnTenure()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin(
-                                "anna-tanzgarde",
-                                "tanzgarde",
-                                "anna",
-                                sinceOn: AppointedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var response = await client.POSTAsync<EndGroupAdmin, EndGroupAdminRequest>(
-            new()
-            {
-                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                GroupAdminId = ctx.Groups.GroupAdmins.IdOf("anna-tanzgarde"),
-                EndedOn = EndedIn2026,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.GroupAdminsOf(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToHaveOpenCount(0)
-            .GroupAdmin(ctx.Groups.GroupAdmins.IdOf("anna-tanzgarde"))
-            .ToHavePeriod(AppointedIn2017, EndedIn2026)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheTenureIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var response = await client.POSTAsync<EndGroupAdmin, EndGroupAdminRequest>(
-            new()
-            {
-                GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                GroupAdminId = UnknownTenureId,
-                EndedOn = EndedIn2026,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

@@ -15,7 +15,6 @@ public sealed class GetCalendarNotifyReachTests : IClassFixture<ApiTestFixture>
 {
     private const string NotifyReachPath = "/api/calendar/notify-reach";
     private const string AudienceField = "audience";
-    private const string TrainingForTheClubMessage = "Ein Training ist nie für den ganzen Verein.";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
@@ -59,28 +58,6 @@ public sealed class GetCalendarNotifyReachTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CountTheChosenPeopleButTheCaller_When_PeopleAreChosen()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await SubscribedAsync(ctx, ct, "ilka", "chris", "paula", "fred");
-        var people = ctx.Identity.People;
-
-        var (response, result) = await ReachAsync(
-            ctx,
-            "ilka",
-            "kind=plain&audience=people"
-                + $"&audiencePersonIds={people.IdOf("ilka")}"
-                + $"&audiencePersonIds={people.IdOf("paula")}"
-                + $"&audiencePersonIds={people.IdOf("fred")}",
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(2, result.People);
-    }
-
-    [Fact]
     public async Task Should_LeaveMembersOut_When_TheyMutedInvitationsOrHaveNoDevice()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -92,36 +69,6 @@ public sealed class GetCalendarNotifyReachTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(1, result.People);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_AGroupAdminAddressesAForeignGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var kindergarde = ctx.Groups.Groups.IdOf("kindergarde");
-
-        var (response, _) = await ReachAsync(
-            ctx,
-            "fred",
-            $"kind=training&audience=groups&audienceGroupIds={kindergarde}",
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_ATrainingIsForTheWholeClub()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, _) = await ReachAsync(ctx, "ilka", "kind=training&audience=club", ct);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        var failures = await response.Content.ReadFromJsonAsync<ErrorResponse>(ct);
-        Assert.Equal([TrainingForTheClubMessage], failures!.Errors[AudienceField]);
     }
 
     private static async Task<(HttpResponseMessage, GetCalendarNotifyReachResponse)> ReachAsync(

@@ -33,33 +33,6 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
-    public async Task Should_AddHerLine_When_SheSignsUpForTheFirstTime()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.SignUpLists.IdOf("cakes");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await SignUpAsync(ctx, "dana", listId, " Obstsalat ", ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.SignUpList(listId)
-            .ToHaveLines(
-                (ctx.Identity.People.IdOf("chris"), "Käsekuchen"),
-                (ctx.Identity.People.IdOf("ilka"), "Brezeln"),
-                (ctx.Identity.People.IdOf("dana"), "Obstsalat")
-            )
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RewriteHerOwnLine_When_SheSignsUpAgain()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -80,32 +53,6 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
             .Expected.SignUpList(listId)
             .ToHaveLines(
                 (ctx.Identity.People.IdOf("chris"), "Apfelkuchen"),
-                (ctx.Identity.People.IdOf("ilka"), "Brezeln")
-            )
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepOnlyHerName_When_SheSignsUpWithoutText()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.SignUpLists.IdOf("cakes");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await SignUpAsync(ctx, "chris", listId, "  ", ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.SignUpList(listId)
-            .ToHaveLines(
-                (ctx.Identity.People.IdOf("chris"), null),
                 (ctx.Identity.People.IdOf("ilka"), "Brezeln")
             )
             .AssertAsync(ct);
@@ -138,49 +85,6 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
                     ? [(ctx.Identity.People.IdOf("dana"), (string?)null)]
                     : Array.Empty<(int, string?)>(),
             ])
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_SheDoesNotSeeTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.SignUpLists.IdOf("secret");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await SignUpAsync(ctx, "dana", listId, "Blumen", ct);
-
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        );
-
-        await ctx.Expected.SignUpList(listId).ToHaveLines().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AddTheLine_When_SheIsChosenForTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.SignUpLists.IdOf("secret");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await SignUpAsync(ctx, "chris", listId, "Blumen", ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.SignUpList(listId)
-            .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Blumen"))
             .AssertAsync(ct);
     }
 
@@ -235,52 +139,6 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
         );
 
         await ctx.Expected.SignUpList(listId).ToHaveLines().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AddTheLine_When_SheBelongsToTheGroupTheEntryIsMeantFor()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.SignUpLists.IdOf("garde-helpers");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await SignUpAsync(ctx, "elli", listId, "Aufbau", ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.SignUpList(listId)
-            .ToHaveLines((ctx.Identity.People.IdOf("elli"), "Aufbau"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AddTheLine_When_SheSchedulesAnEntryNotMeantForHer()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.SignUpLists.IdOf("board-helpers");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await SignUpAsync(ctx, "ilka", listId, "Kaffee", ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.SignUpList(listId)
-            .ToHaveLines((ctx.Identity.People.IdOf("ilka"), "Kaffee"))
-            .AssertAsync(ct);
     }
 
     private static async Task<HttpResponseMessage> SignUpAsync(

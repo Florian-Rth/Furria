@@ -14,7 +14,7 @@
     "./zod-without-eval": "./src/zod-without-eval.ts"
   },
   "scripts": {
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

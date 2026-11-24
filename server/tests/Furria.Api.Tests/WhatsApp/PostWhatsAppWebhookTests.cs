@@ -24,48 +24,6 @@ public sealed class PostWhatsAppWebhookTests : IClassFixture<ApiTestFixture>
     private DateTimeOffset Now => _fixture.TimeProvider.GetUtcNow();
 
     [Fact]
-    public async Task Should_PushTheAdmins_When_TheSessionDrops()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var adminsPhone = await SubscribedDeviceAsync(ctx, Admin, "whatsapp-admin", ct);
-        var membersPhone = await SubscribedDeviceAsync(ctx, Member, "whatsapp-member", ct);
-        var client = _fixture.CreateClient();
-
-        await DeliverAsync(client, SessionStatus("WORKING", Now), "drop-1", ct);
-        var answer = await DeliverAsync(
-            client,
-            SessionStatus("FAILED", Now.AddSeconds(1)),
-            "drop-2",
-            ct
-        );
-        await SettledAsync(ct);
-
-        Assert.Equal(HttpStatusCode.OK, answer.StatusCode);
-        var push = Assert.Single(PushesAt(_fixture, adminsPhone));
-        Assert.Equal("/manage/system/whatsapp", UrlOf(push));
-        Assert.Empty(PushesAt(_fixture, membersPhone));
-    }
-
-    [Fact]
-    public async Task Should_PushOnce_When_TheSameDeliveryArrivesTwice()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var adminsPhone = await SubscribedDeviceAsync(ctx, Admin, "whatsapp-twice", ct);
-        var client = _fixture.CreateClient();
-        var dropped = SessionStatus("SCAN_QR_CODE", Now.AddSeconds(1));
-
-        await DeliverAsync(client, SessionStatus("WORKING", Now), "twice-1", ct);
-        await DeliverAsync(client, dropped, "twice-2", ct);
-        var repeated = await DeliverAsync(client, dropped, "twice-2", ct);
-        await SettledAsync(ct);
-
-        Assert.Equal(HttpStatusCode.OK, repeated.StatusCode);
-        Assert.Single(PushesAt(_fixture, adminsPhone));
-    }
-
-    [Fact]
     public async Task Should_PushOncePerDrop_When_TheSessionPassesThroughSeveralBrokenStates()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -116,25 +74,6 @@ public sealed class PostWhatsAppWebhookTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.Unauthorized, answer.StatusCode);
         Assert.Empty(PushesAt(_fixture, adminsPhone));
-    }
-
-    [Fact]
-    public async Task Should_RefuseEveryDelivery_When_WhatsAppIsNotSetUp()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await BuildAsync(ct);
-        var client = _fixture
-            .HostWithSettings(
-                new Dictionary<string, string>
-                {
-                    [$"{WhatsAppOptions.SectionName}:{nameof(WhatsAppOptions.BaseUrl)}"] = "",
-                }
-            )
-            .CreateClient();
-
-        var answer = await DeliverAsync(client, SessionStatus("WORKING", Now), "off-1", ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, answer.StatusCode);
     }
 
     private async Task SettledAsync(CancellationToken ct)

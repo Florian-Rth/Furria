@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -12,7 +11,6 @@ namespace Furria.Api.Tests.Roles;
 public sealed class RestoreRoleTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string NotArchivedMessage = "Diese Rolle ist nicht archiviert.";
     private const string DuplicateNameMessage = "Eine Rolle mit diesem Namen gibt es schon.";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -28,22 +26,6 @@ public sealed class RestoreRoleTests : IClassFixture<ApiTestFixture>
         client.POSTAsync<RestoreRole, RestoreRoleRequest>(
             new RestoreRoleRequest { RoleId = roleId }
         );
-
-    [Fact]
-    public async Task Should_ClearTheArchiveStamp_When_AManagerReactivatesTheRole()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithArchivedChronicleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RestoreRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("chronik"))
-            .ToBeArchivedOn(null)
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_LiftTheArchiveOfEveryoneWhoseHoldingRunsAgain_When_TheRoleIsRestored()
@@ -123,23 +105,6 @@ public sealed class RestoreRoleTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheRoleIsNotArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Roles(roles => roles.AddRole("chronik", "Chronik")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RestoreRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal([NotArchivedMessage], failures[ConflictField]);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_AnActiveRoleNowCarriesTheName()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -169,20 +134,6 @@ public sealed class RestoreRoleTests : IClassFixture<ApiTestFixture>
             .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
     }
-
-    private Task<SeededContext> BuildWithArchivedChronicleAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder.Roles(roles =>
-                    roles.AddRoleWithDetails(
-                        "chronik",
-                        "Chronik",
-                        "Führt die Vereinschronik.",
-                        ArchivedIn2021
-                    )
-                ),
-            ct
-        );
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,

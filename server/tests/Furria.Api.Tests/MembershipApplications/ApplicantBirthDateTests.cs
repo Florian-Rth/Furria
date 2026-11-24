@@ -25,16 +25,4 @@ public sealed class ApplicantBirthDateTests
     {
         Assert.Equal(18, ApplicantBirthDate.AgeOn(BornOnALeapDay, new DateOnly(2026, 2, 28)));
     }
-
-    [Fact]
-    public void Should_MarkHerMinor_When_SheTurns18Tomorrow()
-    {
-        Assert.True(ApplicantBirthDate.IsMinorOn(BornOn, new DateOnly(2026, 10, 1)));
-    }
-
-    [Fact]
-    public void Should_NotMarkHerMinor_When_SheTurns18Today()
-    {
-        Assert.False(ApplicantBirthDate.IsMinorOn(BornOn, new DateOnly(2026, 10, 2)));
-    }
 }

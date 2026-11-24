@@ -9,13 +9,7 @@ import type {
   TableType,
 } from './schemas';
 import type { RowLayout } from './table-layout';
-import {
-  clockwiseChairs,
-  layoutPlan,
-  layoutRow,
-  planCountsOf,
-  tableTypesById,
-} from './table-layout';
+import { layoutPlan, layoutRow, planCountsOf, tableTypesById } from './table-layout';
 
 const standard: SeatingStandard = {
   comfortableChairSpacingCm: 60,
@@ -101,31 +95,7 @@ const typeOf = (tableTypeId: number): TableType => {
 describe('layoutRow chair count', () => {
   it.each<[number, number, number, Seating | null, Seating, string, [ChairSide, number][], number]>(
     [
-      [1, 1, 1, null, 'comfortable', 'FB', [], 6],
-      [2, 1, 1, null, 'maximum', 'FB', [], 8],
       [3, 1, 4, null, 'comfortable', 'FB', [], 28],
-      [4, 2, 1, null, 'comfortable', 'FBSE', [], 6],
-      [5, 2, 1, null, 'maximum', 'FBSE', [], 6],
-      [6, 2, 3, null, 'comfortable', 'FE', [], 7],
-      [7, 1, 1, null, 'comfortable', 'FBSE', [], 6],
-      [8, 3, 1, null, 'comfortable', 'FB', [], 10],
-      [9, 3, 2, 'maximum', 'comfortable', 'FB', [], 28],
-      [10, 3, 1, null, 'comfortable', '', [], 10],
-      [
-        11,
-        2,
-        1,
-        null,
-        'comfortable',
-        'FBSE',
-        [
-          ['front', 0],
-          ['start', 0],
-          ['front', 5],
-        ],
-        4,
-      ],
-      [12, 1, 1, 'maximum', 'comfortable', 'FB', [], 8],
       [
         13,
         3,
@@ -152,9 +122,6 @@ describe('layoutRow chair count', () => {
         ],
         5,
       ],
-      [15, 2, 1, null, 'comfortable', 'FBSE', [['around', 0]], 6],
-      [16, 3, 1, null, 'comfortable', 'FB', [['front', 0]], 10],
-      [17, 1, 1, null, 'comfortable', '', [], 0],
       [18, 2, 2, null, 'comfortable', 'B', [['back', 3]], 3],
     ],
   )(
@@ -165,55 +132,6 @@ describe('layoutRow chair count', () => {
       expect(layoutRow(row, typeOf(typeId), standard, planSeating).chairCount).toBe(expected);
     },
   );
-});
-
-describe('layoutRow', () => {
-  it('lays a rectangular row along its rotation with zones only on seated sides', () => {
-    const row = { ...rowOf(2, 2, null, 'FS', []), x: 100, y: 100, rotation: 90 };
-    const layout = layoutRow(row, typeOf(2), standard, 'comfortable');
-
-    expect(layout.tables.map((table) => table.center)).toEqual([
-      { x: 100, y: 40 },
-      { x: 100, y: 160 },
-    ]);
-    expect([...new Set(layout.chairs.map((chair) => chair.side))]).toEqual(['front', 'start']);
-    expect(layout.bounds.minX).toBeCloseTo(60);
-    expect(layout.bounds.maxX).toBeCloseTo(190);
-    expect(layout.bounds.minY).toBeCloseTo(-70);
-    expect(layout.bounds.maxY).toBeCloseTo(220);
-  });
-
-  it('spaces round tables so their chair zones touch', () => {
-    const layout = layoutRow(rowOf(3, 2, null, '', []), typeOf(3), standard, 'comfortable');
-
-    expect(layout.tables.map((table) => table.center.x)).toEqual([-130, 130]);
-  });
-
-  it('marks removed chairs without dropping their slot', () => {
-    const layout = layoutRow(
-      rowOf(2, 1, null, 'F', [['front', 1]]),
-      typeOf(2),
-      standard,
-      'comfortable',
-    );
-
-    expect(layout.chairs.map((chair) => chair.state)).toEqual(['seated', 'removed']);
-  });
-});
-
-describe('clockwiseChairs', () => {
-  it('runs front left to right, end, back right to left, start', () => {
-    const layout = layoutRow(rowOf(2, 1, null, 'FBSE', []), typeOf(2), standard, 'comfortable');
-
-    expect(clockwiseChairs(layout).map((chair) => `${chair.side}${chair.index}`)).toEqual([
-      'front0',
-      'front1',
-      'end0',
-      'back1',
-      'back0',
-      'start0',
-    ]);
-  });
 });
 
 const placed = (

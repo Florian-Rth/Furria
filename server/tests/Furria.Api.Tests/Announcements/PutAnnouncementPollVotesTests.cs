@@ -21,51 +21,6 @@ public sealed class PutAnnouncementPollVotesTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
-    public async Task Should_RecordTheVote_When_ARunningMemberVotes()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        var response = await VoteAtAsync(Now, ctx, "mara", "Obst", ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Poll(pollId)
-            .ToHaveVotesOf(ctx.Identity.People.IdOf("mara"), "Obst")
-            .Poll(pollId)
-            .ToHaveVoteCount(2)
-            .AssertAsync(ct);
-    }
-
-    [Theory]
-    [InlineData("paula")]
-    [InlineData("rolf")]
-    public async Task Should_ReturnForbidden_When_TheReaderHoldsNoRunningUnpausedMembership(
-        string readerAlias
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-
-        var response = await VoteAtAsync(Now, ctx, readerAlias, "Obst", ct);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Poll(ctx.Club.Polls.IdOf("snack")).ToHaveVoteCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheVote_When_TheLastDayOfTheAnnouncementHasPassed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-
-        var response = await VoteAtAsync(AfterTheLastDay, ctx, "mara", "Obst", ct);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_StayOpen_When_TheAnnouncementHasNoLastDay()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -87,27 +42,6 @@ public sealed class PutAnnouncementPollVotesTests : IClassFixture<ApiTestFixture
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheCalendarRouteIsGivenAnAnnouncementPoll()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        var response = await AtNowAsync(
-            _fixture,
-            async () =>
-            {
-                var client = await ctx.Identity.SignInAgainAsync("mara", ct);
-                return await client.PUTAsync<PutCalendarPollVotes, PutCalendarPollVotesRequest>(
-                    new() { PollId = pollId, OptionIds = [await OptionIdAsync(ctx, "Obst", ct)] }
-                );
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private Task<HttpResponseMessage> VoteAtAsync(

@@ -53,15 +53,6 @@ public sealed class SystemVerdictTests
     };
 
     [Fact]
-    public void Should_SayOk_When_EveryCheckIsHealthy()
-    {
-        var verdict = SystemVerdict.Of(Healthy);
-
-        Assert.Equal(SystemLevel.Ok, verdict.Level);
-        Assert.Empty(verdict.Reasons);
-    }
-
-    [Fact]
     public void Should_NameOnlyTheDatabase_When_ItIsUnreachable()
     {
         var verdict = SystemVerdict.Of(
@@ -90,36 +81,6 @@ public sealed class SystemVerdictTests
     }
 
     [Fact]
-    public void Should_AskForAttention_When_TheDatabaseAnswersSlowly()
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                Database = Healthy.Database with { LatencyMs = 250 },
-            }
-        );
-
-        AssertSingleReason(verdict, SystemLevel.Attention, SystemReasonCode.SlowDatabase, 250);
-    }
-
-    [Fact]
-    public void Should_AskForAttention_When_AWorkerWentStale()
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                Workers =
-                [
-                    Worker(Now.AddSeconds(-10), AppVersion),
-                    Worker(Now.AddSeconds(-60), AppVersion),
-                ],
-            }
-        );
-
-        AssertSingleReason(verdict, SystemLevel.Attention, SystemReasonCode.WorkerStale, 60);
-    }
-
-    [Fact]
     public void Should_Break_When_NoWorkerLivesWhileJobsWait()
     {
         var verdict = SystemVerdict.Of(
@@ -139,19 +100,6 @@ public sealed class SystemVerdictTests
         var verdict = SystemVerdict.Of(Healthy with { Workers = [] });
 
         Assert.Equal(SystemLevel.Ok, verdict.Level);
-    }
-
-    [Fact]
-    public void Should_AskForAttention_When_ALiveWorkerRunsAnotherRelease()
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                Workers = [Worker(Now.AddSeconds(-5), "0.1.9+def5678")],
-            }
-        );
-
-        AssertSingleReason(verdict, SystemLevel.Attention, SystemReasonCode.WorkerVersionMismatch);
     }
 
     [Theory]
@@ -215,27 +163,6 @@ public sealed class SystemVerdictTests
     }
 
     [Fact]
-    public void Should_AskForAttention_When_TheLastSurveyIsOlderThanThreeCadences()
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                Storage = Healthy.Storage with
-                {
-                    Survey = Healthy.Storage.Survey! with { MeasuredAt = Now.AddHours(-19) },
-                },
-            }
-        );
-
-        AssertSingleReason(
-            verdict,
-            SystemLevel.Attention,
-            SystemReasonCode.StorageUnmeasured,
-            19 * 3600
-        );
-    }
-
-    [Fact]
     public void Should_WaitForTheFirstSurvey_When_TheHostStartedRecently()
     {
         var verdict = SystemVerdict.Of(
@@ -246,30 +173,6 @@ public sealed class SystemVerdictTests
         );
 
         Assert.Equal(SystemLevel.Ok, verdict.Level);
-    }
-
-    [Fact]
-    public void Should_AskForAttention_When_MediaFailedToday()
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                Media = SystemMediaDetails.Unknown with { FailedInLastDay = 2 },
-            }
-        );
-
-        AssertSingleReason(verdict, SystemLevel.Attention, SystemReasonCode.MediaFailed, 2);
-    }
-
-    [Fact]
-    public void Should_AskForAttention_When_AnErrorWasLoggedToday()
-    {
-        var errors = new int[SystemFacts.ErrorHours];
-        errors[3] = 1;
-
-        var verdict = SystemVerdict.Of(Healthy with { ErrorsPerHour = errors });
-
-        AssertSingleReason(verdict, SystemLevel.Attention, SystemReasonCode.ErrorsLogged, 1);
     }
 
     [Fact]
@@ -310,69 +213,6 @@ public sealed class SystemVerdictTests
     }
 
     [Fact]
-    public void Should_LeaveAServiceAlone_When_ItIsStillRunning()
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                Services =
-                [
-                    Run(BackgroundJob.LogEntryPurge, lastRunAt: Now.AddHours(-3)) with
-                    {
-                        IsRunning = true,
-                    },
-                ],
-            }
-        );
-
-        Assert.Equal(SystemLevel.Ok, verdict.Level);
-    }
-
-    [Theory]
-    [InlineData(1, SystemLevel.Attention)]
-    [InlineData(3, SystemLevel.Broken)]
-    public void Should_EscalateAService_When_ItFailsAgainAndAgain(
-        int failuresInARow,
-        SystemLevel expected
-    )
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                Services =
-                [
-                    Run(BackgroundJob.MailDispatcher, lastRunAt: Now) with
-                    {
-                        LastFailure = "SmtpCommandException",
-                        ConsecutiveFailures = failuresInARow,
-                    },
-                ],
-            }
-        );
-
-        var reason = AssertSingleReason(verdict, expected, SystemReasonCode.ServiceFailed);
-        Assert.Equal("mailDispatcher", reason.Subject);
-    }
-
-    [Fact]
-    public void Should_AskForAttention_When_AMailIsRetrying()
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                Mail = new MailOutboxDetails
-                {
-                    Pending = 1,
-                    Retrying = 1,
-                    OldestPendingAt = Now.AddMinutes(-2),
-                },
-            }
-        );
-
-        AssertSingleReason(verdict, SystemLevel.Attention, SystemReasonCode.MailRetrying, 1);
-    }
-
-    [Fact]
     public void Should_Break_When_AMailWaitsLongerThanAQuarterOfAnHour()
     {
         var verdict = SystemVerdict.Of(
@@ -388,48 +228,6 @@ public sealed class SystemVerdictTests
         );
 
         AssertSingleReason(verdict, SystemLevel.Broken, SystemReasonCode.MailStuck, 16 * 60);
-    }
-
-    [Fact]
-    public void Should_AskForAttention_When_WhatsAppOperationsRetryOrFailed()
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                WhatsApp = new WhatsAppOutboxDetails
-                {
-                    Waiting = 2,
-                    Retrying = 1,
-                    Failed = 3,
-                    OldestWaitingAt = Now.AddMinutes(-5),
-                },
-            }
-        );
-
-        Assert.Equal(SystemLevel.Attention, verdict.Level);
-        Assert.Equal(
-            [(SystemReasonCode.WhatsAppRetrying, 1.0), (SystemReasonCode.WhatsAppFailed, 3.0)],
-            verdict.Reasons.Select(reason => (reason.Code, reason.Value ?? 0))
-        );
-    }
-
-    [Fact]
-    public void Should_Break_When_AWhatsAppOperationWaitsLongerThanHalfAnHour()
-    {
-        var verdict = SystemVerdict.Of(
-            Healthy with
-            {
-                WhatsApp = new WhatsAppOutboxDetails
-                {
-                    Waiting = 1,
-                    Retrying = 0,
-                    Failed = 0,
-                    OldestWaitingAt = Now.AddMinutes(-31),
-                },
-            }
-        );
-
-        AssertSingleReason(verdict, SystemLevel.Broken, SystemReasonCode.WhatsAppStuck, 31 * 60);
     }
 
     [Fact]

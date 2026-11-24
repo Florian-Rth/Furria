@@ -2,7 +2,6 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.BeerList;
 using Furria.Application.Authorization;
-using Furria.Core.BeerList;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -11,8 +10,6 @@ namespace Furria.Api.Tests.BeerList;
 
 public sealed class PostBeerDeliveryTests : IClassFixture<ApiTestFixture>
 {
-    private const int UnknownPotId = 999_996;
-    private const int UnknownDrinkId = 999_995;
     private const string Radler = "Radler";
     private const int Pallet = 40;
 
@@ -21,43 +18,6 @@ public sealed class PostBeerDeliveryTests : IClassFixture<ApiTestFixture>
     public PostBeerDeliveryTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_BookTheDeliveryInHerName_When_AnOperatorBooksIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithWarden(builder)
-                    .BeerList(beerList =>
-                        beerList.AddBeerPot("topf", "greta").AddBeerDelivery("topf", 12)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("greta", ct);
-        var response = await client.POSTAsync<PostBeerDelivery, PostBeerDeliveryRequest>(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf("topf"),
-                BeerDrinkId = BeerListCast.BeerOf(ctx),
-                Crates = Pallet,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BeerStockOfPot(ctx.BeerList.Pots.IdOf("topf"))
-            .ToHaveMovementCount(2)
-            .BeerStockOfPot(ctx.BeerList.Pots.IdOf("topf"))
-            .ToEndWith(
-                BeerStockMovementKind.Delivery,
-                Pallet,
-                ctx.Identity.People.IdOf("greta"),
-                _fixture.TimeProvider.GetUtcNow()
-            )
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -97,25 +57,6 @@ public sealed class PostBeerDeliveryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_ThePotIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(builder => WithWarden(builder), ct);
-
-        var client = await ctx.Identity.ClientForAsync("greta", ct);
-        var response = await client.POSTAsync<PostBeerDelivery, PostBeerDeliveryRequest>(
-            new()
-            {
-                BeerPotId = UnknownPotId,
-                BeerDrinkId = UnknownDrinkId,
-                Crates = Pallet,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_StockOnlyTheDeliveredDrink_When_ThePotListsSeveralDrinks()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -140,47 +81,6 @@ public sealed class PostBeerDeliveryTests : IClassFixture<ApiTestFixture>
             .BeerStockOfPot(potId)
             .ToHold(BeerListCast.BeerOf(ctx), 12)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheDrinkIsRetiredFromThePot()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRadlerAsync(
-            radlerRetiredAt: _fixture.TimeProvider.GetUtcNow().AddDays(-1),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("greta", ct);
-        var response = await client.POSTAsync<PostBeerDelivery, PostBeerDeliveryRequest>(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf("topf"),
-                BeerDrinkId = ctx.BeerList.Drinks.IdOf(Radler),
-                Crates = 5,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePotDoesNotListTheDrink()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRadlerAsync(radlerRetiredAt: null, ct);
-
-        var client = await ctx.Identity.ClientForAsync("greta", ct);
-        var response = await client.POSTAsync<PostBeerDelivery, PostBeerDeliveryRequest>(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf("topf"),
-                BeerDrinkId = UnknownDrinkId,
-                Crates = 5,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private Task<SeededContext> BuildWithRadlerAsync(

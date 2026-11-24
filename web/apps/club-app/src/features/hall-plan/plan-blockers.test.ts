@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blockersOf, triangulate } from './plan-blockers';
+import { blockersOf } from './plan-blockers';
 import type { HallDocument, SeatingStandard } from './schemas';
 
 const standard: SeatingStandard = {
@@ -11,32 +11,6 @@ const standard: SeatingStandard = {
 };
 
 const area = (x: number, y: number) => ({ x, y });
-
-describe('triangulate', () => {
-  it.each([
-    ['a square', [area(0, 0), area(100, 0), area(100, 100), area(0, 100)], 2],
-    [
-      'an L shape',
-      [area(0, 0), area(200, 0), area(200, 100), area(100, 100), area(100, 200), area(0, 200)],
-      4,
-    ],
-  ])('splits %s into triangles covering its area', (_name, outline, count) => {
-    const triangles = triangulate(outline);
-    const areaOf = (points: readonly { x: number; y: number }[]) =>
-      Math.abs(
-        points.reduce((sum, point, index) => {
-          const next = points[(index + 1) % points.length] ?? point;
-
-          return sum + point.x * next.y - next.x * point.y;
-        }, 0) / 2,
-      );
-
-    expect(triangles).toHaveLength(count);
-    expect(triangles.reduce((sum, triangle) => sum + areaOf(triangle), 0)).toBeCloseTo(
-      areaOf(outline),
-    );
-  });
-});
 
 describe('blockersOf', () => {
   it('blocks walls, areas, pillars and exit zones but not lines, texts or doors', () => {

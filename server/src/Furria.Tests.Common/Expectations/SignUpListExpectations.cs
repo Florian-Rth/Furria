@@ -44,37 +44,12 @@ public sealed class SignUpListExpectations
                 )
         );
 
-    public Expected ToHaveSettings(string title, string? hint, DateTimeOffset? signUpUntil) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var list = await SingleAsync(dbContext, ct);
-                Assert.Equal((title, hint, signUpUntil), (list.Title, list.Hint, list.SignUpUntil));
-            }
-        );
-
-    public Expected ToBeClosedByHand(bool isClosed) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(isClosed, (await SingleAsync(dbContext, ct)).ClosedAt is not null)
-        );
-
     public Expected ToBeClosedAt(DateTimeOffset closedAt, int? personId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
             {
                 var list = await SingleAsync(dbContext, ct);
                 Assert.Equal(closedAt, list.ClosedAt);
-                Assert.Equal(personId, list.ClosedByPersonId);
-            }
-        );
-
-    public Expected ToBeClosedBy(int? personId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var list = await SingleAsync(dbContext, ct);
-                Assert.NotNull(list.ClosedAt);
                 Assert.Equal(personId, list.ClosedByPersonId);
             }
         );

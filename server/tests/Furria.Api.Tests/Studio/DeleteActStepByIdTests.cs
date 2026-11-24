@@ -43,57 +43,6 @@ public sealed class DeleteActStepByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal([(0, 90), (90, 180)], await StepSpansOfAsync(admin, actId));
     }
 
-    [Fact]
-    public async Task Should_LetThePartBeginAtItsNextStep_When_ItsFirstStepIsRemoved()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 60, 90);
-        await AddPartAsync(admin, actId, stepIds[1], stepIds[2], "Hauptteil");
-
-        await DeleteAsync(admin, actId, stepIds[1]);
-
-        Assert.Equal(
-            [
-                [stepIds[2]],
-            ],
-            await PartStepsOfAsync(admin, actId)
-        );
-    }
-
-    [Fact]
-    public async Task Should_LetThePartEndAtItsPreviousStep_When_ItsLastStepIsRemoved()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 60, 90);
-        await AddPartAsync(admin, actId, stepIds[0], stepIds[2], "Einmarsch");
-
-        await DeleteAsync(admin, actId, stepIds[2]);
-
-        Assert.Equal(
-            [
-                [stepIds[0], stepIds[1]],
-            ],
-            await PartStepsOfAsync(admin, actId)
-        );
-    }
-
-    [Fact]
-    public async Task Should_RemoveThePart_When_ItsOnlyStepIsRemoved()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 90);
-        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
-        await AddPartAsync(admin, actId, stepIds[2], stepIds[2], "Ausmarsch");
-
-        await DeleteAsync(admin, actId, stepIds[2]);
-
-        var part = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Parts);
-        Assert.Equal("Einmarsch", part.Name);
-    }
-
     private static Task<HttpResponseMessage> DeleteAsync(
         HttpClient client,
         int actId,

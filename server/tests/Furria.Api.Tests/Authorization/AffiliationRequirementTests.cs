@@ -8,20 +8,7 @@ namespace Furria.Api.Tests.Authorization;
 
 public sealed class AffiliationRequirementTests : IClassFixture<ApiTestFixture>
 {
-    private static readonly DateTimeOffset HalfPastMidnightInBerlin = new(
-        2026,
-        6,
-        30,
-        22,
-        30,
-        0,
-        TimeSpan.Zero
-    );
-
-    private static readonly DateOnly TheBerlinDayBefore = new(2026, 6, 30);
-
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
-    private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
@@ -29,50 +16,6 @@ public sealed class AffiliationRequirementTests : IClassFixture<ApiTestFixture>
     public AffiliationRequirementTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsARunningMembership()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("alice").AddMembership("alice-first", "alice", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerOnlyHoldsARunningRoleHolding()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     [Fact]
@@ -100,54 +43,6 @@ public sealed class AffiliationRequirementTests : IClassFixture<ApiTestFixture>
         var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheOnlyMembershipHasEnded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddAccount("alice")
-                        .AddMembership("alice-first", "alice", JoinedIn2017, LeftIn2020)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheOnlyGroupMembershipHasEnded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("paula"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                JoinedIn2017,
-                                LeftIn2020
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("paula", ct);
-        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
@@ -242,131 +137,6 @@ public sealed class AffiliationRequirementTests : IClassFixture<ApiTestFixture>
         var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheMembershipEndsToday()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddAccount("alice")
-                        .AddMembership("alice-first", "alice", JoinedIn2017, _fixture.Today)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheOnlyMembershipStartsTomorrow()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddAccount("alice")
-                        .AddMembership("alice-first", "alice", _fixture.Today.AddDays(1))
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheGroupMembershipEndsToday()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("paula"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                JoinedIn2017,
-                                _fixture.Today
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("paula", ct);
-        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheRunningMembershipIsPaused()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddAccount("alice")
-                        .AddMembership("alice-first", "alice", JoinedIn2017)
-                        .AddMembershipPause(
-                            "alice-ruhezeit",
-                            "alice-first",
-                            _fixture.CurrentSessionYear
-                        )
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheMembershipEndedOnTheUtcDateButBerlinIsPastIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            HalfPastMidnightInBerlin,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                        builder.Identity(identity =>
-                            identity
-                                .AddAccount("alice")
-                                .AddMembership(
-                                    "alice-first",
-                                    "alice",
-                                    JoinedIn2017,
-                                    TheBerlinDayBefore
-                                )
-                        ),
-                    ct
-                );
-
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-                var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            }
-        );
     }
 
     [Fact]

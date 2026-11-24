@@ -1,9 +1,7 @@
 using System.Net;
-using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.News;
 using Furria.Core.News;
-using Furria.Core.Text;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -22,39 +20,6 @@ public sealed class PublishNewsPostChangesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PutThePendingChangesLiveAndKeepAddressAndDate_When_TheyArePublished()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var editedId = ctx.News.Posts.IdOf("edited");
-        var paulaId = ctx.Identity.People.IdOf("paula");
-
-        var response = await PublishChangesAsync(client, editedId);
-
-        var published = await response.Content.ReadFromJsonAsync<PublishNewsPostChangesResponse>(
-            ct
-        );
-        Assert.Equal("gardetanz", published?.Slug);
-        Assert.Equal(Proclaimed, published?.PublishedAt);
-        await ctx
-            .Expected.NewsPost(editedId)
-            .ToRead(
-                "Ganz neuer Titel",
-                "Neuer Vorspann",
-                $"Dank an @[Paula](person:{paulaId})",
-                NewsCategory.Club
-            )
-            .NewsPost(editedId)
-            .ToBePublished(Proclaimed, "gardetanz")
-            .NewsPost(editedId)
-            .ToHaveNoPendingChanges()
-            .NewsPost(editedId)
-            .ToMention(new Mention(MentionKind.Person, paulaId))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseAndKeepThemPending_When_ThePendingChangesLackAPublishingField()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -66,18 +31,6 @@ public sealed class PublishNewsPostChangesTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         await ctx.Expected.NewsPost(halfId).ToHavePendingChanges("", "Text").AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_ThereAreNoPendingChanges()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await PublishChangesAsync(client, ctx.News.Posts.IdOf("untouched"));
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     [Fact]

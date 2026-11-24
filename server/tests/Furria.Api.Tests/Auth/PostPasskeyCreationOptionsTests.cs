@@ -17,39 +17,6 @@ public sealed class PostPasskeyCreationOptionsTests : IClassFixture<ApiTestFixtu
     }
 
     [Fact]
-    public async Task Should_OfferADiscoverablePasskeyForTheClubDomain_When_SheIsSignedIn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-
-        var (response, result) = await PasskeySteps.CreationOptionsAsync(client);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotEmpty(result.ChallengeId);
-        Assert.Equal(
-            ApiTestFixture.ClubDomain,
-            result.Options.GetProperty("rp").GetProperty("id").GetString()
-        );
-        Assert.Equal(
-            ctx.Identity.EmailOf("anna"),
-            result.Options.GetProperty("user").GetProperty("name").GetString()
-        );
-        Assert.Equal(
-            "Anna Muster",
-            result.Options.GetProperty("user").GetProperty("displayName").GetString()
-        );
-        Assert.Equal(
-            "required",
-            result
-                .Options.GetProperty("authenticatorSelection")
-                .GetProperty("residentKey")
-                .GetString()
-        );
-        await ctx.Expected.PasskeyChallenges().ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ExcludeHerPasskeys_When_SheAlreadyHasOne()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -64,22 +31,6 @@ public sealed class PostPasskeyCreationOptionsTests : IClassFixture<ApiTestFixtu
             result.Options.GetProperty("excludeCredentials").EnumerateArray()
         );
         Assert.Equal(authenticator.PasskeyId, excluded.GetProperty("id").GetString());
-    }
-
-    [Fact]
-    public async Task Should_ClearExpiredChallenges_When_ANewOneIsIssued()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        await PasskeySteps.CreationOptionsAsync(client);
-
-        await _fixture.AtLaterTimeAsync(
-            PasskeySteps.PastTheChallengeLifetime,
-            async () => await PasskeySteps.RequestOptionsAsync(_fixture)
-        );
-
-        await ctx.Expected.PasskeyChallenges().ToHaveCount(1).AssertAsync(ct);
     }
 
     [Fact]

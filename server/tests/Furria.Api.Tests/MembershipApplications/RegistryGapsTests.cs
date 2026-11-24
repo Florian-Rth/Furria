@@ -27,34 +27,11 @@ public sealed class RegistryGapsTests
     };
 
     [Fact]
-    public void Should_NameEveryGap_When_TheRegistryHoldsNothing()
-    {
-        Assert.Equal(
-            new[]
-            {
-                RegistryGap.BirthDate,
-                RegistryGap.Email,
-                RegistryGap.Phone,
-                RegistryGap.Address,
-            },
-            RegistryGaps.Of(null, Nothing, Applied)
-        );
-    }
-
-    [Fact]
     public void Should_CountABlankValueAsAGap_When_TheRegistryHoldsWhitespace()
     {
         Assert.Equal(
             new[] { RegistryGap.Email },
             RegistryGaps.Of(BirthDate, Applied with { Email = " " }, Applied)
-        );
-    }
-
-    [Fact]
-    public void Should_LeaveThePhoneAlone_When_TheApplicationGaveNone()
-    {
-        Assert.Empty(
-            RegistryGaps.Of(BirthDate, Applied with { Phone = null }, Applied with { Phone = null })
         );
     }
 

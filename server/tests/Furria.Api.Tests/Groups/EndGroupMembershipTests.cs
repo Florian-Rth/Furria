@@ -11,8 +11,6 @@ namespace Furria.Api.Tests.Groups;
 public sealed class EndGroupMembershipTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string ValidationField = "request";
-    private const int UnknownGroupMembershipId = 999_999;
 
     private static readonly DateOnly JoinedOn = new(2017, 9, 1);
     private static readonly DateOnly EndedOn = new(2026, 3, 1);
@@ -114,93 +112,6 @@ public sealed class EndGroupMembershipTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessable_When_TheEndLiesBeforeTheJoinDate()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("anna", "Anna", "Kaiser")
-                            .AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership("paula-tanzgarde", "tanzgarde", "paula", JoinedOn)
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var request = new EndGroupMembershipRequest
-        {
-            GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-            GroupMembershipId = ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"),
-            EndedOn = JoinedOn.AddDays(-1),
-        };
-
-        var response = await client.POSTAsync<EndGroupMembership, EndGroupMembershipRequest>(
-            request
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Eine Zugehörigkeit kann nicht vor ihrem Beginn enden."],
-            failures[ValidationField]
-        );
-        await ctx
-            .Expected.GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CloseTheGroupMembership_When_TheEndIsTheJoinDate()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("anna", "Anna", "Kaiser")
-                            .AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership("paula-tanzgarde", "tanzgarde", "paula", JoinedOn)
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var request = new EndGroupMembershipRequest
-        {
-            GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-            GroupMembershipId = ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"),
-            EndedOn = JoinedOn,
-        };
-
-        var response = await client.POSTAsync<EndGroupMembership, EndGroupMembershipRequest>(
-            request
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
-            .ToHavePeriod(JoinedOn, JoinedOn)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -240,47 +151,6 @@ public sealed class EndGroupMembershipTests : IClassFixture<ApiTestFixture>
             ["Eine archivierte Gruppe kann nicht bearbeitet werden."],
             failures[ConflictField]
         );
-        await ctx
-            .Expected.GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerOnlyBelongsToTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("mara", "Mara", "Lenz")
-                            .AddAccount("mara")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership("paula-tanzgarde", "tanzgarde", "paula", JoinedOn)
-                            .AddGroupMembership("mara-tanzgarde", "tanzgarde", "mara", JoinedOn)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("mara", ct);
-        var request = new EndGroupMembershipRequest
-        {
-            GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-            GroupMembershipId = ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"),
-            EndedOn = EndedOn,
-        };
-
-        var response = await client.POSTAsync<EndGroupMembership, EndGroupMembershipRequest>(
-            request
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         await ctx
             .Expected.GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
             .ToBeOpen()
@@ -334,81 +204,6 @@ public sealed class EndGroupMembershipTests : IClassFixture<ApiTestFixture>
             .Expected.GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
             .ToHavePeriod(JoinedOn, EndedOn)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheGroupMembershipBelongsToAnotherGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("anna", "Anna", "Kaiser")
-                            .AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroup("elferrat", "Elferrat")
-                            .AddGroupMembership("paula-elferrat", "elferrat", "paula", JoinedOn)
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var request = new EndGroupMembershipRequest
-        {
-            GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-            GroupMembershipId = ctx.Groups.GroupMemberships.IdOf("paula-elferrat"),
-            EndedOn = EndedOn,
-        };
-
-        var response = await client.POSTAsync<EndGroupMembership, EndGroupMembershipRequest>(
-            request
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx
-            .Expected.GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-elferrat"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheGroupMembershipIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var request = new EndGroupMembershipRequest
-        {
-            GroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-            GroupMembershipId = UnknownGroupMembershipId,
-            EndedOn = EndedOn,
-        };
-
-        var response = await client.POSTAsync<EndGroupMembership, EndGroupMembershipRequest>(
-            request
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

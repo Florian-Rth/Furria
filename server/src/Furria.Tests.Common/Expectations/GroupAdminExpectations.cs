@@ -27,12 +27,6 @@ public sealed class GroupAdminExpectations
                 )
         );
 
-    public Expected ToHaveFunction(string? function) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(function, (await SingleAsync(dbContext, ct)).Function)
-        );
-
     public Expected ToHavePeriod(DateOnly sinceOn, DateOnly? untilOn) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

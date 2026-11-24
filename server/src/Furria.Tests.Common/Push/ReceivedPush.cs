@@ -12,7 +12,6 @@ public sealed record ReceivedPush
     private const int SaltLength = 16;
     private const int HeaderFixedLength = SaltLength + sizeof(int) + 1;
     private const int TagLength = 16;
-    private const string VapidScheme = "vapid";
 
     private static readonly byte[] KeyInfoLabel = Encoding.ASCII.GetBytes("WebPush: info\0");
 
@@ -79,37 +78,6 @@ public sealed record ReceivedPush
         JsonDocument
             .Parse(DecryptFor(receiverPublicKey, receiverPrivateKey, authSecret))
             .RootElement;
-
-    public VapidClaims VerifiedVapidClaims(string vapidPublicKey)
-    {
-        if (!Authorization.StartsWith(VapidScheme + " ", StringComparison.Ordinal))
-            throw new InvalidOperationException($"No VAPID authorization: {Authorization}");
-        var parameters = Authorization[(VapidScheme.Length + 1)..]
-            .Split(',', StringSplitOptions.TrimEntries)
-            .Select(part => part.Split('=', 2))
-            .ToDictionary(pair => pair[0], pair => pair[1]);
-        if (parameters["k"] != vapidPublicKey)
-            throw new InvalidOperationException("The push names another server key.");
-
-        var token = parameters["t"].Split('.');
-        using var verifier = ECDsa.Create(
-            PushKeys.ParametersOf(Base64Url.DecodeFromChars(vapidPublicKey))
-        );
-        var signed = verifier.VerifyData(
-            Encoding.ASCII.GetBytes($"{token[0]}.{token[1]}"),
-            Base64Url.DecodeFromChars(token[2]),
-            HashAlgorithmName.SHA256
-        );
-        if (!signed)
-            throw new InvalidOperationException("The VAPID token is not signed by the server key.");
-
-        var claims = JsonDocument.Parse(Base64Url.DecodeFromChars(token[1])).RootElement;
-        return new VapidClaims(
-            claims.GetProperty("aud").GetString() ?? "",
-            claims.GetProperty("sub").GetString() ?? "",
-            DateTimeOffset.FromUnixTimeSeconds(claims.GetProperty("exp").GetInt64())
-        );
-    }
 
     private static string HeaderOf(HttpRequestMessage request, string name) =>
         request.Headers.TryGetValues(name, out var values) ? string.Join(",", values) : "";

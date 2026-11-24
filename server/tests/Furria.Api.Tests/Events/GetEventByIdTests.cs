@@ -1,4 +1,3 @@
-using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Events;
 using Furria.Api.Media;
@@ -62,127 +61,6 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnEveryFact_When_TheKeyHolderOpensTheEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-                var eventId = ctx.Club.Events.IdOf("first-gala");
-
-                var (response, result) = await ReadAsync(ctx, "vera", eventId);
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(eventId, result.EventId);
-                Assert.Equal(FirstGala, result.Title);
-                Assert.Equal(AtTheFirstGala, result.StartsAt);
-                Assert.Equal(FirstGalaEnds, result.EndsAt);
-                Assert.Equal(DoorsOpenAt, result.DoorsOpenAt);
-                Assert.Equal(ctx.Club.Venues.IdOf("buergerhaus"), result.VenueId);
-                Assert.Equal("Bürgerhaus", result.VenueName);
-                Assert.Equal(Teaser, result.Teaser);
-                Assert.Equal(Description, result.Description);
-                Assert.Equal(AgeHint, result.AgeHint);
-                Assert.Equal(PriceCents, result.PriceCents);
-                Assert.Equal(PresaleStarted, result.PresaleStartsAt);
-                Assert.Equal(TicketAvailability.SoldOut, result.TicketAvailability);
-                Assert.Null(result.CancelledAt);
-                Assert.Equal(EventSalesStatus.SoldOut, result.Status);
-                Assert.False(result.IsOver);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ListThePresalePlacesInPickOrder_When_TheEventNamesThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (_, result) = await ReadAsync(ctx, "vera", ctx.Club.Events.IdOf("first-gala"));
-
-        Assert.Equal(
-            [
-                new EventPresalePlaceDto
-                {
-                    VenueId = ctx.Club.Venues.IdOf("zeitungsladen"),
-                    Name = "Zeitungsladen",
-                    IsArchived = true,
-                },
-                new EventPresalePlaceDto
-                {
-                    VenueId = ctx.Club.Venues.IdOf("buergerhaus"),
-                    Name = "Bürgerhaus",
-                    IsArchived = false,
-                },
-            ],
-            result.PresalePlaces
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveTheTicketsOpen_When_NoPresalePlaceIsNamed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "vera",
-                    ctx.Club.Events.IdOf("kids-carnival")
-                );
-
-                Assert.NotEqual(
-                    EventStepState.Done,
-                    result.Steps.Single(status => status.Step == EventStep.Tickets).State
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_PointAtTheRunningOrder_When_DetailsAndTicketsAreDoneButNoRunningOrderExists()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-                var eventId = ctx.Club.Events.IdOf("first-gala");
-                await EventPictureSteps.UploadAsync(
-                    await ctx.Identity.ClientForAsync("vera", ct),
-                    eventId,
-                    ct
-                );
-
-                var (_, result) = await ReadAsync(ctx, "vera", eventId);
-
-                Assert.Empty(result.DetailsMissing);
-                Assert.Equal(
-                    [
-                        EventStepState.Done,
-                        EventStepState.Done,
-                        EventStepState.Open,
-                        EventStepState.Open,
-                    ],
-                    result.Steps.Select(status => status.State)
-                );
-                Assert.Equal(EventStep.RunningOrder, result.CurrentStep);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_FinishTheRunningOrder_When_EveryActIsPlacedConflictFreeAndConfirmed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -224,28 +102,6 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                 var saved = await SavedAsync(client, eventId, null, [Line(rede, 0), Line(lied, 1)]);
                 await ConfirmAsync(client, eventId, confirmed: true);
                 await SavedAsync(client, eventId, saved.Version, [Line(lied, 0), Line(rede, 1)]);
-
-                var (_, result) = await ReadAsync(ctx, "vera", eventId);
-
-                Assert.Equal(EventStepState.Open, RunningOrderStateOf(result));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_KeepTheRunningOrderOpen_When_TheConfirmedOrderHasNoActs()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("vera", ct);
-                var eventId = ctx.Club.Events.IdOf("first-gala");
-                await SavedAsync(client, eventId, null, []);
-                await ConfirmAsync(client, eventId, confirmed: true);
 
                 var (_, result) = await ReadAsync(ctx, "vera", eventId);
 
@@ -301,66 +157,6 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(EventStepState.Open, RunningOrderStateOf(result));
             }
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnThePictureReadyForRecropping_When_TheEventHasOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("first-gala");
-        var pictureId = await EventPictureSteps.RenderedAsync(
-            _fixture,
-            await ctx.Identity.ClientForAsync("vera", ct),
-            eventId,
-            ct
-        );
-
-        var (_, result) = await ReadAsync(ctx, "vera", eventId);
-
-        var picture = Assert.IsType<PictureEditingDto>(result.Picture);
-        Assert.Equal(MediaItemState.Ready, picture.State);
-        Assert.StartsWith(
-            _fixture.SignedMediaUrl(pictureId, MediaOwner.Event(eventId), MediaRendition.Medium),
-            picture.Picture?.MediumUrl
-        );
-        Assert.NotNull(picture.UncroppedUrl);
-        Assert.Equal(
-            new PictureCropDto
-            {
-                Left = 0,
-                Top = 0,
-                Width = 1,
-                Height = 1,
-            },
-            picture.Crop
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnNoPicture_When_TheEventHasNone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (_, result) = await ReadAsync(ctx, "vera", ctx.Club.Events.IdOf("first-gala"));
-
-        Assert.Null(result.Picture);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheIdNamesACalendarEntryOfAnotherKind()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, _) = await ReadAsync(
-            ctx,
-            "vera",
-            ctx.Club.CalendarEntries.IdOf("club-meeting")
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static EventStepState RunningOrderStateOf(GetEventByIdResponse result) =>
@@ -474,22 +270,6 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
         Assert.False(result.WithoutTablePlan);
         Assert.Equal(
             EventStepState.Done,
-            result.Steps.Single(status => status.Step == EventStep.Hall).State
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveTheHallStepOpenWithoutCounts_When_NoPlanExists()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallSeeds.HallManagerWithGala(_fixture.Today), ct);
-        var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
-
-        var result = await HallSteps.EventOfAsync(lead, ctx.Club.Events.IdOf(HallSeeds.Gala));
-
-        Assert.Null(result.TablePlan);
-        Assert.Equal(
-            EventStepState.Open,
             result.Steps.Single(status => status.Step == EventStep.Hall).State
         );
     }

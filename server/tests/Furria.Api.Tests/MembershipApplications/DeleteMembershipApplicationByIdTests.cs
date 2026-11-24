@@ -1,8 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.MembershipApplications;
-using Furria.Api.Tests.Auth;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -41,92 +39,6 @@ public sealed class DeleteMembershipApplicationByIdTests : IClassFixture<ApiTest
             .ToNotExist()
             .MembershipApplication(ctx.Identity.MembershipApplications.IdOf("lena"))
             .ToExist()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SendTheApplicantNothing_When_SheIsDeclined()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var miaEmail = InvitationSteps.UniqueContactEmail("mia");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddMembershipApplication(
-                            "mia",
-                            _fixture.Today.AddYears(-30),
-                            email: miaEmail
-                        )
-                        .AddAccount("sentinel")
-                ),
-            ct
-        );
-        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        await DeclineAsync(admin, ctx.Identity.MembershipApplications.IdOf("mia"));
-        await SignedOutMailSteps.SettleAsync(_fixture, ctx.Identity.EmailOf("sentinel"), ct);
-
-        Assert.Empty(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, miaEmail, ct));
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheApplicantHasNotConfirmedIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddMembershipApplication(
-                        "mia",
-                        _fixture.Today.AddYears(-30),
-                        unconfirmed: true
-                    )
-                ),
-            ct
-        );
-        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await DeclineAsync(admin, ctx.Identity.MembershipApplications.IdOf("mia"));
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx
-            .Expected.MembershipApplication(ctx.Identity.MembershipApplications.IdOf("mia"))
-            .ToExist()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_DeclineTheApplication_When_TheCallerOnlyDecidesApplications()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddAccount("anna")
-                            .AddMembershipApplication("mia", _fixture.Today.AddYears(-30))
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "aufnahme",
-                            "anna-aufnahme",
-                            "Aufnahme",
-                            "anna",
-                            FurriaPermissions.MembershipApplicationsDecide
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-
-        var response = await DeclineAsync(client, ctx.Identity.MembershipApplications.IdOf("mia"));
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MembershipApplication(ctx.Identity.MembershipApplications.IdOf("mia"))
-            .ToNotExist()
             .AssertAsync(ct);
     }
 

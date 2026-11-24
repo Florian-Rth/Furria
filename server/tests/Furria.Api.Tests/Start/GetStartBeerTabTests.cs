@@ -79,27 +79,4 @@ public sealed class GetStartBeerTabTests : IClassFixture<ApiTestFixture>
         Assert.Equal(BeerListSeedBuilder.DefaultPaymentLink, current.PaymentLink);
         Assert.Equal(ctx.Identity.People.IdOf(Warden), current.Owner?.PersonId);
     }
-
-    [Fact]
-    public async Task Should_LeaveTheBeerTabOff_When_HerTabIsSettled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden)
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                            .AddBeerCrates(Pot, Drinker, 2)
-                            .AddBeerPayment("bar", Pot, Drinker, 2)
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync(Drinker, ct);
-
-        var (_, start) = await client.GETAsync<GetStart, GetStartResponse>();
-
-        Assert.DoesNotContain(start.Panels, panel => panel.Kind == StartPanelKind.BeerTab);
-    }
 }

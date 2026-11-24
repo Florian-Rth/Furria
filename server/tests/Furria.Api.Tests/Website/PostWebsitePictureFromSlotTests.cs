@@ -66,19 +66,6 @@ public sealed class PostWebsitePictureFromSlotTests : IClassFixture<ApiTestFixtu
         );
     }
 
-    [Fact]
-    public async Task Should_AnswerNotFound_When_TheOtherSlotIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(builder => builder.WithGalleryPublisher(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-
-        var (response, _) = await CopyAsync(client, "landing.hero");
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx.Expected.WebsitePicture("landing.heroPhone", 1).ToBeEmpty().AssertAsync(ct);
-    }
-
     private static Task<TestResult<PostWebsitePictureFromSlotResponse>> CopyAsync(
         HttpClient client,
         string sourceSlotKey

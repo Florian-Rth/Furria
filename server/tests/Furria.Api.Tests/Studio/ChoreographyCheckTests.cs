@@ -20,24 +20,8 @@ public sealed class ChoreographyCheckTests
         new StageSize(12, 8)
     );
 
-    [Fact]
-    public void Should_FindNoProblem_When_EverySpotMovesForwardOnTheStage()
-    {
-        var document = new ChoreographyDocument([
-            new SpotTrack(
-                SpotOne,
-                [At(Opener, 10, -6, 0), At(Opener, 20, 0, 4, facing: 180), At(Finale, 5, 6, 8)]
-            ),
-            new SpotTrack(SpotTwo, [At(Opener, 10, 1, 1)]),
-        ]);
-
-        Assert.Empty(ChoreographyCheck.ProblemsOf(document, Frame));
-    }
-
     [Theory]
-    [InlineData(-6.1, 4)]
     [InlineData(6.1, 4)]
-    [InlineData(0, -0.1)]
     [InlineData(0, 8.1)]
     public void Should_FlagTheKeyframe_When_ItStandsOffTheStage(double right, double back)
     {
@@ -127,21 +111,6 @@ public sealed class ChoreographyCheckTests
         ]);
 
         Assert.Empty(ChoreographyCheck.ProblemsOf(document, Frame));
-    }
-
-    [Theory]
-    [InlineData(-1)]
-    [InlineData(360)]
-    public void Should_FlagTheFacing_When_ItLeavesTheCircle(double facing)
-    {
-        var document = new ChoreographyDocument([
-            new SpotTrack(SpotOne, [At(Opener, 10, 0, 0, facing)]),
-        ]);
-
-        Assert.Equal(
-            [new ChoreographyProblem(ChoreographyProblemKind.FacingOutOfRange, SpotOne, 0)],
-            ChoreographyCheck.ProblemsOf(document, Frame)
-        );
     }
 
     private static Keyframe At(

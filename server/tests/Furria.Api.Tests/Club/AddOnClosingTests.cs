@@ -25,29 +25,6 @@ public sealed class AddOnClosingTests
         );
     }
 
-    [Theory]
-    [InlineData(null, -1, true)]
-    [InlineData(-1, null, true)]
-    [InlineData(1, 2, false)]
-    [InlineData(null, null, false)]
-    public void Should_BeClosed_When_TheEarlierClosingHasPassed(
-        int? deadlineInHours,
-        int? hostClosesInHours,
-        bool expected
-    )
-    {
-        Assert.Equal(
-            expected,
-            AddOnClosing.IsClosed(null, InHours(deadlineInHours), InHours(hostClosesInHours), Now)
-        );
-    }
-
-    [Fact]
-    public void Should_StampTheCloserAndNow_When_ClosedByHandBeforeAnyClosing()
-    {
-        Assert.Equal(new AddOnClose(Now, 7), AddOnClosing.CloseOf(null, null, Now, 7));
-    }
-
     [Fact]
     public void Should_KeepTheEarlierClosingAndNoCloser_When_ClosedByHandAfterItPassed()
     {

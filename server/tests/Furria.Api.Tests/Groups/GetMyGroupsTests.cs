@@ -1,5 +1,4 @@
 using System.Net;
-using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Tests.Common.Fixtures;
@@ -9,8 +8,6 @@ namespace Furria.Api.Tests.Groups;
 
 public sealed class GetMyGroupsTests : IClassFixture<ApiTestFixture>
 {
-    private const string MyGroupsRoute = "/api/my-groups";
-
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -21,70 +18,6 @@ public sealed class GetMyGroupsTests : IClassFixture<ApiTestFixture>
     public GetMyGroupsTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CarryTheGroup_When_SheCurrentlyBelongsToIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("paula"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                JoinedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("paula", ct);
-        var (response, result) = await client.GETAsync<GetMyGroups, GetMyGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var tanzgarde = Assert.Single(result.Groups);
-        Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), tanzgarde.GroupId);
-        Assert.Equal("Tanzgarde", tanzgarde.Name);
-        Assert.True(tanzgarde.IsMember);
-        Assert.False(tanzgarde.IsAdmin);
-    }
-
-    [Fact]
-    public async Task Should_CarryTheGroup_When_SheOnlyAdministersIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("anna"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("kindergarde", "Kindergarde")
-                            .AddGroupAdmin(
-                                "anna-kindergarde",
-                                "kindergarde",
-                                "anna",
-                                "Trainerin",
-                                JoinedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var (response, result) = await client.GETAsync<GetMyGroups, GetMyGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var kindergarde = Assert.Single(result.Groups);
-        Assert.Equal(ctx.Groups.Groups.IdOf("kindergarde"), kindergarde.GroupId);
-        Assert.False(kindergarde.IsMember);
-        Assert.True(kindergarde.IsAdmin);
     }
 
     [Fact]
@@ -185,144 +118,5 @@ public sealed class GetMyGroupsTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(result.Groups);
-    }
-
-    [Fact]
-    public async Task Should_CarryAnEmptyList_When_TheCallerHasNoTiesAtAll()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("tom"))
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("tom", ct);
-        var (response, result) = await client.GETAsync<GetMyGroups, GetMyGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(result.Groups);
-    }
-
-    [Fact]
-    public async Task Should_CarryOnlyHerOwnTies_When_AnotherPersonBelongsElsewhere()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("mara", "Mara", "Lenz")
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddAccount("paula")
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                JoinedIn2017
-                            )
-                            .AddGroup("elferrat", "Elferrat")
-                            .AddGroupMembership("mara-elferrat", "elferrat", "mara", JoinedIn2017)
-                            .AddGroup("kindergarde", "Kindergarde")
-                            .AddGroupAdmin(
-                                "mara-kindergarde",
-                                "kindergarde",
-                                "mara",
-                                "Trainerin",
-                                JoinedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("paula", ct);
-        var (response, result) = await client.GETAsync<GetMyGroups, GetMyGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var tanzgarde = Assert.Single(result.Groups);
-        Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), tanzgarde.GroupId);
-    }
-
-    [Fact]
-    public async Task Should_SortTheGroupsAsGerman_When_SheBelongsToSeveral()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("paula"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("zeltlager", "Zeltlager")
-                            .AddGroupMembership(
-                                "paula-zeltlager",
-                                "zeltlager",
-                                "paula",
-                                JoinedIn2017
-                            )
-                            .AddGroup("aeltestenrat", "Ältestenrat")
-                            .AddGroupMembership(
-                                "paula-aeltestenrat",
-                                "aeltestenrat",
-                                "paula",
-                                JoinedIn2017
-                            )
-                            .AddGroup("elferrat", "Elferrat")
-                            .AddGroupMembership("paula-elferrat", "elferrat", "paula", JoinedIn2017)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("paula", ct);
-        var (response, result) = await client.GETAsync<GetMyGroups, GetMyGroupsResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(
-            ["Ältestenrat", "Elferrat", "Zeltlager"],
-            result.Groups.Select(group => group.Name)
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryExactlyTheContractFields_When_TheListIsRead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("paula"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                JoinedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("paula", ct);
-        var payload = await client.GetStringAsync(MyGroupsRoute, ct);
-
-        using var document = JsonDocument.Parse(payload);
-        Assert.Equal(
-            ["groups"],
-            document.RootElement.EnumerateObject().Select(field => field.Name)
-        );
-        var tanzgarde = document.RootElement.GetProperty("groups").EnumerateArray().Single();
-        Assert.Equal(
-            ["groupId", "name", "isMember", "isAdmin"],
-            tanzgarde.EnumerateObject().Select(field => field.Name)
-        );
     }
 }

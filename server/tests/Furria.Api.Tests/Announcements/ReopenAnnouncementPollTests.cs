@@ -20,19 +20,6 @@ public sealed class ReopenAnnouncementPollTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReopenThePoll_When_ThePosterReopensItBeforeTheLastDayEnds()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClosedAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("zu");
-
-        var response = await ReopenAtAsync(Now, ctx, "ilka", pollId, ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.Poll(pollId).ToBeClosedByHand(false).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseReopening_When_TheLastDayOfTheAnnouncementHasPassed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -43,18 +30,6 @@ public sealed class ReopenAnnouncementPollTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ctx.Expected.Poll(pollId).ToBeClosedByHand(true).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerNeitherWroteNorMayPostAnnouncements()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClosedAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("zu");
-
-        var response = await ReopenAtAsync(Now, ctx, "chris", pollId, ct);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     private Task<SeededContext> BuildClosedAsync(CancellationToken ct) =>

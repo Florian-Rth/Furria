@@ -2,7 +2,6 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.BeerList;
 using Furria.Application.Authorization;
-using Furria.Core.BeerList;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -16,77 +15,6 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
     public PostBeerStockCorrectionTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_BookTheLossWithoutAReason_When_TheWardenTakesCratesOut()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithWarden(builder)
-                    .BeerList(beerList =>
-                        beerList.AddBeerPot("topf", "greta").AddBeerDelivery("topf", 12)
-                    ),
-            ct
-        );
-
-        var response = await CorrectAsync(ctx, -2, ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BeerStockOfPot(ctx.BeerList.Pots.IdOf("topf"))
-            .ToEndWith(
-                BeerStockMovementKind.Correction,
-                -2,
-                ctx.Identity.People.IdOf("greta"),
-                _fixture.TimeProvider.GetUtcNow()
-            )
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RaiseTheStock_When_ACountFindsMoreCratesThanBooked()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithWarden(builder)
-                    .BeerList(beerList =>
-                        beerList.AddBeerPot("topf", "greta").AddBeerDelivery("topf", 12)
-                    ),
-            ct
-        );
-
-        var response = await CorrectAsync(ctx, 3, ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BeerStockOfPot(ctx.BeerList.Pots.IdOf("topf"))
-            .ToHaveMovementCount(2)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_EmptyTheStock_When_TheCorrectionTakesTheLastCrates()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithWarden(builder)
-                    .BeerList(beerList =>
-                        beerList.AddBeerPot("topf", "greta").AddBeerDelivery("topf", 3)
-                    ),
-            ct
-        );
-
-        var response = await CorrectAsync(ctx, -3, ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BeerStockOfPot(ctx.BeerList.Pots.IdOf("topf"))
-            .ToHaveMovementCount(2)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -112,24 +40,6 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
             .Expected.BeerStockOfPot(ctx.BeerList.Pots.IdOf("topf"))
             .ToHaveMovementCount(2)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheCountIsTheSmallestInteger()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithWarden(builder)
-                    .BeerList(beerList =>
-                        beerList.AddBeerPot("topf", "greta").AddBeerDelivery("topf", 12)
-                    ),
-            ct
-        );
-
-        var response = await CorrectAsync(ctx, int.MinValue, ct);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

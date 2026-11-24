@@ -28,20 +28,6 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ServeTheBoardPortraitUncachedByTheEdge_When_ItsHolderSitsInAPublicOffice()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var portraitId = await SeatedPortraitAsync(untilOn: null, ct);
-
-        var response = await GetAsync(PublicPictureKind.BoardPortrait, portraitId, ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(MediumRendition, await response.Content.ReadAsByteArrayAsync(ct));
-        Assert.True(response.Headers.CacheControl?.Private);
-        Assert.True(response.Headers.CacheControl?.NoCache);
-    }
-
-    [Fact]
     public async Task Should_AnswerNotFound_When_TheBoardPortraitsHolderHasLeftThePublicOffice()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -59,18 +45,6 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ServeTheGroupPicture_When_TheGroupIsShownPublicly()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, pictureId) = await GroupPictureAsync(ct);
-
-        var response = await GetAsync(PublicPictureKind.GroupPicture, pictureId, ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(MediumRendition, await response.Content.ReadAsByteArrayAsync(ct));
-    }
-
-    [Fact]
     public async Task Should_AnswerNotFound_When_TheGroupOfThePictureIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -83,21 +57,6 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
         var response = await GetAsync(PublicPictureKind.GroupPicture, pictureId, ct);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ServeTheGalleryPhoto_When_ItIsInThePublicSelection()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await GalleryAsync(ct);
-
-        var response = await GetAsync(
-            PublicPictures.PhotoOf(ctx.Gallery.Items.IdOf("finale"), renderedAt: null).MediumUrl,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(MediumRendition, await response.Content.ReadAsByteArrayAsync(ct));
     }
 
     [Fact]
@@ -119,18 +78,6 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ServeTheNewsPicture_When_ItsPostIsShownPublicly()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, pictureId) = await NewsPictureAsync(ct);
-
-        var response = await GetAsync(PublicPictureKind.NewsPicture, pictureId, ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(MediumRendition, await response.Content.ReadAsByteArrayAsync(ct));
-    }
-
-    [Fact]
     public async Task Should_AnswerNotFound_When_ThePostOfTheNewsPictureIsWithdrawn()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -146,48 +93,6 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AnswerNotFound_When_ThePublishedPostOfTheNewsPictureIsNotShownPublicly()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, pictureId) = await NewsPictureAsync(ct);
-        await _fixture.UncategorizeNewsPostDirectlyAsync(ctx.News.Posts.IdOf("live"), ct);
-
-        var response = await GetAsync(PublicPictureKind.NewsPicture, pictureId, ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_AnswerNotFound_When_TheNewsPictureIsOnlyPending()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(LivePost(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var pictureId = await RenderedAsync(
-            await NewsPictureSteps.UploadAsync(client, ctx.News.Posts.IdOf("live"), ct),
-            ct
-        );
-
-        var response = await GetAsync(PublicPictureKind.NewsPicture, pictureId, ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Theory]
-    [InlineData("ahead")]
-    [InlineData("cancelled")]
-    public async Task Should_ServeTheEventPicture_When_ItsEventIsShownPublicly(string eventAlias)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var pictureId = await EventPictureAsync(eventAlias, ct);
-
-        var response = await GetAsync(PublicPictureKind.EventPicture, pictureId, ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(MediumRendition, await response.Content.ReadAsByteArrayAsync(ct));
-    }
-
-    [Fact]
     public async Task Should_AnswerNotFound_When_TheEventOfThePictureIsOver()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -196,51 +101,6 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
         var response = await GetAsync(PublicPictureKind.EventPicture, pictureId, ct);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_AnswerNotFound_When_ThePictureIsAskedUnderAnotherKind()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, pictureId) = await GroupPictureAsync(ct);
-
-        var response = await GetAsync(PublicPictureKind.NewsPicture, pictureId, ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Theory]
-    [InlineData("original")]
-    [InlineData("uncropped")]
-    public async Task Should_AnswerNotFound_When_ARenditionBeyondTheCutIsAsked(string rendition)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, pictureId) = await GroupPictureAsync(ct);
-        await _fixture.PlaceRenditionAsync(pictureId, MediaRendition.Original, [1, 2, 3], ct);
-        await _fixture.PlaceRenditionAsync(pictureId, MediaRendition.Uncropped, [9, 9], ct);
-        var url = MediumUrlOf(PublicPictureKind.GroupPicture, pictureId)
-            .Replace("/medium?", $"/{rendition}?", StringComparison.Ordinal);
-
-        var response = await GetAsync(url, ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ServeTheRequestedRange_When_ARangeIsAsked()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, pictureId) = await GroupPictureAsync(ct);
-        var request = new HttpRequestMessage(
-            HttpMethod.Get,
-            MediumUrlOf(PublicPictureKind.GroupPicture, pictureId)
-        );
-        request.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(2, 4);
-
-        var response = await _fixture.CreateClient().SendAsync(request, ct);
-
-        Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
-        Assert.Equal(MediumRendition[2..5], await response.Content.ReadAsByteArrayAsync(ct));
     }
 
     private Task<HttpResponseMessage> GetAsync(

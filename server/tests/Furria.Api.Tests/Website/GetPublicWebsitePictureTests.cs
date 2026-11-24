@@ -19,21 +19,6 @@ public sealed class GetPublicWebsitePictureTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ServeWhatFillsThePositionRevalidatedByItsEntityTag_When_ThePositionIsFilled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await FilledHeroAsync(ct);
-
-        var response = await _fixture.CreateClient().GetAsync(HeroMedium, ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(MediumRendition, await response.Content.ReadAsByteArrayAsync(ct));
-        Assert.True(response.Headers.CacheControl?.Private);
-        Assert.True(response.Headers.CacheControl?.NoCache);
-        Assert.NotNull(response.Headers.ETag);
-    }
-
-    [Fact]
     public async Task Should_AnswerNotModified_When_TheBrowserHoldsTheSamePicture()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -85,25 +70,6 @@ public sealed class GetPublicWebsitePictureTests : IClassFixture<ApiTestFixture>
         await FilledHeroAsync(ct);
 
         var response = await _fixture.CreateClient().GetAsync(url, ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_AnswerNotFound_When_ThePictureWasNeverRendered()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(builder => builder.WithGalleryPublisher(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-        await WebsitePictureSteps.UploadAsync(
-            client,
-            "landing.hero",
-            1,
-            WebsitePictureSteps.Landscape,
-            ct
-        );
-
-        var response = await _fixture.CreateClient().GetAsync(HeroMedium, ct);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }

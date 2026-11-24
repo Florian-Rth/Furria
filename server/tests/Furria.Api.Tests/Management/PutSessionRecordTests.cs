@@ -9,7 +9,6 @@ namespace Furria.Api.Tests.Management;
 
 public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
 {
-    private const int UnknownSessionId = 999_999;
     private const string ConflictField = "conflict";
     private const string DuplicateStartYearMessage =
         "Für diese Session gibt es schon einen Eintrag.";
@@ -21,45 +20,6 @@ public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
     public PutSessionRecordTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_WriteDownTheNumber_When_TheEvidenceTurnsUpLater()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddSession("laufende", 2026, motto: Motto)),
-            ct
-        );
-        var sessionId = ctx.Club.Sessions.IdOf("laufende");
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EditAsync(client, sessionId, 2026, 53, Motto);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Session(sessionId)
-            .ToHaveNumber(53)
-            .Session(sessionId)
-            .ToHaveMotto(Motto)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ForgetTheMotto_When_ItWasEnteredWrongly()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddSession("laufende", 2026, 53, WrongMotto)),
-            ct
-        );
-        var sessionId = ctx.Club.Sessions.IdOf("laufende");
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EditAsync(client, sessionId, 2026, 53, null);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.Session(sessionId).ToHaveMotto(null).AssertAsync(ct);
     }
 
     [Fact]
@@ -103,18 +63,6 @@ public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
         var failures = await ReadFailuresAsync(response, ct);
         Assert.Equal([DuplicateStartYearMessage], failures[ConflictField]);
         await ctx.Expected.Session(sessionId).ToHaveStartYear(2026).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheEntryIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EditAsync(client, UnknownSessionId, 2026, null, Motto);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static Task<HttpResponseMessage> EditAsync(

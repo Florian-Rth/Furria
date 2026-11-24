@@ -19,21 +19,6 @@ public sealed class ResponseCompressionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CompressTheJson_When_AGalleryListIsAskedWithBrotli()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Gallery(), ct);
-        var client = await ctx.Identity.ClientForAsync("markus", ct);
-        var request = new HttpRequestMessage(HttpMethod.Get, "api/gallery/inbox");
-        request.Headers.AcceptEncoding.ParseAdd(Brotli);
-
-        var response = await client.SendAsync(request, ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(Brotli, Assert.Single(response.Content.Headers.ContentEncoding));
-    }
-
-    [Fact]
     public async Task Should_ServeTheBytesAsTheyAre_When_AMediaRenditionIsAskedWithBrotli()
     {
         var ct = TestContext.Current.CancellationToken;

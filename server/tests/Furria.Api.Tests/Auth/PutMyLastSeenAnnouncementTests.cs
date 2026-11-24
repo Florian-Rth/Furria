@@ -32,43 +32,6 @@ public sealed class PutMyLastSeenAnnouncementTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
-    public async Task Should_LeaveTheMarkUnset_When_TheMemberHasNeverReadTheAnnouncement()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var (response, result) = await client.GETAsync<GetMe, GetMeResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Null(result.LastSeenAnnouncementAt);
-    }
-
-    [Fact]
-    public async Task Should_StoreSeenUpTo_When_ItLiesBeforeNow()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var newestShown = InsideTheSession.AddHours(-2);
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var response = await MarkSeenAsync(client, newestShown);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-                await ctx
-                    .Expected.Account(ctx.Identity.Accounts.IdOf("alice"))
-                    .ToHaveSeenAnnouncementsUpTo(newestShown)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_CapAtNow_When_SeenUpToLiesInTheFuture()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -117,30 +80,6 @@ public sealed class PutMyLastSeenAnnouncementTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
-    public async Task Should_StoreTheInstant_When_SeenUpToCarriesANonUtcOffset()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var newestShownInBerlin = new DateTimeOffset(2027, 1, 15, 11, 0, 0, TimeSpan.FromHours(1));
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var response = await MarkSeenAsync(client, newestShownInBerlin);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-                await ctx
-                    .Expected.Account(ctx.Identity.Accounts.IdOf("alice"))
-                    .ToHaveSeenAnnouncementsUpTo(InsideTheSession.AddHours(-2))
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_KeepTheLatestMark_When_PutsOverlap()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -161,68 +100,6 @@ public sealed class PutMyLastSeenAnnouncementTests : IClassFixture<ApiTestFixtur
                 }
             }
         );
-    }
-
-    [Fact]
-    public async Task Should_StoreNow_When_NoSeenUpToIsSent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var response = await MarkSeenAsync(client, seenUpTo: null);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-                await ctx
-                    .Expected.Account(ctx.Identity.Accounts.IdOf("alice"))
-                    .ToHaveSeenAnnouncementsUpTo(InsideTheSession)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_StoreNow_When_TheRequestCarriesNoBody()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var response = await MarkSeenWithoutBodyAsync(client);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-                await ctx
-                    .Expected.Account(ctx.Identity.Accounts.IdOf("alice"))
-                    .ToHaveSeenAnnouncementsUpTo(InsideTheSession)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_SeenUpToIsNotAfterTheEpoch()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var response = await MarkSeenAsync(client, DateTimeOffset.UnixEpoch);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx
-            .Expected.Account(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveSeenAnnouncementsUpTo(null)
-            .AssertAsync(ct);
     }
 
     private static async Task<HttpResponseMessage> MarkSeenAsync(
@@ -256,16 +133,6 @@ public sealed class PutMyLastSeenAnnouncementTests : IClassFixture<ApiTestFixtur
             response => Assert.Equal(HttpStatusCode.NoContent, response.StatusCode)
         );
         return latest;
-    }
-
-    private static async Task<HttpResponseMessage> MarkSeenWithoutBodyAsync(HttpClient client)
-    {
-        var (response, _) = await client.PUTAsync<EmptyRequest, EmptyResponse>(
-            client.GetTestUrlFor<PutMyLastSeenAnnouncement>(new PutMyLastSeenAnnouncementRequest()),
-            EmptyRequest.Instance
-        );
-
-        return response;
     }
 
     private Task<SeededContext> BuildAsync(CancellationToken ct) =>

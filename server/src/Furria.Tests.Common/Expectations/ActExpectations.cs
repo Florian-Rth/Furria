@@ -47,12 +47,6 @@ public sealed class ActExpectations
                 )
         );
 
-    public Expected ToBeArchivedAt(DateTimeOffset archivedAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(archivedAt, (await SingleAsync(dbContext, ct)).ArchivedAt)
-        );
-
     public Expected ToBeInUse() =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ArchivedAt)

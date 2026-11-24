@@ -100,38 +100,6 @@ internal static class WebhookDeliveries
             }
         );
 
-    internal static string EventResponse(
-        string eventMessageId,
-        string responderId,
-        string response,
-        DateTimeOffset at
-    ) =>
-        JsonSerializer.Serialize(
-            new
-            {
-                id = $"evt_{Guid.NewGuid():N}",
-                timestamp = at.ToUnixTimeMilliseconds(),
-                @event = "event.response",
-                session = ApiTestFixture.WhatsAppSession,
-                engine = "GOWS",
-                payload = new
-                {
-                    id = $"false_{responderId}_{Guid.NewGuid():N}",
-                    from = "120363000000000001@g.us",
-                    fromMe = false,
-                    participant = responderId,
-                    timestamp = at.ToUnixTimeSeconds(),
-                    eventCreationKey = new { id = eventMessageId, fromMe = true },
-                    eventResponse = new
-                    {
-                        response,
-                        timestampMs = at.ToUnixTimeMilliseconds(),
-                        extraGuestCount = 0,
-                    },
-                },
-            }
-        );
-
     private static async Task<HttpResponseMessage> SendAsync(
         HttpClient client,
         string body,

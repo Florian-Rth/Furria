@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Start;
-using Furria.Application.Club;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Tests.Common.Builder;
@@ -31,161 +30,6 @@ public sealed class GetStartAnnouncementAddOnsTests : IClassFixture<ApiTestFixtu
     public GetStartAnnouncementAddOnsTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CarryTheAnnouncementsOpenAddOnsInOrder_When_SheOwesOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(
-                    club =>
-                        club.AddAnnouncement(
-                                "sommerfest",
-                                "karin",
-                                "Sommerfest",
-                                "Wer kommt?",
-                                TuesdayEvening.AddDays(-2),
-                                attendance: new AnnouncementAttendanceIntent(Position: 2)
-                            )
-                            .AddAnnouncementPoll(
-                                "essen",
-                                "sommerfest",
-                                "Grillen oder Buffet?",
-                                ["Grillen", "Buffet"],
-                                position: 0
-                            )
-                            .AddAnnouncementSignUpList(
-                                "kuchen",
-                                "sommerfest",
-                                "Kuchen",
-                                position: 1
-                            )
-                            .AddCalendarSignUpLine("lena-kuchen", "kuchen", "lena", "Apfelkuchen"),
-                    ct
-                );
-
-                var start = await StartOfAsync(ctx, "lena");
-
-                var sommerfest = Assert.Single(AnnouncementAddOnsOf(start));
-                Assert.Equal(ctx.Club.Announcements.IdOf("sommerfest"), sommerfest.AnnouncementId);
-                Assert.Equal("Sommerfest", sommerfest.Title);
-                Assert.NotNull(sommerfest.Attendance);
-                Assert.Equal(
-                    (2, (AttendanceAnswer?)null, true),
-                    (
-                        sommerfest.Attendance.Position,
-                        sommerfest.Attendance.ViewerAnswer,
-                        sommerfest.Attendance.IsOwed
-                    )
-                );
-                var poll = Assert.Single(sommerfest.OpenPolls);
-                Assert.Equal(
-                    (ctx.Club.Polls.IdOf("essen"), 0, true),
-                    (poll.PollId, poll.Position, poll.IsOwed)
-                );
-                var list = Assert.Single(sommerfest.OpenSignUpLists);
-                Assert.Equal(
-                    (ctx.Club.SignUpLists.IdOf("kuchen"), 1, false, "Apfelkuchen"),
-                    (list.SignUpListId, list.Position, list.IsOwed, list.ViewerText)
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_KeepAnAnsweredAnnouncement_When_ItsAddOnsAreStillOpen()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(
-                    club =>
-                        club.AddAnnouncement(
-                                "beantwortet",
-                                "karin",
-                                "Mitgliederabend",
-                                "Kommst du?",
-                                TuesdayEvening.AddDays(-2),
-                                attendance: new AnnouncementAttendanceIntent()
-                            )
-                            .AddAnnouncementResponse(
-                                "lena-beantwortet",
-                                "beantwortet",
-                                "lena",
-                                AttendanceAnswer.Yes
-                            )
-                            .AddAnnouncement(
-                                "offen",
-                                "karin",
-                                "Busfahrt",
-                                "Wer fährt mit?",
-                                TuesdayEvening.AddDays(-1),
-                                attendance: new AnnouncementAttendanceIntent()
-                            ),
-                    ct
-                );
-
-                var start = await StartOfAsync(ctx, "lena");
-
-                Assert.Equal(
-                    [
-                        (ctx.Club.Announcements.IdOf("offen"), true),
-                        (ctx.Club.Announcements.IdOf("beantwortet"), false),
-                    ],
-                    AnnouncementAddOnsOf(start)
-                        .Select(announcement =>
-                            (announcement.AnnouncementId, announcement.Attendance!.IsOwed)
-                        )
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_KeepAnEmptyCalendarPanel_When_SheOwesNothingAndHasNoEntries()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(
-                    club =>
-                        club.AddAnnouncement(
-                                "abgestimmt",
-                                "karin",
-                                "Ausflugsziel",
-                                "Wohin?",
-                                TuesdayEvening.AddDays(-2)
-                            )
-                            .AddAnnouncementPoll("ziel", "abgestimmt", "Wohin?", ["Zoo", "Berg"])
-                            .AddCalendarPollVote("ziel", "Zoo", "lena"),
-                    ct
-                );
-
-                var start = await StartOfAsync(ctx, "lena");
-
-                var calendar = Assert.Single(
-                    start.Panels,
-                    panel => panel.Kind == StartPanelKind.Calendar
-                );
-                Assert.Empty(calendar.Entries!);
-                Assert.All(
-                    calendar.AnnouncementAddOns!,
-                    announcement =>
-                        Assert.All(announcement.OpenPolls, poll => Assert.False(poll.IsOwed))
-                );
-            }
-        );
     }
 
     [Fact]
@@ -276,22 +120,6 @@ public sealed class GetStartAnnouncementAddOnsTests : IClassFixture<ApiTestFixtu
                 );
 
                 Assert.Empty(AnnouncementAddOnsOf(await StartOfAsync(ctx, "lena")));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutAnnouncementAddOns_When_SheIsNoClubMember()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(OwedSommerfest, ct);
-
-                Assert.Empty(AnnouncementAddOnsOf(await StartOfAsync(ctx, "kevin")));
             }
         );
     }

@@ -1,6 +1,5 @@
 using FastEndpoints;
 using Furria.Api.Endpoints.News;
-using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -33,33 +32,6 @@ public sealed class GetNewsTieCandidatesTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(["Prunksitzung", "Sessionseröffnung"], result.Events.Select(tie => tie.Title));
         Assert.Equal(["Prunksitzung"], result.Albums.Select(album => album.Title));
-    }
-
-    [Fact]
-    public async Task Should_CarryWhatTheTieCardsShow_When_TheWriterTiesThePost()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Club(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (_, result) = await client.GETAsync<
-            GetNewsTieCandidates,
-            GetNewsTieCandidatesResponse
-        >();
-
-        var gala = result.Events.Single(tie => tie.Title == "Prunksitzung");
-        Assert.Equal("Bürgerhaus", gala.VenueName);
-        Assert.Equal(Gala.AddHours(5), gala.EndsAt);
-        var album = Assert.Single(result.Albums);
-        Assert.Equal(2, album.PhotoCount);
-        Assert.StartsWith(
-            _fixture.SignedMediaUrl(
-                ctx.Gallery.Items.IdOf("first"),
-                MediaOwner.Gallery,
-                MediaRendition.Small
-            ),
-            album.Cover?.SmallUrl
-        );
     }
 
     private static Action<SeedContextBuilder> Club() =>

@@ -2,8 +2,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Furria.Tests.Analyzers;
 
-// Shared, syntax-only helpers for recognising xUnit test constructs without needing the
-// semantic model (the test attributes resolve by simple name across all test projects).
 internal static class TestAttributes
 {
     public static bool IsTestMethod(MethodDeclarationSyntax method) =>

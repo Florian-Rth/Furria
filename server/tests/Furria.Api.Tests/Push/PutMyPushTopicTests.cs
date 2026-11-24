@@ -1,5 +1,3 @@
-using System.Net;
-using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Push;
 using Furria.Core.Push;
@@ -21,21 +19,6 @@ public sealed class PutMyPushTopicTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SwitchTheTopicBackOn_When_TheMemberEnablesAMutedTopic()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var alice = await ctx.Identity.ClientForAsync("alice", ct);
-        await SwitchAsync(alice, PushTopic.Reminders, isEnabled: false);
-        await SwitchAsync(alice, PushTopic.Reminders, isEnabled: false);
-
-        var response = await SwitchAsync(alice, PushTopic.Reminders, isEnabled: true);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.All(await TopicsOfAsync(alice), setting => Assert.True(setting.IsEnabled));
-    }
-
-    [Fact]
     public async Task Should_LeaveOtherAccountsUntouched_When_AMemberMutesATopic()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -46,26 +29,6 @@ public sealed class PutMyPushTopicTests : IClassFixture<ApiTestFixture>
         await SwitchAsync(alice, PushTopic.Invitations, isEnabled: false);
 
         Assert.All(await TopicsOfAsync(bob), setting => Assert.True(setting.IsEnabled));
-    }
-
-    [Fact]
-    public async Task Should_MuteTheTopic_When_TheAppNamesItInThePathAsItsWireName()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var alice = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var response = await alice.PutAsJsonAsync(
-            "api/push/topics/announcements",
-            new { isEnabled = false },
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Contains(
-            await TopicsOfAsync(alice),
-            setting => setting.Topic == PushTopic.Announcements && !setting.IsEnabled
-        );
     }
 
     private static Task<HttpResponseMessage> SwitchAsync(

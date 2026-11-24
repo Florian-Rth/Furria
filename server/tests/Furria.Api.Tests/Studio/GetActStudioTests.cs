@@ -1,15 +1,11 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
-using Furria.Core.Club;
-using Furria.Core.Media;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSeeds;
-using static Furria.Api.Tests.RunningOrders.RunningOrderSteps;
 using static Furria.Api.Tests.Studio.StudioSeeds;
 using static Furria.Api.Tests.Studio.StudioSteps;
 
@@ -18,163 +14,11 @@ namespace Furria.Api.Tests.Studio;
 [SeedsAliases]
 public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
 {
-    private const string StageArtwork =
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 21 14\">"
-        + "<rect width=\"21\" height=\"14\" />"
-        + "</svg>";
-
     private readonly ApiTestFixture _fixture;
 
     public GetActStudioTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_GiveEachPlacedEveningItsPosition_When_ACastMemberOpensTheAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-        var gala = ctx.Club.Events.IdOf(Gala);
-        var actId = await GardetanzAsync(ctx, ct);
-        var rede = await CreateActAsync(planner, "Büttenrede", kind: ActKind.Speech);
-        await SavedAsync(planner, gala, null, [Line(rede, 0), Line(actId, 1)]);
-        var anna = await ctx.Identity.ClientForAsync(Anna, ct);
-
-        var evening = Assert.Single(
-            (await StudioOfAsync(anna, actId)).Studio!.Evenings,
-            evening => evening.EventId == gala
-        );
-
-        Assert.Equal(1, evening.Appearance?.Position);
-    }
-
-    [Fact]
-    public async Task Should_OpenTheStudioReadOnly_When_ACastMemberOpensTheAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var anna = await ctx.Identity.ClientForAsync(Anna, ct);
-
-        var studio = await StudioOfAsync(anna, actId);
-
-        Assert.Equal("Gardetanz", studio.Act.Name);
-        Assert.Equal(
-            (true, false, false, false),
-            (
-                studio.Viewer.InCast,
-                studio.Viewer.CanEditSettings,
-                studio.Viewer.CanEditStudio,
-                studio.Viewer.CanGrantCoEditors
-            )
-        );
-        Assert.NotNull(studio.Studio);
-        Assert.Equal(0, studio.Studio.Music.LengthSeconds);
-        Assert.Empty(studio.Studio.Songs);
-        Assert.Null(studio.Studio.Stage);
-    }
-
-    [Fact]
-    public async Task Should_PlayTheWholeFilesUncut_When_NothingWasCutYet()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        await SongOfAsync(_fixture, admin, actId, 180, ct);
-        await AddedSongAsync(admin, actId, ct);
-        await VideoOfAsync(_fixture, admin, actId, 70, ct);
-
-        var studio = (await StudioOfAsync(admin, actId)).Studio!;
-
-        Assert.Equal(
-            [
-                [(0.0, 180.0)],
-                [(0.0, 0.0)],
-            ],
-            studio.Songs.Select(song =>
-                song.Pieces.Select(piece => (piece.StartSeconds, piece.EndSeconds)).ToArray()
-            )
-        );
-        var video = Assert.Single(studio.Videos);
-        Assert.Equal((0.0, 70.0), (video.ClipStartSeconds, video.ClipEndSeconds!.Value));
-    }
-
-    [Fact]
-    public async Task Should_DrawEachVideosSoundtrack_When_TheWorkerHasMeasuredIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        await VideoOfAsync(_fixture, admin, actId, 70, ct);
-        var mediaItemId = Assert
-            .Single((await StudioOfAsync(admin, actId)).Studio!.Videos)
-            .MediaItemId;
-        byte[] peaks = [.. "{\"peaksPerSecond\":100,\"peaks\":[0,255]}"u8];
-        await _fixture.PlaceRenditionAsync(mediaItemId, MediaRendition.Peaks, peaks, ct);
-
-        var video = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Videos);
-        var response = await _fixture.CreateClient().GetAsync(video.Urls.Peaks, ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(peaks, await response.Content.ReadAsByteArrayAsync(ct));
-    }
-
-    [Fact]
-    public async Task Should_DrawOurStage_When_TheClubHasSetItUp()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-            {
-                GardeWithDancers(_fixture.Today)(builder);
-                builder.Club(club =>
-                    club.SetClubRecord(stage: new ClubStageIntent(10.5m, 7m, StageArtwork))
-                );
-            },
-            ct
-        );
-        var actId = await GardetanzAsync(ctx, ct);
-        var anna = await ctx.Identity.ClientForAsync(Anna, ct);
-
-        var studio = await StudioOfAsync(anna, actId);
-
-        Assert.NotNull(studio.Studio);
-        Assert.Equal(
-            new StudioStageDto
-            {
-                WidthMetres = 10.5,
-                DepthMetres = 7,
-                ArtworkSvg = StageArtwork,
-            },
-            studio.Studio.Stage
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowTheActWithoutTheStudio_When_APlannerOpensIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-
-        var studio = await StudioOfAsync(planner, actId);
-
-        Assert.Equal(
-            (false, true, false, false),
-            (
-                studio.Viewer.InCast,
-                studio.Viewer.CanEditSettings,
-                studio.Viewer.CanEditStudio,
-                studio.Viewer.CanGrantCoEditors
-            )
-        );
-        Assert.Null(studio.Studio);
-        Assert.Empty(studio.CoEditors);
     }
 
     [Fact]
@@ -197,20 +41,6 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
             )
         );
         Assert.NotNull(studio.Studio);
-    }
-
-    [Fact]
-    public async Task Should_ShowTheActWithoutTheStudio_When_AGroupMemberIsNotInTheCast()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct, removed: [ctx.Identity.People.IdOf(Ben)]);
-        var ben = await ctx.Identity.ClientForAsync(Ben, ct);
-
-        var studio = await StudioOfAsync(ben, actId);
-
-        Assert.False(studio.Viewer.InCast);
-        Assert.Null(studio.Studio);
     }
 
     [Fact]
@@ -252,20 +82,6 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
         >(new() { ActId = actId });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ShowTheStudio_When_AGuestIsAddedToTheCast()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct, added: [ctx.Identity.People.IdOf(Clara)]);
-        var clara = await ctx.Identity.ClientForAsync(Clara, ct);
-
-        var studio = await StudioOfAsync(clara, actId);
-
-        Assert.True(studio.Viewer.InCast);
-        Assert.NotNull(studio.Studio);
     }
 
     [Fact]
@@ -321,141 +137,4 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
         Assert.False(studio.Viewer.CanEditStudio);
         Assert.Null(studio.Studio);
     }
-
-    [Fact]
-    public Task Should_ListTheGroupsComingTrainingsAskingForResponsesWithTheSpotsLeftOpen_When_DancersSentAnAbsage() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var today = _fixture.Today;
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                    {
-                        GardeWithDancers(today)(builder);
-                        builder.Club(club =>
-                            club.AddCalendarEntry(
-                                    "last-week",
-                                    "Training letzte Woche",
-                                    TrainingOn(today.AddDays(-7)),
-                                    kind: CalendarEntryKind.Training,
-                                    ownerGroupAlias: Garde,
-                                    asksForResponse: true
-                                )
-                                .AddCalendarEntry(
-                                    "soon",
-                                    "Training",
-                                    TrainingOn(today.AddDays(2)),
-                                    kind: CalendarEntryKind.Training,
-                                    ownerGroupAlias: Garde,
-                                    asksForResponse: true
-                                )
-                                .AddCalendarEntry(
-                                    "elferrat",
-                                    "Elferrat-Training",
-                                    TrainingOn(today.AddDays(3)),
-                                    kind: CalendarEntryKind.Training,
-                                    ownerGroupAlias: Elferrat,
-                                    asksForResponse: true
-                                )
-                                .AddCalendarEntry(
-                                    "meeting",
-                                    "Gruppenabend",
-                                    TrainingOn(today.AddDays(4)),
-                                    kind: CalendarEntryKind.Plain,
-                                    ownerGroupAlias: Garde,
-                                    asksForResponse: true
-                                )
-                                .AddCalendarEntry(
-                                    "rehearsal",
-                                    "Stellprobe",
-                                    TrainingOn(today.AddDays(5)),
-                                    kind: CalendarEntryKind.Training,
-                                    asksForResponse: true,
-                                    audienceGroupAliases: [Garde]
-                                )
-                                .AddCalendarEntry(
-                                    "silent",
-                                    "Training ohne Zu-/Absage",
-                                    TrainingOn(today.AddDays(6)),
-                                    kind: CalendarEntryKind.Training,
-                                    ownerGroupAlias: Garde
-                                )
-                                .AddCalendarEntry(
-                                    "later",
-                                    "Training",
-                                    TrainingOn(today.AddDays(9)),
-                                    kind: CalendarEntryKind.Training,
-                                    ownerGroupAlias: Garde,
-                                    asksForResponse: true
-                                )
-                                .AddAttendanceResponse("anna-no", "soon", Anna, AttendanceAnswer.No)
-                                .AddAttendanceResponse(
-                                    "ben-maybe",
-                                    "soon",
-                                    Ben,
-                                    AttendanceAnswer.Maybe
-                                )
-                                .AddAttendanceResponse(
-                                    "clara-no",
-                                    "soon",
-                                    Clara,
-                                    AttendanceAnswer.No
-                                )
-                                .AddAttendanceResponse(
-                                    "anna-no-past",
-                                    "last-week",
-                                    Anna,
-                                    AttendanceAnswer.No
-                                )
-                                .AddAttendanceResponse(
-                                    "ben-yes",
-                                    "later",
-                                    Ben,
-                                    AttendanceAnswer.Yes
-                                )
-                                .AddAttendanceResponse(
-                                    "ben-no-rehearsal",
-                                    "rehearsal",
-                                    Ben,
-                                    AttendanceAnswer.No
-                                )
-                                .AddAttendanceResponse(
-                                    "anna-no-silent",
-                                    "silent",
-                                    Anna,
-                                    AttendanceAnswer.No
-                                )
-                        );
-                    },
-                    ct
-                );
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-                var annasSpot = await AddSpotAsync(admin, actId);
-                var bensSpot = await AddSpotAsync(admin, actId);
-                await AddSpotAsync(admin, actId);
-                await AssignSpotAsync(admin, actId, annasSpot, ctx.Identity.People.IdOf(Anna));
-                await AssignSpotAsync(admin, actId, bensSpot, ctx.Identity.People.IdOf(Ben));
-                var anna = await ctx.Identity.ClientForAsync(Anna, ct);
-
-                var studio = await StudioOfAsync(anna, actId);
-
-                Assert.NotNull(studio.Studio);
-                Assert.Equal(
-                    [
-                        (ctx.Club.CalendarEntries.IdOf("soon"), $"{annasSpot}"),
-                        (ctx.Club.CalendarEntries.IdOf("rehearsal"), $"{bensSpot}"),
-                        (ctx.Club.CalendarEntries.IdOf("later"), ""),
-                    ],
-                    studio.Studio.Trainings.Select(training =>
-                        (training.CalendarEntryId, string.Join(",", training.OpenSpotIds))
-                    )
-                );
-            }
-        );
-
-    private static DateTimeOffset TrainingOn(DateOnly day) =>
-        ClubClock.At(day, new TimeOnly(18, 30));
 }

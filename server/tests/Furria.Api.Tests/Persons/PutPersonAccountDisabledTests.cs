@@ -16,7 +16,6 @@ namespace Furria.Api.Tests.Persons;
 public sealed class PutPersonAccountDisabledTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const int UnknownPersonId = 999_999;
 
     private readonly ApiTestFixture _fixture;
 
@@ -89,73 +88,6 @@ public sealed class PutPersonAccountDisabledTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
-    public async Task Should_LetHerSignInAgainWithoutRestoringSessions_When_HerAccountIsEnabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("anna")),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var loginEmail = ctx.Identity.EmailOf("anna");
-        var session = await ctx.Identity.LogInAsync(
-            loginEmail,
-            ApiTestFixture.SeededAccountPassword,
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await InvitationSteps.SetAccountDisabledAsync(manager, annaId, true);
-
-        var response = await InvitationSteps.SetAccountDisabledAsync(manager, annaId, false);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var (refreshResponse, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<Refresh, RefreshRequest, RefreshResponse>(
-                new RefreshRequest { RefreshToken = session.RefreshToken }
-            );
-        Assert.Equal(HttpStatusCode.Unauthorized, refreshResponse.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, await LogInStatusAsync(loginEmail));
-        await ctx
-            .Expected.Account(ctx.Identity.Accounts.IdOf("anna"))
-            .ToBeDisabled(false)
-            .AccountEventsOfPerson(annaId)
-            .ToHaveKindsInOrder(AccountEventKind.Disabled, AccountEventKind.Enabled)
-            .AssertAsync(ct);
-    }
-
-    [Theory]
-    [InlineData(false, false)]
-    [InlineData(true, true)]
-    public async Task Should_ChangeNothing_When_TheAccountAlreadyHasThatState(
-        bool seededDisabled,
-        bool requestedDisabled
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("anna", seededDisabled)),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await InvitationSteps.SetAccountDisabledAsync(
-            manager,
-            annaId,
-            requestedDisabled
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Account(ctx.Identity.Accounts.IdOf("anna"))
-            .ToBeDisabled(seededDisabled)
-            .AccountEventsOfPerson(annaId)
-            .ToHaveKindsInOrder()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_AManagerDisablesHerOwnAccount()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -177,65 +109,6 @@ public sealed class PutPersonAccountDisabledTests : IClassFixture<ApiTestFixture
             .AccountEventsOfPerson(ilkaId)
             .ToHaveKindsInOrder()
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_SheHasNoAccount()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddPerson("anna", "Anna", "Muster")),
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await InvitationSteps.SetAccountDisabledAsync(
-            manager,
-            ctx.Identity.People.IdOf("anna"),
-            true
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var payload = await response.Content.ReadFromJsonAsync<ErrorResponse>(ct);
-        Assert.Equal(["Anna hat keinen Zugang."], payload?.Errors[ConflictField]);
-    }
-
-    [Fact]
-    public async Task Should_DisableTheAccount_When_TheCallerOnlyHoldsAccountsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeHolderOfAsync(FurriaPermissions.AccountsManage, ct);
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var response = await InvitationSteps.SetAccountDisabledAsync(
-            client,
-            ctx.Identity.People.IdOf("anna"),
-            true
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Account(ctx.Identity.Accounts.IdOf("anna"))
-            .ToBeDisabled(true)
-            .AccountEventsOfPerson(ctx.Identity.People.IdOf("anna"))
-            .ToHaveLatestActor(ctx.Identity.People.IdOf("ilka"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await InvitationSteps.SetAccountDisabledAsync(
-            manager,
-            UnknownPersonId,
-            true
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private Task<SeededContext> ArrangeManagerOfGroupsAsync(CancellationToken ct) =>

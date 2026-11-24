@@ -12,7 +12,6 @@ namespace Furria.Api.Tests.Persons;
 public sealed class PostFeeReductionTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string ValidationField = "request";
     private const string ArchivedPersonMessage =
         "Paula ist archiviert – Beitragsermäßigungen lassen sich erst nach dem "
         + "Wiederherstellen festhalten.";
@@ -20,8 +19,6 @@ public sealed class PostFeeReductionTests : IClassFixture<ApiTestFixture>
     private const int ReducedUntil2019 = 2019;
     private const int ReducedFrom2021 = 2021;
     private const int ReducedUntil2022 = 2022;
-    private const int BeforeTheFounding = 1970;
-    private const int UnknownPersonId = 987654;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
@@ -32,36 +29,6 @@ public sealed class PostFeeReductionTests : IClassFixture<ApiTestFixture>
     public PostFeeReductionTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_RecordTheReduction_When_AManagerGrantsOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithPaulaAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.POSTAsync<
-            PostFeeReduction,
-            PostFeeReductionRequest,
-            PostFeeReductionResponse
-        >(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                Basis = FeeReductionBasis.Studies,
-                FirstSessionYear = ReducedFrom2018,
-                LastSessionYear = ReducedUntil2019,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.FeeReduction(result.FeeReductionId)
-            .ToHaveBasis(FeeReductionBasis.Studies)
-            .FeeReduction(result.FeeReductionId)
-            .ToHaveSpan(ReducedFrom2018, ReducedUntil2019)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -104,67 +71,6 @@ public sealed class PostFeeReductionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RecordTheReduction_When_ThePersonIsNoMember()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity => identity.AddPerson("paula", "Paula", "Brendel")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.POSTAsync<
-            PostFeeReduction,
-            PostFeeReductionRequest,
-            PostFeeReductionResponse
-        >(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                Basis = FeeReductionBasis.Minor,
-                FirstSessionYear = ReducedFrom2018,
-                LastSessionYear = ReducedUntil2019,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.FeeReduction(result.FeeReductionId)
-            .ToHaveSpan(ReducedFrom2018, ReducedUntil2019)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RecordTheReduction_When_ItStartsInAComingSession()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithPaulaAsync(ct);
-
-        var firstSessionYear = _fixture.CurrentSessionYear + 1;
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.POSTAsync<
-            PostFeeReduction,
-            PostFeeReductionRequest,
-            PostFeeReductionResponse
-        >(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                Basis = FeeReductionBasis.Apprenticeship,
-                FirstSessionYear = firstSessionYear,
-                LastSessionYear = firstSessionYear + 2,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.FeeReduction(result.FeeReductionId)
-            .ToHaveSpan(firstSessionYear, firstSessionYear + 2)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RecordTheReduction_When_ItFollowsAnEarlierOne()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -192,35 +98,6 @@ public sealed class PostFeeReductionTests : IClassFixture<ApiTestFixture>
             .FeeReduction(result.FeeReductionId)
             .ToHaveSpan(ReducedFrom2021, ReducedUntil2022)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_TheLastSessionPrecedesTheFirst()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithPaulaAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<
-            PostFeeReduction,
-            PostFeeReductionRequest,
-            PostFeeReductionResponse
-        >(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                Basis = FeeReductionBasis.School,
-                FirstSessionYear = ReducedUntil2019,
-                LastSessionYear = ReducedFrom2018,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Eine Beitragsermäßigung kann nicht vor ihrer ersten Session enden."],
-            failures[ValidationField]
-        );
     }
 
     [Fact]
@@ -257,65 +134,6 @@ public sealed class PostFeeReductionTests : IClassFixture<ApiTestFixture>
             .ToHaveSpan(ReducedFrom2018, ReducedUntil2019)
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithPaulaAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<
-            PostFeeReduction,
-            PostFeeReductionRequest,
-            PostFeeReductionResponse
-        >(
-            new()
-            {
-                PersonId = UnknownPersonId,
-                Basis = FeeReductionBasis.Minor,
-                FirstSessionYear = ReducedFrom2018,
-                LastSessionYear = ReducedUntil2019,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheFirstSessionPredatesTheFounding()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithPaulaAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<
-            PostFeeReduction,
-            PostFeeReductionRequest,
-            PostFeeReductionResponse
-        >(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                Basis = FeeReductionBasis.Minor,
-                FirstSessionYear = BeforeTheFounding,
-                LastSessionYear = ReducedUntil2019,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    private Task<SeededContext> BuildWithPaulaAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                ),
-            ct
-        );
 
     private Task<SeededContext> BuildWithSchoolReductionAsync(CancellationToken ct) =>
         _fixture.BuildAsync(

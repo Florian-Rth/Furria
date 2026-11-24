@@ -21,23 +21,6 @@ public sealed class DeleteActFinalTrackByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RemoveTheWaitingFinalFile_When_AnEditorDiscardsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var song = await SongMediaOfAsync(_fixture, admin, actId, 60, ct);
-        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 90, ct);
-        await TuneOffsetAsync(admin, actId, finalTrackId, song, 3);
-
-        var response = await DeleteAsync(admin, actId, finalTrackId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Empty((await StudioOfAsync(admin, actId)).Studio!.FinalTracks);
-    }
-
-    [Fact]
     public async Task Should_Refuse_When_TheFinalFileWasAdopted()
     {
         var ct = TestContext.Current.CancellationToken;

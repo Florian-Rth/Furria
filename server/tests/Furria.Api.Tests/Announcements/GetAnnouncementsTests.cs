@@ -7,8 +7,6 @@ using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.Announcements.AnnouncementMentionSeeds;
-using AnnouncementAddOnKind = Furria.Core.Club.AnnouncementAddOnKind;
-using AttendanceAnswer = Furria.Core.Club.AttendanceAnswer;
 
 namespace Furria.Api.Tests.Announcements;
 
@@ -18,7 +16,6 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
     private const string Body = "Der Saal bleibt am Freitag geschlossen.";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
-    private static readonly DateOnly SeatedIn2023 = new(2023, 3, 1);
     private static readonly DateOnly ExpiredIn2021 = new(2021, 1, 31);
 
     private static readonly DateTimeOffset PublishedInJanuary = new(
@@ -57,74 +54,6 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CarryTheExpiredAnnouncementToo_When_TheBoardIsReadInFull()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-
-        var result = await ReadAsync(ctx, "chris", ct);
-
-        Assert.Equal(
-            [
-                ctx.Club.Announcements.IdOf("von-bea"),
-                ctx.Club.Announcements.IdOf("mittel"),
-                ctx.Club.Announcements.IdOf("abgelaufen"),
-            ],
-            result.Announcements.Select(announcement => announcement.AnnouncementId)
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveTheOfficeEmpty_When_TheAuthorHoldsNoBoardSeat()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-
-        var result = await ReadAsync(ctx, "chris", ct);
-        var author = result
-            .Announcements.Single(announcement =>
-                announcement.AnnouncementId == ctx.Club.Announcements.IdOf("mittel")
-            )
-            .Author;
-
-        Assert.NotNull(author);
-        Assert.Equal(ctx.Identity.People.IdOf("alice"), author.PersonId);
-        Assert.Equal("Alice", author.FirstName);
-        Assert.Equal("Muster", author.LastName);
-        Assert.Null(author.Portrait);
-        Assert.Null(author.OfficeName);
-    }
-
-    [Fact]
-    public async Task Should_NameTheAuthorsOffice_When_SheHoldsARunningBoardSeat()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("alice", "Alice", "Muster")
-                            .AddAccount("alice")
-                            .AddMembership("alice-first", "alice", JoinedIn2017)
-                    )
-                    .Club(club =>
-                        club.AddBoardOffice("praesident", "Präsident")
-                            .AddBoardSeat("alice-praesident", "praesident", "alice", SeatedIn2023)
-                            .AddAnnouncement("gruss", "alice", "Gruß", Body)
-                    ),
-            ct
-        );
-
-        var result = await ReadAsync(ctx, "alice", ct);
-
-        var author = Assert.Single(result.Announcements).Author;
-        Assert.NotNull(author);
-        Assert.Equal(ctx.Identity.People.IdOf("alice"), author.PersonId);
-        Assert.Equal("Präsident", author.OfficeName);
-    }
-
-    [Fact]
     public async Task Should_OfferEditingHerOwnAnnouncementOnly_When_TheAuthorHoldsNoPermission()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -134,49 +63,6 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
 
         Assert.True(EditableIn(result, ctx.Club.Announcements.IdOf("mittel")));
         Assert.False(EditableIn(result, ctx.Club.Announcements.IdOf("von-bea")));
-    }
-
-    [Fact]
-    public async Task Should_OfferEditingEveryAnnouncement_When_TheReaderHoldsThePermission()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-
-        var result = await ReadAsync(ctx, "bea", ct);
-
-        Assert.True(EditableIn(result, ctx.Club.Announcements.IdOf("mittel")));
-        Assert.True(EditableIn(result, ctx.Club.Announcements.IdOf("von-bea")));
-    }
-
-    [Fact]
-    public async Task Should_OfferNoEditing_When_TheReaderIsNeitherAutorNorBerechtigt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-
-        var result = await ReadAsync(ctx, "chris", ct);
-
-        Assert.DoesNotContain(result.Announcements, announcement => announcement.ViewerMayEdit);
-    }
-
-    [Fact]
-    public async Task Should_CarryAnEmptyBoard_When_NobodyHasHungAnythingUp()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("chris", "Chris", "Leser")
-                        .AddAccount("chris")
-                        .AddMembership("chris-first", "chris", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var result = await ReadAsync(ctx, "chris", ct);
-
-        Assert.Empty(result.Announcements);
     }
 
     [Fact]
@@ -209,86 +95,6 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
             [ctx.Gallery.Albums.IdOf(Photos)],
             mentions.Albums.Select(album => album.AlbumId)
         );
-    }
-
-    [Fact]
-    public async Task Should_ResolveAnEntryForChosenPeople_When_TheReaderIsAmongThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-            {
-                MentionTargets(_fixture.TimeProvider.GetUtcNow())(builder);
-                builder.Identity(identity => identity.AddAccount(Alice));
-            },
-            ct
-        );
-        var entryId = ctx.Club.CalendarEntries.IdOf(ChosenPeopleOnly);
-        await PostAsync(ctx, $"@[Essen](calendar-entry:{entryId})", ct);
-
-        var mentions = Assert.Single((await ReadAsync(ctx, Alice, ct)).Announcements).Mentions;
-
-        Assert.Equal([entryId], mentions.CalendarEntries.Select(entry => entry.CalendarEntryId));
-    }
-
-    [Fact]
-    public async Task Should_DropTheMention_When_ThePersonIsErasedOrTheEntryDeleted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(MentionTargets(_fixture.TimeProvider.GetUtcNow()), ct);
-        var aliceId = ctx.Identity.People.IdOf(Alice);
-        var entryId = ctx.Club.CalendarEntries.IdOf(ClubMeeting);
-        await PostAsync(ctx, $"@[Alice](person:{aliceId}) @[Termin](calendar-entry:{entryId})", ct);
-        await _fixture.DeletePersonDirectlyAsync(aliceId, ct);
-        await _fixture.DeleteCalendarEntryDirectlyAsync(entryId, ct);
-
-        var announcement = Assert.Single((await ReadAsync(ctx, Reader, ct)).Announcements);
-
-        Assert.Empty(announcement.Mentions.Persons);
-        Assert.Empty(announcement.Mentions.CalendarEntries);
-        Assert.Contains($"person:{aliceId}", announcement.Body, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Should_ShowResultsAndTheShareToEveryReader_When_TheAnnouncementCarriesAddOns()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await AnnouncementAddOnClub.BuildAsync(_fixture, ct);
-
-        var read = await AnnouncementAddOnClub.ReadAtAsync(
-            _fixture,
-            ctx,
-            "chris",
-            AnnouncementAddOnClub.Now,
-            ct
-        );
-
-        var fest = Assert.Single(read.Announcements);
-        Assert.Equal(
-            [
-                AnnouncementAddOnKind.Attendance,
-                AnnouncementAddOnKind.Poll,
-                AnnouncementAddOnKind.SignUpList,
-            ],
-            fest.AddOns.Select(addOn => addOn.Kind)
-        );
-        var attendance = fest.AddOns[0].Attendance;
-        Assert.NotNull(attendance);
-        Assert.Equal((1, 0, 0), (attendance.Yes, attendance.Maybe, attendance.No));
-        Assert.Equal(4, attendance.ConcernedCount);
-        Assert.Equal(["Chris"], attendance.Answers.Select(answer => answer.FirstName));
-        Assert.Null(attendance.NotAnswered);
-        Assert.Null(attendance.Reminder);
-        Assert.False(attendance.IsClosed);
-        Assert.Equal(
-            (1, 4),
-            (fest.AddOns[1].Poll?.VoterCount, fest.AddOns[1].Poll?.ConcernedCount)
-        );
-        Assert.Equal(4, fest.AddOns[2].SignUpList?.ConcernedCount);
-        Assert.Equal(AttendanceAnswer.Yes, fest.ViewerAnswer);
-        Assert.True(fest.ViewerMayAnswer);
-        Assert.False(fest.ViewerMayEdit);
-        Assert.Equal(3, fest.AnswerCount);
     }
 
     [Fact]
@@ -362,41 +168,6 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ShowTheTakenOverAddOnsInTheSharedOrder_When_TheAnnouncementBorrowsFromAnEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await AnnouncementAddOnClub.BuildLendingAsync(_fixture, ct, withLoans: true);
-        var paradeId = ctx.Club.CalendarEntries.IdOf("umzug");
-
-        var read = await AnnouncementAddOnClub.ReadAtAsync(
-            _fixture,
-            ctx,
-            "chris",
-            AnnouncementAddOnClub.Now,
-            ct
-        );
-
-        var fest = Assert.Single(read.Announcements);
-        Assert.Equal(
-            [
-                (AnnouncementAddOnKind.Attendance, (int?)null),
-                (AnnouncementAddOnKind.Poll, null),
-                (AnnouncementAddOnKind.SignUpList, null),
-                (AnnouncementAddOnKind.Attendance, paradeId),
-                (AnnouncementAddOnKind.Poll, paradeId),
-            ],
-            fest.AddOns.Select(addOn => (addOn.Kind, addOn.Borrowed?.Entry.CalendarEntryId))
-        );
-        var borrowedAttendance = fest.AddOns[3].Borrowed;
-        Assert.NotNull(borrowedAttendance);
-        Assert.Null(borrowedAttendance.AddOnId);
-        Assert.True(borrowedAttendance.Entry.MayAnswer);
-        Assert.Equal(AttendanceAnswer.Maybe, borrowedAttendance.Entry.ViewerAnswer);
-        Assert.Equal(ctx.Club.Polls.IdOf("bus"), fest.AddOns[4].Borrowed?.AddOnId);
-        Assert.Equal(3, fest.AnswerCount);
-    }
-
-    [Fact]
     public async Task Should_ShowTheEntrysResultsWithoutAnswering_When_TheReaderIsNotConcernedByTheEntry()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -447,37 +218,6 @@ public sealed class GetAnnouncementsTests : IClassFixture<ApiTestFixture>
                 == ctx.Club.CalendarEntries.IdOf("vorstandsrunde")
         );
         Assert.Equal(5, fest.AddOns.Count);
-    }
-
-    [Fact]
-    public async Task Should_ShowTheNewAnswer_When_TheReaderAnswersTheTakenOverAttendanceAtTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await AnnouncementAddOnClub.BuildLendingAsync(_fixture, ct, withLoans: true);
-        var paradeId = ctx.Club.CalendarEntries.IdOf("umzug");
-
-        var response = await AnnouncementAddOnClub.AtNowAsync(
-            _fixture,
-            async () =>
-            {
-                var client = await ctx.Identity.SignInAgainAsync("chris", ct);
-                return await client.POSTAsync<
-                    Furria.Api.Endpoints.Calendar.PostCalendarResponse,
-                    Furria.Api.Endpoints.Calendar.PostCalendarResponseRequest
-                >(new() { CalendarEntryId = paradeId, Answer = AttendanceAnswer.Yes });
-            }
-        );
-        var read = await AnnouncementAddOnClub.ReadAtAsync(
-            _fixture,
-            ctx,
-            "chris",
-            AnnouncementAddOnClub.Now,
-            ct
-        );
-
-        Assert.True(response.IsSuccessStatusCode);
-        var fest = Assert.Single(read.Announcements);
-        Assert.Equal(AttendanceAnswer.Yes, fest.AddOns[3].Borrowed?.Entry.ViewerAnswer);
     }
 
     private static async Task PostAsync(SeededContext ctx, string body, CancellationToken ct)

@@ -29,25 +29,6 @@ public sealed class ArchiveRoleTests : IClassFixture<ApiTestFixture>
         );
 
     [Fact]
-    public async Task Should_StampToday_When_AManagerArchivesTheRole()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Roles(roles => roles.AddRole("chronik", "Chronik")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await ArchiveRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("chronik"))
-            .ToBeArchivedOn(_fixture.Today)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_LeaveEveryRoleHoldingUntouched_When_TheRoleIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;

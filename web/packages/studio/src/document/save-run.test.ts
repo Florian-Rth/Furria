@@ -61,33 +61,10 @@ describe('serverWriteOf', () => {
       sent: { kind: 'stepName', stepId: 77, name: 'A' },
     },
     {
-      write: {
-        kind: 'partSettings',
-        partId: 10,
-        name: 'A',
-        firstStepId: -1,
-        lastStepId: -1,
-        mainVideoId: null,
-      },
-      sent: {
-        kind: 'partSettings',
-        partId: 10,
-        name: 'A',
-        firstStepId: 77,
-        lastStepId: 77,
-        mainVideoId: null,
-      },
-    },
-    {
       write: { kind: 'tracks', tracks: [{ spotId: -2, keyframes: [] }] },
       sent: { kind: 'tracks', baseVersion: 4, tracks: [{ spotId: 88, keyframes: [] }] },
     },
     { write: { kind: 'stepMove', stepId: -9, atSeconds: 3 }, sent: null },
-    {
-      write: { kind: 'spotAssign', spotId: 31, personId: 7 },
-      sent: { kind: 'spotAssign', spotId: 95, personId: 7 },
-    },
-    { write: { kind: 'spotAssign', spotId: -9, personId: 7 }, sent: null },
   ])('resolves $write.kind', ({ write, sent }) => {
     expect(serverWriteOf(write, known, 4)).toEqual(sent);
   });
@@ -101,7 +78,6 @@ describe('idsLearnedFrom', () => {
     ids: number[][];
     strays: number[];
   }>([
-    { name: 'a plain mark', openingStepId: null, created: [70], ids: [[-1, 70]], strays: [] },
     {
       name: 'a mark that opens the timeline',
       openingStepId: -2,

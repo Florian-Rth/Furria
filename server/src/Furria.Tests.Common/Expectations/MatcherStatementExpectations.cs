@@ -27,12 +27,6 @@ public sealed class MatcherStatementExpectations
             }
         );
 
-    public Expected ToBeRewordedAt(DateTimeOffset? rewordedAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(rewordedAt, (await FindAsync(dbContext, ct))?.RewordedAt)
-        );
-
     public Expected ToNotExist() =>
         _expected.Enqueue(async (dbContext, ct) => Assert.Null(await FindAsync(dbContext, ct)));
 

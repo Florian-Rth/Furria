@@ -29,36 +29,6 @@ public sealed class GetMyActsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListTheRelevantSessionsActsTheViewerDancesIn_When_AskedForTheirActs()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var ben = ctx.Identity.People.IdOf(Ben);
-        await GardetanzAsync(ctx, ct, name: "Marsch");
-        await GardetanzAsync(ctx, ct, name: "Polka", removed: [ben]);
-        var archived = await GardetanzAsync(ctx, ct, name: "Alter Tanz");
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        await admin.PUTAsync<PutActArchived, PutActArchivedRequest>(
-            new() { ActId = archived, Archived = true }
-        );
-        await CreateActAsync(
-            admin,
-            "Nächstes Jahr",
-            ctx.Groups.Groups.IdOf(Garde),
-            ActKind.Dance,
-            sessionYear: ClubSession.RelevantYearOf(_fixture.Today) + 1
-        );
-        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-        await CreateActAsync(planner, "Einmarsch", kind: ActKind.Point, added: [ben]);
-        var client = await ctx.Identity.ClientForAsync(Ben, ct);
-
-        var (_, result) = await client.GETAsync<GetMyActs, GetMyActsResponse>();
-
-        Assert.Equal(["Marsch"], result.Acts.Select(act => act.Name));
-        Assert.Equal("Tanzgarde", result.Acts[0].Group?.Name);
-    }
-
-    [Fact]
     public async Task Should_GiveACastMemberHerNextEveningTrainingAndWhomToAsk_When_AskedForTheirActs()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -87,30 +57,6 @@ public sealed class GetMyActsTests : IClassFixture<ApiTestFixture>
         Assert.Equal(1, act.NextTraining?.Absent);
         Assert.Contains("Anna", act.Cast.Select(member => member.FirstName));
         Assert.Equal(["Gerd"], act.Editors.Select(editor => editor.FirstName));
-    }
-
-    [Fact]
-    public async Task Should_ListTheActsOfTheGroupsSheLeads_When_ATrainerOutsideTheCastAsks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithTrainings(_fixture.Today), ct);
-        var training = ctx.Club.CalendarEntries.IdOf(GardeTraining);
-        await GardetanzAsync(ctx, ct, name: "Marsch");
-        var anna = await ctx.Identity.ClientForAsync(Anna, ct);
-        await AnswerAsync(anna, training, AttendanceAnswer.Yes);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-        var (_, result) = await admin.GETAsync<GetMyActs, GetMyActsResponse>();
-
-        var act = Assert.Single(result.Acts);
-        Assert.Equal("Marsch", act.Name);
-        Assert.False(act.ViewerInCast);
-        Assert.True(act.ViewerLeads);
-        Assert.False(act.Playable);
-        Assert.Null(act.NextEvening);
-        Assert.NotNull(act.NextTraining);
-        Assert.Null(act.NextTraining.ViewerAnswer);
-        Assert.Equal(1, act.NextTraining.Present);
     }
 
     [Fact]

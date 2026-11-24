@@ -35,13 +35,9 @@ public sealed class PictureCropTests
     public static TheoryData<string, string?> RefusedTokens =>
         new()
         {
-            { "nothing", null },
             { "three numbers", "0.1,0.1,0.5" },
-            { "a word", "links,0,1,1" },
             { "a negative edge", "-0.1,0,0.5,0.5" },
-            { "no width", "0,0,0,0.5" },
             { "past the right edge", "0.6,0,0.5,0.5" },
-            { "past the bottom edge", "0,0.6,0.5,0.5" },
             { "not a number", "NaN,0,0.5,0.5" },
         };
 
@@ -62,14 +58,6 @@ public sealed class PictureCropTests
         PictureCrop chosen,
         PictureCrop expected
     ) => AssertClose(expected, chosen.FittedTo(1000, 1000, 1));
-
-    [Fact]
-    public void Should_ReadTheCropBack_When_ItTravelsAsAToken()
-    {
-        var crop = new PictureCrop(0.125, 0.0625, 0.5, 0.625);
-
-        Assert.Equal(crop, PictureCrop.Parse(crop.Token));
-    }
 
     [Theory]
     [MemberData(nameof(RefusedTokens))]

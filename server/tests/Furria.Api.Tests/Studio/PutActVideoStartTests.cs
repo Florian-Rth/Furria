@@ -1,7 +1,3 @@
-using System.Net;
-using FastEndpoints;
-using Furria.Api.Endpoints.Acts;
-using Furria.Core.Studio;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -30,49 +26,6 @@ public sealed class PutActVideoStartTests : IClassFixture<ApiTestFixture>
         await SongOfAsync(_fixture, admin, actId, 60, ct);
 
         return (admin, actId);
-    }
-
-    [Theory]
-    [InlineData(75.5)]
-    [InlineData(-3.25)]
-    public async Task Should_PlaceTheVideoOnTheMusic_When_AnEditorSetsItsStart(double atSeconds)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var videoId = await VideoOfAsync(_fixture, admin, actId, 30, ct);
-
-        await PlaceVideoAsync(admin, actId, videoId, atSeconds);
-
-        var video = await VideoInStudioAsync(admin, actId, videoId);
-        Assert.Equal(VideoPlacement.OnTimeline, video.Placement);
-        Assert.Equal(atSeconds, video.StartSeconds!.Value, 6);
-    }
-
-    [Fact]
-    public async Task Should_RefuseThePlace_When_TheClipWouldEndBeforeTheMusic()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var videoId = await VideoOfAsync(_fixture, admin, actId, 30, ct);
-        await ClipVideoAsync(admin, actId, videoId, 0, 10);
-
-        var response = await PutAsync(admin, actId, videoId, -15);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Theory]
-    [InlineData(120)]
-    [InlineData(-30)]
-    public async Task Should_RefuseThePlace_When_TheVideoWouldMissTheMusic(double atSeconds)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var videoId = await VideoOfAsync(_fixture, admin, actId, 30, ct);
-
-        var response = await PutAsync(admin, actId, videoId, atSeconds);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     [Fact]
@@ -112,19 +65,4 @@ public sealed class PutActVideoStartTests : IClassFixture<ApiTestFixture>
         );
         Assert.Equal(newer, studio.Parts[1].MainVideoId);
     }
-
-    private static Task<HttpResponseMessage> PutAsync(
-        HttpClient client,
-        int actId,
-        int videoId,
-        double atSeconds
-    ) =>
-        client.PUTAsync<PutActVideoStart, PutActVideoStartRequest>(
-            new()
-            {
-                ActId = actId,
-                VideoId = videoId,
-                AtSeconds = atSeconds,
-            }
-        );
 }

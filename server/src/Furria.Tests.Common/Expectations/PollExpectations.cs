@@ -85,26 +85,10 @@ public sealed class PollExpectations
             }
         );
 
-    public Expected ToBeClosedBy(int? personId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var poll = await SingleAsync(dbContext, ct);
-                Assert.NotNull(poll.ClosedAt);
-                Assert.Equal(personId, poll.ClosedByPersonId);
-            }
-        );
-
     public Expected ToHaveVotesUntil(DateTimeOffset? votesUntil) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(votesUntil, (await SingleAsync(dbContext, ct)).VotesUntil)
-        );
-
-    public Expected ToHaveQuestion(string question) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(question, (await SingleAsync(dbContext, ct)).Question)
         );
 
     private Task<Poll> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

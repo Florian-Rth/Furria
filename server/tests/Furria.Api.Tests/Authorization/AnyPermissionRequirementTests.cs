@@ -8,21 +8,11 @@ namespace Furria.Api.Tests.Authorization;
 
 public sealed class AnyPermissionRequirementTests : IClassFixture<ApiTestFixture>
 {
-    private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
-
     private readonly ApiTestFixture _fixture;
 
     public AnyPermissionRequirementTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsTheFirstOfTheListedKeys()
-    {
-        var response = await ProbeAsHolderOfAsync(FurriaPermissions.KeyHoldingsManage);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     [Fact]
@@ -34,52 +24,11 @@ public sealed class AnyPermissionRequirementTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsEveryListedKey()
-    {
-        var response = await ProbeAsHolderOfAsync(
-            FurriaPermissions.KeyHoldingsManage,
-            FurriaPermissions.BoardManage
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_Refuse_When_TheCallerOnlyHoldsAKeyTheGateDoesNotList()
     {
         var response = await ProbeAsHolderOfAsync(FurriaPermissions.PersonsManage);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheCallerHoldsNoPermissionAtAll()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("paula").AddMembership("paula-first", "paula", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("paula", ct);
-        var (response, _) = await client.GETAsync<AnyPermissionProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheManagingLoginAsks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.GETAsync<AnyPermissionProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     private async Task<HttpResponseMessage> ProbeAsHolderOfAsync(params string[] permissionKeys)

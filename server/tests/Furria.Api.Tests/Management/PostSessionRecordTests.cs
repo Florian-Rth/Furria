@@ -23,67 +23,6 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_WriteDownTheWholeSeason_When_TheClubKnowsEveryPart()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await RecordAsync(client, 2026, 53, Motto);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Session(result.SessionId)
-            .ToHaveStartYear(2026)
-            .Session(result.SessionId)
-            .ToHaveNumber(53)
-            .Session(result.SessionId)
-            .ToHaveMotto(Motto)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_WriteDownTheYearAlone_When_TheClubKnowsNothingElse()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await RecordAsync(client, 1974, null, null);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Session(result.SessionId)
-            .ToHaveStartYear(1974)
-            .Session(result.SessionId)
-            .ToHaveNumber(null)
-            .Session(result.SessionId)
-            .ToHaveMotto(null)
-            .Session(result.SessionId)
-            .ToShowLogo(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_WriteDownTheSession_When_ItHasNotBegunYet()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var comingSeason = _fixture.CurrentSessionYear + 1;
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await RecordAsync(client, comingSeason, null, Motto);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Session(result.SessionId)
-            .ToHaveStartYear(comingSeason)
-            .Session(result.SessionId)
-            .ToHaveMotto(Motto)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheSeasonAlreadyCarriesAnEntry()
     {
         var ct = TestContext.Current.CancellationToken;

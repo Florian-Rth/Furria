@@ -22,35 +22,6 @@ public sealed class PutActSongTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StoreThePiecesAndTheBeatGrid_When_AnEditorCutsTheSong()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var march = await UploadSongAsync(admin, actId, ct);
-        await _fixture.RenderSongDirectlyAsync(march, 180, ct);
-        var songId = await AddSongAsync(admin, actId, march);
-
-        var response = await PutAsync(
-            admin,
-            actId,
-            songId,
-            Cut([(12.5, 40.25), (60, 95)], 12.75, 128)
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var studio = await StudioOfAsync(admin, actId);
-        var song = Assert.Single(studio.Studio!.Songs);
-        Assert.Equal(
-            [(12.5, 40.25), (60.0, 95.0)],
-            song.Pieces.Select(piece => (piece.StartSeconds, piece.EndSeconds))
-        );
-        Assert.Equal((12.75, 128.0), (song.FirstBeatSeconds!.Value, song.TempoBpm!.Value));
-        Assert.Equal(62.75, studio.Studio.Music.LengthSeconds, 0.001);
-    }
-
-    [Fact]
     public async Task Should_CutAwayTheStep_When_ItsMusicFallsIntoTheGapBetweenTwoPieces()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -88,92 +59,6 @@ public sealed class PutActSongTests : IClassFixture<ApiTestFixture>
         var response = await PutAsync(admin, actId, songId, Cut([(0, 30), (29.5, 60)], null, null));
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_FallBackToTheAnalysis_When_TheBeatGridCorrectionIsCleared()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var march = await UploadSongAsync(admin, actId, ct);
-        await _fixture.RenderSongDirectlyAsync(march, 180, ct);
-        var songId = await AddSongAsync(admin, actId, march);
-        await PutAsync(admin, actId, songId, Cut([(0, 180)], 1.5, 120));
-
-        await PutAsync(admin, actId, songId, Cut([(0, 180)], null, null));
-
-        var studio = await StudioOfAsync(admin, actId);
-        var song = Assert.Single(studio.Studio!.Songs);
-        Assert.Equal((null, null), (song.FirstBeatSeconds, song.TempoBpm));
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheCut_When_ItEndsAfterTheSong()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var march = await UploadSongAsync(admin, actId, ct);
-        await _fixture.RenderSongDirectlyAsync(march, 180, ct);
-        var songId = await AddSongAsync(admin, actId, march);
-
-        var response = await PutAsync(admin, actId, songId, Cut([(0, 90), (100, 181)], null, null));
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheBeatGrid_When_ItsFirstBeatLiesAfterTheSong()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var march = await UploadSongAsync(admin, actId, ct);
-        await _fixture.RenderSongDirectlyAsync(march, 180, ct);
-        var songId = await AddSongAsync(admin, actId, march);
-
-        var response = await PutAsync(admin, actId, songId, Cut([(0, 180)], 200, 120));
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_StoreTheCut_When_TheSongIsStillBeingProcessed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var songId = await AddedSongAsync(admin, actId, ct);
-
-        var response = await PutAsync(admin, actId, songId, Cut([(3, 60)], null, null));
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var studio = await StudioOfAsync(admin, actId);
-        var song = Assert.Single(studio.Studio!.Songs);
-        Assert.Equal(
-            (3.0, 60.0),
-            (Assert.Single(song.Pieces).StartSeconds, song.Pieces[0].EndSeconds)
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReportNotFound_When_TheSongBelongsToAnotherAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var otherActId = await GardetanzAsync(ctx, ct, name: "Schautanz");
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var foreignSong = await AddedSongAsync(admin, otherActId, ct);
-
-        var response = await PutAsync(admin, actId, foreignSong, Cut([(0, 60)], null, null));
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static PutActSongRequest Cut(

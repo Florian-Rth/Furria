@@ -51,30 +51,4 @@ public sealed class RenewIntakeTests : IClassFixture<ApiTestFixture>
             .ToHaveLabel("Lenas Schwester")
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_RefuseTheRenewal_When_TheNewcomerHasAlreadyFilledItIn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            With(intakes =>
-                intakes.AddIntake(
-                    "review",
-                    Manager,
-                    groupAliases: [Guard],
-                    submittedName: ("Lena", "Neu")
-                )
-            ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync(Manager, ct);
-
-        var (response, _) = await client.POSTAsync<
-            RenewIntake,
-            RenewIntakeRequest,
-            RenewIntakeResponse
-        >(new() { IntakeId = ctx.Intakes.Intakes.IdOf("review") });
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
 }

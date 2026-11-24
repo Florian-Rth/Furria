@@ -2,7 +2,6 @@ using System.Globalization;
 using Furria.Api.Altcha;
 using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
-using Furria.Application.Club;
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.Mail;
@@ -16,9 +15,7 @@ using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
-using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
-using Furria.Core.Studio;
 using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Changes;
 using Furria.Infrastructure.Club;
@@ -156,8 +153,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
 
     public FakeWahaService Waha => Host.Waha;
 
-    public LogMark HostStarted => Host.Started;
-
     public IServiceProvider Services => Host.Services;
 
     public DateOnly Today => ClubClock.Today(TimeProvider);
@@ -193,22 +188,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
     {
         var now = DateTimeOffset.UtcNow;
         return now.AddTicks(-(now.Ticks % TimeSpan.TicksPerSecond));
-    }
-
-    private async Task WinTheParticipationAsync(
-        int calendarEntryId,
-        int groupId,
-        CancellationToken ct
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        db.CalendarEntryGroups.Add(
-            new CalendarEntryGroup { CalendarEntryId = calendarEntryId, GroupId = groupId }
-        );
-
-        await db.SaveChangesAsync(ct);
     }
 
     public async ValueTask InitializeAsync()
@@ -479,13 +458,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
         );
     }
 
-    public async Task<int> WhatsAppAnswerCountAsync(CancellationToken ct = default)
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        return await db.WhatsAppAnswers.CountAsync(ct);
-    }
-
     public async Task StageWhatsAppGroupAddsAsync(CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();
@@ -698,58 +670,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
         );
     }
 
-    public async Task RewriteCalendarEntryKindDirectlyAsync(
-        int calendarEntryId,
-        string kind,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        await db.Database.ExecuteSqlAsync(
-            $"UPDATE calendar_entry SET kind = {kind} WHERE id = {calendarEntryId}",
-            ct
-        );
-    }
-
-    public async Task RewriteCalendarEntryVisibilityDirectlyAsync(
-        int calendarEntryId,
-        string visibility,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        await db.Database.ExecuteSqlAsync(
-            $"UPDATE calendar_entry SET visibility = {visibility} WHERE id = {calendarEntryId}",
-            ct
-        );
-    }
-
-    public async Task DeleteMediaItemDirectlyAsync(int mediaItemId, CancellationToken ct = default)
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        await db.Database.ExecuteSqlAsync($"DELETE FROM media_item WHERE id = {mediaItemId}", ct);
-    }
-
-    public async Task DetachWebsitePictureDirectlyAsync(
-        int mediaItemId,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        await db.Database.ExecuteSqlAsync(
-            $"DELETE FROM website_picture WHERE media_item_id = {mediaItemId}",
-            ct
-        );
-    }
-
     public async Task<int> PendingNewsPictureOfAsync(int newsPostId, CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();
@@ -880,42 +800,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task AddFinalTrackDirectlyAsync(
-        int actId,
-        int mediaItemId,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        db.ActFinalTracks.Add(
-            new ActFinalTrack
-            {
-                ActId = actId,
-                MediaItemId = mediaItemId,
-                Version = 1,
-            }
-        );
-        await db.SaveChangesAsync(ct);
-    }
-
-    public async Task<int> AddActVideoDirectlyAsync(
-        int actId,
-        int mediaItemId,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var video = new ActVideo { ActId = actId, MediaItemId = mediaItemId };
-        db.ActVideos.Add(video);
-        await db.SaveChangesAsync(ct);
-
-        return video.Id;
-    }
-
     public async Task<long> WriteLogEntryDirectlyAsync(
         LogSource source,
         LogEntryLevel level,
@@ -952,13 +836,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
     ) =>
         host.Services.GetServices<IHostedService>().OfType<LogEntryPurge>().Single().PurgeAsync(ct);
 
-    public Task SurveyMediaStorageAsync(CancellationToken ct = default) =>
-        Services
-            .GetServices<IHostedService>()
-            .OfType<MediaStorageSurvey>()
-            .Single()
-            .SurveyAsync(ct);
-
     public Task BeatAsMediaWorkerAsync(CancellationToken ct = default) =>
         MediaWorker.GetRequiredService<MediaWorkerBeat>().BeatAsync(ct);
 
@@ -982,28 +859,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
 
     public string SignedMediaUrl(int mediaItemId, MediaOwner owner, MediaRendition rendition) =>
         Services.GetRequiredService<MediaUrlSigner>().UrlOf(mediaItemId, owner, rendition);
-
-    public async Task DeleteCalendarEntryDirectlyAsync(
-        int calendarEntryId,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        await db.Database.ExecuteSqlAsync(
-            $"DELETE FROM calendar_entry WHERE id = {calendarEntryId}",
-            ct
-        );
-    }
-
-    public async Task DeletePersonDirectlyAsync(int personId, CancellationToken ct = default)
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        await db.Database.ExecuteSqlAsync($"DELETE FROM person WHERE id = {personId}", ct);
-    }
 
     public async Task ChangeEveningCastDirectlyAsync(
         int eventId,
@@ -1029,21 +884,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
                 PersonId = personId,
                 Change = change,
             }
-        );
-        await db.SaveChangesAsync(ct);
-    }
-
-    public async Task AddRolePermissionDirectlyAsync(
-        int roleId,
-        string permissionKey,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        db.RolePermissions.Add(
-            new RolePermission { RoleId = roleId, PermissionKey = permissionKey }
         );
         await db.SaveChangesAsync(ct);
     }
@@ -1084,68 +924,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
         return await db.SaveOrConflictAsync(ct);
     }
 
-    public async Task<Result<CalendarEntryWriteResult>> SaveSecondParticipationAsync(
-        int calendarEntryId,
-        int groupId,
-        int actorAccountId,
-        int viewerPersonId,
-        CancellationToken ct = default
-    )
-    {
-        await using var loser = Services.CreateAsyncScope();
-        var db = loser.ServiceProvider.GetRequiredService<AppDbContext>();
-        var calendarService = loser.ServiceProvider.GetRequiredService<CalendarService>();
-
-        db.CalendarEntryGroups.Add(
-            new CalendarEntryGroup { CalendarEntryId = calendarEntryId, GroupId = groupId }
-        );
-
-        await WinTheParticipationAsync(calendarEntryId, groupId, ct);
-
-        var entry = await db
-            .CalendarEntries.AsNoTracking()
-            .Include(row => row.AudienceGroups)
-            .Include(row => row.AudiencePeople)
-            .SingleAsync(row => row.Id == calendarEntryId, ct);
-
-        return await calendarService.UpdateAsync(
-            new UpdateCalendarEntryCommand
-            {
-                ActorAccountId = actorAccountId,
-                ViewerPersonId = viewerPersonId,
-                CalendarEntryId = entry.Id,
-                Title = entry.Title,
-                Description = entry.Description,
-                OwnerGroupId = entry.OwnerGroupId,
-                VenueId = entry.VenueId,
-                StartsAt = entry.StartsAt,
-                EndsAt = entry.EndsAt,
-                Kind = entry.Kind,
-                Audience = entry.Audience,
-                AudienceGroupIds = [.. entry.AudienceGroups.Select(link => link.GroupId)],
-                AudiencePersonIds = [.. entry.AudiencePeople.Select(link => link.PersonId)],
-                AddOns =
-                [
-                    .. entry.AsksForResponse
-                        ? [SingleUseAddOn(CalendarEntryAddOnKind.Attendance)]
-                        : Array.Empty<CalendarEntryAddOnInput>(),
-                    SingleUseAddOn(CalendarEntryAddOnKind.ParticipatingGroups),
-                ],
-                ParticipatingGroupIds = [groupId],
-            },
-            ct
-        );
-    }
-
-    private static CalendarEntryAddOnInput SingleUseAddOn(CalendarEntryAddOnKind kind) =>
-        new()
-        {
-            Kind = kind,
-            Poll = null,
-            SignUpList = null,
-            DaySchedule = null,
-        };
-
     public async Task<Result> SaveSecondActiveGroupAsync(
         string name,
         CancellationToken ct = default
@@ -1175,20 +953,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
         await db.SaveChangesAsync(ct);
     }
 
-    public async Task EditRoleNameDirectlyAsync(
-        int roleId,
-        string name,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var role = await db.Roles.SingleAsync(row => row.Id == roleId, ct);
-        role.Name = name;
-        await db.SaveChangesAsync(ct);
-    }
-
     public async Task ArchiveRoleDirectlyAsync(
         int roleId,
         DateOnly archivedOn,
@@ -1200,33 +964,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
 
         var role = await db.Roles.SingleAsync(row => row.Id == roleId, ct);
         role.ArchivedOn = archivedOn;
-        await db.SaveChangesAsync(ct);
-    }
-
-    public async Task EditGroupNameDirectlyAsync(
-        int groupId,
-        string name,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var group = await db.Groups.SingleAsync(row => row.Id == groupId, ct);
-        group.Name = name;
-        await db.SaveChangesAsync(ct);
-    }
-
-    public async Task UncategorizeNewsPostDirectlyAsync(
-        int newsPostId,
-        CancellationToken ct = default
-    )
-    {
-        await using var scope = Services.CreateAsyncScope();
-        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        var post = await db.NewsPosts.SingleAsync(row => row.Id == newsPostId, ct);
-        post.Category = null;
         await db.SaveChangesAsync(ct);
     }
 

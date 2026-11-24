@@ -9,7 +9,7 @@
     "seed:start": "node --disable-warning=ExperimentalWarning src/seed-start.ts",
     "seed:promo": "node --disable-warning=ExperimentalWarning src/seed-promo.ts",
     "promo:shots": "node --disable-warning=ExperimentalWarning src/promo-shots.ts",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

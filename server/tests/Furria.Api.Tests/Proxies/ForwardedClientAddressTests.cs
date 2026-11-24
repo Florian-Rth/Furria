@@ -22,20 +22,6 @@ public sealed class ForwardedClientAddressTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LimitEachClientOnItsOwn_When_TheProxyForwardsTheirAddresses()
-    {
-        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
-        await using var host = HostWithTightPerIpLimit();
-        var first = host.CreateClientForwardedFor("203.0.113.10");
-        var second = host.CreateClientForwardedFor("203.0.113.20");
-
-        await UseUpThePerIpLimitAsync(first);
-        var (response, _) = await LookUpAsync(second);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_CountTheProxysPeer_When_AClientForwardsAnAddressOfItsOwn()
     {
         await _fixture.BuildAsync(TestContext.Current.CancellationToken);

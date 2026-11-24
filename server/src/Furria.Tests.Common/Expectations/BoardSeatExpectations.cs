@@ -33,22 +33,6 @@ public sealed class BoardSeatExpectations
                 Assert.Equal(personId, (await SingleAsync(dbContext, ct)).PersonId)
         );
 
-    public Expected ToFillOffice(int boardOfficeId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(boardOfficeId, (await SingleAsync(dbContext, ct)).BoardOfficeId)
-        );
-
-    public Expected ToRunFrom(DateOnly sinceOn, DateOnly? untilOn) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var seat = await SingleAsync(dbContext, ct);
-                Assert.Equal(sinceOn, seat.SinceOn);
-                Assert.Equal(untilOn, seat.UntilOn);
-            }
-        );
-
     public Expected ToHavePeriod(DateOnly sinceOn, DateOnly? untilOn) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

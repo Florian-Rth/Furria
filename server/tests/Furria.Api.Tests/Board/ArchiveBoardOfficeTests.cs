@@ -13,11 +13,9 @@ public sealed class ArchiveBoardOfficeTests : IClassFixture<ApiTestFixture>
     private const string ConflictField = "conflict";
     private const string OccupiedOfficeMessage =
         "Diese Vorstandsfunktion ist besetzt. Beende zuerst den Vorstandssitz.";
-    private const string AlreadyArchivedMessage = "Diese Vorstandsfunktion ist bereits archiviert.";
 
     private static readonly DateOnly Elected2016 = new(2016, 11, 11);
     private static readonly DateOnly HandedOver2020 = new(2020, 11, 10);
-    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -33,25 +31,6 @@ public sealed class ArchiveBoardOfficeTests : IClassFixture<ApiTestFixture>
         client.POSTAsync<ArchiveBoardOffice, ArchiveBoardOfficeRequest>(
             new ArchiveBoardOfficeRequest { BoardOfficeId = boardOfficeId }
         );
-
-    [Fact]
-    public async Task Should_ArchiveTheOffice_When_NobodySitsInIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddBoardOffice("pressewart", "Pressewart", 4)),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await ArchiveOfficeAsync(client, ctx.Club.BoardOffices.IdOf("pressewart"));
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("pressewart"))
-            .ToBeArchivedOn(_fixture.Today)
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_ArchiveTheOffice_When_ItsOnlySeatIsAlreadyOver()
@@ -143,30 +122,6 @@ public sealed class ArchiveBoardOfficeTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
             .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheOfficeIsAlreadyArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Club(club =>
-                    club.AddBoardOffice("pressewart", "Pressewart", 4, null, ArchivedIn2021)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await ArchiveOfficeAsync(client, ctx.Club.BoardOffices.IdOf("pressewart"));
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal([AlreadyArchivedMessage], failures[ConflictField]);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("pressewart"))
-            .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
     }
 

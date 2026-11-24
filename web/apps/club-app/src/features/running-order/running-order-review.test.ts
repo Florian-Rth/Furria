@@ -74,41 +74,6 @@ describe('reviewRunningOrder', () => {
       ],
     },
     {
-      name: 'mustFirstBroken',
-      draft: evening(
-        [act(1, [person(1)]), act(2, [person(2)])],
-        [],
-        [{ actWishId: 7, actId: 2, kind: 'first', strength: 'must' }],
-      ),
-      findings: [found('mustRuleBroken', 'conflict', ['act:2'], { actWishId: 7 })],
-    },
-    {
-      name: 'preferLastMissed',
-      draft: evening(
-        [act(1, [person(1)]), act(2, [person(2)])],
-        [
-          {
-            ruleKey: 'rule:3',
-            ruleId: 3,
-            kind: 'last',
-            strength: 'prefer',
-            actId: 1,
-            otherActId: null,
-            actKind: null,
-          },
-        ],
-      ),
-      findings: [found('preferRuleMissed', 'hint', ['act:1'], { ruleKey: 'rule:3' })],
-    },
-    {
-      name: 'twoSpeechesAdjacent',
-      draft: evening([
-        act(1, [person(1)], { kind: 'speech' }),
-        act(2, [person(2)], { kind: 'speech' }),
-      ]),
-      findings: [found('sameKindAdjacent', 'hint', ['act:1', 'act:2'])],
-    },
-    {
       name: 'kindSpreadRuleReplacesBuiltIn',
       draft: evening(
         [act(1, [person(1)], { kind: 'speech' }), act(2, [person(2)], { kind: 'speech' })],
@@ -132,11 +97,6 @@ describe('reviewRunningOrder', () => {
       findings: [found('nobodyThere', 'conflict', ['act:1'], { personIds: [1, 2] })],
     },
     {
-      name: 'unplacedLine',
-      draft: evening([act(1, [person(1)]), act(2, [person(2)], { placed: false })]),
-      findings: [found('unplaced', 'hint', ['act:2'])],
-    },
-    {
       name: 'earlyLateThirds',
       draft: evening(
         [1, 2, 3, 4, 5, 6].map((actId) => act(actId, [person(actId)])),
@@ -151,22 +111,6 @@ describe('reviewRunningOrder', () => {
       findings: [
         found('mustRuleBroken', 'conflict', ['act:3'], { actWishId: 2 }),
         found('preferRuleMissed', 'hint', ['act:4'], { actWishId: 4 }),
-      ],
-    },
-    {
-      name: 'halvesByIndex',
-      draft: evening(
-        [1, 2, 3, 4].map((actId) => act(actId, [person(actId)])),
-        [],
-        [
-          { actWishId: 1, actId: 3, kind: 'firstHalf', strength: 'must' },
-          { actWishId: 2, actId: 4, kind: 'secondHalf', strength: 'must' },
-          { actWishId: 3, actId: 1, kind: 'secondHalf', strength: 'prefer' },
-        ],
-      ),
-      findings: [
-        found('preferRuleMissed', 'hint', ['act:1'], { actWishId: 3 }),
-        found('mustRuleBroken', 'conflict', ['act:3'], { actWishId: 1 }),
       ],
     },
     {

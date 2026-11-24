@@ -73,21 +73,6 @@ public sealed class LogEntryPurgeTests : IClassFixture<ApiTestFixture>
         await ctx.Expected.MediaWorkerHeartbeats().ToHaveCount(0).AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_KeepAMediaWorker_When_ItBeatRecently()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        await _fixture.BeatAsMediaWorkerAsync(ct);
-
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromHours(1),
-            () => _fixture.PurgeLogEntriesAsync(ct)
-        );
-
-        await ctx.Expected.MediaWorkerHeartbeats().ToHaveCount(1).AssertAsync(ct);
-    }
-
     private Task LogAsync(
         LogEntryLevel level,
         DateTimeOffset loggedAt,

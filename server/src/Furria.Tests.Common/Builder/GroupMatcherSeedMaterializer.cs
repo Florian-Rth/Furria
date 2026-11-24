@@ -39,13 +39,6 @@ internal static class GroupMatcherSeedMaterializer
         dbContext.Stances.AddRange(
             recorded.Stances.Select(intent => NewStance(intent, groupIds, statementIds, now))
         );
-        dbContext.GroupAdmissionAges.AddRange(
-            recorded.AdmissionAges.Select(intent => new GroupAdmissionAge
-            {
-                GroupId = SeedAliases.RequireId(groupIds, intent.GroupAlias, GroupKind),
-                Band = intent.Band,
-            })
-        );
         await StampTakingPartAsync(dbContext, recorded, groupIds, now, ct);
         await dbContext.SaveChangesAsync(ct);
 

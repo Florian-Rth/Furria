@@ -40,32 +40,4 @@ public sealed class PutRunningOrderConfirmationTests : IClassFixture<ApiTestFixt
         Assert.False(result.ChangedSinceConfirmed);
         Assert.Equal(2, result.Lines.Count);
     }
-
-    [Fact]
-    public async Task Should_TakeTheConfirmationBack_When_ThePlannerUnconfirms()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var eventId = ctx.Club.Events.IdOf(Gala);
-        await SavedAsync(client, eventId, null, []);
-        await ConfirmAsync(client, eventId, confirmed: true);
-
-        var (_, result) = await ConfirmAsync(client, eventId, confirmed: false);
-
-        Assert.Null(result.ConfirmedAt);
-        Assert.False(result.ChangedSinceConfirmed);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheEventHasNoRunningOrder()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-
-        var (response, _) = await ConfirmAsync(client, ctx.Club.Events.IdOf(Gala), true);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
 }

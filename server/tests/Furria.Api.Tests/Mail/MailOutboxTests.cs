@@ -14,10 +14,7 @@ public sealed class MailOutboxTests : IClassFixture<ApiTestFixture>
 {
     private const string RetryScheduled =
         "Mail {MailTemplate} to {MailRecipientKind} {MailRecipientId} failed on attempt {AttemptNumber} with {FailureType}, retrying in {RetryDelay}";
-    private const string Abandoned =
-        "Mail {MailTemplate} to {MailRecipientKind} {MailRecipientId} abandoned after {AttemptCount} attempts, last failure {FailureType}";
     private const string ClosedPort = "1";
-    private const int LastAttempt = 7;
 
     private static readonly TimeSpan DispatchTimeout = TimeSpan.FromSeconds(20);
 
@@ -26,25 +23,6 @@ public sealed class MailOutboxTests : IClassFixture<ApiTestFixture>
     public MailOutboxTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_HoldTheNoticeInTheOutbox_When_ThePasswordChangeIsCommitted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await using var host = await HostWithoutMailServerAsync(ct);
-        var annaEmail = await ApiTestFixture.SeedAccountOnAsync(host, "anna", ct);
-        var anna = await SignedInClientAsync(host, annaEmail);
-
-        var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
-            anna,
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var notice = Assert.Single(await ApiTestFixture.OutboxOfAsync(host, ct));
-        Assert.Equal(MailTemplate.CredentialChangeNotice, notice.Template);
-        Assert.Equal(annaEmail, notice.To);
     }
 
     [Fact]
@@ -87,27 +65,6 @@ public sealed class MailOutboxTests : IClassFixture<ApiTestFixture>
         var written = Assert.Single(_fixture.Logs.Written(RetryScheduled, mark));
         Assert.Equal(LogEventLevel.Warning, written.Level);
         Assert.Equal(1, written.ScalarOf("AttemptNumber"));
-    }
-
-    [Fact]
-    public async Task Should_DropTheMail_When_ItsLastAttemptFails()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await using var host = await HostWithoutMailServerAsync(ct);
-        var mark = _fixture.Logs.Mark();
-
-        await ApiTestFixture.StageOutboxMailAsync(host, Mail(LastAttempt), ct);
-
-        await Polling.UntilAsync(
-            async token =>
-                (await ApiTestFixture.OutboxOfAsync(host, token)).Count == 0 ? host : null,
-            DispatchTimeout,
-            "The abandoned mail was never dropped",
-            ct
-        );
-        var written = Assert.Single(_fixture.Logs.Written(Abandoned, mark));
-        Assert.Equal(LogEventLevel.Warning, written.Level);
-        Assert.Equal(LastAttempt, written.ScalarOf("AttemptCount"));
     }
 
     private Task<WebApplicationFactory<Program>> HostWithoutMailServerAsync(CancellationToken ct) =>

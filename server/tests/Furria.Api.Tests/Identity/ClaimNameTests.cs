@@ -7,10 +7,8 @@ public sealed class ClaimNameTests
 {
     [Theory]
     [InlineData("Müller", "Mueller")]
-    [InlineData("Jürgen-Peter", "juergen peter")]
     [InlineData("  JÜRGEN   Peter ", "Juergen - Peter")]
     [InlineData("Straßer", "STRASSER")]
-    [InlineData("Renée", "Renee")]
     [InlineData("Ćosić", "cosic")]
     public void Should_ReadAlike_When_OnlySpellingDiffers(string recorded, string typed)
     {

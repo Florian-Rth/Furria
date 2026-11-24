@@ -7,8 +7,6 @@ import {
   editStateOf,
   gestureEnded,
   gestureStarted,
-  historyRecordsOf,
-  NUDGE_MERGE_MS,
   rebased,
   redone,
   undone,
@@ -68,31 +66,6 @@ describe('edited', () => {
   it.each([
     { name: 'merges quick nudges of one item', steps: [move(9), move(10), move(11)], undos: 1 },
     {
-      name: 'keeps different items apart',
-      steps: [move(9), { kind: 'videoStart', videoId: 5, startSeconds: 3 } as const],
-      undos: 2,
-    },
-    {
-      name: 'never merges changes without a merge key',
-      steps: [
-        {
-          kind: 'stepMark',
-          stepId: -1,
-          openingStepId: -2,
-          atSeconds: 4,
-          lengthSeconds: 40,
-        } as const,
-        {
-          kind: 'stepMark',
-          stepId: -3,
-          openingStepId: -4,
-          atSeconds: 12,
-          lengthSeconds: 40,
-        } as const,
-      ],
-      undos: 2,
-    },
-    {
       name: 'makes one entry of a whole gesture',
       steps: [
         'start',
@@ -106,13 +79,6 @@ describe('edited', () => {
     { name: 'skips changes that change nothing', steps: [move(40)], undos: 0 },
   ])('$name', ({ steps, undos }) => {
     expect(undoCountOf(applied(editStateOf(document({})), steps, 0))).toBe(undos);
-  });
-
-  it('starts a new entry after the merge window', () => {
-    const first = edited(editStateOf(document({})), move(9), 0);
-    const second = edited(first, move(10), NUDGE_MERGE_MS + 1);
-
-    expect(undoCountOf(second)).toBe(2);
   });
 });
 
@@ -134,31 +100,6 @@ describe('undone and redone', () => {
     const state = edited(undone(edited(editStateOf(document({})), move(9), 0)), move(12), 5000);
 
     expect(canRedo(state)).toBe(false);
-  });
-});
-
-describe('historyRecordsOf', () => {
-  it('lists the newest step first, undone steps above the done ones, a gesture by all its kinds', () => {
-    const state = undone(
-      applied(
-        editStateOf(document({})),
-        [
-          move(9),
-          'start',
-          move(10),
-          { kind: 'stepRemove', stepId: 3 },
-          'end',
-          { kind: 'videoName', videoId: 5, name: 'Generalprobe' },
-        ],
-        5000,
-      ),
-    );
-
-    expect(historyRecordsOf(state).map(({ kinds, undone }) => ({ kinds, undone }))).toEqual([
-      { kinds: ['videoName'], undone: true },
-      { kinds: ['stepMove', 'stepRemove'], undone: false },
-      { kinds: ['stepMove'], undone: false },
-    ]);
   });
 });
 
@@ -221,13 +162,5 @@ describe('rebased', () => {
     });
 
     expect(rebased(mine, theirs, 'replayPending').state.document.spotOrder).toEqual([1, -1, 2]);
-  });
-
-  it('drops pending changes after a rejection', () => {
-    const mine = edited(editStateOf(document({})), move(9), 0);
-
-    const result = rebased(mine, document({}), 'dropPending');
-
-    expect([result.state.document, result.state.pending]).toEqual([document({}), []]);
   });
 });

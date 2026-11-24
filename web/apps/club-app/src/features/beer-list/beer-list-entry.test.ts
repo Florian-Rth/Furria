@@ -16,29 +16,14 @@ const openTab = (beerPotId: number, openCents: number): StartBeerTab => ({
 describe('beerListEntryOf', () => {
   it.each<{ keys: PermissionKey[]; tabs: StartBeerTab[]; expected: BeerListEntry }>([
     {
-      keys: ['beer_list.take'],
-      tabs: [],
-      expected: { standing: 'taker', openCents: 0 },
-    },
-    {
       keys: ['beer_list.take', 'beer_list.manage'],
       tabs: [openTab(2, 1800)],
       expected: { standing: 'taker', openCents: 1800 },
     },
     {
-      keys: ['beer_list.manage'],
-      tabs: [],
-      expected: { standing: 'keeper', openCents: 0 },
-    },
-    {
       keys: ['club.read'],
       tabs: [openTab(2, 1800), openTab(1, 3000)],
       expected: { standing: 'former', openCents: 4800 },
-    },
-    {
-      keys: ['club.read'],
-      tabs: [],
-      expected: { standing: 'none', openCents: 0 },
     },
   ])('$keys with $tabs.length open tabs → $expected.standing', ({ keys, tabs, expected }) => {
     expect(beerListEntryOf(keys, tabs)).toEqual(expected);

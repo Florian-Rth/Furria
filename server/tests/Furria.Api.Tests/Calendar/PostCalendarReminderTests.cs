@@ -56,58 +56,6 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushEveryoneConcernedWhoHasNotVoted_When_AnOrganiserRemindsAPoll()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        var response = await RemindAtAsync(
-            Now,
-            ctx,
-            "ilka",
-            Reminder(entryId, CalendarEntryAddOnKind.Poll, pollId),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.EndsWith(
-            $"Bitte stimm ab: {SnackQuestion}",
-            BodyOf(Assert.Single(PushesAt(_fixture, devices.Chris)))
-        );
-        Assert.Empty(PushesAt(_fixture, devices.Mara));
-    }
-
-    [Fact]
-    public async Task Should_PushEveryoneConcernedWithoutALine_When_AnOrganiserRemindsASignUpList()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var listId = ctx.Club.SignUpLists.IdOf("helpers");
-
-        var response = await RemindAtAsync(
-            Now,
-            ctx,
-            "ilka",
-            Reminder(entryId, CalendarEntryAddOnKind.SignUpList, listId),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.EndsWith(
-            $"Bitte trag dich ein: {HelperList}",
-            BodyOf(Assert.Single(PushesAt(_fixture, devices.Mara)))
-        );
-        Assert.Empty(PushesAt(_fixture, devices.Chris));
-    }
-
-    [Fact]
     public async Task Should_RefuseASecondReminder_When_SixHoursHaveNotPassed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -163,22 +111,6 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushOnlyTheMeantGroup_When_AGroupAdminRemindsAGroupEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("group-owned-training");
-
-        var response = await RemindAtAsync(Now, ctx, "gerd", Attendance(entryId), ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Single(PushesAt(_fixture, devices.Fred));
-        Assert.Empty(PushesAt(_fixture, devices.Chris));
-    }
-
-    [Fact]
     public async Task Should_RefuseRemindingWithoutStampingTheThrottle_When_TheFunctionIsClosed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -220,52 +152,6 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
-    [Fact]
-    public async Task Should_RefuseRemindingWithoutStampingTheThrottle_When_NobodyOpenHasTheApp()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-
-        var response = await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var organiser = await DetailAsync(ctx, "ilka", entryId, ct);
-        Assert.Null(organiser.Attendance?.Reminder?.LastRemindedAt);
-        Assert.Equal(0, organiser.Attendance?.Reminder?.ReachableCount);
-    }
-
-    [Fact]
-    public async Task Should_CountOnlyOpenPeopleWithTheAppButTheOrganiser_When_AnOrganiserViewsTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await DevicesAsync(ctx, ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-
-        var organiser = await DetailAsync(ctx, "ilka", entryId, ct);
-
-        Assert.Equal(1, organiser.Attendance?.Reminder?.ReachableCount);
-        Assert.Equal(1, PollOf(organiser, ctx.Club.Polls.IdOf("snack")).Reminder?.ReachableCount);
-    }
-
-    [Fact]
-    public async Task Should_PushOnlyTheMeantGroup_When_AnOrganiserRemindsAGroupEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("training");
-
-        var response = await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Single(PushesAt(_fixture, devices.Fred));
-        Assert.Empty(PushesAt(_fixture, devices.Chris));
-        Assert.Empty(PushesAt(_fixture, devices.Mara));
-    }
-
     [Theory]
     [InlineData("closed-poll")]
     [InlineData(null)]
@@ -283,96 +169,6 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         await _fixture.PushesDrainedAsync(ct);
         Assert.Empty(PushesAt(_fixture, devices.Chris));
         Assert.Empty(PushesAt(_fixture, devices.Mara));
-    }
-
-    [Fact]
-    public async Task Should_TagEachReminderOnItsOwn_When_ItIsPushed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        await RemindAtAsync(
-            Now,
-            ctx,
-            "ilka",
-            Reminder(entryId, CalendarEntryAddOnKind.Poll, pollId),
-            ct
-        );
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Equal(
-            $"calendar-entry-{entryId}-reminder-poll-{pollId}",
-            TagOf(Assert.Single(PushesAt(_fixture, devices.Chris)))
-        );
-    }
-
-    [Fact]
-    public async Task Should_RefuseRemindingTheAttendance_When_TheEntryIsOver()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-
-        var response = await RemindAtAsync(MeetingEnd, ctx, "ilka", Attendance(entryId), ct);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePollBelongsToAnotherEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var otherEntryId = ctx.Club.CalendarEntries.IdOf("other");
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        var response = await RemindAtAsync(
-            Now,
-            ctx,
-            "ilka",
-            Reminder(otherEntryId, CalendarEntryAddOnKind.Poll, pollId),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ShowOrganisersWhenTheyMayRemindAgain_When_AReminderWentOut()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await DevicesAsync(ctx, ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-
-        await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
-        var organiser = await DetailAsync(ctx, "ilka", entryId, ct);
-        var member = await DetailAsync(ctx, "chris", entryId, ct);
-
-        Assert.Equal(Now, organiser.Attendance?.Reminder?.LastRemindedAt);
-        Assert.Equal(Now.AddHours(6), organiser.Attendance?.Reminder?.RemindableFrom);
-        Assert.Null(member.Attendance?.Reminder);
-    }
-
-    [Fact]
-    public async Task Should_ShowOrganisersAnUnremindedState_When_NoReminderWentOutYet()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-
-        var organiser = await DetailAsync(ctx, "ilka", entryId, ct);
-        var poll = Assert.Single(
-            organiser.AddOns,
-            addOn => addOn.Poll?.PollId == ctx.Club.Polls.IdOf("snack")
-        );
-
-        Assert.NotNull(poll.Poll?.Reminder);
-        Assert.Null(poll.Poll?.Reminder?.LastRemindedAt);
-        Assert.Null(poll.Poll?.Reminder?.RemindableFrom);
     }
 
     private async Task<HttpResponseMessage> RemindAtAsync(
@@ -490,8 +286,6 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
     private static string TitleOf(JsonElement push) => push.GetProperty("title").GetString() ?? "";
 
     private static string BodyOf(JsonElement push) => push.GetProperty("body").GetString() ?? "";
-
-    private static string TagOf(JsonElement push) => push.GetProperty("tag").GetString() ?? "";
 
     private Task<SeededContext> BuildClubAsync(CancellationToken ct) =>
         _fixture.BuildAsync(

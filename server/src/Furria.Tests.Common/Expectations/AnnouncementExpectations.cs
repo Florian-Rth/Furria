@@ -44,12 +44,6 @@ public sealed class AnnouncementExpectations
                 Assert.Equal(validUntil, (await SingleAsync(dbContext, ct)).ValidUntil)
         );
 
-    public Expected ToHavePublishedAt(DateTimeOffset publishedAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(publishedAt, (await SingleAsync(dbContext, ct)).PublishedAt)
-        );
-
     public Expected ToHaveAuthor(int? personId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -116,20 +110,6 @@ public sealed class AnnouncementExpectations
                 Assert.Equal(
                     remindedAt,
                     (await SingleAsync(dbContext, ct)).AttendanceLastRemindedAt
-                )
-        );
-
-    public Expected ToHavePolls(params string[] questions) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    questions,
-                    await dbContext
-                        .Polls.AsNoTracking()
-                        .Where(poll => poll.AnnouncementId == _announcementId)
-                        .OrderBy(poll => poll.Position)
-                        .Select(poll => poll.Question)
-                        .ToListAsync(ct)
                 )
         );
 

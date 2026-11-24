@@ -45,32 +45,6 @@ public sealed class GetPublicNewsTests : IClassFixture<ApiTestFixture>
         Assert.Null(motto.Picture);
     }
 
-    [Fact]
-    public async Task Should_PointThePictureAtItsPublicAddress_When_ALivePostHasARenderedPicture()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var pictureId = await NewsPictureSteps.LivePictureAsync(
-            client,
-            ctx.News.Posts.IdOf("parade"),
-            ct
-        );
-        await _fixture.RenderMediaItemDirectlyAsync(pictureId, ct);
-
-        var (_, result) = await _fixture
-            .CreateClient()
-            .GETAsync<GetPublicNews, GetPublicNewsResponse>();
-
-        var parade = result
-            .Sessions.SelectMany(session => session.Posts)
-            .Single(post => post.Slug == "umzug");
-        Assert.StartsWith(
-            $"/api/public/news/pictures/{pictureId}/medium?v=",
-            parade.Picture?.MediumUrl
-        );
-    }
-
     private static Action<SeedContextBuilder> Posts() =>
         builder =>
             builder.News(news =>

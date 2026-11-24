@@ -6,15 +6,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Furria.Tests.Analyzers;
 
-// MET007 — an alias resolved via IdOf("x")/ClientFor("x")/ClientForAsync("x")/EmailOf("x")/NameOf("x") must be
-// declared by an Add* builder call somewhere in the same class. Conservative and purely syntactic:
-// every string literal handed to an Add* method anywhere in the type counts as a declaration, so the
-// rule only fires on a genuine typo, never on an alias the builder did register.
-//
-// Resolution is class-scope: a test that seeds in one helper method and resolves
-// in another — common once arrange logic is extracted — no longer false-positives. A class whose
-// aliases are seeded by a helper in a *different* class (which the analyzer can't follow) opts out
-// with the [SeedsAliases] marker.
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class DanglingAliasAnalyzer : DiagnosticAnalyzer
 {
@@ -44,8 +35,6 @@ public sealed class DanglingAliasAnalyzer : DiagnosticAnalyzer
         if (HasOptOut(type))
             return;
 
-        // Only invocations owned directly by this class (not by a nested type, which fires its own
-        // ClassDeclaration analysis) so a nested type's aliases neither leak in nor double-report.
         var invocations = type.DescendantNodes()
             .OfType<InvocationExpressionSyntax>()
             .Where(invocation => NearestType(invocation) == type)

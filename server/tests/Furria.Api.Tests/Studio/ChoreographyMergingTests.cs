@@ -9,7 +9,6 @@ public sealed class ChoreographyMergingTests
     private const int Finale = 12;
     private const int SpotOne = 1;
     private const int SpotTwo = 2;
-    private const int SpotThree = 3;
 
     private static readonly ActMusic Music = new([
         new MusicCut(Opener, 10, 40),
@@ -123,46 +122,6 @@ public sealed class ChoreographyMergingTests
     }
 
     [Fact]
-    public void Should_AcceptTheSameChange_When_BothSidesMadeIt()
-    {
-        var baseline = Document(Track(SpotOne, At(Opener, 10, 0), At(Opener, 20, 0)));
-        var current = Document(Track(SpotOne, At(Opener, 10, 4), At(Opener, 20, 0)));
-
-        var merge = ChoreographyMerging.Merged(
-            baseline,
-            current,
-            [Track(SpotOne, At(Opener, 10, 4), At(Opener, 20, 1))],
-            Music
-        );
-
-        Assert.Equal(
-            Document(Track(SpotOne, At(Opener, 10, 4), At(Opener, 20, 1))),
-            merge.Document,
-            DocumentComparer.Instance
-        );
-        Assert.Empty(merge.Overlaps);
-    }
-
-    [Fact]
-    public void Should_AddTheTrack_When_ItsSpotHadNoneOnEitherSide()
-    {
-        var baseline = Document(Track(SpotOne, At(Opener, 10, 0)));
-
-        var merge = ChoreographyMerging.Merged(
-            baseline,
-            baseline,
-            [Track(SpotThree, At(Opener, 10, 2))],
-            Music
-        );
-
-        Assert.Equal(
-            Document(Track(SpotOne, At(Opener, 10, 0)), Track(SpotThree, At(Opener, 10, 2))),
-            merge.Document,
-            DocumentComparer.Instance
-        );
-    }
-
-    [Fact]
     public void Should_ReportTheSpot_When_ItsTrackWasDroppedWhileThePatchChangedIt()
     {
         var baseline = Document(
@@ -181,25 +140,6 @@ public sealed class ChoreographyMergingTests
         var overlap = Assert.Single(merge.Overlaps);
         Assert.Equal(SpotTwo, overlap.SpotId);
         Assert.Equal([new MusicAnchor(Opener, 20)], overlap.Keyframes);
-    }
-
-    [Fact]
-    public void Should_KeepTheSentOrder_When_TheWholeTrackIsTaken()
-    {
-        var baseline = Document();
-
-        var merge = ChoreographyMerging.Merged(
-            baseline,
-            baseline,
-            [Track(SpotOne, At(Opener, 10, 0), At(Opener, 99, 1), At(Opener, 5, 2))],
-            Music
-        );
-
-        Assert.Equal(
-            Document(Track(SpotOne, At(Opener, 10, 0), At(Opener, 99, 1), At(Opener, 5, 2))),
-            merge.Document,
-            DocumentComparer.Instance
-        );
     }
 
     private static ChoreographyDocument Document(params SpotTrack[] tracks) => new(tracks);

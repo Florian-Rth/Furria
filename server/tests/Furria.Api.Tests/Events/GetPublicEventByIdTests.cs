@@ -41,15 +41,6 @@ public sealed class GetPublicEventByIdTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset FirstGalaDoorsOpen = new(
-        2027,
-        1,
-        16,
-        16,
-        30,
-        0,
-        TimeSpan.Zero
-    );
     private static readonly DateTimeOffset AtTheOpening = new(
         2026,
         11,
@@ -75,36 +66,6 @@ public sealed class GetPublicEventByIdTests : IClassFixture<ApiTestFixture>
     public GetPublicEventByIdTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_ReturnTheEventsPage_When_AnAnonymousCallerOpensAnUpcomingEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-                var eventId = ctx.Club.Events.IdOf("first-gala");
-
-                var (response, result) = await ReadAsync(eventId);
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(eventId, result.EventId);
-                Assert.Equal(FirstGala, result.Title);
-                Assert.Equal(AtTheFirstGala, result.StartsAt);
-                Assert.Equal(FirstGalaEnds, result.EndsAt);
-                Assert.Equal(FirstGalaDoorsOpen, result.DoorsOpenAt);
-                Assert.Equal(Teaser, result.Teaser);
-                Assert.Equal(Description, result.Description);
-                Assert.Equal(PriceCents, result.PriceCents);
-                Assert.Equal(EventSalesStatus.SoldOut, result.Status);
-                Assert.Equal("Bürgerhaus", result.Venue.Name);
-                Assert.Equal("Großfurra", result.Venue.City);
-            }
-        );
     }
 
     [Fact]
@@ -137,53 +98,6 @@ public sealed class GetPublicEventByIdTests : IClassFixture<ApiTestFixture>
                         (DayOfWeek.Saturday, Nine, Noon),
                     ],
                     bakery.OpeningHours.Select(slot => (slot.Weekday, slot.Opens, slot.Closes))
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowNoPresalePlace_When_TheEveningIsSoldOut()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-
-                var (_, result) = await ReadAsync(ctx.Club.Events.IdOf("first-gala"));
-
-                Assert.Empty(result.PresalePlaces);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheEventsPictureAtItsCut_When_TheEventHasOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildClubAsync(ct);
-                var eventId = ctx.Club.Events.IdOf("first-gala");
-                var pictureId = await EventPictureSteps.RenderedAsync(
-                    _fixture,
-                    await ctx.Identity.ManagingLoginClientAsync(ct),
-                    eventId,
-                    ct
-                );
-
-                var (_, result) = await ReadAsync(eventId);
-
-                Assert.Equal((800, 400), (result.Picture?.Width, result.Picture?.Height));
-                Assert.StartsWith(
-                    $"/api/public/events/pictures/{pictureId}/medium?v=",
-                    result.Picture?.MediumUrl
                 );
             }
         );

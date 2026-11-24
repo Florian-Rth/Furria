@@ -5,9 +5,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Furria.Tests.Analyzers.Tests;
 
-// Self-contained harness: compiles a snippet against the full framework reference set and runs a
-// single analyzer over it. Avoids the Microsoft.CodeAnalysis.*.Testing packages, which have no
-// first-class xUnit v3 support.
 internal static class AnalyzerHarness
 {
     private static readonly ImmutableArray<MetadataReference> References = LoadReferences();

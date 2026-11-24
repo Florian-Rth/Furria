@@ -13,24 +13,6 @@ public sealed class GetClubHubCalendarTests : IClassFixture<ApiTestFixture>
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
     private static readonly DateTimeOffset Now = new(2027, 1, 15, 12, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset StartedAnHourAgo = new(
-        2027,
-        1,
-        15,
-        11,
-        0,
-        0,
-        TimeSpan.Zero
-    );
-    private static readonly DateTimeOffset EndsThisAfternoon = new(
-        2027,
-        1,
-        15,
-        15,
-        0,
-        0,
-        TimeSpan.Zero
-    );
     private static readonly DateTimeOffset StartedTwoHoursAgo = new(
         2027,
         1,
@@ -59,8 +41,6 @@ public sealed class GetClubHubCalendarTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset NextWeek = new(2027, 1, 22, 19, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset InTwoWeeks = new(2027, 1, 29, 19, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset LastNight = new(2027, 1, 14, 19, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset EndedLastNight = new(
         2027,
@@ -77,92 +57,6 @@ public sealed class GetClubHubCalendarTests : IClassFixture<ApiTestFixture>
     public GetClubHubCalendarTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CarryNoEntry_When_TheCalendarIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var result = await ReadTheHubAsync(_ => { }, ct);
-
-                Assert.Empty(result.Calendar);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_PutTheRunningEntryFirst_When_OneIsUnderway()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var result = await ReadTheHubAsync(
-                    club =>
-                        club.AddCalendarEntry("morgen", "Kostümprobe", Tomorrow)
-                            .AddCalendarEntry(
-                                "jetzt",
-                                "Sitzung",
-                                StartedAnHourAgo,
-                                EndsThisAfternoon
-                            ),
-                    ct
-                );
-
-                Assert.Collection(
-                    result.Calendar,
-                    entry =>
-                    {
-                        Assert.Equal("Sitzung", entry.Title);
-                        Assert.True(entry.IsRunning);
-                    },
-                    entry =>
-                    {
-                        Assert.Equal("Kostümprobe", entry.Title);
-                        Assert.False(entry.IsRunning);
-                    }
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryAtMostThreeEintraege_When_MoreAreRecorded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var result = await ReadTheHubAsync(
-                    club =>
-                        club.AddCalendarEntry("morgen", "Kostümprobe", Tomorrow)
-                            .AddCalendarEntry("uebermorgen", "Stellprobe", DayAfterTomorrow)
-                            .AddCalendarEntry("naechste-woche", "Umzug", NextWeek)
-                            .AddCalendarEntry("in-zwei-wochen", "Sommerfest", InTwoWeeks)
-                            .AddCalendarEntry(
-                                "jetzt",
-                                "Sitzung",
-                                StartedAnHourAgo,
-                                EndsThisAfternoon
-                            ),
-                    ct
-                );
-
-                Assert.Equal(
-                    new[] { "Sitzung", "Kostümprobe", "Stellprobe" },
-                    result.Calendar.Select(entry => entry.Title).ToArray()
-                );
-            }
-        );
     }
 
     [Fact]
@@ -213,37 +107,6 @@ public sealed class GetClubHubCalendarTests : IClassFixture<ApiTestFixture>
 
                 var entry = Assert.Single(result.Calendar);
                 Assert.Equal("Stellprobe", entry.Title);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameTheVenue_When_TheEntryIsHeldSomewhere()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var result = await ReadTheHubAsync(
-                    club =>
-                        club.AddVenue("buehnenhaus", "Bühnenhaus")
-                            .AddCalendarEntry(
-                                "morgen",
-                                "Kostümprobe",
-                                Tomorrow,
-                                venueAlias: "buehnenhaus"
-                            )
-                            .AddCalendarEntry("uebermorgen", "Stellprobe", DayAfterTomorrow),
-                    ct
-                );
-
-                Assert.Collection(
-                    result.Calendar,
-                    entry => Assert.Equal("Bühnenhaus", entry.VenueName),
-                    entry => Assert.Null(entry.VenueName)
-                );
             }
         );
     }

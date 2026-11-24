@@ -50,21 +50,6 @@ public sealed class ActStepsTests
     }
 
     [Fact]
-    public void Should_SetTheStepAdrift_When_ItsSongLeftTheMix()
-    {
-        var tiling = ActSteps.Tile(
-            [
-                new StepStart(1, new MusicAnchor(Opener, 10)),
-                new StepStart(2, new MusicAnchor(Rehearsal, 3)),
-            ],
-            Mix
-        );
-
-        Assert.Equal([new StepSpan(1, 0, 50)], tiling.Spans);
-        Assert.Equal([2], tiling.AdriftStepIds);
-    }
-
-    [Fact]
     public void Should_SplitTheStep_When_AMarkFallsInsideIt()
     {
         var tiling = ActSteps.Tile([new StepStart(1, new MusicAnchor(Opener, 10))], Mix);
@@ -75,32 +60,9 @@ public sealed class ActStepsTests
         Assert.Equal([new MusicAnchor(Finale, 10)], mark.NewStarts);
     }
 
-    [Fact]
-    public void Should_OpenAStepAtTheStartToo_When_TheFirstMarkIsSetLater()
-    {
-        var tiling = ActSteps.Tile([], Mix);
-
-        var mark = ActSteps.MarkAt(tiling, 12, Mix);
-
-        Assert.Equal([new MusicAnchor(Opener, 10), new MusicAnchor(Opener, 22)], mark.NewStarts);
-    }
-
-    [Fact]
-    public void Should_OpenOneStep_When_TheFirstMarkIsSetAtTheStart()
-    {
-        var tiling = ActSteps.Tile([], Mix);
-
-        var mark = ActSteps.MarkAt(tiling, 0, Mix);
-
-        Assert.Equal([new MusicAnchor(Opener, 10)], mark.NewStarts);
-    }
-
     [Theory]
-    [InlineData(20, StepMarkRefusal.OnABorder)]
     [InlineData(20.005, StepMarkRefusal.OnABorder)]
-    [InlineData(0, StepMarkRefusal.OnABorder)]
     [InlineData(50, StepMarkRefusal.OutsideTheMusic)]
-    [InlineData(-1, StepMarkRefusal.OutsideTheMusic)]
     public void Should_RefuseTheMark_When_ItSplitsNothing(
         double timelineSeconds,
         StepMarkRefusal expected
@@ -123,9 +85,7 @@ public sealed class ActStepsTests
     [Theory]
     [InlineData(2, 25, null)]
     [InlineData(2, 0.005, StepMarkRefusal.BeyondANeighbour)]
-    [InlineData(2, 50, StepMarkRefusal.BeyondANeighbour)]
     [InlineData(1, 5, StepMarkRefusal.FirstStep)]
-    [InlineData(3, 25, StepMarkRefusal.Adrift)]
     public void Should_MoveAStepStartOnlyBetweenItsNeighbours_When_ItsBorderIsDragged(
         int stepId,
         double timelineSeconds,

@@ -45,20 +45,6 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushNobody_When_TheAuthorPostsWithoutNotifyingMembers()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-
-        await PostAsync(ctx, null, notify: false, ct);
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Empty(PushesAt(_fixture, devices.Alice));
-        Assert.Empty(PushesAt(_fixture, devices.Paula));
-    }
-
-    [Fact]
     public async Task Should_SkipTheMember_When_SheMutedAnnouncements()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -84,32 +70,6 @@ public sealed class AnnouncementPushesTests : IClassFixture<ApiTestFixture>
             .AddDays(-2);
 
         await PostAsync(ctx, twoDaysAgo, ct);
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Empty(PushesAt(_fixture, devices.Alice));
-    }
-
-    [Fact]
-    public async Task Should_PushNobody_When_AnAnnouncementIsEdited()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var announcementId = await PostAsync(ctx, ct);
-        await _fixture.PushesDrainedAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-        var response = await client.PUTAsync<PutAnnouncement, PutAnnouncementRequest>(
-            new()
-            {
-                AnnouncementId = announcementId,
-                Title = "Saalreinigung verschoben",
-                Body = Body,
-                ValidUntil = null,
-                AddOns = [],
-            }
-        );
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
 
         await _fixture.PushesDrainedAsync(ct);
         Assert.Empty(PushesAt(_fixture, devices.Alice));

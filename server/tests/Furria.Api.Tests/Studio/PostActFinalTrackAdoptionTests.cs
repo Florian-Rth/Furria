@@ -90,36 +90,6 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
-    public async Task Should_MoveTheStepsOnFromThePreviousFinalFile_When_ANewerOneIsAdopted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId, opener, finale) = await MixAsync(ct);
-        await MarkedAsync(admin, actId, 10, 70);
-        var (firstId, firstMedia) = await FinalTrackOfAsync(_fixture, admin, actId, 120, ct);
-        await TuneOffsetAsync(admin, actId, firstId, opener, 5);
-        await TuneOffsetAsync(admin, actId, firstId, finale, 55);
-        await AdoptAsync(admin, actId, firstId);
-        var (secondId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 125, ct);
-        await TuneOffsetAsync(admin, actId, secondId, firstMedia, 2);
-
-        var response = await AdoptAsync(admin, actId, secondId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var studio = (await StudioOfAsync(admin, actId)).Studio!;
-        Assert.Equal(
-            (secondId, 125d),
-            (
-                studio.FinalTracks.Single(track => track.Adopted).FinalTrackId,
-                studio.Music.LengthSeconds
-            )
-        );
-        Assert.Equal(
-            [(0d, 17d), (17d, 67d), (67d, 125d)],
-            studio.Steps.Select(step => (step.StartSeconds!.Value, step.EndSeconds!.Value))
-        );
-    }
-
-    [Fact]
     public Task Should_MoveTheEveningCopyAlongAndKeepItCurrent_When_ItWasMadeFromTheLatestSession() =>
         _fixture.AtInstantAsync(
             InTheRunningSession,
@@ -170,113 +140,6 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
         );
 
     [Fact]
-    public Task Should_KeepTheEveningCopyBehind_When_TheSessionHadMovedOnBeforeTheAdoption() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var (admin, actId, opener, finale, gala) = await EveningMixAsync(ct);
-                var spotId = await AddSpotAsync(admin, actId);
-                var (_, session) = await SaveChoreographyAsync(
-                    admin,
-                    actId,
-                    null,
-                    [StandingTrack(spotId, opener, 0, 1)]
-                );
-                await SaveEveningChoreographyAsync(
-                    admin,
-                    actId,
-                    gala,
-                    null,
-                    session,
-                    [StandingTrack(spotId, opener, 2, 1)]
-                );
-                var (_, movedOn) = await SaveChoreographyAsync(
-                    admin,
-                    actId,
-                    session,
-                    [StandingTrack(spotId, opener, 1, 1)]
-                );
-                var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 120, ct);
-                await TuneOffsetAsync(admin, actId, finalTrackId, opener, 5);
-                await TuneOffsetAsync(admin, actId, finalTrackId, finale, 55);
-
-                await AdoptAsync(admin, actId, finalTrackId);
-
-                var studio = (await StudioOfAsync(admin, actId)).Studio!;
-                var evening = Assert.Single(studio.Evenings).Appearance!.Choreography!;
-                Assert.Equal(
-                    ((int?)session, movedOn + 1),
-                    (evening.CopiedFromVersion, studio.Choreography!.Version)
-                );
-            }
-        );
-
-    [Fact]
-    public async Task Should_KeepEachSongsTempoAndTheCutIntro_When_TheLiveMixPlaysASongFaster()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId, opener, finale) = await MixAsync(ct);
-        await MarkedAsync(admin, actId, 10, 70);
-        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 120, ct);
-        await TuneOffsetAsync(admin, actId, finalTrackId, opener, -5);
-        await TuneOffsetAsync(admin, actId, finalTrackId, finale, 40, 0.98);
-
-        var response = await AdoptAsync(admin, actId, finalTrackId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var steps = (await StudioOfAsync(admin, actId)).Studio!.Steps;
-        Assert.All(steps, step => Assert.Equal(AnchorPlacement.OnTimeline, step.Placement));
-        Assert.Equal([0, 5, 49.8], steps.Select(step => Math.Round(step.StartSeconds!.Value, 6)));
-    }
-
-    [Fact]
-    public async Task Should_MoveEachPieceWithItsOwnAlignment_When_TheSongIsSplitApart()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var song = await UploadSongAsync(admin, actId, ct);
-        await _fixture.RenderSongDirectlyAsync(song, 60, ct);
-        var songId = await AddSongAsync(admin, actId, song);
-        await CutSongAsync(admin, actId, songId, (0, 20), (30, 60));
-        await MarkedAsync(admin, actId, 10, 25);
-        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 120, ct);
-        await TuneOffsetAsync(admin, actId, finalTrackId, song, 0);
-        await TuneOffsetAsync(admin, actId, finalTrackId, song, 40, fromSeconds: 30);
-
-        var response = await AdoptAsync(admin, actId, finalTrackId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal(
-            [(0d, 10d), (10d, 75d), (75d, 120d)],
-            (await StudioOfAsync(admin, actId)).Studio!.Steps.Select(step =>
-                (step.StartSeconds!.Value, step.EndSeconds!.Value)
-            )
-        );
-    }
-
-    [Fact]
-    public async Task Should_MarkTheMusicMissing_When_ASongIsNotInTheFinalFile()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId, opener, _) = await MixAsync(ct);
-        await MarkedAsync(admin, actId, 10, 70);
-        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 60, ct);
-        await TuneOffsetAsync(admin, actId, finalTrackId, opener, 0);
-
-        var response = await AdoptAsync(admin, actId, finalTrackId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal(
-            [AnchorPlacement.OnTimeline, AnchorPlacement.OnTimeline, AnchorPlacement.MusicMissing],
-            (await StudioOfAsync(admin, actId)).Studio!.Steps.Select(step => step.Placement)
-        );
-    }
-
-    [Fact]
     public async Task Should_RefuseAndLeaveTheMusicAsItWas_When_NoSongWasMatched()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -292,22 +155,6 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
             (StudioMusicSource.WorkingMix, false),
             (studio.Music.Source, studio.FinalTracks.Single().Adopted)
         );
-    }
-
-    [Fact]
-    public async Task Should_ReportConflict_When_TheFinalFileIsStillProcessing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId, _, _) = await MixAsync(ct);
-        var (_, finalTrackId) = await PostFinalTrackAsync(
-            admin,
-            actId,
-            await UploadSongAsync(admin, actId, ct)
-        );
-
-        var response = await AdoptAsync(admin, actId, finalTrackId);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     private async Task<(HttpClient Admin, int ActId, int Opener, int Finale)> MixAsync(

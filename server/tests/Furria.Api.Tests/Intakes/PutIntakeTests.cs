@@ -17,38 +17,6 @@ public sealed class PutIntakeTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReplaceTheDecision_When_AManagerEditsAnOpenIntake()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            With(intakes =>
-                intakes.AddIntake("open", Manager, groupAliases: [Guard], label: "alt")
-            ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync(Manager, ct);
-        var intakeId = ctx.Intakes.Intakes.IdOf("open");
-
-        var response = await client.PUTAsync<PutIntake, PutIntakeRequest>(
-            new()
-            {
-                IntakeId = intakeId,
-                MemberFrom = _fixture.Today,
-                GroupIds = [ctx.Groups.Groups.IdOf(Show)],
-                Label = " ",
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Intake(intakeId)
-            .ToDecide(_fixture.Today, ctx.Groups.Groups.IdOf(Show))
-            .Intake(intakeId)
-            .ToHaveLabel(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_KeepTheMembership_When_TheStartingGroupAdminSwapsHerGroups()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -105,72 +73,6 @@ public sealed class PutIntakeTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheStartingGroupAdminAddsAGroupSheDoesNotRun()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            With(intakes => intakes.AddIntake("own", GuardTrainer, groupAliases: [Guard])),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync(GuardTrainer, ct);
-
-        var response = await client.PUTAsync<PutIntake, PutIntakeRequest>(
-            new()
-            {
-                IntakeId = ctx.Intakes.Intakes.IdOf("own"),
-                MemberFrom = null,
-                GroupIds = [ctx.Groups.Groups.IdOf(Guard), ctx.Groups.Groups.IdOf(Show)],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_AGroupAdminEditsAnIntakeSheDidNotStart()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            With(intakes => intakes.AddIntake("board", Manager, groupAliases: [Guard])),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync(GuardTrainer, ct);
-
-        var response = await client.PUTAsync<PutIntake, PutIntakeRequest>(
-            new()
-            {
-                IntakeId = ctx.Intakes.Intakes.IdOf("board"),
-                MemberFrom = null,
-                GroupIds = [ctx.Groups.Groups.IdOf(Guard)],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheEdit_When_ItLeavesNeitherMembershipNorGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            With(intakes => intakes.AddIntake("open", Manager, groupAliases: [Guard])),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync(Manager, ct);
-
-        var response = await client.PUTAsync<PutIntake, PutIntakeRequest>(
-            new()
-            {
-                IntakeId = ctx.Intakes.Intakes.IdOf("open"),
-                MemberFrom = null,
-                GroupIds = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     [Fact]

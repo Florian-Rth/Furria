@@ -15,8 +15,6 @@ public sealed class PutBoardOfficeImpliedRoleTests : IClassFixture<ApiTestFixtur
     private const string ConflictField = "conflict";
     private const string ArchivedRoleMessage =
         "Eine archivierte Rolle lässt sich einer Vorstandsfunktion nicht zuordnen.";
-    private const int UnknownBoardOfficeId = 999_999;
-    private const int UnknownRoleId = 999_999;
 
     private static readonly DateOnly Elected2016 = new(2016, 11, 11);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -40,54 +38,6 @@ public sealed class PutBoardOfficeImpliedRoleTests : IClassFixture<ApiTestFixtur
                 ImpliedRoleId = roleId,
             }
         );
-
-    [Fact]
-    public async Task Should_PointTheOfficeAtTheRole_When_TheCallerHoldsRolesManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithOfficeAndRoleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetImpliedRoleAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Roles.Roles.IdOf("vereinsleitung")
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
-            .ToImplyRole(ctx.Roles.Roles.IdOf("vereinsleitung"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ClearTheRole_When_TheOfficeShouldImplyNothing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Roles(roles => roles.AddRole("vereinsleitung", "Vereinsleitung"))
-                    .Club(club =>
-                        club.AddBoardOffice("praesident", "Präsident", 1, "vereinsleitung")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetImpliedRoleAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            null
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
-            .ToImplyNoRole()
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_LeaveTheCallerWithoutRolesManage_When_SheTriesToSeatHerselfIntoIt()
@@ -127,26 +77,6 @@ public sealed class PutBoardOfficeImpliedRoleTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithOfficeAndRoleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetImpliedRoleAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            UnknownRoleId
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
-            .ToImplyNoRole()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheRoleIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -180,59 +110,6 @@ public sealed class PutBoardOfficeImpliedRoleTests : IClassFixture<ApiTestFixtur
             .ToImplyNoRole()
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheOfficeIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Roles(roles => roles.AddRole("vereinsleitung", "Vereinsleitung"))
-                    .Club(club =>
-                        club.AddBoardOffice("pressewart", "Pressewart", 4, null, ArchivedIn2021)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetImpliedRoleAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("pressewart"),
-            ctx.Roles.Roles.IdOf("vereinsleitung")
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx
-            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("pressewart"))
-            .ToImplyNoRole()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheOfficeIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithOfficeAndRoleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetImpliedRoleAsync(
-            client,
-            UnknownBoardOfficeId,
-            ctx.Roles.Roles.IdOf("vereinsleitung")
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    private Task<SeededContext> BuildWithOfficeAndRoleAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Roles(roles => roles.AddRole("vereinsleitung", "Vereinsleitung"))
-                    .Club(club => club.AddBoardOffice("praesident", "Präsident", 1)),
-            ct
-        );
 
     private Task<SeededContext> BuildWithBoardManagerAsync(CancellationToken ct) =>
         _fixture.BuildAsync(

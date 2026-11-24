@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Furria.Api.Endpoints.Auth;
@@ -11,7 +12,9 @@ public sealed class TestIdentity
     private readonly Func<HttpClient> _clientFactory;
     private readonly IReadOnlyDictionary<string, string> _emails;
     private readonly string _password;
-    private readonly Dictionary<string, HttpClient> _clients = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, HttpClient> _clients = new(
+        StringComparer.Ordinal
+    );
 
     public AliasRegistry<int> People { get; }
 

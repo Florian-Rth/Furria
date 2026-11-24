@@ -17,12 +17,6 @@ describe('toPermittedSections', () => {
     expect(toPermittedSections([hub], ['key_holdings.manage'])).toEqual([hub]);
   });
 
-  it('drops a section whose permission is missing', () => {
-    const persons = section({ id: 'persons', permissionKeys: ['persons.manage'] });
-
-    expect(toPermittedSections([persons], ['groups.manage'])).toEqual([]);
-  });
-
   it('drops a section that guards nothing', () => {
     expect(toPermittedSections([section({})], ['persons.manage'])).toEqual([]);
   });

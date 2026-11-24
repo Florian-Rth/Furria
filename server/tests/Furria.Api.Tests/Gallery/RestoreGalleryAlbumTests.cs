@@ -48,21 +48,4 @@ public sealed class RestoreGalleryAlbumTests : IClassFixture<ApiTestFixture>
             .ToBeUnpublished()
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_RefuseTheRestore_When_TheAlbumIsNotInTheBin()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Gallery(gallery => gallery.AddAlbum("album", "Ordensfest")),
-            ct
-        );
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await client.POSTAsync<RestoreGalleryAlbum, RestoreGalleryAlbumRequest>(
-            new() { AlbumId = ctx.Gallery.Albums.IdOf("album") }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
 }

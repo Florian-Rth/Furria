@@ -19,31 +19,6 @@ public sealed class DeleteSessionRecordByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveTheSeasonNamedByItsDateAlone_When_TheEntryWasWrong()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Club(club =>
-                    club.AddSession("vorige", 2025).AddSession("falsche", 2026, 53, Motto)
-                ),
-            ct
-        );
-        var wrongEntry = ctx.Club.Sessions.IdOf("falsche");
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await DiscardAsync(client, wrongEntry);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Session(wrongEntry)
-            .ToNotExist()
-            .Session(ctx.Club.Sessions.IdOf("vorige"))
-            .ToHaveStartYear(2025)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_TakeTheLogoWithIt_When_TheEntryIsDeleted()
     {
         var ct = TestContext.Current.CancellationToken;

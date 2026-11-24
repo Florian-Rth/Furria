@@ -52,8 +52,6 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
 
     public bool Tainted { get; private set; }
 
-    public LogMark Started { get; private set; }
-
     public DatabaseResetService ResetService =>
         _resetService ?? throw new InvalidOperationException(NotStarted);
 
@@ -70,7 +68,6 @@ internal sealed class ApiTestHost : WebApplicationFactory<Program>
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        Started = Logs.Mark();
         _resetService = await DatabaseResetService.CreateAsync(
             [db],
             [

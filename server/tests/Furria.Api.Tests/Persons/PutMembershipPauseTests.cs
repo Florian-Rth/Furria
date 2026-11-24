@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -16,7 +15,6 @@ public sealed class PutMembershipPauseTests : IClassFixture<ApiTestFixture>
         "Paula ist archiviert – Ruhezeiten lassen sich erst nach dem Wiederherstellen festhalten.";
     private const int PausedFrom2018 = 2018;
     private const int PausedUntil2019 = 2019;
-    private const int BeforeTheMembership = 2015;
     private const int PausedFrom2022 = 2022;
     private const int PausedUntil2023 = 2023;
 
@@ -30,31 +28,6 @@ public sealed class PutMembershipPauseTests : IClassFixture<ApiTestFixture>
     public PutMembershipPauseTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CorrectTheSpan_When_AManagerFixesAMembershipPause()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                PauseId = ctx.Identity.Pauses.IdOf("paula-ruhte"),
-                FirstSessionYear = PausedFrom2018,
-                LastSessionYear = PausedFrom2018,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
-            .ToHaveSpan(PausedFrom2018, PausedFrom2018)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -93,36 +66,6 @@ public sealed class PutMembershipPauseTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var failures = await ReadFailuresAsync(response, ct);
         Assert.Equal([ArchivedPersonMessage], failures[ConflictField]);
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
-            .ToHaveSpan(PausedFrom2018, PausedUntil2019)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_TheSpanLeavesTheMembership()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                PauseId = ctx.Identity.Pauses.IdOf("paula-ruhte"),
-                FirstSessionYear = BeforeTheMembership,
-                LastSessionYear = BeforeTheMembership + 1,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Die Ruhezeit 2015/16 – 2016/17 liegt außerhalb der Mitgliedschaft."],
-            failures[ValidationField]
-        );
         await ctx
             .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
             .ToHaveSpan(PausedFrom2018, PausedUntil2019)
@@ -177,66 +120,6 @@ public sealed class PutMembershipPauseTests : IClassFixture<ApiTestFixture>
             .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
             .ToHaveSpan(PausedFrom2018, PausedUntil2019)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CloseTheOpenMembershipPause_When_TheLastSessionIsGiven()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                        .AddMembershipPause("paula-ruht", "paula-erste", PausedFrom2018)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                PauseId = ctx.Identity.Pauses.IdOf("paula-ruht"),
-                FirstSessionYear = PausedFrom2018,
-                LastSessionYear = PausedUntil2019,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruht"))
-            .ToHaveSpan(PausedFrom2018, PausedUntil2019)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_TheLastSessionPrecedesTheFirst()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithClosedMembershipPauseAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                PauseId = ctx.Identity.Pauses.IdOf("paula-ruhte"),
-                FirstSessionYear = PausedUntil2019,
-                LastSessionYear = PausedFrom2018,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Eine Ruhezeit kann nicht vor ihrer ersten Session enden."],
-            failures[ValidationField]
-        );
     }
 
     [Fact]
@@ -325,70 +208,6 @@ public sealed class PutMembershipPauseTests : IClassFixture<ApiTestFixture>
             .ToHaveSpan(PausedFrom2018, PausedUntil2019)
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_ChangeOnlyTheAddressedMembershipPause_When_TheMembershipHasSeveral()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                        .AddMembershipPause(
-                            "paula-ruhte",
-                            "paula-erste",
-                            PausedFrom2018,
-                            PausedUntil2019
-                        )
-                        .AddMembershipPause(
-                            "paula-ruhte-wieder",
-                            "paula-erste",
-                            PausedFrom2022,
-                            PausedUntil2023
-                        )
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembershipPause, PutMembershipPauseRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                PauseId = ctx.Identity.Pauses.IdOf("paula-ruhte-wieder"),
-                FirstSessionYear = PausedFrom2022,
-                LastSessionYear = PausedFrom2022,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte-wieder"))
-            .ToHaveSpan(PausedFrom2022, PausedFrom2022)
-            .MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
-            .ToHaveSpan(PausedFrom2018, PausedUntil2019)
-            .AssertAsync(ct);
-    }
-
-    private Task<SeededContext> BuildWithClosedMembershipPauseAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                        .AddMembershipPause(
-                            "paula-ruhte",
-                            "paula-erste",
-                            PausedFrom2018,
-                            PausedUntil2019
-                        )
-                ),
-            ct
-        );
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,

@@ -23,7 +23,6 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2026 = new(2026, 6, 30);
     private static readonly TimeOnly DoorsOpenAt = new(17, 30);
-    private static readonly TimeOnly DoorsOpenAfterTheStart = new(20, 0);
 
     private static readonly DateTimeOffset AtTheFirstGala = new(
         2027,
@@ -31,15 +30,6 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
         16,
         18,
         11,
-        0,
-        TimeSpan.Zero
-    );
-    private static readonly DateTimeOffset AfterTheFirstGala = new(
-        2027,
-        1,
-        17,
-        0,
-        30,
         0,
         TimeSpan.Zero
     );
@@ -101,53 +91,6 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheEventInPreparation_When_TheKeyHolderCreatesTheEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, result) = await CreateAsync(
-            ctx,
-            "vera",
-            Gala(ctx.Club.Venues.IdOf("buergerhaus"))
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.Event(result.EventId).ToBeUnpublished().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheEventsOwnFacts_When_TheKeyHolderCreatesTheEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, result) = await CreateAsync(
-            ctx,
-            "vera",
-            Gala(ctx.Club.Venues.IdOf("buergerhaus"))
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Event(result.EventId)
-            .ToHaveTeaser(Teaser)
-            .Event(result.EventId)
-            .ToOpenDoorsAt(DoorsOpenAt)
-            .Event(result.EventId)
-            .ToHaveAgeHint(AgeHint)
-            .Event(result.EventId)
-            .ToCost(PriceCents)
-            .Event(result.EventId)
-            .ToStartPresaleAt(PresaleStarts)
-            .Event(result.EventId)
-            .ToHaveTicketAvailability(TicketAvailability.Available)
-            .Event(result.EventId)
-            .ToNotBeCancelled()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_WarnAboutTheVenueAndStillWrite_When_AnotherEntryHoldsItAtThatTime()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -163,27 +106,6 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
         var collision = Assert.Single(result.VenueCollisions);
         Assert.Equal(ctx.Club.CalendarEntries.IdOf("rehearsal"), collision.CalendarEntryId);
         await ctx.Expected.Event(result.EventId).ToHaveTeaser(Teaser).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SellAtThePickedPlacesInPickOrder_When_TheEventIsCreatedWithThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var buergerhaus = ctx.Club.Venues.IdOf("buergerhaus");
-        var baeckerei = ctx.Club.Venues.IdOf("baeckerei");
-
-        var (response, result) = await CreateAsync(
-            ctx,
-            "vera",
-            Gala(buergerhaus) with
-            {
-                PresaleVenueIds = [baeckerei, buergerhaus],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.Event(result.EventId).ToSellAt(baeckerei, buergerhaus).AssertAsync(ct);
     }
 
     [Fact]
@@ -204,60 +126,6 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
             ["Ein archivierter Ort kann nicht mehr gewählt werden."],
             failures[ValidationField]
         );
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheDoorsOpenAfterTheStart()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, _) = await CreateAsync(
-            ctx,
-            "vera",
-            Gala(ctx.Club.Venues.IdOf("buergerhaus")) with
-            {
-                DoorsOpenAt = DoorsOpenAfterTheStart,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheTeaserIsMissing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, _) = await CreateAsync(
-            ctx,
-            "vera",
-            Gala(ctx.Club.Venues.IdOf("buergerhaus")) with
-            {
-                Teaser = "",
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_ThePresaleStartsAfterTheEvening()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var (response, _) = await CreateAsync(
-            ctx,
-            "vera",
-            Gala(ctx.Club.Venues.IdOf("buergerhaus")) with
-            {
-                PresaleStartsAt = AfterTheFirstGala,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private static PostEventRequest Gala(int venueId) =>

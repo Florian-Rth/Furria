@@ -1,7 +1,6 @@
 import type { CountMark } from '@furria/studio/music-timeline';
 import { COUNT_EDGE_SECONDS } from '@furria/studio/music-timeline';
 
-/** A span starts after the last count before it, so a count right on the border belongs to the span. */
 const SPAN_START_SLACK_SECONDS = 2 * COUNT_EDGE_SECONDS;
 
 export interface CountPlace {

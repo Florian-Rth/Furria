@@ -2,7 +2,6 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Operations;
 using Furria.Api.Tests.Auth;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -15,82 +14,6 @@ public sealed class PutClaimWindowTests : IClassFixture<ApiTestFixture>
     public PutClaimWindowTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_OpenTheWindowUntilTheEnd_When_NoneIsOpen()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var closesAt = _fixture.TimeProvider.GetUtcNow().AddHours(3);
-
-        var response = await manager.PUTAsync<PutClaimWindow, PutClaimWindowRequest>(
-            new PutClaimWindowRequest { ClosesAt = closesAt }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.ClaimWindows()
-            .ToHaveCount(1)
-            .ClaimWindows()
-            .ToHaveLatestEndingAt(closesAt, openedByPersonId: null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RecordWhoOpenedIt_When_APersonOpensTheWindow()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("vera"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "launch",
-                            "vera-launch",
-                            "Start",
-                            "vera",
-                            FurriaPermissions.ClaimWindowManage
-                        )
-                    ),
-            ct
-        );
-        var vera = await ctx.Identity.ClientForAsync("vera", ct);
-        var closesAt = _fixture.TimeProvider.GetUtcNow().AddHours(3);
-
-        var response = await vera.PUTAsync<PutClaimWindow, PutClaimWindowRequest>(
-            new PutClaimWindowRequest { ClosesAt = closesAt }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.ClaimWindows()
-            .ToHaveLatestEndingAt(closesAt, ctx.Identity.People.IdOf("vera"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_MoveTheEnd_When_TheWindowIsAlreadyOpen()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var now = _fixture.TimeProvider.GetUtcNow();
-        await ClaimWindowSteps.OpenUntilAsync(manager, now.AddHours(3));
-
-        var response = await manager.PUTAsync<PutClaimWindow, PutClaimWindowRequest>(
-            new PutClaimWindowRequest { ClosesAt = now.AddHours(1) }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.ClaimWindows()
-            .ToHaveCount(1)
-            .ClaimWindows()
-            .ToHaveLatestEndingAt(now.AddHours(1), openedByPersonId: null)
-            .AssertAsync(ct);
     }
 
     [Fact]

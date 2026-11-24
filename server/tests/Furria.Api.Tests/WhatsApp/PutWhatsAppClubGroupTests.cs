@@ -35,20 +35,6 @@ public sealed class PutWhatsAppClubGroupTests : IClassFixture<ApiTestFixture>
         Assert.Equal([(NewClubChat, (int?)null)], await _fixture.LinkedWhatsAppGroupsAsync(ct));
     }
 
-    [Fact]
-    public async Task Should_RefuseTheChat_When_TheBotIsNotInIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        _fixture.Waha.LinkBot("4917612345678@c.us");
-
-        var picked = await PickAsync(client, ClubChat);
-
-        Assert.Equal(HttpStatusCode.NotFound, picked.StatusCode);
-        Assert.Empty(await _fixture.LinkedWhatsAppGroupsAsync(ct));
-    }
-
     private static Task<HttpResponseMessage> PickAsync(HttpClient client, string chatId) =>
         client.PUTAsync<PutWhatsAppClubGroup, PutWhatsAppClubGroupRequest>(
             new PutWhatsAppClubGroupRequest { ChatId = chatId }

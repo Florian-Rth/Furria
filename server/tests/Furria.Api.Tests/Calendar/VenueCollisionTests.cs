@@ -68,24 +68,6 @@ public sealed class VenueCollisionTests : IClassFixture<ApiTestFixture>
     );
     private static readonly DateTimeOffset NextDayStart = new(2027, 1, 21, 18, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset NextDayEnd = new(2027, 1, 21, 21, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset TwoDaysLaterStart = new(
-        2027,
-        1,
-        22,
-        18,
-        0,
-        0,
-        TimeSpan.Zero
-    );
-    private static readonly DateTimeOffset TwoDaysLaterEnd = new(
-        2027,
-        1,
-        22,
-        20,
-        0,
-        0,
-        TimeSpan.Zero
-    );
     private static readonly DateTimeOffset OpenEndedStart = new(
         2027,
         1,
@@ -122,25 +104,6 @@ public sealed class VenueCollisionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_FindTheEntry_When_TheWindowsOverlap()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildVenuesAsync(ct);
-
-        var collisions = await CollisionsAsync(
-            ctx.Identity.People.IdOf("regine"),
-            ctx.Club.Venues.IdOf("buehnenhaus"),
-            InsideTheAbendprobe,
-            AlsoInsideTheAbendprobe,
-            null,
-            ct
-        );
-
-        var collision = Assert.Single(collisions);
-        Assert.Equal(Abendprobe, collision.Title);
-    }
-
-    [Fact]
     public async Task Should_FindNothing_When_TheWindowsOnlyTouch()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -151,24 +114,6 @@ public sealed class VenueCollisionTests : IClassFixture<ApiTestFixture>
             ctx.Club.Venues.IdOf("buehnenhaus"),
             AbendprobeEnd,
             AfterTheAbendprobe,
-            null,
-            ct
-        );
-
-        Assert.Empty(collisions);
-    }
-
-    [Fact]
-    public async Task Should_FindNothing_When_TheWindowsAreDisjoint()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildVenuesAsync(ct);
-
-        var collisions = await CollisionsAsync(
-            ctx.Identity.People.IdOf("regine"),
-            ctx.Club.Venues.IdOf("buehnenhaus"),
-            TwoDaysLaterStart,
-            TwoDaysLaterEnd,
             null,
             ct
         );

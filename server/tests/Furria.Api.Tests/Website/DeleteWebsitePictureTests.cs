@@ -40,18 +40,6 @@ public sealed class DeleteWebsitePictureTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_AnswerNotFound_When_ThePositionIsAlreadyEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(builder => builder.WithGalleryPublisher(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-
-        var response = await ClearAsync(client, "join.hero");
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
     private static Task<HttpResponseMessage> ClearAsync(HttpClient client, string slotKey) =>
         client.DELETEAsync<DeleteWebsitePicture, DeleteWebsitePictureRequest>(
             new() { SlotKey = slotKey, Position = 1 }

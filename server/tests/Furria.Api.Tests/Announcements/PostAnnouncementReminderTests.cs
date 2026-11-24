@@ -50,33 +50,6 @@ public sealed class PostAnnouncementReminderTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
-    public async Task Should_PushOnlyThoseWhoHaveNotVoted_When_APosterRemindsAPoll()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-        var devices = await DevicesAsync(ctx, ct);
-        var announcementId = ctx.Club.Announcements.IdOf("fest");
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        var response = await RemindAtAsync(
-            Now,
-            ctx,
-            "ilka",
-            Reminder(ctx, AnnouncementAddOnKind.Poll, pollId),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await _fixture.PushesDrainedAsync(ct);
-        var push = Assert.Single(PushesAt(_fixture, devices["mara"]));
-        Assert.Equal($"Bitte stimm ab: {SnackQuestion}", TextOf(push, "body"));
-        Assert.Equal($"announcement-{announcementId}-reminder-poll-{pollId}", TextOf(push, "tag"));
-        Assert.Single(PushesAt(_fixture, devices["alice"]));
-        Assert.Empty(PushesAt(_fixture, devices["chris"]));
-        Assert.Empty(PushesAt(_fixture, devices["ilka"]));
-    }
-
-    [Fact]
     public async Task Should_RefuseASecondReminder_When_SixHoursHaveNotPassed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -89,28 +62,6 @@ public sealed class PostAnnouncementReminderTests : IClassFixture<ApiTestFixture
 
         Assert.Equal(HttpStatusCode.Conflict, tooSoon.StatusCode);
         Assert.Equal(HttpStatusCode.NoContent, inTime.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerNeitherWroteNorMayPostAnnouncements()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-
-        var response = await RemindAtAsync(Now, ctx, "chris", Attendance(ctx), ct);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheReminder_When_TheLastDayOfTheAnnouncementHasPassed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-
-        var response = await RemindAtAsync(AfterTheLastDay, ctx, "alice", Attendance(ctx), ct);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     [Fact]

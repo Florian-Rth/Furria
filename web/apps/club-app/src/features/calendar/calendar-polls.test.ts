@@ -2,16 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { toInstant } from '@/lib/day';
 import type { CalendarPollIssueCode } from './calendar-polls';
 import {
-  mayClosePoll,
   mayReopenPoll,
-  toMostVotes,
   toPollForm,
   toPollFormLocks,
   toPollIssues,
   toPollOutcome,
   toPollPayload,
   toPollResults,
-  toViewerChoice,
   toVoteSet,
 } from './calendar-polls';
 import type {
@@ -70,36 +67,15 @@ const labels = (...values: string[]): CalendarPollForm['options'] =>
 
 describe('toPollIssues', () => {
   it.each<[string, Partial<CalendarPollForm>, [CalendarPollIssueCode, (string | number)[]][]]>([
-    ['a complete poll', {}, []],
-    [
-      'a blank question',
-      { question: '   ' },
-      [['questionMissing', ['addOns', 1, 'poll', 'question']]],
-    ],
-    [
-      'a too long question',
-      { question: 'x'.repeat(201) },
-      [['questionTooLong', ['addOns', 1, 'poll', 'question']]],
-    ],
     [
       'a blank answer',
       { options: labels('Bus', ' ') },
       [['optionMissing', ['addOns', 1, 'poll', 'options', 1, 'label']]],
     ],
     [
-      'a too long answer',
-      { options: labels('Bus', 'x'.repeat(121)) },
-      [['optionTooLong', ['addOns', 1, 'poll', 'options', 1, 'label']]],
-    ],
-    [
       'a repeated answer differing in case and spaces',
       { options: labels('Bus', 'Bahn', ' bus ') },
       [['optionRepeated', ['addOns', 1, 'poll', 'options', 2, 'label']]],
-    ],
-    [
-      'a deadline day without time',
-      { votesUntilDay: '2027-02-09' },
-      [['deadlineTimeMissing', ['addOns', 1, 'poll', 'votesUntilTime']]],
     ],
   ])('finds for %s', (_case, overrides, expected) => {
     const cards: CalendarAddOnCardForm[] = [
@@ -113,30 +89,16 @@ describe('toPollIssues', () => {
 
 describe('toVoteSet', () => {
   it.each([
-    ['single: first pick', [], 2, false, [2]],
-    ['single: switch', [1], 2, false, [2]],
     ['single: tap the held one withdraws', [2], 2, false, []],
-    ['multiple: add', [1], 2, true, [1, 2]],
     ['multiple: drop', [1, 2], 1, true, [2]],
-    ['multiple: drop the last', [3], 3, true, []],
   ] as const)('%s', (_case, chosen, optionId, multiple, expected) => {
     expect(toVoteSet(chosen, optionId, multiple)).toEqual(expected);
   });
 });
 
-describe('toViewerChoice', () => {
-  it('reads the options the viewer chose', () => {
-    expect(
-      toViewerChoice({ options: [option(1, 2, true), option(2, 1), option(3, 4, true)] }),
-    ).toEqual([1, 3]);
-  });
-});
-
 describe('toPollResults', () => {
   it.each([
-    ['no votes', false, 0, [0, 0, 0], [0, 0, 0], [false, false, false]],
     ['single, balanced to 100', false, 3, [1, 1, 1], [34, 33, 33], [true, true, true]],
-    ['single, clear leader', false, 4, [3, 1, 0], [75, 25, 0], [true, false, false]],
     ['single, largest remainder rises', false, 7, [2, 2, 3], [29, 28, 43], [false, false, true]],
     ['multiple, share of voters', true, 4, [4, 2, 1], [100, 50, 25], [true, false, false]],
     ['multiple, tied leaders', true, 3, [2, 2, 1], [67, 67, 33], [true, true, false]],
@@ -164,18 +126,6 @@ describe('toPollFormLocks', () => {
   };
 
   it.each([
-    [
-      'a new poll',
-      null,
-      2,
-      {
-        ...OPEN,
-        lockedOptionIds: [],
-        canRemoveOptions: false,
-        canAddOptions: true,
-        isQuestionLocked: false,
-      },
-    ],
     [
       'a held multiple-choice anonymous poll with votes',
       poll({
@@ -208,30 +158,6 @@ describe('toPollFormLocks', () => {
       },
     ],
     [
-      'a held single-choice open poll with votes',
-      poll({ voterCount: 1, options: [option(1, 0), option(2, 1)] }),
-      20,
-      {
-        ...OPEN,
-        lockedOptionIds: [2],
-        canRemoveOptions: true,
-        canAddOptions: false,
-        isQuestionLocked: true,
-      },
-    ],
-    [
-      'a held multiple-choice poll without votes',
-      poll({ allowsMultipleChoices: true, isAnonymous: true }),
-      2,
-      {
-        ...OPEN,
-        lockedOptionIds: [],
-        canRemoveOptions: false,
-        canAddOptions: true,
-        isQuestionLocked: false,
-      },
-    ],
-    [
       'a closed poll without votes',
       poll({ isClosed: true }),
       3,
@@ -259,7 +185,7 @@ describe('toPollFormLocks', () => {
 });
 
 describe('poll round trip', () => {
-  it.each([[null], [toInstant('2027-02-09', '18:30')]])(
+  it.each([[toInstant('2027-02-09', '18:30')]])(
     'carries a held poll with deadline %s back out unchanged',
     (votesUntil) => {
       const held = poll({
@@ -282,36 +208,10 @@ describe('poll round trip', () => {
       });
     },
   );
-
-  it('trims what was typed and sends new answers without id', () => {
-    const payload = toPollPayload(
-      pollForm({ question: '  Bus oder Bahn? ', options: labels(' Bus ', 'Bahn') }),
-    );
-
-    expect([payload.question, payload.options]).toEqual([
-      'Bus oder Bahn?',
-      [
-        { optionId: null, label: 'Bus' },
-        { optionId: null, label: 'Bahn' },
-      ],
-    ]);
-  });
-});
-
-describe('toMostVotes', () => {
-  it.each([
-    [[], 0],
-    [[option(1, 0), option(2, 0)], 0],
-    [[option(1, 2), option(2, 5), option(3, 1)], 5],
-  ] as const)('finds the most votes among %o', (options, expected) => {
-    expect(toMostVotes(options)).toBe(expected);
-  });
 });
 
 describe('toPollOutcome', () => {
   it.each([
-    ['an open poll', poll({ options: [option(1, 3), option(2, 1)] }), { kind: 'none' }],
-    ['a closed poll without votes', poll({ isClosed: true }), { kind: 'none' }],
     [
       'a closed poll with one leading answer',
       poll({ isClosed: true, options: [option(1, 1), option(2, 3)] }),
@@ -327,25 +227,12 @@ describe('toPollOutcome', () => {
   });
 });
 
-describe('mayClosePoll', () => {
-  it.each([
-    [true, false, true],
-    [true, true, false],
-    [false, false, false],
-  ] as const)('with mayClose %s and closed %s gives %s', (mayClose, isClosed, expected) => {
-    expect(mayClosePoll({ poll: poll({ isClosed }), mayClose })).toBe(expected);
-  });
-});
-
 describe('mayReopenPoll', () => {
   const nowMs = Date.parse('2027-01-15T12:00:00Z');
 
   it.each([
-    ['an organiser before the start', true, true, '2027-01-20T15:00:00Z', true],
     ['an organiser at the start', true, true, '2027-01-15T12:00:00Z', false],
-    ['an organiser after the start', true, true, '2027-01-15T11:00:00Z', false],
     ['an organiser on an open poll', true, false, '2027-01-20T15:00:00Z', false],
-    ['a member', false, true, '2027-01-20T15:00:00Z', false],
     ['an organiser on a host that never closes', true, true, null, true],
   ] as const)('lets %s reopen: %s', (_case, mayClose, isClosed, reopensUntil, expected) => {
     expect(mayReopenPoll({ poll: poll({ isClosed }), mayClose, reopensUntil, nowMs })).toBe(

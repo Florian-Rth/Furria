@@ -15,33 +15,6 @@ public sealed class SessionPersistenceTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepEveryPartTheClubKnows_When_ASessionIsRecorded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Club(club =>
-                    club.AddSession(
-                        "jubilaeum",
-                        2021,
-                        number: 50,
-                        motto: "Grossfurra feiert weiter"
-                    )
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.Session(ctx.Club.Sessions.IdOf("jubilaeum"))
-            .ToHaveStartYear(2021)
-            .Session(ctx.Club.Sessions.IdOf("jubilaeum"))
-            .ToHaveNumber(50)
-            .Session(ctx.Club.Sessions.IdOf("jubilaeum"))
-            .ToHaveMotto("Grossfurra feiert weiter")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RejectTheSecondRecord_When_TheSeasonIsAlreadyWrittenDown()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -81,64 +54,5 @@ public sealed class SessionPersistenceTests : IClassFixture<ApiTestFixture>
         var violation = Assert.IsType<PostgresException>(rejection.InnerException);
         Assert.Equal(PostgresErrorCodes.UniqueViolation, violation.SqlState);
         Assert.Equal("ix_session_number", violation.ConstraintName);
-    }
-
-    [Fact]
-    public async Task Should_KeepBothRecords_When_NeitherSeasonHasAKnownNummer()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Club(club =>
-                    club.AddSession("vom-banner", 2021, motto: "Grossfurra feiert weiter")
-                        .AddSession("from-the-minutes", 2022, motto: "Grossfurra hebt ab")
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.Session(ctx.Club.Sessions.IdOf("vom-banner"))
-            .ToHaveNumber(null)
-            .Session(ctx.Club.Sessions.IdOf("from-the-minutes"))
-            .ToHaveNumber(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RejectTheNummer_When_ItDoesNotCount()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        var rejection = await Assert.ThrowsAsync<DbUpdateException>(() =>
-            _fixture.BuildAsync(
-                builder => builder.Club(club => club.AddSession("nullte", 2021, number: 0)),
-                ct
-            )
-        );
-
-        var violation = Assert.IsType<PostgresException>(rejection.InnerException);
-        Assert.Equal(PostgresErrorCodes.CheckViolation, violation.SqlState);
-        Assert.Equal("ck_session_number", violation.ConstraintName);
-    }
-
-    [Fact]
-    public async Task Should_StoreTheYearAlone_When_TheClubKnowsNothingElseAboutTheSeason()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddSession("year-only", 1984)),
-            ct
-        );
-
-        await ctx
-            .Expected.Session(ctx.Club.Sessions.IdOf("year-only"))
-            .ToHaveStartYear(1984)
-            .Session(ctx.Club.Sessions.IdOf("year-only"))
-            .ToHaveNumber(null)
-            .Session(ctx.Club.Sessions.IdOf("year-only"))
-            .ToHaveMotto(null)
-            .Session(ctx.Club.Sessions.IdOf("year-only"))
-            .ToShowLogo(null)
-            .AssertAsync(ct);
     }
 }

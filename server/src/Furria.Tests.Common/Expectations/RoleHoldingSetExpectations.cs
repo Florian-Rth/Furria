@@ -24,15 +24,4 @@ public sealed class RoleHoldingSetExpectations
                         .CountAsync(row => row.PersonId == _personId, ct)
                 )
         );
-
-    public Expected ToHaveOpenCount(int count) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    count,
-                    await dbContext
-                        .RoleHoldings.AsNoTracking()
-                        .CountAsync(row => row.PersonId == _personId && row.UntilOn == null, ct)
-                )
-        );
 }

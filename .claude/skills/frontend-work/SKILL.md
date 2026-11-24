@@ -78,6 +78,8 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Never test the UI — no component tests, no route tests, no rendering, no DOM
 - Never write a `*.test.tsx`; never use `renderHook`
 - Never add a rendering or DOM test library
+- Test only domain logic — rules that hold without any UI (business rules, calculations, date math, boundary parsing, security guards); a pure function that computes what a screen shows (view models, display selectors, labels/tones, layout, geometry, gestures, scrub, animation/stage machines, player controls) is UI and is never tested — if in doubt, it is UI
+- Never use mocks, fakes, stubs or spies (`vi.fn`, `vi.mock`, `vi.spyOn`, `vi.stubGlobal`, fake servers/storage/transports) — a test against a fake tests the fake
 - Assert only the return value of a pure function for explicit inputs
 - Never test the implementation — assert observable behaviour through the public function, never internals, call order or structure
 - Never assert text — no German copy, labels, sentences or wording-carrying strings; logic that selects a text returns a discriminant (key, variant, structured result) and the test asserts that

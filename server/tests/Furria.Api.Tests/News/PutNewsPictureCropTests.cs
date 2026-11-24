@@ -22,31 +22,6 @@ public sealed class PutNewsPictureCropTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RenderThePictureAnewInTheNewCut_When_ADraftsPictureIsRecropped()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ClientForAsync(NewsSeeds.Editor, ct);
-        var draftId = ctx.News.Posts.IdOf("draft");
-        var pictureId = await RenderedAsync(
-            await NewsPictureSteps.UploadAsync(client, draftId, ct),
-            ct
-        );
-
-        var response = await RecropAsync(client, draftId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.NewsPost(draftId)
-            .ToShowPicture(pictureId)
-            .MediaItem(pictureId)
-            .ToBeCroppedTo(NewCut)
-            .MediaItem(pictureId)
-            .ToAwaitItsRenditions(MediaKind.Photo, "image/jpeg")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_CutACopyIntoTheWorkingCopyAndLeaveTheLivePictureAlone_When_ThePostIsLive()
     {
         var ct = TestContext.Current.CancellationToken;

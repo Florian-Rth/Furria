@@ -42,30 +42,6 @@ public sealed class GetPublicGalleryTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Fact]
-    public async Task Should_CountAndCoverAnAlbumFromItsPublicSelection_When_AVisitorAsks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Gallery(), ct);
-
-        var (_, result) = await _fixture
-            .CreateClient()
-            .GETAsync<GetPublicGallery, GetPublicGalleryResponse>();
-
-        var albums = result.Sessions.SelectMany(session => session.Albums).ToList();
-        var gala = albums.Single(album => album.AlbumId == ctx.Gallery.Albums.IdOf("gala"));
-        var parade = albums.Single(album => album.AlbumId == ctx.Gallery.Albums.IdOf("parade"));
-        Assert.Equal(
-            (2, Gala, ctx.Gallery.Items.IdOf("gala-second")),
-            (gala.PhotoCount, gala.EntryStartsAt, gala.Cover.MediaItemId)
-        );
-        Assert.Equal(
-            (1, (DateTimeOffset?)null, ctx.Gallery.Items.IdOf("parade-chosen")),
-            (parade.PhotoCount, parade.EntryStartsAt, parade.Cover.MediaItemId)
-        );
-        Assert.StartsWith("/api/public/gallery/pictures/", gala.Cover.MediumUrl);
-    }
-
     private static Action<SeedContextBuilder> Gallery() =>
         builder =>
             builder

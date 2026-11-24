@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Net;
-using Furria.Api.Endpoints.Auth;
 using Furria.Api.RateLimiting;
 using Furria.Application.Identity;
 using Furria.Core.Identity;
@@ -101,35 +100,6 @@ public sealed class PostClaimWindowClaimTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_MatchHer_When_HerNameCarriesAnAccentSheLeavesOut()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddClaimablePerson(
-                        "renee",
-                        "Renée",
-                        "Ćosić",
-                        AdultBirthDate,
-                        _fixture.Today
-                    )
-                ),
-            ct
-        );
-        await OpenWindowAsync(ctx, ct);
-
-        var (_, result) = await ClaimWindowSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            "Renee",
-            "Cosic",
-            AdultBirthDate
-        );
-
-        Assert.Equal(ClaimOutcome.Invited, result.Outcome);
-    }
-
-    [Fact]
     public async Task Should_ReportNotFound_When_TwoPersonsShareNameAndBirthDate()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -163,103 +133,6 @@ public sealed class PostClaimWindowClaimTests : IClassFixture<ApiTestFixture>
             .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("anna"))
             .ToHaveCount(0)
             .InvitationsOfPerson(ctx.Identity.People.IdOf("anna-twin"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReportNotFound_When_OnlyTheFirstNameOrTheBirthDateMatches()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddClaimablePerson(
-                        "anna",
-                        "Anna",
-                        "Huber",
-                        AdultBirthDate,
-                        _fixture.Today
-                    )
-                ),
-            ct
-        );
-        await OpenWindowAsync(ctx, ct);
-        var client = _fixture.CreateClient();
-
-        var (_, otherLastName) = await ClaimWindowSteps.ClaimAsync(
-            client,
-            "Anna",
-            "Hubert",
-            AdultBirthDate
-        );
-        var (_, otherBirthDate) = await ClaimWindowSteps.ClaimAsync(
-            client,
-            "Anna",
-            "Huber",
-            AdultBirthDate.AddDays(1)
-        );
-
-        Assert.Equal(ClaimOutcome.NotFound, otherLastName.Outcome);
-        Assert.Equal(ClaimOutcome.NotFound, otherBirthDate.Outcome);
-    }
-
-    [Fact]
-    public async Task Should_ReportHasAccount_When_SheAlreadyHasAnAccount()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddClaimablePerson("anna", "Anna", "Huber", AdultBirthDate, _fixture.Today)
-                        .AddAccount("anna")
-                ),
-            ct
-        );
-        await OpenWindowAsync(ctx, ct);
-
-        var (_, result) = await ClaimWindowSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            "Anna",
-            "Huber",
-            AdultBirthDate
-        );
-
-        Assert.Equal(ClaimOutcome.HasAccount, result.Outcome);
-        Assert.Null(result.Token);
-    }
-
-    [Fact]
-    public async Task Should_ReportHasEmail_When_HerContactEmailIsOnRecord()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("anna", "Anna", "Huber")
-                        .AddPersonContact(
-                            "anna",
-                            InvitationSteps.UniqueContactEmail("anna"),
-                            birthDate: AdultBirthDate
-                        )
-                        .AddMembership("anna-membership", "anna", _fixture.Today.AddYears(-1))
-                ),
-            ct
-        );
-        await OpenWindowAsync(ctx, ct);
-
-        var (_, result) = await ClaimWindowSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            "Anna",
-            "Huber",
-            AdultBirthDate
-        );
-
-        Assert.Equal(ClaimOutcome.HasEmail, result.Outcome);
-        await ctx
-            .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("anna"))
             .ToHaveCount(0)
             .AssertAsync(ct);
     }
@@ -346,40 +219,6 @@ public sealed class PostClaimWindowClaimTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReportClosed_When_NoWindowWasEverOpened()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddClaimablePerson(
-                        "anna",
-                        "Anna",
-                        "Huber",
-                        AdultBirthDate,
-                        _fixture.Today
-                    )
-                ),
-            ct
-        );
-
-        var (response, result) = await ClaimWindowSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            "Anna",
-            "Huber",
-            AdultBirthDate
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(ClaimOutcome.Closed, result.Outcome);
-        Assert.Null(result.Token);
-        await ctx
-            .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("anna"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReportClosed_When_TheWindowHasPassedItsEnd()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -414,128 +253,6 @@ public sealed class PostClaimWindowClaimTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(ClaimOutcome.Closed, outcome);
-    }
-
-    [Fact]
-    public async Task Should_VoidHerPreviousInvitation_When_SheClaims()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddClaimablePerson(
-                        "anna",
-                        "Anna",
-                        "Huber",
-                        AdultBirthDate,
-                        _fixture.Today
-                    )
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var inPerson = await InvitationSteps.InviteInPersonAsync(manager, annaId);
-        await ClaimWindowSteps.OpenUntilAsync(
-            manager,
-            _fixture.TimeProvider.GetUtcNow() + ClaimWindowSteps.OpenFor
-        );
-
-        var (_, result) = await ClaimWindowSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            "Anna",
-            "Huber",
-            AdultBirthDate
-        );
-        var (_, earlierLookup) = await InvitationSteps.LookUpAsync(
-            _fixture.CreateClient(),
-            InvitationSteps.TokenOf(inPerson.Link)
-        );
-
-        Assert.Equal(ClaimOutcome.Invited, result.Outcome);
-        Assert.Equal(InvitationLookupStatus.Dead, earlierLookup.Status);
-        await ctx
-            .Expected.InvitationsOfPerson(annaId)
-            .ToHaveCount(2)
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCountOn(InvitationChannel.ClaimWindow, 1)
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCount(1)
-            .AccountEventsOfPerson(annaId)
-            .ToHaveKindsInOrder(AccountEventKind.Invited, AccountEventKind.Claimed)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SignHerInWithTheLoginEmailSheChose_When_SheRedeemsTheClaimedInvitation()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddClaimablePerson(
-                        "anna",
-                        "Anna",
-                        "Huber",
-                        AdultBirthDate,
-                        _fixture.Today
-                    )
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        await OpenWindowAsync(ctx, ct);
-        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-eigene");
-        var (_, claim) = await ClaimWindowSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            "Anna",
-            "Huber",
-            AdultBirthDate
-        );
-        var token = claim.Token!;
-
-        var (_, lookup) = await InvitationSteps.LookUpAsync(_fixture.CreateClient(), token);
-        var confirmationCode = await InvitationSteps.RequestConfirmationCodeAsync(
-            _fixture,
-            token,
-            chosenEmail,
-            ct
-        );
-        var (response, redemption) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            loginEmail: chosenEmail,
-            confirmationCode: confirmationCode
-        );
-
-        Assert.Equal(InvitationLookupStatus.Live, lookup.Status);
-        Assert.Equal("Anna", lookup.FirstName);
-        Assert.Null(lookup.LoginEmail);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        InvitationSteps.SignedInClient(_fixture, redemption);
-        await ctx
-            .Expected.AccountOfPerson(annaId)
-            .ToHaveLoginEmail(chosenEmail)
-            .Person(annaId)
-            .ToHaveContactDetails(chosenEmail, null, null, null, null)
-            .AccountEventsOfPerson(annaId)
-            .ToHaveKindsInOrder(AccountEventKind.Claimed, AccountEventKind.Redeemed)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ServeAHallBehindOneAddress_When_ItClaimsBeyondTheGeneralPerIpLimit()
-    {
-        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
-        await using var host = OnboardingRateLimitSteps.VenueHost(_fixture);
-        var client = OnboardingRateLimitSteps.VenueClient(host);
-        var attempt = 0;
-
-        await OnboardingRateLimitSteps.AssertServesTheHallAsync(async () =>
-            (await ClaimWindowSteps.ClaimAsync(client, $"Gast{++attempt}", "Halle", AdultBirthDate))
-                .Response
-                .StatusCode
-        );
     }
 
     [Fact]

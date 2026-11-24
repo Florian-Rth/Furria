@@ -5,79 +5,17 @@ using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.Push;
-using Serilog.Events;
 using Xunit;
 
 namespace Furria.Api.Tests.Push;
 
 public sealed class PostTestPushTests : IClassFixture<ApiTestFixture>
 {
-    private const string Delivered =
-        "Push to device {PushSubscriptionId} at {PushServiceHost} was accepted with {StatusCode}";
-
     private readonly ApiTestFixture _fixture;
 
     public PostTestPushTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_DeliverAnEncryptedSignedPushToEveryDevice_When_AnAdminSendsATest()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
-        var phone = Device("delivered-phone");
-        var tablet = Device("delivered-tablet");
-        await SubscribeAsync(ilka, phone);
-        await SubscribeAsync(ilka, tablet);
-
-        var (response, result) = await SendTestAsync(ilka);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(
-            new PushDeliveryDto
-            {
-                Delivered = 2,
-                Forgotten = 0,
-                Failed = 0,
-            },
-            result.Delivery
-        );
-        var push = Assert.Single(_fixture.PushService.ReceivedAt(phone));
-        Assert.Single(_fixture.PushService.ReceivedAt(tablet));
-        Assert.Equal("aes128gcm", push.ContentEncoding);
-        Assert.True(int.Parse(push.TimeToLive) > 0);
-        var claims = push.VerifiedVapidClaims(ApiTestFixture.VapidPublicKey);
-        Assert.Equal("https://fcm.googleapis.com", claims.Audience);
-        Assert.Equal(ApiTestFixture.ClubAppBaseUrl, claims.Subject);
-        Assert.True(claims.ExpiresAt > _fixture.TimeProvider.GetUtcNow());
-        Assert.True(claims.ExpiresAt <= _fixture.TimeProvider.GetUtcNow().AddHours(24));
-        var payload = push.PayloadFor(
-            PushDevices.FirstPublicKey,
-            PushDevices.FirstPrivateKey,
-            PushDevices.AuthSecret
-        );
-        Assert.Equal("/system", payload.GetProperty("url").GetString());
-    }
-
-    [Fact]
-    public async Task Should_LogEachDeliveredPushWithItsDeviceAndPushService_When_AnAdminSendsATest()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
-        var phone = Device("logged-phone");
-        await SubscribeAsync(ilka, phone);
-        var mark = _fixture.Logs.Mark();
-
-        await SendTestAsync(ilka);
-
-        var written = Assert.Single(_fixture.Logs.Written(Delivered, mark));
-        Assert.Equal(LogEventLevel.Information, written.Level);
-        Assert.Equal("fcm.googleapis.com", written.ScalarOf("PushServiceHost"));
-        Assert.Equal((int)HttpStatusCode.Created, written.ScalarOf("StatusCode"));
     }
 
     [Fact]

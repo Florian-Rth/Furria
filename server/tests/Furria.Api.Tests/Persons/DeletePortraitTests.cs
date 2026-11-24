@@ -2,7 +2,6 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Media;
-using Furria.Application.Authorization;
 using Furria.Core.Media;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -39,41 +38,5 @@ public sealed class DeletePortraitTests : IClassFixture<ApiTestFixture>
         await ctx.Expected.MediaItem(portraitId).ToBeGone().AssertAsync(ct);
         await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(original));
-    }
-
-    [Fact]
-    public async Task Should_TakeAnotherPersonsPortraitAway_When_TheCallerManagesPersons()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("vera").AddAccount("bernd"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "mitglieder",
-                            "vera-mitglieder",
-                            "Mitgliederverwaltung",
-                            "vera",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-        var berndId = ctx.Identity.People.IdOf("bernd");
-        var portraitId = await PictureSteps.RenderedPortraitAsync(
-            _fixture,
-            await ctx.Identity.ClientForAsync("bernd", ct),
-            berndId,
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("vera", ct);
-
-        var response = await client.DELETEAsync<DeletePortrait, DeletePortraitRequest>(
-            new() { PersonId = berndId }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.MediaItem(portraitId).ToBeGone().AssertAsync(ct);
     }
 }

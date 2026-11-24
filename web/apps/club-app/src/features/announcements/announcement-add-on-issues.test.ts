@@ -25,19 +25,16 @@ const signUpList = (day: string, time: string): AnnouncementAddOnCardForm => ({
 });
 
 describe('toAnnouncementDeadlineStart', () => {
-  it.each([
-    [null, { day: '', time: '' }],
-    ['2026-11-30', { day: '2026-12-01', time: '00:00' }],
-  ] as const)('closes an Aushang valid until %s at %o', (validUntil, expected) => {
-    expect(toAnnouncementDeadlineStart(validUntil)).toEqual(expected);
-  });
+  it.each([['2026-11-30', { day: '2026-12-01', time: '00:00' }]] as const)(
+    'closes an Aushang valid until %s at %o',
+    (validUntil, expected) => {
+      expect(toAnnouncementDeadlineStart(validUntil)).toEqual(expected);
+    },
+  );
 });
 
 describe('toAnnouncementAddOnIssues', () => {
   it.each([
-    ['a deadline on the last day', [attendance('2026-11-30', '23:30')], '2026-11-30', []],
-    ['any deadline on an open-ended Aushang', [attendance('2027-05-01', '10:00')], null, []],
-    ['no deadline', [attendance('', '')], '2026-11-30', []],
     [
       'an answer deadline after the last day',
       [attendance('2026-12-01', '10:00')],
@@ -85,18 +82,6 @@ describe('toAnnouncementAddOnIssues', () => {
           addOn: 'attendance',
           code: 'deadlineTimeMissing',
           path: ['addOns', 0, 'attendance', 'answersUntilTime'],
-        },
-      ],
-    ],
-    [
-      'a list deadline after the last day',
-      [attendance('', ''), signUpList('2026-12-02', '08:00')],
-      '2026-11-30',
-      [
-        {
-          addOn: 'signUpList',
-          code: 'deadlineAfterStart',
-          path: ['addOns', 1, 'signUpList', 'signUpUntilTime'],
         },
       ],
     ],

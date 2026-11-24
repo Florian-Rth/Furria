@@ -2,12 +2,8 @@ using System.Net;
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
-using Furria.Api.RateLimiting;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.WebAuthn;
-using Microsoft.AspNetCore.RateLimiting;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -15,13 +11,7 @@ namespace Furria.Api.Tests.Auth;
 internal static class PasskeySteps
 {
     public const string WebOrigin = ApiTestFixture.ClubAppBaseUrl;
-    public const string AndroidOrigin =
-        "android:apk-key-hash:FG3pg8VzBlDY7rmVLzT8ZBagg0LmHb6oigSWsj_PROU";
     public const string ForeignOrigin = "https://club.furria.example";
-    public const string PasskeyAddedLead = "ein neuer Passkey hinzugefügt";
-    public const string PasskeyRemovedLead = "ein Passkey entfernt";
-
-    public static readonly TimeSpan PastTheChallengeLifetime = TimeSpan.FromMinutes(6);
 
     public static Task<TestResult<PostPasskeyCreationOptionsResponse>> CreationOptionsAsync(
         HttpClient client
@@ -126,16 +116,6 @@ internal static class PasskeySteps
                 }
             )
         ).Response;
-
-    public static string? RateLimitPolicyOf(ApiTestFixture fixture, string route) =>
-        fixture
-            .Services.GetRequiredService<EndpointDataSource>()
-            .Endpoints.OfType<RouteEndpoint>()
-            .Single(endpoint => endpoint.RoutePattern.RawText == route)
-            .Metadata.GetMetadata<EnableRateLimitingAttribute>()
-            ?.PolicyName;
-
-    public static string PerIpPolicy => SignedOutRateLimiting.PerIpPolicy;
 }
 
 internal sealed record PasskeyAssertionAttempt(string ChallengeId, JsonElement Credential);

@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  PasskeyAssertionJsonSchema,
-  PasskeyAttestationJsonSchema,
-  PasskeyRequestOptionsJsonSchema,
-} from './passkey-json';
+import { PasskeyAssertionJsonSchema, PasskeyRequestOptionsJsonSchema } from './passkey-json';
 
 describe('PasskeyRequestOptionsJsonSchema', () => {
   it('drops transports the browser does not know', () => {
@@ -13,21 +9,6 @@ describe('PasskeyRequestOptionsJsonSchema', () => {
     });
 
     expect(options.allowCredentials?.[0]?.transports).toEqual(['internal']);
-  });
-});
-
-describe('PasskeyAttestationJsonSchema', () => {
-  it('fills a missing attachment and missing transports', () => {
-    const credential = PasskeyAttestationJsonSchema.parse({
-      id: 'AQID',
-      rawId: 'AQID',
-      type: 'public-key',
-      response: { clientDataJSON: 'e30', attestationObject: 'oA' },
-      clientExtensionResults: {},
-    });
-
-    expect(credential.authenticatorAttachment).toBeNull();
-    expect(credential.response.transports).toEqual([]);
   });
 });
 

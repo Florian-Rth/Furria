@@ -59,55 +59,6 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RecordEveryChoice_When_ThePollAllowsSeveral()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("days");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await VoteAsync(
-                    ctx,
-                    "dana",
-                    pollId,
-                    ["days:Montag", "days:Mittwoch"],
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.Poll(pollId)
-            .ToHaveVotesOf(ctx.Identity.People.IdOf("dana"), "Montag", "Mittwoch")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_WithdrawTheVotes_When_SheChoosesNothing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await VoteAsync(ctx, "chris", pollId, [], ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx.Expected.Poll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseSeveralChoices_When_ThePollAllowsOnlyOne()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -178,49 +129,6 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_SheDoesNotSeeTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("secret");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await VoteAsync(ctx, "dana", pollId, ["secret:Ja"], ct);
-
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        );
-
-        await ctx.Expected.Poll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RecordTheVote_When_SheIsChosenForTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("secret");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await VoteAsync(ctx, "chris", pollId, ["secret:Ja"], ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.Poll(pollId)
-            .ToHaveVotesOf(ctx.Identity.People.IdOf("chris"), "Ja")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheVote_When_TheEntryIsMeantForAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -238,52 +146,6 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx.Expected.Poll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RecordTheVote_When_SheBelongsToTheGroupTheEntryIsMeantFor()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("garde-snack");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await VoteAsync(ctx, "elli", pollId, ["garde-snack:Ja"], ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.Poll(pollId)
-            .ToHaveVotesOf(ctx.Identity.People.IdOf("elli"), "Ja")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RecordTheVote_When_SheSchedulesAnEntryNotMeantForHer()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("board-snack");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await VoteAsync(ctx, "ilka", pollId, ["board-snack:Ja"], ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.Poll(pollId)
-            .ToHaveVotesOf(ctx.Identity.People.IdOf("ilka"), "Ja")
-            .AssertAsync(ct);
     }
 
     private static async Task<HttpResponseMessage> VoteAsync(

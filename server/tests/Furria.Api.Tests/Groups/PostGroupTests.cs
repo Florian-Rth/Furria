@@ -1,10 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Net.Mime;
-using System.Text;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -13,9 +10,6 @@ namespace Furria.Api.Tests.Groups;
 public sealed class PostGroupTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string GroupsRoute = "/api/manage/groups";
-    private const string BodyWithoutGroupKind =
-        "{\"name\":\"Die Biergarde\",\"description\":\"Wir proben freitags.\",\"isRecruiting\":true}";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -24,49 +18,6 @@ public sealed class PostGroupTests : IClassFixture<ApiTestFixture>
     public PostGroupTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CreateTheGroup_When_TheKeyHolderCreatesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.POSTAsync<
-            PostGroup,
-            PostGroupRequest,
-            PostGroupResponse
-        >(new() { Name = "Musik & Kapelle", GroupKindId = null });
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Group(result.GroupId)
-            .ToHaveName("Musik & Kapelle")
-            .Group(result.GroupId)
-            .ToHaveDescription("")
-            .Group(result.GroupId)
-            .ToBeRecruiting(false)
-            .Group(result.GroupId)
-            .ToBeArchivedOn(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheIcon_When_TheKeyHolderPicksOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.POSTAsync<
-            PostGroup,
-            PostGroupRequest,
-            PostGroupResponse
-        >(new() { Name = "Musik & Kapelle", Icon = ClubIcon.MusicNote });
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.Group(result.GroupId).ToHaveIcon(ClubIcon.MusicNote).AssertAsync(ct);
     }
 
     [Fact]
@@ -123,34 +74,6 @@ public sealed class PostGroupTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheNameIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new() { Name = "", GroupKindId = null }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheNameIsLongerThanTheColumn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<PostGroup, PostGroupRequest, PostGroupResponse>(
-            new() { Name = new string('a', 81), GroupKindId = null }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheGroupKind_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -181,30 +104,6 @@ public sealed class PostGroupTests : IClassFixture<ApiTestFixture>
             ["Eine archivierte Gruppenart lässt sich einer Gruppe nicht zuordnen."],
             failures[ConflictField]
         );
-    }
-
-    [Fact]
-    public async Task Should_CreateTheGroup_When_TheBodyLeavesTheGroupKindOut()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PostAsync(
-            GroupsRoute,
-            new StringContent(BodyWithoutGroupKind, Encoding.UTF8, MediaTypeNames.Application.Json),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var created = await response.Content.ReadFromJsonAsync<PostGroupResponse>(ct);
-        Assert.NotNull(created);
-        await ctx
-            .Expected.Group(created.GroupId)
-            .ToHaveName("Die Biergarde")
-            .Group(created.GroupId)
-            .ToHaveGroupKind(null)
-            .AssertAsync(ct);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

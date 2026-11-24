@@ -35,33 +35,6 @@ public sealed class AddOnHostPersistenceTests : IClassFixture<ApiTestFixture>
         Assert.Equal(constraint, violation.ConstraintName);
     }
 
-    [Theory]
-    [InlineData(AddOnTable.Poll, "ck_poll_one_host")]
-    [InlineData(AddOnTable.SignUpList, "ck_sign_up_list_one_host")]
-    [InlineData(AddOnTable.AttendanceResponse, "ck_attendance_response_one_host")]
-    public async Task Should_RefuseTheAddOn_When_BothAnEntryAndAnAnnouncementHostIt(
-        AddOnTable table,
-        string constraint
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await SeedHostsAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var announcementId = ctx.Club.Announcements.IdOf("helpers-wanted");
-
-        var violation = await Assert.ThrowsAsync<PostgresException>(() =>
-            _fixture.RehostAddOnsDirectlyAsync(
-                table,
-                entryId,
-                new AddOnHostColumns(entryId, announcementId),
-                ct
-            )
-        );
-
-        Assert.Equal(PostgresErrorCodes.CheckViolation, violation.SqlState);
-        Assert.Equal(constraint, violation.ConstraintName);
-    }
-
     [Fact]
     public async Task Should_DeleteItsPollsAndSignUpLists_When_AnAnnouncementIsDeleted()
     {

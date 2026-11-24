@@ -48,21 +48,6 @@ public sealed class BeerPotExpectations
             }
         );
 
-    public Expected ToHaveWarnedOf(string drink, DateTimeOffset? stockWarningSentAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    stockWarningSentAt,
-                    await dbContext
-                        .BeerPotDrinks.AsNoTracking()
-                        .Where(potDrink =>
-                            potDrink.BeerPotId == _beerPotId && potDrink.Drink!.Name == drink
-                        )
-                        .Select(potDrink => potDrink.StockWarningSentAt)
-                        .SingleAsync(ct)
-                )
-        );
-
     public Expected ToHaveDefaultDrink(string? drink) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -73,21 +58,6 @@ public sealed class BeerPotExpectations
                         .Where(potDrink => potDrink.BeerPotId == _beerPotId && potDrink.IsDefault)
                         .Select(potDrink => potDrink.Drink!.Name)
                         .ToListAsync(ct)
-                )
-        );
-
-    public Expected ToHaveRetired(int beerDrinkId, DateTimeOffset retiredAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    retiredAt,
-                    await dbContext
-                        .BeerPotDrinks.AsNoTracking()
-                        .Where(potDrink =>
-                            potDrink.BeerPotId == _beerPotId && potDrink.BeerDrinkId == beerDrinkId
-                        )
-                        .Select(potDrink => potDrink.RetiredAt)
-                        .SingleAsync(ct)
                 )
         );
 

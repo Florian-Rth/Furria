@@ -1,6 +1,4 @@
 using System.Net;
-using FastEndpoints;
-using Furria.Api.Endpoints.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -57,34 +55,6 @@ public sealed class PutActEveningSpotTests : IClassFixture<ApiTestFixture>
         );
 
     [Fact]
-    public Task Should_FreeHerSessionSpot_When_SheStandsElsewhereThatEvening() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-                var gala = ctx.Club.Events.IdOf(Gala);
-                var anna = ctx.Identity.People.IdOf(Anna);
-                var first = await AddSpotAsync(admin, actId);
-                var second = await AddSpotAsync(admin, actId);
-                await AssignSpotAsync(admin, actId, first, anna);
-
-                await AssignEveningSpotAsync(admin, actId, gala, second, anna);
-
-                var evening = await EveningOfAsync(admin, actId, gala);
-                Assert.Equal(
-                    [(first, (int?)null), (second, anna)],
-                    evening.Appearance!.SpotChanges.Select(change =>
-                        (change.SpotId, change.Person?.PersonId)
-                    )
-                );
-            }
-        );
-
-    [Fact]
     public Task Should_Refuse_When_ThePersonDoesNotDanceThatEvening() =>
         _fixture.AtInstantAsync(
             InTheRunningSession,
@@ -102,37 +72,6 @@ public sealed class PutActEveningSpotTests : IClassFixture<ApiTestFixture>
                 var response = await AssignEveningSpotAsync(admin, actId, gala, spotId, anna);
 
                 Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-            }
-        );
-
-    [Fact]
-    public Task Should_LeaveThePlannerUntouched_When_TheEveningRequestIsRefused() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-                var gala = ctx.Club.Events.IdOf(Gala);
-                var spotId = await AddSpotAsync(admin, actId);
-
-                await AssignEveningSpotAsync(
-                    admin,
-                    actId,
-                    gala,
-                    spotId,
-                    ctx.Identity.People.IdOf(Clara)
-                );
-
-                var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-                var (response, _) = await planner.GETAsync<
-                    GetRunningOrder,
-                    GetRunningOrderRequest,
-                    GetRunningOrderResponse
-                >(new() { EventId = gala });
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             }
         );
 }

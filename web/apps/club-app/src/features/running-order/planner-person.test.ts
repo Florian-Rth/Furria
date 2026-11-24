@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CastPerson } from '@/features/running-order/schemas';
 import type { DraftLine, RunningOrderDraft } from '@/features/running-order/types';
-import { gapStateOf, personTimelineOf } from './planner-person';
+import { personTimelineOf } from './planner-person';
 
 const person = (personId: number, absent = false): CastPerson => ({
   personId,
@@ -27,17 +27,6 @@ const draftOf = (lines: DraftLine[]): RunningOrderDraft => ({
   rules: [],
   actWishes: [],
   suspendedActWishIds: [],
-});
-
-describe('gapStateOf', () => {
-  it.each([
-    [0, 'conflict'],
-    [1, 'hint'],
-    [2, 'fine'],
-    [7, 'fine'],
-  ] as const)('%i Auftritte in between is %s', (between, state) => {
-    expect(gapStateOf(between)).toBe(state);
-  });
 });
 
 describe('personTimelineOf', () => {
@@ -84,9 +73,5 @@ describe('personTimelineOf', () => {
       gaps: [],
       tally: { conflicts: 0, hints: 0 },
     });
-  });
-
-  it('finds nobody who is in no Auftritt of the evening', () => {
-    expect(personTimelineOf(draftOf([line(1, [person(8)])]), 7)).toBeNull();
   });
 });

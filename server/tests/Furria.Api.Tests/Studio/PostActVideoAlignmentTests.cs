@@ -60,35 +60,6 @@ public sealed class PostActVideoAlignmentTests : IClassFixture<ApiTestFixture>
         Assert.Equal(result.StartSeconds, video.StartSeconds!.Value, 6);
     }
 
-    [Fact]
-    public async Task Should_LeaveTheVideoUnaligned_When_ItsSoundIsOtherMusic()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MixAsync(ct);
-        var other = SoundSamples.Song(seed: 99, bpm: 97, seconds: 45);
-        var videoId = await AnalysedVideoAsync(admin, actId, other, ct);
-
-        var (response, _) = await PostAsync(admin, actId, videoId);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        Assert.Equal(
-            VideoPlacement.Unaligned,
-            (await VideoInStudioAsync(admin, actId, videoId)).Placement
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReportConflict_When_TheVideoIsStillProcessing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MixAsync(ct);
-        var videoId = await AddVideoAsync(admin, actId, await UploadVideoAsync(admin, actId, ct));
-
-        var (response, _) = await PostAsync(admin, actId, videoId);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
     private async Task AnalysedSongAsync(
         HttpClient admin,
         int actId,

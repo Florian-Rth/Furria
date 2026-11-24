@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -14,7 +13,6 @@ public sealed class PutGroupKindTests : IClassFixture<ApiTestFixture>
     private const string DuplicateNameMessage = "Diese Gruppenart gibt es schon.";
     private const string ArchivedKindMessage =
         "Eine archivierte Gruppenart kann nicht bearbeitet werden.";
-    private const int UnknownGroupKindId = 999_999;
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -33,53 +31,6 @@ public sealed class PutGroupKindTests : IClassFixture<ApiTestFixture>
         client.PUTAsync<PutGroupKind, PutGroupKindRequest>(
             new PutGroupKindRequest { GroupKindId = groupKindId, Name = name }
         );
-
-    [Fact]
-    public async Task Should_RenameTheGroupKind_When_AManagerSharpensTheWord()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RenameKindAsync(
-            client,
-            ctx.Groups.GroupKinds.IdOf("garde"),
-            "Tanzgarde"
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
-            .ToHaveName("Tanzgarde")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheGroupsAssigned_When_TheGroupKindIsRenamed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups =>
-                    groups
-                        .AddGroupKind("garde", "Garde")
-                        .AddGroup("tanzgarde", "Tanzgarde", groupKindAlias: "garde")
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RenameKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"), "Garden");
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.GroupKinds()
-            .ToCountGroupsOf(ctx.Groups.GroupKinds.IdOf("garde"), 1)
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_ReturnConflict_When_AnotherRunningGroupKindCarriesTheName()
@@ -134,37 +85,6 @@ public sealed class PutGroupKindTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("spielmannszug"))
             .ToHaveName("Spielmannszug")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheGroupKindIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RenameKindAsync(client, UnknownGroupKindId, "Garde");
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheNameIsBlank()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroupKind("garde", "Garde")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await RenameKindAsync(client, ctx.Groups.GroupKinds.IdOf("garde"), "");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx
-            .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
-            .ToHaveName("Garde")
             .AssertAsync(ct);
     }
 

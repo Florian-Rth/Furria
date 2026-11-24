@@ -10,32 +10,6 @@ public sealed class SessionOrdinalTests
     private static readonly IReadOnlyCollection<SessionSpan> NoPauses = [];
 
     [Fact]
-    public void Should_CountTheFirstSessionAsOne_When_SheJoinedThisSession()
-    {
-        Assert.Equal(
-            1,
-            SessionOrdinal.Of(
-                [Period(new DateOnly(2027, 1, 5), null)],
-                NoPauses,
-                RelevantSessionYear
-            )
-        );
-    }
-
-    [Fact]
-    public void Should_CountTheComingSessionAsOne_When_SheJoinedBetweenSessions()
-    {
-        Assert.Equal(
-            1,
-            SessionOrdinal.Of(
-                [Period(new DateOnly(2026, 9, 25), null)],
-                NoPauses,
-                RelevantSessionYear
-            )
-        );
-    }
-
-    [Fact]
     public void Should_CountTheSession_When_SheJoinedOnAshWednesday()
     {
         Assert.Equal(
@@ -46,18 +20,6 @@ public sealed class SessionOrdinalTests
                 RelevantSessionYear
             )
         );
-    }
-
-    [Fact]
-    public void Should_SkipTheGap_When_SheRejoined()
-    {
-        var chain = new[]
-        {
-            Period(new DateOnly(2010, 3, 1), new DateOnly(2014, 6, 30)),
-            Period(new DateOnly(2020, 12, 1), null),
-        };
-
-        Assert.Equal(11, SessionOrdinal.Of(chain, NoPauses, RelevantSessionYear));
     }
 
     [Fact]

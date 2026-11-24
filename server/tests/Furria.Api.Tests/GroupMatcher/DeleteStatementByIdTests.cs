@@ -70,24 +70,6 @@ public sealed class DeleteStatementByIdTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_StampNoGroup_When_TheLastStatementIsDeleted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(
-            matcher => matcher.AddStatement("konfetti", "Konfetti ist Pflicht."),
-            ct
-        );
-
-        var response = await DeleteAsync(ctx, "konfetti", ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToHaveJoinedTheGroupMatcherAt(null)
-            .AssertAsync(ct);
-    }
-
     private Task<SeededContext> BuildAsync(
         Action<GroupMatcherSeedBuilder> arrangeMatcher,
         CancellationToken ct

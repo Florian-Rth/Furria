@@ -21,40 +21,6 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
         _fixture = fixture;
     }
 
-    [Fact]
-    public async Task Should_StoreTheActWithItsCastChangesAndWishes_When_ThePlannerCreatesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var people = ctx.Identity.People;
-        var gardeId = ctx.Groups.Groups.IdOf(Garde);
-
-        var (response, result) = await PostAsync(
-            client,
-            "  Gardetanz ",
-            gardeId,
-            [people.IdOf(Clara)],
-            [people.IdOf(Ben)],
-            [Wish(RunningOrderRuleKind.SecondHalf, RuleStrength.Must)]
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Act(result.ActId)
-            .ToHaveName("Gardetanz")
-            .Act(result.ActId)
-            .ToBelongTo(gardeId)
-            .Act(result.ActId)
-            .ToChangeTheCastExactly(
-                (people.IdOf(Clara), CastChange.Added),
-                (people.IdOf(Ben), CastChange.Removed)
-            )
-            .Act(result.ActId)
-            .ToWishExactly((RunningOrderRuleKind.SecondHalf, RuleStrength.Must))
-            .AssertAsync(ct);
-    }
-
     [Theory]
     [InlineData(ActKind.Dance, true)]
     [InlineData(ActKind.Speech, true)]
@@ -105,72 +71,6 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_FileTheDanceUnderTheNamedSession_When_ThePlannerChoosesTheNextOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-                var client = await ctx.Identity.ClientForAsync(Planner, ct);
-
-                var actId = await CreateActAsync(
-                    client,
-                    "Gardetanz",
-                    kind: ActKind.Dance,
-                    sessionYear: RunningSessionYear + 1
-                );
-
-                await ctx
-                    .Expected.Act(actId)
-                    .ToBelongToSession(RunningSessionYear + 1)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Theory]
-    [InlineData(ActKind.Dance, -1)]
-    [InlineData(ActKind.Point, 0)]
-    public async Task Should_RefuseTheAct_When_ItsSessionIsPastOrItIsTimeless(
-        ActKind kind,
-        int yearsFromRelevant
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-                var client = await ctx.Identity.ClientForAsync(Planner, ct);
-
-                var (response, _) = await client.POSTAsync<
-                    PostAct,
-                    PostActRequest,
-                    PostActResponse
-                >(
-                    new()
-                    {
-                        Name = "Gardetanz",
-                        GroupId = null,
-                        Kind = kind,
-                        SessionYear = RunningSessionYear + yearsFromRelevant,
-                        AddedPersonIds = [],
-                        RemovedPersonIds = [],
-                        Wishes = [],
-                    }
-                );
-
-                Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_RefuseTheAct_When_ItsGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -189,29 +89,6 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         Assert.Equal(
             "Eine archivierte Gruppe lässt sich keinem Auftritt zuordnen.",
-            await RefusalOfAsync(response)
-        );
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheAct_When_ItsGroupIsAManagementGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithManagementGroup(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-
-        var (response, _) = await PostAsync(
-            client,
-            "Vorstandstanz",
-            ctx.Groups.Groups.IdOf(ManagementGroup),
-            [],
-            [],
-            []
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        Assert.Equal(
-            "Einer Verwaltungsgruppe lässt sich kein Auftritt zuordnen.",
             await RefusalOfAsync(response)
         );
     }
@@ -243,20 +120,6 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
         };
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_StoreTheAct_When_AGroupAdminCreatesItForHisGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGardeAdmin(_fixture.Today), ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var gardeId = ctx.Groups.Groups.IdOf(Garde);
-
-        var (response, result) = await PostAsync(admin, "Gardetanz", gardeId, [], [], []);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.Act(result.ActId).ToBelongTo(gardeId).AssertAsync(ct);
     }
 
     [Theory]

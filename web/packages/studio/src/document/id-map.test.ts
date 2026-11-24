@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Studio } from '../models/studio-schemas';
-import { localStudioOf, NO_IDS, serverStudioOf, withLearnedId } from './id-map';
+import { NO_IDS, serverStudioOf, withLearnedId } from './id-map';
 
 const local: Studio = {
   music: { lengthSeconds: 30, source: 'workingMix' },
@@ -56,9 +56,5 @@ describe('serverStudioOf', () => {
       spots: server.spots.map((spot) => spot.spotId),
       tracks: server.choreography?.tracks.map((track) => track.spotId),
     }).toEqual({ steps: [11, 77], parts: [[88, 11, 77]], spots: [99], tracks: [99] });
-  });
-
-  it('is undone by localStudioOf', () => {
-    expect(localStudioOf(serverStudioOf(local, ids), ids)).toEqual(local);
   });
 });

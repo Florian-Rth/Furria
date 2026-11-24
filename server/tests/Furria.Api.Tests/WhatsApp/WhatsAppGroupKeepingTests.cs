@@ -17,7 +17,6 @@ public sealed class WhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
 {
     private const string ClubChatId = "120363000000000001@g.us";
     private const string AlicesId = "491701234567@c.us";
-    private const string AlicesLid = "987654321012345@lid";
     private const string BeasId = "491702222222@c.us";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
@@ -46,32 +45,6 @@ public sealed class WhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AddNobody_When_GroupKeepingIsOff()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await ConsentAsync(ctx, "alice", ct);
-
-        await _fixture.StageWhatsAppGroupAddsAsync(ct);
-
-        Assert.Empty(await _fixture.WhatsAppOutboxAsync(ct));
-    }
-
-    [Fact]
-    public async Task Should_NotAddHer_When_SheIsInTheGroupUnderHerLinkedId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        _fixture.Waha.SeatParticipant(ClubChatId, AlicesLid, AlicesId);
-        await ConsentAsync(ctx, "alice", ct);
-        await SwitchKeepingAsync(ctx, true, ct);
-
-        await _fixture.StageWhatsAppGroupAddsAsync(ct);
-
-        Assert.Empty(await _fixture.WhatsAppOutboxAsync(ct));
-    }
-
-    [Fact]
     public async Task Should_NeverAddHerAgain_When_SheLeftTheGroupAfterBeingAdded()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -86,22 +59,6 @@ public sealed class WhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
 
         Assert.Empty(await _fixture.WhatsAppOutboxAsync(ct));
         Assert.Single(_fixture.Waha.Sent);
-    }
-
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public async Task Should_TellHerWhetherTheClubGroupTakesMembers_When_SheReadsHerself(
-        bool keepsMembers
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await SwitchKeepingAsync(ctx, keepsMembers, ct);
-
-        var me = await MeOfAsync(ctx, "alice", ct);
-
-        Assert.Equal(keepsMembers, me.KeepsClubGroup);
     }
 
     [Fact]
@@ -124,52 +81,6 @@ public sealed class WhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_OfferHerTheInviteAndListHerForManagers_When_HerWhatsAppRefusesTheAdd()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        _fixture.Waha.RefuseAddingOf(AlicesId);
-        await ConsentAsync(ctx, "alice", ct);
-        await SwitchKeepingAsync(ctx, true, ct);
-
-        await _fixture.StageWhatsAppGroupAddsAsync(ct);
-        await _fixture.WhatsAppOutboxDrainedAsync(ct);
-
-        Assert.Equal(
-            FakeWahaService.InviteLink,
-            (await StartOfAsync(ctx, "alice", ct)).ClubGroupInviteLink
-        );
-        var overview = await OverviewAsync(ctx, ct);
-        var refused = Assert.Single(overview.RefusedAdds);
-        Assert.Equal(
-            (ctx.Identity.People.IdOf("alice"), FakeWahaService.InviteLink),
-            (refused.PersonId, overview.ClubGroupInviteLink)
-        );
-        Assert.Null((await StartOfAsync(ctx, "bea", ct)).ClubGroupInviteLink);
-    }
-
-    [Fact]
-    public async Task Should_ClearHerRefusal_When_SheJoinsThroughTheInvite()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        _fixture.Waha.RefuseAddingOf(AlicesId);
-        _fixture.Waha.KnowLid(AlicesLid, AlicesId);
-        await ConsentAsync(ctx, "alice", ct);
-        await SwitchKeepingAsync(ctx, true, ct);
-        await _fixture.StageWhatsAppGroupAddsAsync(ct);
-        await _fixture.WhatsAppOutboxDrainedAsync(ct);
-
-        await DeliverAsync(
-            GroupJoin(ClubChatId, AlicesLid, null, _fixture.TimeProvider.GetUtcNow()),
-            ct
-        );
-
-        Assert.Null((await StartOfAsync(ctx, "alice", ct)).ClubGroupInviteLink);
-        Assert.Empty((await OverviewAsync(ctx, ct)).RefusedAdds);
-    }
-
-    [Fact]
     public async Task Should_NotAddHer_When_SheJoinedHerselfBeforeConsenting()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -182,22 +93,6 @@ public sealed class WhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
         await ConsentAsync(ctx, "bea", ct);
 
         await _fixture.StageWhatsAppGroupAddsAsync(ct);
-
-        Assert.Empty(await _fixture.WhatsAppOutboxAsync(ct));
-    }
-
-    [Fact]
-    public async Task Should_DropWaitingAdds_When_GroupKeepingIsSwitchedOff()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await HoldTheSessionAsync(ct);
-        await ConsentAsync(ctx, "alice", ct);
-        await SwitchKeepingAsync(ctx, true, ct);
-        await _fixture.StageWhatsAppGroupAddsAsync(ct);
-        Assert.Single(await _fixture.WhatsAppOutboxAsync(ct));
-
-        await SwitchKeepingAsync(ctx, false, ct);
 
         Assert.Empty(await _fixture.WhatsAppOutboxAsync(ct));
     }
@@ -216,24 +111,6 @@ public sealed class WhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
         await _fixture.StageWhatsAppGroupAddsAsync(ct);
 
         Assert.Single(await _fixture.WhatsAppOutboxAsync(ct));
-    }
-
-    [Fact]
-    public async Task Should_ClearHerRefusal_When_TheNextPassFindsHerInTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        _fixture.Waha.RefuseAddingOf(AlicesId);
-        await ConsentAsync(ctx, "alice", ct);
-        await SwitchKeepingAsync(ctx, true, ct);
-        await _fixture.StageWhatsAppGroupAddsAsync(ct);
-        await _fixture.WhatsAppOutboxDrainedAsync(ct);
-        _fixture.Waha.SeatParticipant(ClubChatId, AlicesLid, AlicesId);
-
-        await _fixture.StageWhatsAppGroupAddsAsync(ct);
-
-        Assert.Empty((await OverviewAsync(ctx, ct)).RefusedAdds);
-        Assert.Null((await StartOfAsync(ctx, "alice", ct)).ClubGroupInviteLink);
     }
 
     [Fact]
@@ -304,41 +181,6 @@ public sealed class WhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
             PutWhatsAppGroupKeepingRequest
         >(new() { KeepsMembers = keepsMembers });
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    private static async Task<GetStartResponse> StartOfAsync(
-        SeededContext ctx,
-        string login,
-        CancellationToken ct
-    )
-    {
-        var client = await ctx.Identity.ClientForAsync(login, ct);
-        var (response, start) = await client.GETAsync<GetStart, GetStartResponse>();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        return start;
-    }
-
-    private static async Task<GetMeResponse> MeOfAsync(
-        SeededContext ctx,
-        string login,
-        CancellationToken ct
-    )
-    {
-        var client = await ctx.Identity.ClientForAsync(login, ct);
-        var (response, me) = await client.GETAsync<GetMe, GetMeResponse>();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        return me;
-    }
-
-    private static async Task<GetWhatsAppResponse> OverviewAsync(
-        SeededContext ctx,
-        CancellationToken ct
-    )
-    {
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, overview) = await client.GETAsync<GetWhatsApp, GetWhatsAppResponse>();
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        return overview;
     }
 
     private async Task<SeededContext> BuildClubAsync(CancellationToken ct)

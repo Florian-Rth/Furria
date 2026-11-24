@@ -6,7 +6,6 @@ namespace Furria.Api.Tests.Management;
 internal static class SessionLogoSeeds
 {
     internal const string Keeper = "clara";
-    internal const string Member = "max";
     internal const string Running = "laufende";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
@@ -19,9 +18,6 @@ internal static class SessionLogoSeeds
                         .AddPerson(Keeper, "Clara", "Chronik")
                         .AddAccount(Keeper)
                         .AddMembership("clara-first", Keeper, JoinedIn2017)
-                        .AddPerson(Member, "Max", "Mitglied")
-                        .AddAccount(Member)
-                        .AddMembership("max-first", Member, JoinedIn2017)
                 )
                 .Roles(roles =>
                     roles.AddRoleWithHolder(

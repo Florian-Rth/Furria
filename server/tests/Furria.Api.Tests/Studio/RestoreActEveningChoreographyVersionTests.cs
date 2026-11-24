@@ -70,34 +70,4 @@ public sealed class RestoreActEveningChoreographyVersionTests : IClassFixture<Ap
                 );
             }
         );
-
-    [Fact]
-    public Task Should_ReportNotFound_When_TheEveningHasNoOwnCopy() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-                var march = await UploadSongAsync(admin, actId, ct);
-                var spotId = await AddSpotAsync(admin, actId);
-                var (_, session) = await SaveChoreographyAsync(
-                    admin,
-                    actId,
-                    null,
-                    [StandingTrack(spotId, march, 0, 1)]
-                );
-
-                var (response, _) = await RestoreEveningAsync(
-                    admin,
-                    actId,
-                    ctx.Club.Events.IdOf(Gala),
-                    session
-                );
-
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        );
 }

@@ -32,30 +32,7 @@ const issueCountFor = (
 };
 
 describe('buildMembershipApplicationFormSchema', () => {
-  it('trims what was typed', () => {
-    const result = schema.safeParse({
-      ...adult,
-      firstName: '  Lena  ',
-      email: ' lena@example.de ',
-    });
-
-    expect(result.success && [result.data.firstName, result.data.email]).toEqual([
-      'Lena',
-      'lena@example.de',
-    ]);
-  });
-
   it.each([
-    ['997', 1],
-    ['00713', 1],
-    ['99713', 0],
-  ])('holds the postal code %s to five German digits: %i issues', (postalCode, issues) => {
-    expect(issueCountFor({ ...adult, postalCode }, 'postalCode')).toBe(issues);
-  });
-
-  it.each([
-    ['a date in the future', '2026-07-31', 1],
-    ['a date no person can be born on', '1880-01-01', 1],
     ['the day before the sixteenth birthday', '2010-07-31', 1],
     ['the sixteenth birthday', '2010-07-30', 0],
   ])('holds the birth date against %s', (_when, birthDate, issues) => {

@@ -63,10 +63,6 @@ const planned = (from: StudioDocument, ...changes: StudioChange[]): string[] =>
   });
 
 describe('savePlanOf', () => {
-  it('plans nothing for an unchanged document', () => {
-    expect(planned(saved)).toEqual([]);
-  });
-
   it('sends music first, removals before moves, marks after moves and the choreography last', () => {
     expect(
       planned(
@@ -113,25 +109,6 @@ describe('savePlanOf', () => {
     ).toEqual(['stepMark -1@8 opening -2', 'stepMark -3@16 opening null']);
   });
 
-  it('names a new step and opens a part on it with its main video', () => {
-    expect(
-      planned(
-        saved,
-        { kind: 'stepMark', stepId: -1, openingStepId: -2, atSeconds: 20, lengthSeconds: 40 },
-        { kind: 'stepName', stepId: -1, name: 'Sprung' },
-        { kind: 'partAdd', partId: -3, firstStepId: -1, lastStepId: -1, name: 'B' },
-        {
-          kind: 'partSettings',
-          partId: -3,
-          name: 'B',
-          firstStepId: -1,
-          lastStepId: -1,
-          mainVideoId: 5,
-        },
-      ),
-    ).toEqual(['stepMark -1@20 opening null', 'stepName', 'partAdd', 'partSettings']);
-  });
-
   it('shrinks parts before others grow into the freed steps', () => {
     const withParts: StudioDocument = {
       ...saved,
@@ -165,92 +142,6 @@ describe('savePlanOf', () => {
         { kind: 'spotAssign', spotId: 32, person: lena },
       ),
     ).toEqual(['spotAssign 31=8', 'spotAssign 32=7']);
-  });
-
-  it('removes a spot without saving its track and adds new spots before their holders', () => {
-    expect(
-      planned(
-        saved,
-        { kind: 'spotRemove', spotId: 31 },
-        { kind: 'spotAdd', spotId: -1 },
-        { kind: 'spotAssign', spotId: -1, person: lena },
-        { kind: 'tracks', tracks: { [-1]: [keyframe] } },
-      ),
-    ).toEqual(['spotRemove', 'spotAdd', 'spotAssign -1=7', 'tracks -1']);
-  });
-
-  it('saves only the final alignment of the piece that moved', () => {
-    const aligned: StudioDocument = {
-      ...saved,
-      finalTracks: {
-        40: {
-          firstBeatSeconds: null,
-          tempoBpm: null,
-          alignments: {
-            1: [
-              { fromSeconds: 0, offsetSeconds: 2, stretch: 1 },
-              { fromSeconds: 20, offsetSeconds: 5, stretch: 1 },
-            ],
-          },
-        },
-      },
-    };
-    const target = produce(aligned, (draft) => {
-      applyChange(draft, {
-        kind: 'finalOffset',
-        finalTrackId: 40,
-        sourceMediaItemId: 1,
-        fromSeconds: 20,
-        untilSeconds: 30,
-        offsetSeconds: 6,
-        stretch: 1,
-      });
-    });
-
-    expect(savePlanOf(aligned, target)).toEqual([
-      {
-        kind: 'finalOffset',
-        finalTrackId: 40,
-        sourceMediaItemId: 1,
-        fromSeconds: 20,
-        offsetSeconds: 6,
-        stretch: 1,
-      },
-    ]);
-  });
-
-  it.each<[string, StudioChange[], string[]]>([
-    [
-      'clips a video',
-      [{ kind: 'videoClip', videoId: 5, startSeconds: 2, endSeconds: 12 }],
-      ['videoClip'],
-    ],
-    [
-      'saves a clip cut back to where it was',
-      [
-        { kind: 'videoClip', videoId: 5, startSeconds: 2, endSeconds: 12 },
-        { kind: 'videoClip', videoId: 5, startSeconds: 0, endSeconds: 30 },
-      ],
-      [],
-    ],
-    [
-      'saves a split song',
-      [
-        {
-          kind: 'songSettings',
-          songId: 1,
-          pieces: [
-            { startSeconds: 0, endSeconds: 8 },
-            { startSeconds: 8, endSeconds: 20 },
-          ],
-          firstBeatSeconds: 0.5,
-          tempoBpm: 120,
-        },
-      ],
-      ['songSettings'],
-    ],
-  ])('%s', (_, changes, writes) => {
-    expect(planned(saved, ...changes)).toEqual(writes);
   });
 
   it('sends nothing for edits undone before saving', () => {

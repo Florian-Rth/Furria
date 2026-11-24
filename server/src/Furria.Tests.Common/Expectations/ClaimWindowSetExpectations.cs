@@ -31,12 +31,6 @@ public sealed class ClaimWindowSetExpectations
             }
         );
 
-    public Expected ToHaveLatestClosedAt(DateTimeOffset closedAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(closedAt, (await LatestAsync(dbContext, ct)).ClosedAt)
-        );
-
     private static Task<ClaimWindow> LatestAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext
             .ClaimWindows.AsNoTracking()

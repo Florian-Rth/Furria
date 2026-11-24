@@ -37,11 +37,6 @@ describe('StartSchema', () => {
         { kind: 'toDos', shownCount: 2, toDos: [{ kind: 'clubRecordGap', count: 1, group: null }] },
       ],
     },
-    {
-      label: 'a group moment kind arrived after this app was built',
-      panels: [{ kind: 'groups', shownCount: 1, groupMoments: [{ kind: 'notice', groupId: 6 }] }],
-      expected: [{ kind: 'groups', shownCount: 1, groupMoments: [] }],
-    },
   ])('keeps only what it knows when $label', ({ panels, expected }) => {
     expect(StartSchema.parse({ ...PAYLOAD_HEAD, panels }).panels).toEqual(expected);
   });

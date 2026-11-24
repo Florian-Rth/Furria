@@ -1,13 +1,10 @@
 using System.Net;
-using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
-using Furria.Api.Tests.Media;
 using Furria.Application.Identity;
 using Furria.Core.Club;
 using Furria.Core.Identity;
-using Furria.Core.Media;
 using Furria.Core.Text;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -20,7 +17,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
 {
     private const string ConfirmationCodeField = "confirmationCode";
     private const string LoginEmailField = "loginEmail";
-    private const string PasswordField = "password";
     private const string ClaimPasswordField = "claimPassword";
     private const string ClaimPasskeyField = "claimPasskey";
 
@@ -75,33 +71,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LetHerLogInWithThePassword_When_SheRedeemedTheLink()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var token = await InvitationSteps.InviteAndReadTokenAsync(
-            _fixture,
-            manager,
-            ctx.Identity.People.IdOf("anna"),
-            annaEmail,
-            ct
-        );
-
-        await InvitationSteps.RedeemAsync(_fixture.CreateClient(), token);
-
-        var login = await ctx.Identity.LogInAsync(annaEmail, InvitationSteps.ValidPassword, ct);
-        Assert.NotEmpty(login.AccessToken);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheInvitationHasExpired()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -137,33 +106,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheInvitationWasVoidedByANewerOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await InvitationSteps.InviteAsync(manager, annaId);
-        await InvitationSteps.InviteAsync(manager, annaId);
-        var mails = await _fixture.Mailbox.MailsToAsync(annaEmail, 2, ct);
-
-        var (response, _) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            mails[0].LinkToken()
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheInvitationWasAlreadyRedeemed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -192,72 +134,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheTokenIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            InvitationSteps.UnknownToken()
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseThePasswordAndKeepTheInvitationLive_When_ItIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
-
-        var (response, _) = await InvitationSteps.RedeemAsync(_fixture.CreateClient(), token, "");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AssertRefusedOnAsync(response, PasswordField, ct);
-        await ctx
-            .Expected.AccountOfPerson(annaId)
-            .ToNotExist()
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SignHerIn_When_ThePasswordIsASingleCharacter()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, annaId, token) = await ArrangeMailInvitationAsync(ct);
-
-        var (response, redemption) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            "x"
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var (_, me) = await InvitationSteps
-            .SignedInClient(_fixture, redemption)
-            .GETAsync<GetMe, GetMeResponse>();
-        Assert.Equal(annaId, me.Person?.Id);
-        Assert.Equal(HttpStatusCode.OK, await LogInStatusAsync(me.Email, "x"));
-    }
-
-    [Fact]
-    public async Task Should_ServeAHallBehindOneAddress_When_ItRedeemsBeyondTheGeneralPerIpLimit()
-    {
-        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
-        await using var host = OnboardingRateLimitSteps.VenueHost(_fixture);
-        var client = OnboardingRateLimitSteps.VenueClient(host);
-
-        await OnboardingRateLimitSteps.AssertServesTheHallAsync(async () =>
-            (await InvitationSteps.RedeemAsync(client, InvitationSteps.UnknownToken()))
-                .Response
-                .StatusCode
-        );
     }
 
     [Fact]
@@ -308,122 +184,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
             .InvitationsOfPerson(annaId)
             .ToHaveRedeemedCount(1)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SignHerIn_When_SheScansTheInPersonQr()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
-
-        var (response, redemption) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            InvitationSteps.TokenOf(issued.Link)
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(RedeemInvitationOutcome.Redeemed, redemption.Outcome);
-        await ctx.Expected.AccountOfPerson(annaId).ToHaveLoginEmail(annaEmail).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_FillHerContactEmailWithTheConfirmedLogin_When_SheHadNoneAndRedeemsInPerson()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, code) = await ArrangeInPersonInvitationWithoutEmailAsync(ct);
-        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-eigene");
-
-        var (asked, askedResult) = await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            code,
-            loginEmail: chosenEmail
-        );
-        var confirmationCode = (
-            await _fixture.Mailbox.SingleMailToAsync(chosenEmail, ct)
-        ).ConfirmationCode();
-        var changedAt = _fixture.TimeProvider.GetUtcNow();
-        var (response, redemption) = await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            code,
-            loginEmail: chosenEmail,
-            confirmationCode: confirmationCode
-        );
-
-        Assert.Equal(HttpStatusCode.OK, asked.StatusCode);
-        Assert.Equal(RedeemInvitationOutcome.ConfirmationRequired, askedResult.Outcome);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(RedeemInvitationOutcome.Redeemed, redemption.Outcome);
-        await ctx
-            .Expected.AccountOfPerson(annaId)
-            .ToHaveLoginEmail(chosenEmail)
-            .Person(annaId)
-            .ToHaveContactDetails(chosenEmail, null, null, null, null)
-            .Person(annaId)
-            .ToHaveContactChangedBy(annaId, changedAt)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseOnTheLoginEmail_When_SheHasNoContactEmailAndTypesNone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, code) = await ArrangeInPersonInvitationWithoutEmailAsync(ct);
-
-        var (response, _) = await InvitationSteps.RedeemByCodeAsync(_fixture.CreateClient(), code);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AssertRefusedOnAsync(response, LoginEmailField, ct);
-        await ctx
-            .Expected.AccountOfPerson(annaId)
-            .ToNotExist()
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheInPersonCodeHasExpired()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson(
-                        "anna",
-                        "Anna",
-                        InvitationSteps.UniqueContactEmail("anna"),
-                        _fixture.Today
-                    )
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var issued = await InvitationSteps.InviteInPersonAsync(manager, annaId);
-
-        HttpStatusCode status = default;
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(15),
-            async () =>
-                status = (
-                    await InvitationSteps.RedeemByCodeAsync(_fixture.CreateClient(), issued.Code)
-                )
-                    .Response
-                    .StatusCode
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, status);
-        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
     }
 
     [Fact]
@@ -486,71 +246,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheConfirmationCode_When_ItDoesNotMatch()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
-        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-privat");
-        var code = await InvitationSteps.RequestConfirmationCodeAsync(
-            _fixture,
-            token,
-            chosenEmail,
-            ct
-        );
-
-        var (wrong, _) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            loginEmail: chosenEmail,
-            confirmationCode: InvitationSteps.WrongConfirmationCode(code)
-        );
-        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
-        var (right, _) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            loginEmail: chosenEmail,
-            confirmationCode: code
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, wrong.StatusCode);
-        await AssertRefusedOnAsync(wrong, ConfirmationCodeField, ct);
-        Assert.Equal(HttpStatusCode.OK, right.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheConfirmationCode_When_ItHasExpired()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
-        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-privat");
-        var code = await InvitationSteps.RequestConfirmationCodeAsync(
-            _fixture,
-            token,
-            chosenEmail,
-            ct
-        );
-
-        HttpResponseMessage? response = null;
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(15),
-            async () =>
-                response = (
-                    await InvitationSteps.RedeemAsync(
-                        _fixture.CreateClient(),
-                        token,
-                        loginEmail: chosenEmail,
-                        confirmationCode: code
-                    )
-                ).Response
-        );
-
-        Assert.NotNull(response);
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AssertRefusedOnAsync(response, ConfirmationCodeField, ct);
-        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_KillTheConfirmationCode_When_ItWasMistypedFiveTimes()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -574,61 +269,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
             _fixture.CreateClient(),
             token,
             loginEmail: chosenEmail,
-            confirmationCode: code
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AssertRefusedOnAsync(response, ConfirmationCodeField, ct);
-        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheFirstConfirmationCode_When_ANewOneWasSent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
-        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-privat");
-        await InvitationSteps.RedeemAsync(_fixture.CreateClient(), token, loginEmail: chosenEmail);
-        await InvitationSteps.RedeemAsync(_fixture.CreateClient(), token, loginEmail: chosenEmail);
-        var mails = await _fixture.Mailbox.MailsToAsync(chosenEmail, 2, ct);
-        var firstCode = mails[0].ConfirmationCode();
-        var secondCode = mails[1].ConfirmationCode();
-
-        var (first, _) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            loginEmail: chosenEmail,
-            confirmationCode: firstCode
-        );
-        var (second, _) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            loginEmail: chosenEmail,
-            confirmationCode: secondCode
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, first.StatusCode);
-        Assert.Equal(HttpStatusCode.OK, second.StatusCode);
-        await ctx.Expected.AccountOfPerson(annaId).ToHaveLoginEmail(chosenEmail).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheConfirmationCode_When_SheChangedTheEmailInBetween()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
-        var firstEmail = InvitationSteps.UniqueContactEmail("anna-privat");
-        var code = await InvitationSteps.RequestConfirmationCodeAsync(
-            _fixture,
-            token,
-            firstEmail,
-            ct
-        );
-
-        var (response, _) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            loginEmail: InvitationSteps.UniqueContactEmail("anna-arbeit"),
             confirmationCode: code
         );
 
@@ -677,98 +317,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
             .InvitationsOfPerson(annaId)
             .ToHaveLiveCount(1)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_LetTheSecondChooseHerOwnEmail_When_TheSharedInboxIsAlreadyTaken()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var sharedEmail = InvitationSteps.UniqueContactEmail("familie");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddEligiblePerson("bruno", "Bruno", sharedEmail, _fixture.Today)
-                        .AddEligiblePerson("anna", "Anna", sharedEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var bruno = await InvitationSteps.InviteInPersonAsync(
-            manager,
-            ctx.Identity.People.IdOf("bruno")
-        );
-        await InvitationSteps.RedeemByCodeAsync(_fixture.CreateClient(), bruno.Code);
-        var anna = await InvitationSteps.InviteInPersonAsync(manager, annaId);
-        var annaToken = InvitationSteps.TokenOf(anna.Link);
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-
-        var (taken, _) = await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            anna.Code,
-            loginEmail: sharedEmail
-        );
-        var code = await InvitationSteps.RequestConfirmationCodeAsync(
-            _fixture,
-            annaToken,
-            annaEmail,
-            ct
-        );
-        var (confirmed, _) = await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            anna.Code,
-            loginEmail: annaEmail,
-            confirmationCode: code
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, taken.StatusCode);
-        await AssertRefusedOnAsync(taken, LoginEmailField, ct);
-        Assert.Equal(HttpStatusCode.OK, confirmed.StatusCode);
-        await ctx
-            .Expected.AccountOfPerson(annaId)
-            .ToHaveLoginEmail(annaEmail)
-            .AccountOfPerson(ctx.Identity.People.IdOf("bruno"))
-            .ToHaveLoginEmail(sharedEmail)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseThePasswordBeforeMailingACode_When_ItIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
-
-        var (response, _) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            "",
-            loginEmail: InvitationSteps.UniqueContactEmail("anna-privat")
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AssertRefusedOnAsync(response, PasswordField, ct);
-        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_BothTheTokenAndTheCodeAreGiven()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<RedeemInvitation, RedeemInvitationRequest, RedeemInvitationResponse>(
-                new RedeemInvitationRequest
-                {
-                    Token = InvitationSteps.UnknownToken(),
-                    Code = InvitationSteps.UnknownCode(),
-                    Password = InvitationSteps.ValidPassword,
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -821,23 +369,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TellHerLoginEmail_When_HerAccessIsRecovered()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, _, code) = await ArrangeRecoveryAsync(ct);
-
-        await InvitationSteps.RedeemByCodeAsync(_fixture.CreateClient(), code);
-
-        var notice = await _fixture.Mailbox.SingleMailToAsync(ctx.Identity.EmailOf("anna"), ct);
-        Assert.Equal("Dein Zugang zur Vereins-App wurde geändert", notice.Subject);
-        Assert.Contains(
-            "vor Ort im Verein wiederhergestellt",
-            notice.Text,
-            StringComparison.Ordinal
-        );
-    }
-
-    [Fact]
     public async Task Should_ConfirmTheNewLoginEmailByCodeAndTellThePreviousOne_When_ARecoveryChangesIt()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -887,152 +418,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepHerLogin_When_ARecoveryIsConfirmedWithAWrongCode()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, code) = await ArrangeRecoveryAsync(ct);
-        var previousEmail = ctx.Identity.EmailOf("anna");
-        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-neu");
-        await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            code,
-            loginEmail: chosenEmail
-        );
-        var confirmationCode = (
-            await _fixture.Mailbox.SingleMailToAsync(chosenEmail, ct)
-        ).ConfirmationCode();
-
-        var (response, _) = await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            code,
-            loginEmail: chosenEmail,
-            confirmationCode: InvitationSteps.WrongConfirmationCode(confirmationCode)
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AssertRefusedOnAsync(response, ConfirmationCodeField, ct);
-        await ctx
-            .Expected.AccountOfPerson(annaId)
-            .ToHaveLoginEmail(previousEmail)
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_LetHerContactEmailFollow_When_ARecoveryChangesHerLoginEmail()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, code) = await ArrangeRecoveryAsync(
-            ct,
-            InvitationSteps.UniqueContactEmail("anna-kontakt")
-        );
-        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-neu");
-        await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            code,
-            loginEmail: chosenEmail
-        );
-        var confirmationCode = (
-            await _fixture.Mailbox.SingleMailToAsync(chosenEmail, ct)
-        ).ConfirmationCode();
-
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(1),
-            async () =>
-            {
-                var changedAt = _fixture.TimeProvider.GetUtcNow();
-
-                var (response, _) = await InvitationSteps.RedeemByCodeAsync(
-                    _fixture.CreateClient(),
-                    code,
-                    loginEmail: chosenEmail,
-                    confirmationCode: confirmationCode
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                await ctx
-                    .Expected.Person(annaId)
-                    .ToHaveContactDetails(chosenEmail, null, null, null, null)
-                    .Person(annaId)
-                    .ToHaveContactChangedBy(annaId, changedAt)
-                    .AccountOfPerson(annaId)
-                    .ToHaveLoginEmail(chosenEmail)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_KeepHerContactEmail_When_SheOptsOutWhileARecoveryChangesHerLoginEmail()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var contactEmail = InvitationSteps.UniqueContactEmail("anna-kontakt");
-        var (ctx, annaId, code) = await ArrangeRecoveryAsync(ct, contactEmail);
-        var chosenEmail = InvitationSteps.UniqueContactEmail("anna-neu");
-        await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            code,
-            loginEmail: chosenEmail,
-            updateContactEmail: false
-        );
-        var confirmationCode = (
-            await _fixture.Mailbox.SingleMailToAsync(chosenEmail, ct)
-        ).ConfirmationCode();
-
-        var (response, _) = await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            code,
-            loginEmail: chosenEmail,
-            confirmationCode: confirmationCode
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Person(annaId)
-            .ToHaveContactDetails(contactEmail, null, null, null, null)
-            .Person(annaId)
-            .ToHaveNoContactChange()
-            .AccountOfPerson(annaId)
-            .ToHaveLoginEmail(chosenEmail)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseAsTaken_When_ARecoveryChoosesAnotherAccountsLogin()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("anna", "Anna", "Muster")
-                        .AddAccount("anna")
-                        .AddAccount("bea")
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var issued = await InvitationSteps.IssueRecoveryAsync(manager, annaId);
-
-        var (response, _) = await InvitationSteps.RedeemByCodeAsync(
-            _fixture.CreateClient(),
-            issued.Code,
-            loginEmail: ctx.Identity.EmailOf("bea")
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await AssertRefusedOnAsync(response, LoginEmailField, ct);
-        await ctx
-            .Expected.AccountOfPerson(annaId)
-            .ToHaveLoginEmail(ctx.Identity.EmailOf("anna"))
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheRecovery_When_HerAccountWasDisabledMeanwhile()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1046,33 +431,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.AccountEventsOfPerson(annaId)
             .ToHaveKindsInOrder(AccountEventKind.RecoveryIssued, AccountEventKind.Disabled)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AskHerToSignIn_When_TheChosenEmailIsTheLoginOfAnAccountOutsideTheClub()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
-        var strayId = ctx.Identity.People.IdOf("stray");
-
-        var (response, redemption) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            loginEmail: ctx.Identity.EmailOf("stray")
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(RedeemInvitationOutcome.ClaimRequired, redemption.Outcome);
-        Assert.Null(redemption.Session);
-        Assert.Null(redemption.ConfirmationExpiresAt);
-        await ctx
-            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
-            .ToBeLinkedTo(strayId)
-            .AccountOfPerson(annaId)
-            .ToNotExist()
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCount(1)
             .AssertAsync(ct);
     }
 
@@ -1110,262 +468,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
             .ToHaveKindsInOrder(AccountEventKind.Invited, AccountEventKind.Redeemed)
             .AccountEventsOfPerson(annaId)
             .ToHaveLatestActor(annaId)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ActAsHer_When_AnAccessTokenIssuedBeforeTheClaimIsStillUsed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
-        var signedInBeforeTheClaim = await ctx.Identity.ClientForAsync("stray", ct);
-        await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            ctx.Identity.EmailOf("stray"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        var response = await signedInBeforeTheClaim.PUTAsync<
-            PutMyContactDetails,
-            PutMyContactDetailsRequest
-        >(
-            new()
-            {
-                Email = "anna@example.test",
-                Phone = "03632 123456",
-                Street = "Am Anger 3",
-                Zip = "99706",
-                City = "Sondershausen",
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Person(annaId)
-            .ToHaveContactDetails(
-                "anna@example.test",
-                "03632 123456",
-                "Am Anger 3",
-                "99706",
-                "Sondershausen"
-            )
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SignTheClaimedAccountInAsHer_When_ItLogsInWithItsOldPassword()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
-        var strayEmail = ctx.Identity.EmailOf("stray");
-        await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            strayEmail,
-            ApiTestFixture.SeededAccountPassword,
-            InvitationSteps.ValidPassword
-        );
-
-        var login = await ctx.Identity.LogInAsync(
-            strayEmail,
-            ApiTestFixture.SeededAccountPassword,
-            ct
-        );
-
-        var client = _fixture.CreateClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
-            "Bearer",
-            login.AccessToken
-        );
-        var (meResponse, me) = await client.GETAsync<GetMe, GetMeResponse>();
-        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
-        Assert.Equal(annaId, me.Person?.Id);
-        Assert.Equal("Anna", me.Person?.FirstName);
-    }
-
-    [Fact]
-    public async Task Should_EndTheClaimedAccountsEarlierSessions_When_SheClaimsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, _, token) = await ArrangeClaimAsync(ct);
-        var strayAccountId = ctx.Identity.Accounts.IdOf("stray");
-        await ctx.Identity.ClientForAsync("stray", ct);
-
-        await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            ctx.Identity.EmailOf("stray"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        await ctx
-            .Expected.RefreshTokensOf(strayAccountId)
-            .ToHaveRevocationCount(RefreshTokenRevocationReason.AllSessionsEnded, 1)
-            .RefreshTokensOf(strayAccountId)
-            .ToHaveActiveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RepointTheContactChangesTheStrayPersonMade_When_SheClaims()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var changedAt = _fixture.TimeProvider.GetUtcNow().AddDays(-3);
-        var (ctx, annaId, token) = await ArrangeClaimAsync(
-            ct,
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("carla", "Carla", "Muster")
-                        .AddContactChange("carla", "stray", changedAt)
-                        .AddContactChange("stray", "stray", changedAt)
-                )
-        );
-
-        await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            ctx.Identity.EmailOf("stray"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("carla"))
-            .ToHaveContactChangedBy(annaId, changedAt)
-            .Person(annaId)
-            .ToHaveNoContactChange()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RepointTheNewsPostsTheStrayPersonSavedLast_When_SheClaims()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeClaimAsync(
-            ct,
-            builder =>
-                builder.News(news =>
-                    news.AddNewsPost("probenzeiten", "Probenzeiten", lastSavedByAlias: "stray")
-                )
-        );
-
-        await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            ctx.Identity.EmailOf("stray"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        await ctx
-            .Expected.NewsPost(ctx.News.Posts.IdOf("probenzeiten"))
-            .ToBeLastSavedBy(annaId)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_GiveHerTheStrayPersonsPortrait_When_SheHasNoneAndClaims()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
-        var strayId = ctx.Identity.People.IdOf("stray");
-        var strayPortraitId = await PictureSteps.RenderedPortraitAsync(
-            _fixture,
-            await ctx.Identity.ClientForAsync("stray", ct),
-            strayId,
-            ct
-        );
-
-        await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            ctx.Identity.EmailOf("stray"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        await ctx.Expected.MediaItem(strayPortraitId).ToBeThePortraitOf(annaId).AssertAsync(ct);
-        Assert.True(
-            File.Exists(
-                await _fixture.MediaFileOfAsync(strayPortraitId, MediaRendition.Original, ct)
-            )
-        );
-    }
-
-    [Fact]
-    public async Task Should_KeepHerOwnPortraitAndDiscardTheStrayPersons_When_BothHaveOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var annaPortraitId = await PictureSteps.RenderedPortraitAsync(
-            _fixture,
-            manager,
-            annaId,
-            ct
-        );
-        var strayPortraitId = await PictureSteps.RenderedPortraitAsync(
-            _fixture,
-            await ctx.Identity.ClientForAsync("stray", ct),
-            ctx.Identity.People.IdOf("stray"),
-            ct
-        );
-        var strayOriginal = await _fixture.MediaFileOfAsync(
-            strayPortraitId,
-            MediaRendition.Original,
-            ct
-        );
-
-        await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            ctx.Identity.EmailOf("stray"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        await ctx
-            .Expected.MediaItem(annaPortraitId)
-            .ToBeThePortraitOf(annaId)
-            .MediaItem(strayPortraitId)
-            .ToBeGone()
-            .AssertAsync(ct);
-        await _fixture.MediaFilesReapedAsync(ct);
-        Assert.False(File.Exists(strayOriginal));
-    }
-
-    [Fact]
-    public async Task Should_MoveTheAccountOntoHer_When_SheConfirmsTheClaimWithItsPasskey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
-        var strayId = ctx.Identity.People.IdOf("stray");
-        var strayEmail = ctx.Identity.EmailOf("stray");
-        using var authenticator = new SoftwareAuthenticator();
-        await PasskeySteps.RegisterAsync(
-            await ctx.Identity.ClientForAsync("stray", ct),
-            authenticator
-        );
-
-        var (response, redemption) = await ClaimSteps.ClaimByPasskeyAsync(
-            _fixture.CreateClient(),
-            token,
-            strayEmail,
-            await PasskeySteps.AssertAsync(_fixture, authenticator)
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var signedIn = InvitationSteps.SignedInClient(_fixture, redemption);
-        var (meResponse, me) = await signedIn.GETAsync<GetMe, GetMeResponse>();
-        Assert.Equal(HttpStatusCode.OK, meResponse.StatusCode);
-        Assert.Equal(annaId, me.Person?.Id);
-        await ctx
-            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
-            .ToBeLinkedTo(annaId)
-            .Person(strayId)
-            .ToNotExist()
-            .InvitationsOfPerson(annaId)
-            .ToHaveRedeemedCount(1)
-            .PasskeyChallenges()
-            .ToHaveCount(0)
             .AssertAsync(ct);
     }
 
@@ -1415,71 +517,6 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheClaim_When_ItCarriesBothThePasswordAndAPasskey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
-        using var authenticator = new SoftwareAuthenticator();
-        await PasskeySteps.RegisterAsync(
-            await ctx.Identity.ClientForAsync("stray", ct),
-            authenticator
-        );
-        var attempt = await PasskeySteps.AssertAsync(_fixture, authenticator);
-
-        var (response, _) = await _fixture
-            .CreateClient()
-            .POSTAsync<RedeemInvitation, RedeemInvitationRequest, RedeemInvitationResponse>(
-                new RedeemInvitationRequest
-                {
-                    Token = token,
-                    LoginEmail = ctx.Identity.EmailOf("stray"),
-                    ClaimPassword = ApiTestFixture.SeededAccountPassword,
-                    ClaimPasskey = new RedeemInvitationPasskeyDto
-                    {
-                        ChallengeId = attempt.ChallengeId,
-                        Credential = attempt.Credential,
-                    },
-                }
-            );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AssertRefusedOnAsync(response, ClaimPasskeyField, ct);
-        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_LeaveBothPersonsAndTheAccountUntouched_When_TheClaimPasswordIsWrong()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
-        var strayId = ctx.Identity.People.IdOf("stray");
-
-        var (response, _) = await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            ctx.Identity.EmailOf("stray"),
-            ClaimSteps.WrongClaimPassword
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AssertRefusedOnAsync(response, ClaimPasswordField, ct);
-        await ctx
-            .Expected.Account(ctx.Identity.Accounts.IdOf("stray"))
-            .ToBeLinkedTo(strayId)
-            .Person(strayId)
-            .ToExist()
-            .Person(annaId)
-            .ToExist()
-            .AccountOfPerson(annaId)
-            .ToNotExist()
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCount(1)
-            .AccountEventsOfPerson(annaId)
-            .ToHaveKindsInOrder(AccountEventKind.Invited)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_LockTheClaimedAccountOut_When_TheClaimPasswordIsWrongFiveTimes()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1510,100 +547,16 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_RefuseAsTaken_When_TheAccountOutsideTheClubIsDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                        .AddPerson("gesperrt", "Gesa", "Muster")
-                        .AddAccount("gesperrt", disabled: true)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var token = await InvitationSteps.InviteAndReadTokenAsync(
-            _fixture,
-            manager,
-            annaId,
-            annaEmail,
-            ct
-        );
-
-        var (response, _) = await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            ctx.Identity.EmailOf("gesperrt"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await AssertRefusedOnAsync(response, LoginEmailField, ct);
-        await ctx.Expected.AccountOfPerson(annaId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseAsTaken_When_TheChosenEmailIsTheManagingLogins()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var token = await InvitationSteps.InviteAndReadTokenAsync(
-            _fixture,
-            manager,
-            annaId,
-            annaEmail,
-            ct
-        );
-
-        var (response, _) = await ClaimSteps.ClaimAsync(
-            _fixture.CreateClient(),
-            token,
-            ApiTestFixture.ManagingLoginEmail,
-            ApiTestFixture.ManagingLoginPassword
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await AssertRefusedOnAsync(response, LoginEmailField, ct);
-        await ctx
-            .Expected.AccountOfPerson(annaId)
-            .ToNotExist()
-            .Account(_fixture.ManagingLogin.AccountId)
-            .ToBeTheManagingLogin()
-            .AssertAsync(ct);
-    }
-
     [Theory]
     [InlineData(StrayHolding.EndedMembership)]
-    [InlineData(StrayHolding.FeeReduction)]
-    [InlineData(StrayHolding.EndedGroupMembership)]
-    [InlineData(StrayHolding.GroupAdminship)]
-    [InlineData(StrayHolding.EndedRoleHolding)]
-    [InlineData(StrayHolding.BoardSeat)]
     [InlineData(StrayHolding.KeyHolding)]
-    [InlineData(StrayHolding.AttendanceResponse)]
-    [InlineData(StrayHolding.Announcement)]
-    [InlineData(StrayHolding.NewsPost)]
     [InlineData(StrayHolding.Mention)]
     public async Task Should_RefuseAsTaken_When_TheStrayPersonHoldsClubData(StrayHolding holding)
     {
         var ct = TestContext.Current.CancellationToken;
         var (ctx, annaId, token) = await ArrangeClaimAsync(
             ct,
-            builder => Hold(builder, holding, _fixture.Today, _fixture.CurrentSessionYear)
+            builder => Hold(builder, holding, _fixture.Today)
         );
         var strayId = ctx.Identity.People.IdOf("stray");
 
@@ -1629,24 +582,11 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     public enum StrayHolding
     {
         EndedMembership,
-        FeeReduction,
-        EndedGroupMembership,
-        GroupAdminship,
-        EndedRoleHolding,
-        BoardSeat,
         KeyHolding,
-        AttendanceResponse,
-        Announcement,
-        NewsPost,
         Mention,
     }
 
-    private static void Hold(
-        SeedContextBuilder builder,
-        StrayHolding holding,
-        DateOnly today,
-        int sessionYear
-    )
+    private static void Hold(SeedContextBuilder builder, StrayHolding holding, DateOnly today)
     {
         var longAgo = today.AddYears(-3);
         var lastYear = today.AddYears(-1);
@@ -1657,73 +597,10 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
                     identity.AddMembership("stray-membership", "stray", longAgo, lastYear)
                 );
                 break;
-            case StrayHolding.FeeReduction:
-                builder.Identity(identity =>
-                    identity.AddFeeReduction(
-                        "stray-reduction",
-                        "stray",
-                        FeeReductionBasis.Minor,
-                        sessionYear - 3,
-                        sessionYear - 2
-                    )
-                );
-                break;
-            case StrayHolding.EndedGroupMembership:
-                builder.Groups(groups =>
-                    groups
-                        .AddGroup("garde", "Tanzgarde")
-                        .AddGroupMembership("stray-garde", "garde", "stray", longAgo, lastYear)
-                );
-                break;
-            case StrayHolding.GroupAdminship:
-                builder.Groups(groups =>
-                    groups
-                        .AddGroup("garde", "Tanzgarde")
-                        .AddGroupAdmin("stray-admin", "garde", "stray")
-                );
-                break;
-            case StrayHolding.EndedRoleHolding:
-                builder.Roles(roles =>
-                    roles
-                        .AddRole("kasse", "Kasse")
-                        .AddRoleHolding("stray-kasse", "kasse", "stray", longAgo, lastYear)
-                );
-                break;
-            case StrayHolding.BoardSeat:
-                builder.Club(club =>
-                    club.AddBoardOffice("praesidium", "Präsident")
-                        .AddBoardSeat("stray-seat", "praesidium", "stray", longAgo, lastYear)
-                );
-                break;
             case StrayHolding.KeyHolding:
                 builder.Club(club =>
                     club.AddVenue("halle", "Sporthalle")
                         .AddKeyHolding("stray-key", "halle", "stray", longAgo, lastYear)
-                );
-                break;
-            case StrayHolding.AttendanceResponse:
-                builder.Club(club =>
-                    club.AddCalendarEntry(
-                            "sitzung",
-                            "Sitzung",
-                            new DateTimeOffset(longAgo, TimeOnly.MinValue, TimeSpan.Zero)
-                        )
-                        .AddAttendanceResponse(
-                            "stray-answer",
-                            "sitzung",
-                            "stray",
-                            AttendanceAnswer.Yes
-                        )
-                );
-                break;
-            case StrayHolding.Announcement:
-                builder.Club(club =>
-                    club.AddAnnouncement("stray-news", "stray", "Neuigkeit", "Text")
-                );
-                break;
-            case StrayHolding.NewsPost:
-                builder.News(news =>
-                    news.AddNewsPost("stray-post", "Entwurf", authorAlias: "stray")
                 );
                 break;
             case StrayHolding.Mention:

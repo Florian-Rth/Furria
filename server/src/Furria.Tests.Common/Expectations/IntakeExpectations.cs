@@ -17,12 +17,6 @@ public sealed class IntakeExpectations
         _intakeId = intakeId;
     }
 
-    public Expected ToBeStartedBy(int personId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(personId, (await SingleAsync(dbContext, ct)).StartedByPersonId)
-        );
-
     public Expected ToHaveNoStarter() =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -93,17 +87,6 @@ public sealed class IntakeExpectations
                 Assert.Equal(firstName, intake.FirstName);
                 Assert.Equal(lastName, intake.LastName);
                 Assert.Equal(email, intake.Email);
-            }
-        );
-
-    public Expected ToStayOpen() =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var intake = await SingleAsync(dbContext, ct);
-                Assert.Null(intake.SubmittedAt);
-                Assert.NotNull(intake.TokenSeed);
-                AssertHoldsNothingOfHers(intake);
             }
         );
 

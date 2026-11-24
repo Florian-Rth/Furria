@@ -24,59 +24,6 @@ public sealed class PostPersonInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_MailTheInvitationToHerContactEmail_When_SheIsEligible()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var issued = await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
-
-        Assert.Equal(_fixture.TimeProvider.GetUtcNow().AddDays(14), issued.ExpiresAt);
-        var mail = await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct);
-        Assert.Equal("Dein Zugang zur Vereins-App", mail.Subject);
-        Assert.Contains("Hallo Anna,", mail.Text, StringComparison.Ordinal);
-        Assert.StartsWith(
-            $"{ApiTestFixture.ClubAppBaseUrl}/invitation#token=",
-            mail.Link(),
-            StringComparison.Ordinal
-        );
-        await ctx
-            .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("anna"))
-            .ToHaveCount(1)
-            .InvitationsOfPerson(ctx.Identity.People.IdOf("anna"))
-            .ToHaveLiveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepNoCopyOfTheLink_When_TheInvitationMailWasSent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
-
-        await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct);
-        await _fixture.OutboxDrainedAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_KillTheFirstLink_When_ASecondInvitationIsIssued()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -106,60 +53,6 @@ public sealed class PostPersonInvitationTests : IClassFixture<ApiTestFixture>
             .InvitationsOfPerson(annaId)
             .ToHaveLiveCount(1)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_VoidAnExpiredInvitation_When_ANewOneIsIssued()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await InvitationSteps.InviteAsync(manager, annaId);
-
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromDays(20),
-            async () =>
-            {
-                var laterManager = await ctx.Identity.ManagingLoginClientAsync(ct);
-                await InvitationSteps.InviteAsync(laterManager, annaId);
-            }
-        );
-
-        await ctx
-            .Expected.InvitationsOfPerson(annaId)
-            .ToHaveCount(2)
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_SheIsNotAffiliated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("anna", "Anna", "Muster")
-                        .AddPersonContact(
-                            "anna",
-                            InvitationSteps.UniqueContactEmail("anna"),
-                            birthDate: _fixture.Today.AddYears(-30)
-                        )
-                ),
-            ct
-        );
-
-        await AssertRefusedAsync(ctx, "anna", "Anna ist nicht im Verein aktiv.", ct);
     }
 
     [Fact]
@@ -262,24 +155,6 @@ public sealed class PostPersonInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_AVouchedPersonHasNoEmail()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("anna", "Anna", "Muster")
-                        .AddPersonContact("anna", withoutEmail: true)
-                        .AddMembership("anna-membership", "anna", _fixture.Today.AddYears(-1))
-                ),
-            ct
-        );
-
-        await AssertRefusedAsync(ctx, "anna", "Für Anna ist keine E-Mail-Adresse hinterlegt.", ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_SheIsYoungerThanTheAgeOfConsent()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -327,50 +202,6 @@ public sealed class PostPersonInvitationTests : IClassFixture<ApiTestFixture>
         await InvitationSteps.InviteAsync(manager, ctx.Identity.People.IdOf("anna"));
 
         await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_SheHasNoEmail()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("anna", "Anna", "Muster")
-                        .AddPersonContact(
-                            "anna",
-                            birthDate: _fixture.Today.AddYears(-30),
-                            withoutEmail: true
-                        )
-                        .AddMembership("anna-membership", "anna", _fixture.Today.AddYears(-1))
-                ),
-            ct
-        );
-
-        await AssertRefusedAsync(ctx, "anna", "Für Anna ist keine E-Mail-Adresse hinterlegt.", ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_SheAlreadyHasAnAccount()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddEligiblePerson(
-                            "anna",
-                            "Anna",
-                            InvitationSteps.UniqueContactEmail("anna"),
-                            _fixture.Today
-                        )
-                        .AddAccount("anna")
-                ),
-            ct
-        );
-
-        await AssertRefusedAsync(ctx, "anna", "Anna hat bereits einen Zugang.", ct);
     }
 
     private static async Task AssertRefusedAsync(

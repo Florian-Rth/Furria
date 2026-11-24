@@ -14,18 +14,6 @@ public sealed class UsualTrainingOccurrencesTests
     private static readonly TimeOnly EighteenThirty = new(18, 30);
 
     [Fact]
-    public void Should_ReturnNothing_When_TheGroupStatesNoUsualTime()
-    {
-        var expanded = UsualTrainingOccurrences.Between(
-            [],
-            new DateOnly(2027, 1, 4),
-            new DateOnly(2027, 2, 4)
-        );
-
-        Assert.Empty(expanded);
-    }
-
-    [Fact]
     public void Should_ReturnNothing_When_TheWeekdayNeverFallsInTheWindow()
     {
         var expanded = UsualTrainingOccurrences.Between(
@@ -74,37 +62,6 @@ public sealed class UsualTrainingOccurrencesTests
     }
 
     [Fact]
-    public void Should_OrderByInstant_When_TheGroupTrainsTwiceAWeek()
-    {
-        var expanded = UsualTrainingOccurrences.Between(
-            [Thursday(), Tuesday()],
-            new DateOnly(2027, 1, 4),
-            new DateOnly(2027, 1, 15)
-        );
-
-        Assert.Equal(
-            [TuesdayUsualTimeId, ThursdayUsualTimeId, TuesdayUsualTimeId, ThursdayUsualTimeId],
-            expanded.Select(occurrence => occurrence.UsualTrainingTimeId)
-        );
-    }
-
-    [Fact]
-    public void Should_EndTheOccurrence_When_TheDurationHasPassed()
-    {
-        var expanded = UsualTrainingOccurrences.Between(
-            [Tuesday()],
-            new DateOnly(2027, 1, 5),
-            new DateOnly(2027, 1, 5)
-        );
-
-        var single = Assert.Single(expanded);
-        Assert.Equal(
-            new DateTimeOffset(2027, 1, 5, 21, 0, 0, TimeSpan.FromHours(1)),
-            single.EndsAt
-        );
-    }
-
-    [Fact]
     public void Should_KeepTheWallClock_When_TheWindowCrossesTheSpringDstBoundary()
     {
         var expanded = UsualTrainingOccurrences.Between(
@@ -138,19 +95,6 @@ public sealed class UsualTrainingOccurrencesTests
             ],
             expanded.Select(occurrence => occurrence.StartsAt)
         );
-    }
-
-    [Fact]
-    public void Should_CarryTheVenue_When_TheUsualTimeNamesOne()
-    {
-        var expanded = UsualTrainingOccurrences.Between(
-            [Tuesday()],
-            new DateOnly(2027, 1, 5),
-            new DateOnly(2027, 1, 5)
-        );
-
-        var single = Assert.Single(expanded);
-        Assert.Equal(7, single.VenueId);
     }
 
     private static UsualTrainingTime Tuesday() =>

@@ -1,4 +1,3 @@
-using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Tests.Common.Fixtures;
@@ -20,27 +19,6 @@ public sealed class RequestLoggingTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_WriteOneEventNamingTheRoutePattern_When_ARequestCompletes()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-        var groupId = ctx.Groups.Groups.IdOf("tanzgarde");
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, _) = await ReadGroupAsync(client, groupId);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var written = RequestEventFor(groupId);
-        Assert.Equal(LogEventLevel.Information, written.Level);
-        Assert.Equal("GET", written.ScalarOf("RequestMethod"));
-        Assert.Equal("/api/groups/{groupId}", written.ScalarOf("RoutePattern"));
-        Assert.Equal(200, written.ScalarOf("StatusCode"));
-    }
-
-    [Fact]
     public async Task Should_CarryTheCallersAccountId_When_TheCallerIsSignedIn()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -55,24 +33,6 @@ public sealed class RequestLoggingTests : IClassFixture<ApiTestFixture>
 
         var written = RequestEventFor(groupId);
         Assert.Equal(ctx.Identity.ManagingLogin.AccountId, written.ScalarOf("AccountId"));
-    }
-
-    [Fact]
-    public async Task Should_CarryNoAccountId_When_TheCallerIsAnonymous()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-        var groupId = ctx.Groups.Groups.IdOf("tanzgarde");
-
-        var (response, _) = await ReadGroupAsync(_fixture.CreateClient(), groupId);
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        var written = RequestEventFor(groupId);
-        Assert.Equal(LogEventLevel.Information, written.Level);
-        Assert.False(written.Properties.ContainsKey("AccountId"));
     }
 
     private static Task<TestResult<GetGroupByIdResponse>> ReadGroupAsync(

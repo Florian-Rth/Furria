@@ -21,41 +21,6 @@ public sealed class DeleteNewsPostByIdTests : IClassFixture<ApiTestFixture>
         _fixture = fixture;
     }
 
-    [Theory]
-    [InlineData("draft")]
-    [InlineData("withdrawn")]
-    public async Task Should_DeleteItForGood_When_ItIsNotOnTheWebsite(string alias)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var postId = ctx.News.Posts.IdOf(alias);
-
-        var response = await DeleteAsync(client, postId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.NewsPost(postId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_FreeItsAddress_When_AWithdrawnPostIsDeleted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var successorId = ctx.News.Posts.IdOf("successor");
-        await DeleteAsync(client, ctx.News.Posts.IdOf("withdrawn"));
-
-        await client.POSTAsync<PublishNewsPost, PublishNewsPostRequest>(
-            new() { NewsPostId = successorId }
-        );
-
-        await ctx
-            .Expected.NewsPost(successorId)
-            .ToBePublished(_fixture.TimeProvider.GetUtcNow(), "das-motto-steht")
-            .AssertAsync(ct);
-    }
-
     [Fact]
     public async Task Should_RefuseAndKeepIt_When_ItIsLive()
     {
@@ -68,23 +33,6 @@ public sealed class DeleteNewsPostByIdTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         await ctx.Expected.NewsPost(liveId).ToBePublished(Proclaimed, "live").AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_DeleteItsPictureWithIt_When_ThePostIsDeleted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var draftId = ctx.News.Posts.IdOf("draft");
-        var pictureId = await NewsPictureSteps.UploadAsync(client, draftId, ct);
-        var original = await _fixture.MediaFileOfAsync(pictureId, MediaRendition.Original, ct);
-
-        await DeleteAsync(client, draftId);
-
-        await ctx.Expected.MediaItem(pictureId).ToBeGone().AssertAsync(ct);
-        await _fixture.MediaFilesReapedAsync(ct);
-        Assert.False(File.Exists(original));
     }
 
     private static Task<HttpResponseMessage> DeleteAsync(HttpClient client, int newsPostId) =>

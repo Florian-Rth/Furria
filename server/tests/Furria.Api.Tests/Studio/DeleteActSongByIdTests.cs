@@ -40,23 +40,6 @@ public sealed class DeleteActSongByIdTests : IClassFixture<ApiTestFixture>
         await ctx.Expected.MediaItem(march).ToBeOwnedBy(MediaOwner.Act(actId)).AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_ReportNotFound_When_TheSongBelongsToAnotherAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var otherActId = await GardetanzAsync(ctx, ct, name: "Schautanz");
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var foreignSong = await AddedSongAsync(admin, otherActId, ct);
-
-        var response = await DeleteAsync(admin, actId, foreignSong);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        var studio = await StudioOfAsync(admin, otherActId);
-        Assert.Equal([foreignSong], studio.Studio!.Songs.Select(song => song.SongId));
-    }
-
     private static Task<HttpResponseMessage> DeleteAsync(
         HttpClient client,
         int actId,

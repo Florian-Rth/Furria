@@ -13,7 +13,5 @@ public sealed class TestClock : TimeProvider
 
     public override DateTimeOffset GetUtcNow() => _utcNow;
 
-    public void Advance(TimeSpan ahead) => _utcNow = _utcNow.Add(ahead);
-
     public void SetUtcNow(DateTimeOffset utcNow) => _utcNow = utcNow;
 }

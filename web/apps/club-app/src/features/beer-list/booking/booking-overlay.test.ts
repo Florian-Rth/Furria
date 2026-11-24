@@ -55,12 +55,6 @@ describe('pendingPotsOf', () => {
     expected: PotShape[];
   }>([
     {
-      label: 'nothing pending keeps the tab',
-      pots: [tabPot(2, true, [5])],
-      pending: { booked: null, undoneIds: [] },
-      expected: [{ potId: 2, crateIds: [5], openCents: 1500 }],
-    },
-    {
       label: 'a fresh booking the tab does not know yet lands on the open pot',
       pots: [tabPot(2, true, [5]), tabPot(1, false, [3])],
       pending: {
@@ -79,24 +73,6 @@ describe('pendingPotsOf', () => {
       ],
     },
     {
-      label: 'a first booking opens the pot on an empty tab',
-      pots: [tabPot(1, false, [3])],
-      pending: {
-        booked: {
-          beerDrinkId: 1,
-          drinkName: 'Bier',
-          crateIds: [7],
-          priceCents: 1800,
-          bookedAt: '2026-11-04T20:00:00Z',
-        },
-        undoneIds: [],
-      },
-      expected: [
-        { potId: 2, crateIds: [7], openCents: 1800 },
-        { potId: 1, crateIds: [3], openCents: 1500 },
-      ],
-    },
-    {
       label: 'a booking the tab already shows is not counted twice',
       pots: [tabPot(2, true, [7, 5])],
       pending: {
@@ -110,21 +86,6 @@ describe('pendingPotsOf', () => {
         undoneIds: [],
       },
       expected: [{ potId: 2, crateIds: [7, 5], openCents: 3000 }],
-    },
-    {
-      label: 'an undone booking leaves the tab before the server confirms it',
-      pots: [tabPot(2, true, [7, 5])],
-      pending: {
-        booked: {
-          beerDrinkId: 1,
-          drinkName: 'Bier',
-          crateIds: [7],
-          priceCents: 1500,
-          bookedAt: '2026-11-04T20:00:00Z',
-        },
-        undoneIds: [7],
-      },
-      expected: [{ potId: 2, crateIds: [5], openCents: 1500 }],
     },
     {
       label: 'an earlier undo stays out while the tab still shows it after a new booking',

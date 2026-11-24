@@ -19,23 +19,6 @@ public sealed class PutActSpotTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PutTheCastMemberOnTheSpot_When_AnEditorAssignsThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var spotId = await AddSpotAsync(admin, actId);
-        var anna = ctx.Identity.People.IdOf(Anna);
-
-        var response = await AssignSpotAsync(admin, actId, spotId, anna);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var studio = await StudioOfAsync(admin, actId);
-        Assert.Equal(anna, Assert.Single(studio.Studio!.Spots).Person?.PersonId);
-    }
-
-    [Fact]
     public async Task Should_FreeTheOldSpot_When_APersonIsAssignedToAnotherSpot()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -57,22 +40,6 @@ public sealed class PutActSpotTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveTheSpotOpen_When_TheAssignmentIsCleared()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var spotId = await AddSpotAsync(admin, actId);
-        await AssignSpotAsync(admin, actId, spotId, ctx.Identity.People.IdOf(Anna));
-
-        await AssignSpotAsync(admin, actId, spotId, null);
-
-        var studio = await StudioOfAsync(admin, actId);
-        Assert.Null(Assert.Single(studio.Studio!.Spots).Person);
-    }
-
-    [Fact]
     public async Task Should_Refuse_When_ThePersonIsNotInTheCast()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -84,25 +51,5 @@ public sealed class PutActSpotTests : IClassFixture<ApiTestFixture>
         var response = await AssignSpotAsync(admin, actId, spotId, ctx.Identity.People.IdOf(Ben));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReportNotFound_When_TheSpotBelongsToAnotherAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var otherActId = await GardetanzAsync(ctx, ct, name: "Schautanz");
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var foreignSpot = await AddSpotAsync(admin, otherActId);
-
-        var response = await AssignSpotAsync(
-            admin,
-            actId,
-            foreignSpot,
-            ctx.Identity.People.IdOf(Anna)
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }

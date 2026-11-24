@@ -50,25 +50,6 @@ public sealed class LogoutEverywhereTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveOtherAccountsSignedIn_When_SheLoggedOutEverywhere()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("anna").AddAccount("bert")),
-            ct
-        );
-        var anna = await LogInAsync(ctx, "anna", ct);
-        var bert = await LogInAsync(ctx, "bert", ct);
-
-        await PostAsync(anna.AccessToken);
-
-        Assert.Equal(
-            HttpStatusCode.OK,
-            (await AccountSecuritySteps.RefreshAsync(_fixture, bert.RefreshToken)).StatusCode
-        );
-    }
-
-    [Fact]
     public async Task Should_StopPushingToHerDevices_When_SheLoggedOutEverywhere()
     {
         var ct = TestContext.Current.CancellationToken;

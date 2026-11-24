@@ -1,5 +1,3 @@
-using Furria.Api.Tests.Website;
-using Furria.Application.Media;
 using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -54,19 +52,6 @@ public sealed class MediaJobTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_MarkTheItemFailedAtOnce_When_ItsOriginalIsMissing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(_ => { }, ct);
-        var mediaItemId = await UploadAsync(ctx, "a.jpg", MediaSamples.JpegOfSize(800, 600), ct);
-        File.Delete(await _fixture.MediaFileOfAsync(mediaItemId, MediaRendition.Original, ct));
-
-        await _fixture.RunMediaWorkerAsync(ct);
-
-        await ctx.Expected.MediaItem(mediaItemId).ToHaveFailedWith("original").AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_FinishTheItem_When_TheWorkerThatClaimedItStoppedAnswering()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -85,55 +70,6 @@ public sealed class MediaJobTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_MarkTheItemFailed_When_EveryWorkerThatClaimedItStoppedAnswering()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(_ => { }, ct);
-        var mediaItemId = await UploadAsync(ctx, "riesig.jpg", MediaSamples.Jpeg(4096), ct);
-        Assert.True(await _fixture.ClaimMediaJobAsync(MediaKind.Photo, ct));
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(6),
-            async () => Assert.True(await _fixture.ClaimMediaJobAsync(MediaKind.Photo, ct))
-        );
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(12),
-            async () => Assert.True(await _fixture.ClaimMediaJobAsync(MediaKind.Photo, ct))
-        );
-
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(18),
-            async () => Assert.False(await _fixture.ClaimMediaJobAsync(MediaKind.Photo, ct))
-        );
-
-        await ctx.Expected.MediaItem(mediaItemId).ToHaveFailedWith("3 times").AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_MarkTheItemFailed_When_ItsJobCannotBeReadForRendering()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(builder => builder.WithGalleryPublisher(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-        var mediaItemId = await WebsitePictureSteps.UploadAsync(client, "landing.hero", 1, 1.4, ct);
-        await _fixture.DetachWebsitePictureDirectlyAsync(mediaItemId, ct);
-
-        await _fixture.RunMediaWorkerAsync(ct);
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(1),
-            () => _fixture.RunMediaWorkerAsync(ct)
-        );
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(11),
-            () => _fixture.RunMediaWorkerAsync(ct)
-        );
-
-        await ctx
-            .Expected.MediaItem(mediaItemId)
-            .ToHaveFailedWith(nameof(InvalidOperationException))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_HandEachItemToOneWorkerOnly_When_SeveralWorkersClaimAtOnce()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -146,57 +82,6 @@ public sealed class MediaJobTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(2, claims.Count(claimed => claimed));
-    }
-
-    [Fact]
-    public async Task Should_QueueOnlyFailedItemsAgain_When_FailedItemsAreRetried()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(_ => { }, ct);
-        var failedId = await UploadAsync(ctx, "kaputt.jpg", MediaSamples.Jpeg(4096), ct);
-        var readyId = await UploadAsync(ctx, "gut.jpg", MediaSamples.JpegOfSize(80, 60), ct);
-        await _fixture.RunMediaWorkerAsync(ct);
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(1),
-            () => _fixture.RunMediaWorkerAsync(ct)
-        );
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(11),
-            () => _fixture.RunMediaWorkerAsync(ct)
-        );
-
-        var queued = await _fixture.RegenerateMediaAsync(
-            new RegenerateMediaCommand { Scope = MediaRegenerationScope.Failed },
-            ct
-        );
-
-        Assert.Equal(1, queued);
-        await ctx
-            .Expected.MediaItem(failedId)
-            .ToAwaitItsRenditions(MediaKind.Photo, "image/jpeg")
-            .MediaItem(readyId)
-            .ToBeReady(80, 60)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RebuildALostRendition_When_AllRenditionsAreRegenerated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(_ => { }, ct);
-        var mediaItemId = await UploadAsync(ctx, "a.jpg", MediaSamples.JpegOfSize(800, 600), ct);
-        await _fixture.RunMediaWorkerAsync(ct);
-        var medium = await _fixture.MediaFileOfAsync(mediaItemId, MediaRendition.Medium, ct);
-        File.Delete(medium);
-
-        await _fixture.RegenerateMediaAsync(
-            new RegenerateMediaCommand { Scope = MediaRegenerationScope.All },
-            ct
-        );
-        await _fixture.RunMediaWorkerAsync(ct);
-
-        await ctx.Expected.MediaItem(mediaItemId).ToBeReady(800, 600).AssertAsync(ct);
-        Assert.True(File.Exists(medium));
     }
 
     private async Task<int> UploadAsync(

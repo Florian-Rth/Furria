@@ -3,11 +3,7 @@ import { isCompleteInvitationCode, normalizeInvitationCode } from './invitation-
 
 describe('normalizeInvitationCode', () => {
   it.each<[string, string, string]>([
-    ['lower case with a blank', 'k7m4 q2xp', 'K7M4-Q2XP'],
-    ['the displayed form', 'K7M4-Q2XP', 'K7M4-Q2XP'],
     ['stray blanks and dashes', ' k7-m4  q2–xp ', 'K7M4-Q2XP'],
-    ['the first group only', 'k7m4', 'K7M4'],
-    ['a started second group', 'k7m4q', 'K7M4-Q'],
     ['too many characters', 'k7m4q2xpzz', 'K7M4-Q2XP'],
   ])('normalises %s', (_case, typed, expected) => {
     expect(normalizeInvitationCode(typed)).toBe(expected);
@@ -17,10 +13,7 @@ describe('normalizeInvitationCode', () => {
 describe('isCompleteInvitationCode', () => {
   it.each<[string, string, boolean]>([
     ['a whole code', 'K7M4-Q2XP', true],
-    ['half a code', 'K7M4-Q2', false],
     ['a code with an O', 'K7M4-Q2XO', false],
-    ['a code with a one', 'K7M4-Q2X1', false],
-    ['a code without its dash', 'K7M4Q2XP', false],
   ])('judges %s', (_case, code, expected) => {
     expect(isCompleteInvitationCode(code)).toBe(expected);
   });

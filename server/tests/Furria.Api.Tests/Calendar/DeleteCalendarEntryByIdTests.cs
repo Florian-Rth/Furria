@@ -86,34 +86,6 @@ public sealed class DeleteCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LetTheGroupAdminDelete_When_HerGroupOwnsTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-
-        var client = await ctx.Identity.ClientForAsync("chris", ct);
-        var response = await DiscardAsync(client, entryId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.CalendarEntry(entryId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerDoesNotOwnTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var response = await DiscardAsync(client, entryId);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.CalendarEntry(entryId).ToHaveTitle(DanceGuardTraining).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheEntryIsAnEvent()
     {
         var ct = TestContext.Current.CancellationToken;

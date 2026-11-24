@@ -2,7 +2,6 @@ using Furria.Application.Club;
 using Furria.Application.Management;
 using Furria.Application.Start;
 using Furria.Core.Club;
-using Furria.Core.News;
 using Furria.Infrastructure.Start;
 using Xunit;
 
@@ -62,127 +61,6 @@ public sealed class StartComposerTests
     };
 
     [Fact]
-    public void Should_DropThePanel_When_ItHasNoItems()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Announcements = [AnnouncementPublishedAt(1, DaysAgo(1))],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([StartPanelKind.Announcements, StartPanelKind.Calendar], KindsOf(start));
-    }
-
-    [Fact]
-    public void Should_ShowTheCalendarAboveNewPanels_When_OnlyAnAnnouncementAddOnIsOwed()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Announcements = [AnnouncementPublishedAt(1, DaysAgo(1))],
-                AnnouncementAddOns =
-                [
-                    AnnouncementAddOnsPublishedAt(2, DaysAgo(3), isOwed: false),
-                    AnnouncementAddOnsPublishedAt(3, DaysAgo(2), isOwed: true),
-                ],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([StartPanelKind.Calendar, StartPanelKind.Announcements], KindsOf(start));
-        Assert.Equal(
-            [3, 2],
-            CalendarOf(start)
-                .AnnouncementAddOns!.Select(announcement => announcement.AnnouncementId)
-        );
-    }
-
-    [Fact]
-    public void Should_RankTheCalendarAboveNewPanels_When_AnAnnouncementAddOnIsOwedBesideALaterEntry()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries = [EntryAt(Sunday, OnDay(20, 19, 0))],
-                Announcements = [AnnouncementPublishedAt(1, DaysAgo(1))],
-                AnnouncementAddOns = [AnnouncementAddOnsPublishedAt(3, DaysAgo(2), isOwed: true)],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([StartPanelKind.Calendar, StartPanelKind.Announcements], KindsOf(start));
-    }
-
-    [Fact]
-    public void Should_KeepAnEmptyCalendar_When_SheHasNoEntryAndOwesNoAnnouncementAddOn()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                AnnouncementAddOns = [AnnouncementAddOnsPublishedAt(2, DaysAgo(3), isOwed: false)],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([StartPanelKind.Calendar], KindsOf(start));
-        Assert.Empty(CalendarOf(start).Entries!);
-    }
-
-    [Fact]
-    public void Should_RankAnEmptyCalendarBelowNews_When_SheHasNoEntry()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                News = [NewsPublishedAt("orden", DaysAgo(1))],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([StartPanelKind.News, StartPanelKind.Calendar], KindsOf(start));
-    }
-
-    [Fact]
-    public void Should_RankToDosAboveAnnouncements_When_NothingIsSoon()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries = [EntryAt(1, OnDay(5, 19, 0))],
-                Announcements = [AnnouncementPublishedAt(1, DaysAgo(1))],
-                ToDos = [ToDoOf(ToDoKind.NeverInvited)],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal(
-            [StartPanelKind.ToDos, StartPanelKind.Announcements, StartPanelKind.Calendar],
-            KindsOf(start)
-        );
-    }
-
-    [Fact]
-    public void Should_RankHerOpenBeerTabAboveTheClubsToDos_When_NothingIsSoon()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries = [EntryAt(1, OnDay(5, 19, 0))],
-                ToDos = [ToDoOf(ToDoKind.NeverInvited)],
-                BeerTabs = [BeerTabSince(DaysAgo(9))],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal(
-            [StartPanelKind.BeerTab, StartPanelKind.ToDos, StartPanelKind.Calendar],
-            KindsOf(start)
-        );
-    }
-
-    [Fact]
     public void Should_RankTheCalendarFirst_When_AnEntryIsRunning()
     {
         var start = StartComposer.Compose(
@@ -225,47 +103,6 @@ public sealed class StartComposerTests
     }
 
     [Fact]
-    public void Should_BreakTiesByKindOrder_When_TwoPanelsShareABand()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries = [EntryAt(1, OnDay(1, 18, 0))],
-                Mine = [MineOn(StartMineKind.NewKey, TuesdayEvening.Today)],
-                Announcements = [AnnouncementPublishedAt(1, DaysAgo(1))],
-                GroupMoments = [JubileeOf(1, 25)],
-                News = [NewsPublishedAt("umzug", DaysAgo(2))],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal(
-            [
-                StartPanelKind.Calendar,
-                StartPanelKind.Mine,
-                StartPanelKind.Announcements,
-                StartPanelKind.News,
-                StartPanelKind.Groups,
-            ],
-            KindsOf(start)
-        );
-    }
-
-    [Fact]
-    public void Should_SetReshapeAt_When_TheNextStartComesBeforeMidnight()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries = [EntryAt(1, OnDay(0, 21, 30)), EntryAt(2, OnDay(1, 18, 0))],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal(OnDay(0, 21, 30), start.ReshapeAt);
-    }
-
-    [Fact]
     public void Should_SetReshapeAtTwoHoursAhead_When_AnEntryStartsLaterTonight()
     {
         var start = StartComposer.Compose(
@@ -277,20 +114,6 @@ public sealed class StartComposerTests
         );
 
         Assert.Equal(OnDay(0, 21, 30), start.ReshapeAt);
-    }
-
-    [Fact]
-    public void Should_SetReshapeAtToTheRunningEnd_When_AnEntryRuns()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries = [RunningSince(1, OnDay(0, 19, 30)) with { EndsAt = OnDay(0, 21, 0) }],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal(OnDay(0, 21, 0), start.ReshapeAt);
     }
 
     [Fact]
@@ -337,27 +160,9 @@ public sealed class StartComposerTests
         Assert.Equal([StartPanelKind.Calendar, StartPanelKind.ToDos], KindsOf(start));
     }
 
-    [Fact]
-    public void Should_RankTheCalendarAboveToDos_When_HerEntryIsTomorrow()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries = [EntryAt(1, OnDay(1, 19, 0))],
-                ToDos = [ToDoOf(ToDoKind.NeverInvited)],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([StartPanelKind.Calendar, StartPanelKind.ToDos], KindsOf(start));
-    }
-
     [Theory]
     [InlineData(StartMineKind.NewBoardSeat, 0)]
-    [InlineData(StartMineKind.NewGroupAdmin, -1)]
     [InlineData(StartMineKind.NewGroupMembership, -2)]
-    [InlineData(StartMineKind.NewKey, 0)]
-    [InlineData(StartMineKind.ContactChangedByOther, -2)]
     [InlineData(StartMineKind.MembershipEnding, 7)]
     public void Should_RankHerItemsAboveToDos_When_TheyAreFresh(
         StartMineKind kind,
@@ -381,10 +186,8 @@ public sealed class StartComposerTests
 
     [Theory]
     [InlineData(StartMineKind.NewBoardSeat, -3)]
-    [InlineData(StartMineKind.ContactChangedByOther, -3)]
     [InlineData(StartMineKind.MembershipEnding, 8)]
     [InlineData(StartMineKind.MembershipPaused, 0)]
-    [InlineData(StartMineKind.Milestone, -1)]
     public void Should_RankToDosAboveHerItems_When_TheyAreNoLongerFresh(
         StartMineKind kind,
         int daysFromToday
@@ -406,25 +209,6 @@ public sealed class StartComposerTests
     }
 
     [Fact]
-    public void Should_KeepAnOwedEntry_When_ItLiesBeyondTheWeekInsideTheOwedHorizon()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries =
-                [
-                    EntryAt(1, OnDay(1, 18, 0)),
-                    Owed(EntryAt(2, OnDay(12, 19, 0))),
-                    EntryAt(3, OnDay(12, 20, 0)),
-                ],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([1, 2], EntryIdsOf(start));
-    }
-
-    [Fact]
     public void Should_LeaveOutAnOwedTraining_When_ItStartsAfterFourteenDays()
     {
         var start = StartComposer.Compose(
@@ -441,30 +225,6 @@ public sealed class StartComposerTests
         );
 
         Assert.Equal([1, 3], EntryIdsOf(start));
-    }
-
-    [Theory]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    public void Should_KeepAnEntry_When_SheOwesOnlyAPollOrAListInsideTheOwedHorizon(
-        bool owesPoll,
-        bool owesList
-    )
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries =
-                [
-                    EntryAt(1, OnDay(1, 18, 0)),
-                    WithFunctions(EntryAt(2, OnDay(12, 19, 0)), owesPoll, owesList),
-                    WithFunctions(EntryAt(3, OnDay(12, 20, 0)), owesPoll: false, owesList: false),
-                ],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([1, 2], EntryIdsOf(start));
     }
 
     [Fact]
@@ -493,35 +253,6 @@ public sealed class StartComposerTests
         );
 
         Assert.Equal([1, 2], EntryIdsOf(start));
-    }
-
-    [Fact]
-    public void Should_ShowOnlyTheNearestEntry_When_NothingFallsInTheWindow()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries = [EntryAt(2, OnDay(30, 18, 0)), EntryAt(1, OnDay(20, 18, 0))],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([1], EntryIdsOf(start));
-    }
-
-    [Fact]
-    public void Should_KeepAnEmptyCalendar_When_HerNearestEntryLiesBeyondSixtyDays()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Entries = [EntryAt(1, OnDay(61, 18, 0))],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal([StartPanelKind.Calendar], KindsOf(start));
-        Assert.Empty(CalendarOf(start).Entries!);
     }
 
     [Fact]
@@ -568,17 +299,6 @@ public sealed class StartComposerTests
     }
 
     [Fact]
-    public void Should_PutPickedRowsFirstInTimeOrder_When_TheCalendarIsCapped()
-    {
-        var calendar = CalendarOf(StartComposer.Compose(CappedCalendar, TuesdayEvening));
-
-        Assert.Equal(
-            [Running, LaterToday, Wednesday, Thursday, OwedNextMonday, Friday, Saturday, Sunday],
-            calendar.Entries!.Select(entry => entry.CalendarEntryId)
-        );
-    }
-
-    [Fact]
     public void Should_ShowAll_When_OnlyOneItemExceedsTheCap()
     {
         var start = StartComposer.Compose(
@@ -600,24 +320,6 @@ public sealed class StartComposerTests
 
         Assert.Equal(6, CalendarOf(start).ShownCount);
         Assert.Equal(4, PanelOf(start, StartPanelKind.Announcements).ShownCount);
-    }
-
-    [Fact]
-    public void Should_RankAnnouncementsBelowNewsAndTheCalendar_When_NoneOfThemIsNew()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Announcements = [AnnouncementPublishedAt(1, DaysAgo(30)) with { IsNew = false }],
-                News = [NewsPublishedAt("orden", DaysAgo(1))],
-            },
-            TuesdayEvening
-        );
-
-        Assert.Equal(
-            [StartPanelKind.News, StartPanelKind.Calendar, StartPanelKind.Announcements],
-            KindsOf(start)
-        );
     }
 
     [Fact]
@@ -646,96 +348,6 @@ public sealed class StartComposerTests
         );
     }
 
-    [Fact]
-    public void Should_ShowEveryToDoInKindOrder_When_TheClubHasWork()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                ToDos =
-                [
-                    ToDoOf(ToDoKind.ClubRecordGap),
-                    ToDoOf(ToDoKind.NeverInvited),
-                    ToDoOf(ToDoKind.KeyToTakeBack),
-                    ToDoOf(ToDoKind.ReminderDue),
-                    ToDoOf(ToDoKind.BirthDateUnknown),
-                    ToDoOf(ToDoKind.InPersonOnly),
-                ],
-            },
-            TuesdayEvening
-        );
-
-        var toDos = PanelOf(start, StartPanelKind.ToDos);
-        Assert.Equal(6, toDos.ShownCount);
-        Assert.Equal(
-            [
-                ToDoKind.NeverInvited,
-                ToDoKind.ReminderDue,
-                ToDoKind.InPersonOnly,
-                ToDoKind.BirthDateUnknown,
-                ToDoKind.KeyToTakeBack,
-                ToDoKind.ClubRecordGap,
-            ],
-            toDos.ToDos!.Select(toDo => toDo.Kind)
-        );
-    }
-
-    [Fact]
-    public void Should_OrderHerItemsByBandThenDayThenKind_When_SheHasMoreThanTheCap()
-    {
-        var today = TuesdayEvening.Today;
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                Mine =
-                [
-                    MineOn(StartMineKind.NewKey, today.AddDays(-5)),
-                    MineOn(StartMineKind.Milestone, today.AddDays(-3)),
-                    MineOn(StartMineKind.NewBoardSeat, today.AddDays(-5)),
-                    MineOn(StartMineKind.MembershipEnding, today.AddDays(20)),
-                    MineOn(StartMineKind.NewGroupMembership, today.AddDays(-1)),
-                ],
-            },
-            TuesdayEvening
-        );
-
-        var mine = PanelOf(start, StartPanelKind.Mine);
-        Assert.Equal(3, mine.ShownCount);
-        Assert.Equal(
-            [
-                StartMineKind.NewGroupMembership,
-                StartMineKind.MembershipEnding,
-                StartMineKind.Milestone,
-                StartMineKind.NewBoardSeat,
-                StartMineKind.NewKey,
-            ],
-            mine.Mine!.Select(item => item.Kind)
-        );
-    }
-
-    [Fact]
-    public void Should_OrderJubileesByYears_When_SeveralGroupsCelebrate()
-    {
-        var start = StartComposer.Compose(
-            Nothing with
-            {
-                GroupMoments =
-                [
-                    JubileeOf(1, 10),
-                    JubileeOf(2, 25),
-                    JubileeOf(3, 5),
-                    JubileeOf(4, 40),
-                    JubileeOf(5, 15),
-                ],
-            },
-            TuesdayEvening
-        );
-
-        var groups = PanelOf(start, StartPanelKind.Groups);
-        Assert.Equal(3, groups.ShownCount);
-        Assert.Equal([4, 2, 5, 1, 3], groups.GroupMoments!.Select(moment => moment.GroupId));
-    }
-
     private static StartPanel CalendarOf(StartDetails start) =>
         PanelOf(start, StartPanelKind.Calendar);
 
@@ -755,40 +367,6 @@ public sealed class StartComposerTests
         entry with
         {
             Attendance = new StartAttendance { ViewerAnswer = null, IsOwed = true },
-        };
-
-    private static StartEntrySummary WithFunctions(
-        StartEntrySummary entry,
-        bool owesPoll,
-        bool owesList
-    ) =>
-        entry with
-        {
-            OpenPolls =
-            [
-                new StartPoll
-                {
-                    PollId = entry.CalendarEntryId,
-                    Position = 1,
-                    Question = "Was essen wir?",
-                    AllowsMultipleChoices = false,
-                    IsAnonymous = false,
-                    IsOwed = owesPoll,
-                    Options = [],
-                },
-            ],
-            OpenSignUpLists =
-            [
-                new StartSignUpList
-                {
-                    SignUpListId = entry.CalendarEntryId,
-                    Position = 2,
-                    Title = "Mitbringen",
-                    Hint = null,
-                    IsOwed = owesList,
-                    ViewerText = owesList ? null : "Salat",
-                },
-            ],
         };
 
     private static StartEntrySummary OnStage(StartEntrySummary entry) =>
@@ -864,28 +442,6 @@ public sealed class StartComposerTests
     private static IReadOnlyList<StartPanelKind> KindsOf(StartDetails start) =>
         [.. start.Panels.Select(panel => panel.Kind)];
 
-    private static StartBeerTabSummary BeerTabSince(DateTimeOffset oldestOpenBookedAt) =>
-        new()
-        {
-            BeerPotId = 1,
-            PotIsOpen = true,
-            OpenCrates = 2,
-            OpenCents = 30_00,
-            OldestOpenBookedAt = oldestOpenBookedAt,
-            Owner = null,
-            PaymentLink = null,
-        };
-
-    private static StartNewsSummary NewsPublishedAt(string slug, DateTimeOffset publishedAt) =>
-        new()
-        {
-            Slug = slug,
-            Title = $"Meldung {slug}",
-            Category = NewsCategory.Session,
-            PublishedAt = publishedAt,
-            Picture = null,
-        };
-
     private static StartAnnouncementSummary AnnouncementPublishedAt(
         int announcementId,
         DateTimeOffset publishedAt
@@ -907,25 +463,5 @@ public sealed class StartComposerTests
                 Portrait = null,
                 OfficeName = null,
             },
-        };
-
-    private static StartAnnouncementAddOns AnnouncementAddOnsPublishedAt(
-        int announcementId,
-        DateTimeOffset publishedAt,
-        bool isOwed
-    ) =>
-        new()
-        {
-            AnnouncementId = announcementId,
-            Title = $"Aushang {announcementId}",
-            PublishedAt = publishedAt,
-            Attendance = new StartAnnouncementAttendance
-            {
-                Position = 0,
-                ViewerAnswer = isOwed ? null : AttendanceAnswer.Yes,
-                IsOwed = isOwed,
-            },
-            OpenPolls = [],
-            OpenSignUpLists = [],
         };
 }

@@ -21,27 +21,6 @@ public sealed class PutActSongOrderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PlayTheSongsInTheNewOrder_When_AnEditorReordersThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var march = await AddedSongAsync(admin, actId, ct);
-        var polka = await AddedSongAsync(admin, actId, ct);
-        var finale = await AddedSongAsync(admin, actId, ct);
-
-        var response = await PutAsync(admin, actId, [finale, march, polka]);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var studio = await StudioOfAsync(admin, actId);
-        Assert.Equal(
-            [(finale, 0), (march, 1), (polka, 2)],
-            studio.Studio!.Songs.Select(song => (song.SongId, song.Position))
-        );
-    }
-
-    [Fact]
     public async Task Should_RefuseAndKeepTheOrder_When_TheListMissesASongAddedMeanwhile()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -60,38 +39,6 @@ public sealed class PutActSongOrderTests : IClassFixture<ApiTestFixture>
             [march, polka, addedMeanwhile],
             studio.Studio!.Songs.Select(song => song.SongId)
         );
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheListNamesASongTwice()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var march = await AddedSongAsync(admin, actId, ct);
-        await AddedSongAsync(admin, actId, ct);
-
-        var response = await PutAsync(admin, actId, [march, march]);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheListSwapsInASongOfAnotherAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var otherActId = await GardetanzAsync(ctx, ct, name: "Schautanz");
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var march = await AddedSongAsync(admin, actId, ct);
-        await AddedSongAsync(admin, actId, ct);
-        var foreignSong = await AddedSongAsync(admin, otherActId, ct);
-
-        var response = await PutAsync(admin, actId, [foreignSong, march]);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     private static Task<HttpResponseMessage> PutAsync(

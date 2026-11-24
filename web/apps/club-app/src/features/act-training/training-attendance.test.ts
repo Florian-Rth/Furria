@@ -6,8 +6,6 @@ import type { CastPerson } from '@/features/running-order/schemas';
 import {
   attendanceTallyOf,
   castAttendanceOf,
-  toggledAnswerOf,
-  trailOf,
   withMarkedResponse,
   withWithdrawnMark,
 } from './training-attendance';
@@ -50,52 +48,6 @@ describe('attendanceTallyOf', () => {
       present: 2,
       expected: 4,
     });
-  });
-
-  it('leaves answers of people outside the cast out', () => {
-    expect(attendanceTallyOf(castAttendanceOf([person(1)], training([response(9, 'no')])))).toEqual(
-      { present: 1, expected: 1 },
-    );
-  });
-});
-
-describe('toggledAnswerOf', () => {
-  it.each([
-    ['an absence', response(1, 'no'), 'yes'],
-    ['a yes', response(1, 'yes'), 'no'],
-    ['a maybe', response(1, 'maybe'), 'no'],
-    ['no answer', null, 'no'],
-  ])('marks the other way round after %s', (_case, before, toggled) => {
-    expect(toggledAnswerOf({ person: person(1), response: before })).toBe(toggled);
-  });
-});
-
-describe('trailOf', () => {
-  const ownYes = { answer: 'yes' as const, isRecordedOnBehalf: false, recordedBy: null };
-  const markedNo = { answer: 'no' as const, isRecordedOnBehalf: true, recordedBy: 'Gerd Gardist' };
-  const at = { recordedAt: '2026-11-01T10:00:00+01:00' };
-
-  it.each([
-    ['no answer', null, []],
-    ['her single own answer', response(1, 'yes', false, [{ ...ownYes, ...at }]), []],
-    [
-      'a single mark',
-      response(1, 'no', true, [{ ...markedNo, ...at }]),
-      [{ answer: 'no', voice: 'marked', recordedBy: 'Gerd Gardist' }],
-    ],
-    [
-      'her answer replacing a mark',
-      response(1, 'yes', false, [
-        { ...ownYes, ...at },
-        { ...markedNo, ...at },
-      ]),
-      [
-        { answer: 'yes', voice: 'self', recordedBy: null },
-        { answer: 'no', voice: 'marked', recordedBy: 'Gerd Gardist' },
-      ],
-    ],
-  ])('shows the trail for %s', (_case, current, steps) => {
-    expect(trailOf(current)).toEqual(steps);
   });
 });
 

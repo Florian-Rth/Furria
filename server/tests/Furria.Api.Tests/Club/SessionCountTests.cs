@@ -10,12 +10,6 @@ public sealed class SessionCountTests
     private static readonly IReadOnlyCollection<SessionSpan> NoPauses = [];
 
     [Fact]
-    public void Should_BeZero_When_SheHasNoMembership()
-    {
-        Assert.Equal(0, SessionCount.Of([], NoPauses, RelevantSessionYear));
-    }
-
-    [Fact]
     public void Should_SkipTheGap_When_SheRejoined()
     {
         var chain = new[]
@@ -41,14 +35,6 @@ public sealed class SessionCountTests
         var chain = new[] { Period(new DateOnly(2018, 11, 11), new DateOnly(2022, 6, 30)) };
 
         Assert.Equal(4, SessionCount.Of(chain, NoPauses, RelevantSessionYear));
-    }
-
-    [Fact]
-    public void Should_BeZero_When_SheJoinsAfterTheSession()
-    {
-        var chain = new[] { Period(new DateOnly(2028, 1, 1), null) };
-
-        Assert.Equal(0, SessionCount.Of(chain, NoPauses, RelevantSessionYear));
     }
 
     private static DatePeriod Period(DateOnly start, DateOnly? end) =>

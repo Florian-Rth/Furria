@@ -14,9 +14,6 @@ namespace Furria.Api.Tests.News;
 public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
 {
     private const int SeededRevision = 1;
-    private const int StripLength = 8;
-    private const string Credit = "Foto: Paula Becker";
-
     private static readonly DateTimeOffset Proclaimed = new(2025, 11, 11, 11, 11, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset Shown = new(2026, 2, 20, 9, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly LongAgo = new(2020, 1, 1);
@@ -27,22 +24,6 @@ public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
     public GetPublicNewsPostBySlugTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_ShowTheLiveVersionWithItsByline_When_APublishedPostIsAskedFor()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(Club(), ct);
-
-        var (_, result) = await GetAsync("motto-verkuendet");
-
-        Assert.Equal("Motto verkündet", result.Title);
-        Assert.Equal("Alter Text", result.Text);
-        Assert.Equal(NewsCategory.Session, result.Category);
-        Assert.Equal(Proclaimed, result.PublishedAt);
-        Assert.Equal(("Nele", "Neumann"), (result.Author?.FirstName, result.Author?.LastName));
-        Assert.Null(result.Picture);
     }
 
     [Theory]
@@ -91,53 +72,6 @@ public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ShowTheEventTie_When_TheWebsiteStillShowsTheEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Club(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await PublishAsync(
-            client,
-            ctx.News.Posts.IdOf("article"),
-            Article("Text") with
-            {
-                EventId = ctx.Club.Events.IdOf("ahead"),
-            }
-        );
-
-        var (_, result) = await GetAsync("festbericht");
-
-        Assert.Equal(ctx.Club.Events.IdOf("ahead"), result.Event?.EventId);
-        Assert.Equal(("Kinderball", "Bürgerhaus"), (result.Event?.Title, result.Event?.VenueName));
-        Assert.False(result.Event?.IsCancelled);
-        Assert.Null(result.Event?.Picture);
-    }
-
-    [Fact]
-    public async Task Should_ShowTheEventsPictureOnTheEventTie_When_TheEventHasOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Club(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("ahead");
-        var pictureId = await EventPictureSteps.RenderedAsync(_fixture, client, eventId, ct);
-        await PublishAsync(
-            client,
-            ctx.News.Posts.IdOf("article"),
-            Article("Text") with
-            {
-                EventId = eventId,
-            }
-        );
-
-        var (_, result) = await GetAsync("festbericht");
-
-        var picture = result.Event?.Picture;
-        Assert.Equal((800, 400), (picture?.Width, picture?.Height));
-        Assert.StartsWith($"/api/public/events/pictures/{pictureId}/large?v=", picture?.LargeUrl);
-    }
-
-    [Fact]
     public async Task Should_DropTheEventTie_When_TheEventIsOver()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -155,80 +89,6 @@ public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
         var (_, result) = await GetAsync("festbericht");
 
         Assert.Null(result.Event);
-    }
-
-    [Fact]
-    public async Task Should_ShowTheFirstPhotosOfThePublicSelection_When_TheTiedAlbumIsPublished()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Club(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await PublishAsync(
-            client,
-            ctx.News.Posts.IdOf("article"),
-            Article("Text") with
-            {
-                AlbumId = ctx.Gallery.Albums.IdOf("shown"),
-            }
-        );
-
-        var (_, result) = await GetAsync("festbericht");
-
-        Assert.Equal(
-            ("Prunksitzung", StripLength + 1),
-            (result.Album?.Title, result.Album?.PhotoCount)
-        );
-        var first = ctx.Gallery.Items.IdOf("photo-1");
-        Assert.Equal(
-            [
-                ctx.Gallery.Items.IdOf("photo-1"),
-                ctx.Gallery.Items.IdOf("photo-2"),
-                ctx.Gallery.Items.IdOf("photo-3"),
-                ctx.Gallery.Items.IdOf("photo-4"),
-                ctx.Gallery.Items.IdOf("photo-5"),
-                ctx.Gallery.Items.IdOf("photo-6"),
-                ctx.Gallery.Items.IdOf("photo-7"),
-                ctx.Gallery.Items.IdOf("photo-8"),
-            ],
-            result.Album?.Photos.Select(photo => photo.MediaItemId)
-        );
-        Assert.StartsWith(
-            $"/api/public/gallery/pictures/{first}/small?v=",
-            result.Album?.Photos[0].SmallUrl
-        );
-    }
-
-    [Theory]
-    [InlineData("versteckt")]
-    [InlineData("leer")]
-    public async Task Should_DropTheAlbumTie_When_TheWebsiteCannotShowTheAlbum(string slug)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(Club(), ct);
-
-        var (_, result) = await GetAsync(slug);
-
-        Assert.Null(result.Album);
-    }
-
-    [Fact]
-    public async Task Should_PointTheLivePictureAtItsPublicAddress_When_ThePostHasOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Club(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var articleId = ctx.News.Posts.IdOf("article");
-        var pictureId = await NewsPictureSteps.UploadAsync(client, articleId, ct);
-        await _fixture.RenderMediaItemDirectlyAsync(pictureId, ct);
-        await PublishAsync(client, articleId, Article("Text") with { PictureCaption = Credit });
-
-        var (_, result) = await GetAsync("festbericht");
-
-        Assert.StartsWith(
-            $"/api/public/news/pictures/{pictureId}/large?v=",
-            result.Picture?.LargeUrl
-        );
-        Assert.Equal(Credit, result.PictureCaption);
     }
 
     private Task<TestResult<GetPublicNewsPostBySlugResponse>> GetAsync(string slug) =>

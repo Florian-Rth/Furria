@@ -16,31 +16,9 @@ public sealed class BoardOfficeExpectations
         _boardOfficeId = boardOfficeId;
     }
 
-    public Expected ToNotExist() =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.False(
-                    await dbContext
-                        .BoardOffices.AsNoTracking()
-                        .AnyAsync(row => row.Id == _boardOfficeId, ct),
-                    $"Expected no BoardOffice with id {_boardOfficeId}."
-                )
-        );
-
     public Expected ToHaveName(string name) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(name, (await SingleAsync(dbContext, ct)).Name)
-        );
-
-    public Expected ToHaveIcon(ClubIcon? icon) =>
-        _expected.Enqueue(
-            async (dbContext, ct) => Assert.Equal(icon, (await SingleAsync(dbContext, ct)).Icon)
-        );
-
-    public Expected ToHaveSortOrder(int sortOrder) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(sortOrder, (await SingleAsync(dbContext, ct)).SortOrder)
         );
 
     public Expected ToImplyRole(int roleId) =>
@@ -52,12 +30,6 @@ public sealed class BoardOfficeExpectations
     public Expected ToImplyNoRole() =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ImpliedRoleId)
-        );
-
-    public Expected ToBePublic(bool isPublic) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(isPublic, (await SingleAsync(dbContext, ct)).IsPublic)
         );
 
     public Expected ToBeArchivedOn(DateOnly? archivedOn) =>

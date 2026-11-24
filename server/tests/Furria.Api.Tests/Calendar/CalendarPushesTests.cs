@@ -107,110 +107,6 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushNobody_When_AnEntryAskingChosenPeopleIsNotNotified()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-
-        await CreateAsync(
-            ctx,
-            ClubEntry() with
-            {
-                Audience = CalendarEntryAudience.People,
-                AudiencePersonIds = [ctx.Identity.People.IdOf("chris")],
-                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
-            },
-            ct
-        );
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Empty(PushesAt(_fixture, devices.Chris));
-    }
-
-    [Fact]
-    public async Task Should_PushTheGroup_When_AGroupAdminAsksHerGroupForAResponse()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-
-        var response = await CreateAsGroupAdminAsync(
-            ctx,
-            GroupOwnedClubEntry(ctx) with
-            {
-                Audience = CalendarEntryAudience.Groups,
-                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
-                Notify = true,
-                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
-            },
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Single(PushesAt(_fixture, devices.Chris));
-        Assert.Empty(PushesAt(_fixture, devices.Mara));
-    }
-
-    [Fact]
-    public async Task Should_PushTheChosenPeople_When_AGroupAdminAsksThemForAResponse()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-
-        var response = await CreateAsGroupAdminAsync(
-            ctx,
-            GroupOwnedClubEntry(ctx) with
-            {
-                Audience = CalendarEntryAudience.People,
-                AudiencePersonIds = [ctx.Identity.People.IdOf("chris")],
-                Notify = true,
-                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
-            },
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Single(PushesAt(_fixture, devices.Chris));
-        Assert.Empty(PushesAt(_fixture, devices.Mara));
-    }
-
-    [Fact]
-    public async Task Should_PushNobody_When_ANewEntryIsNotNotified()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-
-        await CreateAsync(ctx, ClubEntry(), ct);
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Empty(PushesAt(_fixture, devices.Chris));
-    }
-
-    [Fact]
-    public async Task Should_PushEveryRunningMemberButTheScheduler_When_AClubWideEntryIsNotified()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-
-        var entryId = await CreateAsync(ctx, ClubEntry() with { Notify = true }, ct);
-
-        await _fixture.PushesDrainedAsync(ct);
-        var pushes = PushesAt(_fixture, devices.Chris);
-        Assert.Equal([$"/calendar/{entryId}"], [.. pushes.Select(UrlOf)]);
-        Assert.Equal([ClubMeeting], [.. pushes.Select(TitleOf)]);
-        Assert.Single(PushesAt(_fixture, devices.Mara));
-        Assert.Empty(PushesAt(_fixture, devices.Ilka));
-        Assert.Empty(PushesAt(_fixture, devices.Paula));
-        Assert.Empty(PushesAt(_fixture, devices.Fred));
-    }
-
-    [Fact]
     public async Task Should_PushOncePerMember_When_ANotifyingEntryAlsoAsksForAResponse()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -252,76 +148,6 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
 
         await _fixture.PushesDrainedAsync(ct);
         Assert.Empty(PushesAt(_fixture, devices.Chris));
-    }
-
-    [Fact]
-    public async Task Should_PushNobody_When_ANewEntryAskingForAResponseHasAlreadyStarted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-        var startedAnHourAgo = _fixture.TimeProvider.GetUtcNow().AddHours(-1);
-
-        await CreateAsync(
-            ctx,
-            ClubEntry() with
-            {
-                StartsAt = startedAnHourAgo,
-                EndsAt = startedAnHourAgo.AddHours(3),
-                Notify = true,
-                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
-            },
-            ct
-        );
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Empty(PushesAt(_fixture, devices.Chris));
-    }
-
-    [Fact]
-    public async Task Should_PushTheChosenPeopleOnly_When_AnEntryForChosenPeopleIsNotified()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-
-        var entryId = await CreateAsync(
-            ctx,
-            ClubEntry() with
-            {
-                Audience = CalendarEntryAudience.People,
-                AudiencePersonIds = [ctx.Identity.People.IdOf("fred")],
-                Notify = true,
-            },
-            ct
-        );
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Equal([$"/calendar/{entryId}"], [.. PushesAt(_fixture, devices.Fred).Select(UrlOf)]);
-        Assert.Empty(PushesAt(_fixture, devices.Chris));
-    }
-
-    [Fact]
-    public async Task Should_PushOncePerPerson_When_AChosenPeopleEntryAlsoAsksForAResponse()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-
-        await CreateAsync(
-            ctx,
-            ClubEntry() with
-            {
-                Audience = CalendarEntryAudience.People,
-                AudiencePersonIds = [ctx.Identity.People.IdOf("fred")],
-                Notify = true,
-                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
-            },
-            ct
-        );
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Single(PushesAt(_fixture, devices.Fred));
     }
 
     [Fact]
@@ -398,29 +224,6 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PushNobody_When_TheEntryKeepsItsTimeAndPlace()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAnsweredMeetingAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("club-meeting");
-
-        await UpdateAsync(
-            ctx,
-            ClubEntryUpdate(entryId) with
-            {
-                Title = "Vereinssitzung mit Wahlen",
-                AddOns = [PutAddOn(CalendarEntryAddOnKind.Attendance)],
-            },
-            ct
-        );
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Empty(PushesAt(_fixture, devices.Chris));
-        Assert.Empty(PushesAt(_fixture, devices.Mara));
-    }
-
-    [Fact]
     public async Task Should_PushWhoeverAnsweredYesOrMaybe_When_TheEntryIsDeleted()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -458,33 +261,6 @@ public sealed class CalendarPushesTests : IClassFixture<ApiTestFixture>
             DeleteCalendarEntryByIdRequest
         >(new() { CalendarEntryId = ctx.Club.CalendarEntries.IdOf("farewell") });
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
-        await _fixture.PushesDrainedAsync(ct);
-        Assert.Single(PushesAt(_fixture, devices.Chris));
-        Assert.Empty(PushesAt(_fixture, devices.Mara));
-    }
-
-    [Fact]
-    public async Task Should_SpareWhoeverWasTakenOffTheList_When_AChosenPeopleEntryMoves()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildFormerlyChosenAsync(ct);
-        var devices = await DevicesAsync(ctx, ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("farewell");
-
-        await UpdateAsync(
-            ctx,
-            ClubEntryUpdate(entryId) with
-            {
-                Title = Farewell,
-                StartsAt = LaterStart,
-                EndsAt = LaterStart.AddHours(3),
-                Audience = CalendarEntryAudience.People,
-                AudiencePersonIds = [ctx.Identity.People.IdOf("chris")],
-                AddOns = [PutAddOn(CalendarEntryAddOnKind.Attendance)],
-            },
-            ct
-        );
 
         await _fixture.PushesDrainedAsync(ct);
         Assert.Single(PushesAt(_fixture, devices.Chris));

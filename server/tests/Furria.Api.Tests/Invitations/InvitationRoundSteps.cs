@@ -11,8 +11,6 @@ internal static class InvitationRoundSteps
 
     public static readonly TimeSpan WithinTheReminderDelay = TimeSpan.FromDays(2);
 
-    public static readonly TimeSpan PastTheMailLifetime = TimeSpan.FromDays(20);
-
     public static async Task<GetBulkInvitationPreviewResponse> PreviewAsync(HttpClient manager)
     {
         var (response, result) = await manager.GETAsync<

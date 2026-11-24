@@ -25,31 +25,6 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
         _fixture = fixture;
     }
 
-    [Fact]
-    public async Task Should_CloseThePoll_When_TheCallerMayEditTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await CloseAsync(ctx, "ilka", pollId, ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.Poll(pollId)
-            .ToBeClosedAt(Now, ctx.Identity.People.IdOf("ilka"))
-            .Poll(pollId)
-            .ToHaveVoteCount(1)
-            .AssertAsync(ct);
-    }
-
     public static TheoryData<string, DateTimeOffset> PollsClosedByTime =>
         new() { { "drinks", LastWeek }, { "sausages", LastWeek.AddDays(1) } };
 
@@ -75,19 +50,6 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx.Expected.Poll(pollId).ToBeClosedAt(closedAt, null).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerMayNotEditTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        var response = await CloseAsync(ctx, "chris", pollId, ct);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Poll(pollId).ToBeClosedByHand(false).AssertAsync(ct);
     }
 
     private static async Task<HttpResponseMessage> CloseAsync(

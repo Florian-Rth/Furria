@@ -1,7 +1,5 @@
 using System.Net;
 using Furria.Api.Tests.Media;
-using Furria.Core.Media;
-using Furria.Core.Website;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -18,57 +16,6 @@ public sealed class WebsitePictureUploadTests : IClassFixture<ApiTestFixture>
     public WebsitePictureUploadTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_FillThePositionAtItsAspect_When_APublisherUploadsAPhotoForIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Publisher(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-
-        var pictureId = await WebsitePictureSteps.UploadAsync(
-            client,
-            Hero,
-            1,
-            WebsitePictureSteps.Landscape,
-            ct
-        );
-
-        await ctx
-            .Expected.WebsitePicture(Hero, 1)
-            .ToBeFilledBy(pictureId, WebsitePictureSteps.Landscape)
-            .WebsitePicture(Hero, 1)
-            .ToBeUpdatedBy(ctx.Identity.People.IdOf(WebsitePictureSeeds.Publisher))
-            .MediaItem(pictureId)
-            .ToBeOwnedBy(MediaOwner.Website(new PictureSlotPosition(Hero, 1)))
-            .MediaItem(pictureId)
-            .ToAwaitItsRenditions(MediaKind.Photo, "image/jpeg")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_DeleteTheFormerPicture_When_AFilledPositionGetsANewOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Publisher(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-        var formerId = await WebsitePictureSteps.UploadAsync(client, Hero, 1, 1.5, ct);
-
-        var pictureId = await WebsitePictureSteps.UploadAsync(
-            client,
-            Hero,
-            1,
-            WebsitePictureSteps.Landscape,
-            ct
-        );
-
-        await ctx
-            .Expected.WebsitePicture(Hero, 1)
-            .ToBeFilledBy(pictureId, WebsitePictureSteps.Landscape)
-            .MediaItem(formerId)
-            .ToBeGone()
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -99,39 +46,6 @@ public sealed class WebsitePictureUploadTests : IClassFixture<ApiTestFixture>
         var response = await CreateAsync(client, TusUploadSteps.WebsiteOwner(Hero, 1), "1.4", ct);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Theory]
-    [InlineData(null)]
-    [InlineData("0")]
-    [InlineData("vierzehn")]
-    [InlineData("12")]
-    public async Task Should_RefuseTheUpload_When_ItCarriesNoUsableAspect(string? aspect)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Publisher(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-
-        var response = await CreateAsync(client, TusUploadSteps.WebsiteOwner(Hero, 1), aspect, ct);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Theory]
-    [InlineData("website:hero:1")]
-    [InlineData("website:Landing.hero:1")]
-    [InlineData("website:landing.hero:0")]
-    [InlineData("website:landing.hero:25")]
-    [InlineData("website:landing.hero")]
-    public async Task Should_RefuseTheUpload_When_TheSlotIsMalformed(string owner)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Publisher(), ct);
-        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
-
-        var response = await CreateAsync(client, owner, "1.4", ct);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

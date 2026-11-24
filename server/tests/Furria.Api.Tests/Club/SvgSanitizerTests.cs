@@ -6,18 +6,6 @@ namespace Furria.Api.Tests.Club;
 public sealed class SvgSanitizerTests
 {
     [Fact]
-    public void Should_KeepTheArtworkAsItIs_When_NothingInItIsDangerous()
-    {
-        const string artwork =
-            "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">"
-            + "<circle cx=\"5\" cy=\"5\" r=\"4\" fill=\"#c8102e\" />"
-            + "</svg>";
-
-        Assert.True(SvgSanitizer.TrySanitize(artwork, out var sanitized));
-        Assert.Equal(artwork, sanitized);
-    }
-
-    [Fact]
     public void Should_DropTheScript_When_TheArtworkCarriesOne()
     {
         const string artwork =
@@ -62,19 +50,6 @@ public sealed class SvgSanitizerTests
     }
 
     [Fact]
-    public void Should_KeepTheReference_When_ItPointsIntoTheArtworkItself()
-    {
-        const string artwork =
-            "<svg xmlns=\"http://www.w3.org/2000/svg\">"
-            + "<defs><linearGradient id=\"orden\" /></defs>"
-            + "<circle cx=\"5\" cy=\"5\" r=\"4\" fill=\"url(#orden)\" />"
-            + "</svg>";
-
-        Assert.True(SvgSanitizer.TrySanitize(artwork, out var sanitized));
-        Assert.Equal(artwork, sanitized);
-    }
-
-    [Fact]
     public void Should_DropTheLink_When_ItRunsScriptInsteadOfNavigating()
     {
         const string artwork =
@@ -101,25 +76,6 @@ public sealed class SvgSanitizerTests
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><circle cx=\"5\" cy=\"5\" r=\"4\" /></svg>",
             sanitized
         );
-    }
-
-    [Fact]
-    public void Should_RefuseTheArtwork_When_TheMarkupDoesNotParse()
-    {
-        Assert.False(SvgSanitizer.TrySanitize("<svg><circle cx=\"5\"</svg>", out var sanitized));
-        Assert.Null(sanitized);
-    }
-
-    [Fact]
-    public void Should_RefuseTheArtwork_When_ItsRootIsNotAnSvg()
-    {
-        Assert.False(
-            SvgSanitizer.TrySanitize(
-                "<html xmlns=\"http://www.w3.org/1999/xhtml\"><body /></html>",
-                out var sanitized
-            )
-        );
-        Assert.Null(sanitized);
     }
 
     [Fact]

@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { StrokeMode } from './album-frames';
-import {
-  albumFramesOf,
-  selectionWith,
-  selectionWithout,
-  strokeModeOf,
-  strokeSelection,
-} from './album-frames';
+import { selectionWith } from './album-frames';
 import type { AlbumItem } from './schemas';
 
 const urls = {
@@ -42,16 +35,6 @@ const item = (
   ...overrides,
 });
 
-describe('albumFramesOf', () => {
-  it('numbers frames from one in the given order', () => {
-    const frames = albumFramesOf([item(7, null), item(3, null)]);
-    expect(frames.map((frame) => [frame.id, frame.number])).toEqual([
-      [7, 1],
-      [3, 2],
-    ]);
-  });
-});
-
 describe('selectionWith', () => {
   it('appends ready photos in album order behind the kept selection and keeps captions', () => {
     const items = [
@@ -68,40 +51,5 @@ describe('selectionWith', () => {
       { mediaItemId: 1, caption: null },
       { mediaItemId: 6, caption: null },
     ]);
-  });
-});
-
-describe('selectionWithout', () => {
-  it('drops the given photos and keeps the order of the rest', () => {
-    const items = [item(1, 3), item(2, 1), item(3, 2)];
-    expect(selectionWithout(items, new Set([3]))).toEqual([
-      { mediaItemId: 2, caption: 'Bild 2' },
-      { mediaItemId: 1, caption: 'Bild 1' },
-    ]);
-  });
-});
-
-describe('strokeModeOf', () => {
-  it.each<[number[], number, StrokeMode]>([
-    [[], 1, 'add'],
-    [[1], 1, 'remove'],
-    [[2], 1, 'add'],
-  ])('with %j selected, a stroke from %i is %s', (selected, anchor, mode) => {
-    expect(strokeModeOf(new Set(selected), anchor)).toBe(mode);
-  });
-});
-
-describe('strokeSelection', () => {
-  const order = [10, 20, 30, 40, 50];
-
-  it.each<[string, number[], number, number, StrokeMode, number[]]>([
-    ['adds the swept range forwards', [50], 20, 40, 'add', [20, 30, 40, 50]],
-    ['adds the swept range backwards', [], 40, 20, 'add', [20, 30, 40]],
-    ['removes the swept range', [10, 20, 30, 40], 30, 10, 'remove', [40]],
-    ['leaves the base for an unknown frame', [10], 20, 99, 'add', [10]],
-  ])('%s', (_, base, anchor, current, mode, expected) => {
-    expect([...strokeSelection(new Set(base), order, anchor, current, mode)].sort()).toEqual(
-      expected,
-    );
   });
 });

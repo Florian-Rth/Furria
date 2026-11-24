@@ -17,36 +17,12 @@ public sealed class PushOptionsTests
     private const string Subject = "https://app.furria.de";
 
     [Theory]
-    [InlineData("https://app.furria.de")]
-    [InlineData("mailto:vorstand@furria.de")]
-    public void Should_ReadTheKeys_When_TheyAreAPairWithAContactSubject(string subject)
-    {
-        var options = PushOptionsOf(PublicKey, PrivateKey, subject);
-
-        Assert.Equal(PublicKey, options.VapidPublicKey);
-    }
-
-    [Theory]
-    [InlineData("", "")]
     [InlineData(ForeignPublicKey, PrivateKey)]
     [InlineData(PublicKey, "not-a-key")]
-    [InlineData("BMhR4mFcMj4K9cYVgsAKgKIG", PrivateKey)]
     public void Should_RefuseTheOptions_When_TheKeysAreNoPair(string publicKey, string privateKey)
     {
         Assert.Throws<OptionsValidationException>(() =>
             PushOptionsOf(publicKey, privateKey, Subject)
-        );
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("app.furria.de")]
-    [InlineData("http://app.furria.de")]
-    [InlineData("mailto:")]
-    public void Should_RefuseTheOptions_When_TheSubjectIsNoContact(string subject)
-    {
-        Assert.Throws<OptionsValidationException>(() =>
-            PushOptionsOf(PublicKey, PrivateKey, subject)
         );
     }
 

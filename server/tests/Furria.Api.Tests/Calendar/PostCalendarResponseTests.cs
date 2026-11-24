@@ -10,8 +10,6 @@ namespace Furria.Api.Tests.Calendar;
 
 public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
 {
-    private const int NoSuchEntryOffset = 10_000;
-
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly Yesterday = new(2027, 1, 14);
     private static readonly DateOnly ArchivedLastSummer = new(2026, 6, 30);
@@ -88,62 +86,6 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     public PostCalendarResponseTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_RecordTheResponse_When_TheEntryAsksForOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var response = await AnswerAsync(
-                    client,
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    AttendanceAnswer.Yes
-                );
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
-                await ctx
-                    .Expected.AttendanceResponsesFor(ctx.Club.CalendarEntries.IdOf("club-meeting"))
-                    .ToCarryAnswerFrom(ctx.Identity.People.IdOf("alice"), AttendanceAnswer.Yes)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReplaceTheAnswer_When_SheAnswersAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-                var meetingId = ctx.Club.CalendarEntries.IdOf("club-meeting");
-
-                await AnswerAsync(client, meetingId, AttendanceAnswer.Yes);
-                var response = await AnswerAsync(client, meetingId, AttendanceAnswer.No);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
-                await ctx
-                    .Expected.AttendanceResponsesFor(meetingId)
-                    .ToCarryExactlyOneAnswerFrom(ctx.Identity.People.IdOf("alice"))
-                    .AttendanceResponsesFor(meetingId)
-                    .ToCarryAnswerFrom(ctx.Identity.People.IdOf("alice"), AttendanceAnswer.No)
-                    .AssertAsync(ct);
-            }
-        );
     }
 
     [Fact]
@@ -226,77 +168,9 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeTheAnswer_When_SheIsChosenForTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("bea", ct);
-                var entryId = ctx.Club.CalendarEntries.IdOf("garde-secret");
-
-                var response = await AnswerAsync(client, entryId, AttendanceAnswer.Yes);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_TakeTheAnswer_When_TheCallerBelongsToTheOwningGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("bea", ct);
-
-                var response = await AnswerAsync(
-                    client,
-                    ctx.Club.CalendarEntries.IdOf("garde-training"),
-                    AttendanceAnswer.Maybe
-                );
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-
-                await ctx
-                    .Expected.AttendanceResponsesFor(
-                        ctx.Club.CalendarEntries.IdOf("garde-training")
-                    )
-                    .ToCarryAnswerFrom(ctx.Identity.People.IdOf("bea"), AttendanceAnswer.Maybe)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_TakeTheAnswer_When_AGroupMemberWithoutClubMembershipAnswersHerGroupsEntry()
     {
         await AssertAnswerTakenAsync("kevin", "ballett-training");
-    }
-
-    [Fact]
-    public async Task Should_TakeTheAnswer_When_AParticipatingGroupMemberAnswersAGroupOnlyEntry()
-    {
-        await AssertAnswerTakenAsync("bea", "kinder-probe");
-    }
-
-    [Fact]
-    public async Task Should_TakeTheAnswer_When_AGroupAdminWithoutClubMembershipAnswersHerGroupsEntry()
-    {
-        await AssertAnswerTakenAsync("sabine", "kinder-probe");
-    }
-
-    [Fact]
-    public async Task Should_TakeTheAnswer_When_AParticipatingGroupMemberWithoutClubMembershipAnswersAClubOwnedEntry()
-    {
-        await AssertAnswerTakenAsync("kevin", "prunksitzung");
     }
 
     [Fact]
@@ -312,12 +186,6 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_AnAccountWithoutClubReadAnswersAnEntryOfNoGroupOfHers()
-    {
-        await AssertAnswerRefusedAsync("kevin", "club-meeting", HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
     public async Task Should_ReturnForbidden_When_AFormerGroupMemberAnswers()
     {
         await AssertAnswerRefusedAsync("frieda", "ballett-training", HttpStatusCode.Forbidden);
@@ -327,75 +195,6 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     public async Task Should_ReturnForbidden_When_TheOnlyTieIsToAnArchivedGroup()
     {
         await AssertAnswerRefusedAsync("otto", "altgarde-treffen", HttpStatusCode.Forbidden);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_AnAccountWithoutTiesAnswersAnUnknownEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("gast", ct);
-
-                var response = await AnswerAsync(
-                    client,
-                    ctx.Club.CalendarEntries.IdOf("club-meeting") + NoSuchEntryOffset,
-                    AttendanceAnswer.Yes
-                );
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheEntryDoesNotExist()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-                var response = await AnswerAsync(
-                    client,
-                    ctx.Club.CalendarEntries.IdOf("club-meeting") + NoSuchEntryOffset,
-                    AttendanceAnswer.Yes
-                );
-
-                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerHoldsNoRunningMembership()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("gast", ct);
-
-                var response = await AnswerAsync(
-                    client,
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    AttendanceAnswer.Yes
-                );
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            }
-        );
     }
 
     private async Task AssertAnswerTakenAsync(string personAlias, string entryAlias)

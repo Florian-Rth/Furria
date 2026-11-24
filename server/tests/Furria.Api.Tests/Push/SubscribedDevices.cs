@@ -57,13 +57,6 @@ internal static class SubscribedDevices
         CancellationToken ct
     ) => SwitchedAsync(ctx, accountAlias, topic, isEnabled: false, ct);
 
-    internal static Task UnmutedAsync(
-        SeededContext ctx,
-        string accountAlias,
-        PushTopic topic,
-        CancellationToken ct
-    ) => SwitchedAsync(ctx, accountAlias, topic, isEnabled: true, ct);
-
     internal static IReadOnlyList<JsonElement> PushesAt(ApiTestFixture fixture, string device) =>
         [
             .. fixture

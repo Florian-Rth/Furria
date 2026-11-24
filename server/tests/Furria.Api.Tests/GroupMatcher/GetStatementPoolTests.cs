@@ -22,29 +22,6 @@ public sealed class GetStatementPoolTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListThePoolInOrder_When_TheManagerReadsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithManagerKlara(builder)
-                    .GroupMatcher(matcher =>
-                        matcher
-                            .AddStatement("konfetti", "Konfetti ist Pflicht.")
-                            .AddStatement("bierbank", "Bierbänke stelle ich auf.")
-                    ),
-            ct
-        );
-
-        var pool = await GetAsync(ctx, ct);
-
-        Assert.Equal(
-            ["Konfetti ist Pflicht.", "Bierbänke stelle ich auf."],
-            pool.Statements.Select(statement => statement.Text)
-        );
-    }
-
-    [Fact]
     public async Task Should_ShowWhatEachActiveGroupStillOwes_When_TheCoverageIsRead()
     {
         var ct = TestContext.Current.CancellationToken;

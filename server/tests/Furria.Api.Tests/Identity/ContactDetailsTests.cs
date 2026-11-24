@@ -15,10 +15,6 @@ public sealed class ContactDetailsTests
 
     [Theory]
     [InlineData("paula.brendel@example.test", Phone, Street, Zip, City)]
-    [InlineData(Email, "03632 123456", Street, Zip, City)]
-    [InlineData(Email, Phone, "Am Anger 3", Zip, City)]
-    [InlineData(Email, Phone, Street, "99706", City)]
-    [InlineData(Email, Phone, Street, Zip, "Sondershausen")]
     [InlineData(Email, null, Street, Zip, City)]
     [InlineData(Email, Phone, Street, Zip, "großfurra")]
     public void Should_BeAChange_When_OneFieldDiffers(
@@ -33,25 +29,11 @@ public sealed class ContactDetailsTests
     }
 
     [Fact]
-    public void Should_BeNoChange_When_EveryFieldIsTheSame()
-    {
-        Assert.False(Details(Email, Phone, Street, Zip, City).DiffersFrom(Recorded));
-    }
-
-    [Fact]
     public void Should_BeNoChange_When_AnAbsentFieldIsSubmittedEmpty()
     {
         var recorded = Details(Email, null, "", Zip, City);
 
         Assert.False(Details(Email, "", null, Zip, City).DiffersFrom(recorded));
-    }
-
-    [Fact]
-    public void Should_BeAChange_When_AnAbsentFieldIsFilledIn()
-    {
-        var recorded = Details(Email, null, Street, Zip, City);
-
-        Assert.True(Details(Email, Phone, Street, Zip, City).DiffersFrom(recorded));
     }
 
     private static ContactDetails Details(

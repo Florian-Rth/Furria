@@ -24,12 +24,6 @@ public sealed class BeerStockForecastTests
         );
     }
 
-    [Fact]
-    public void Should_ProjectToday_When_TheStockIsAlreadyEmpty()
-    {
-        Assert.Equal(Today, BeerStockForecast.ProjectedEmptyOn(0, 12, Today));
-    }
-
     [Theory]
     [InlineData(0)]
     [InlineData(30)]

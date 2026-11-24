@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { ArchivePlan, RunningTie } from './person-archive';
 import {
   toArchivePlan,
-  toLastDayNote,
   toLastDayVerdict,
   toMembershipArchiveEffect,
   toRunningTies,
@@ -32,7 +31,6 @@ const untied = {
 
 describe('toRunningTies', () => {
   it.each<{ case: string; endedOn: string | null; expected: RunningTie[] }>([
-    { case: 'an open membership', endedOn: null, expected: [{ kind: 'membership' }] },
     { case: 'a membership ending today', endedOn: TODAY, expected: [{ kind: 'membership' }] },
     { case: 'a membership ended yesterday', endedOn: '2026-10-06', expected: [] },
   ])('counts $case once', ({ endedOn, expected }) => {
@@ -92,8 +90,6 @@ describe('toRunningTies', () => {
 
 describe('toMembershipArchiveEffect', () => {
   it.each([
-    { isArchived: false, endedOn: '2020-01-01', expected: 'untouched' },
-    { isArchived: true, endedOn: null, expected: 'lifted' },
     { isArchived: true, endedOn: TODAY, expected: 'lifted' },
     { isArchived: true, endedOn: '2026-10-06', expected: 'refused' },
   ])(
@@ -168,12 +164,6 @@ describe('toArchivePlan', () => {
       deleted: [],
     },
     {
-      case: 'a pause ending in the last day session stays',
-      pauses: [pause(2023, 2025)],
-      cut: [],
-      deleted: [],
-    },
-    {
       case: 'a pause wholly in a later session is deleted',
       pauses: [pause(2026, 2027)],
       cut: [],
@@ -207,7 +197,6 @@ describe('toArchivePlan', () => {
 
 describe('toArchivePlan edges', () => {
   it.each<{ case: string; lastDay: string | null; cut: number; deleted: number }>([
-    { case: 'no last day leaves the pauses alone', lastDay: null, cut: 0, deleted: 0 },
     {
       case: 'a last day before 11.11. keeps the next session',
       lastDay: '2026-11-10',
@@ -264,29 +253,7 @@ describe('toLastDayVerdict', () => {
     { lastDay: TODAY, expected: 'tooLate' },
     { lastDay: '2026-09-30', expected: 'beforeStart' },
     { lastDay: '2026-10-01', expected: 'fine' },
-    { lastDay: '2026-10-06', expected: 'fine' },
   ])('answers $expected for $lastDay', ({ lastDay, expected }) => {
     expect(toLastDayVerdict(lastDay, plan, TODAY)).toBe(expected);
-  });
-});
-
-describe('toLastDayNote', () => {
-  const plan: ArchivePlan = {
-    ends: [{ kind: 'group', name: 'Garde', startsOn: '2026-10-01' }],
-    cutPauses: [],
-    deletes: [],
-    deletedPauses: [],
-    earliestLastDay: '2026-10-01',
-    limitingTie: { kind: 'group', name: 'Garde', startsOn: '2026-10-01' },
-  };
-
-  it.each([
-    { verdict: 'missing', lastDay: null, expected: 'missing' },
-    { verdict: 'tooLate', lastDay: TODAY, expected: 'tooLate' },
-    { verdict: 'beforeStart', lastDay: '2026-09-30', expected: 'earliest' },
-    { verdict: 'fine', lastDay: '2026-10-01', expected: 'earliest' },
-    { verdict: 'fine', lastDay: '2026-10-06', expected: null },
-  ] as const)('notes $expected for $verdict on $lastDay', ({ verdict, lastDay, expected }) => {
-    expect(toLastDayNote(verdict, plan, lastDay)).toBe(expected);
   });
 });

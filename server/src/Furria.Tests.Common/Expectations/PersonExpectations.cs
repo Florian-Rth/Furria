@@ -121,18 +121,6 @@ public sealed class PersonExpectations
             }
         );
 
-    public Expected ToHaveBeenTouchedAt(DateTimeOffset updatedAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(updatedAt, (await SingleAsync(dbContext, ct)).UpdatedAt)
-        );
-
-    public Expected ToHaveBeenCreatedAt(DateTimeOffset createdAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(createdAt, (await SingleAsync(dbContext, ct)).CreatedAt)
-        );
-
     public Expected ToBeInGroupsSince(DateOnly joinedOn, params int[] groupIds) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

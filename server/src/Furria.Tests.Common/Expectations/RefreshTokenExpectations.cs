@@ -44,15 +44,6 @@ public sealed class RefreshTokenExpectations
                 )
         );
 
-    public Expected ToStoreNoRawSecret(string rawToken) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.False(
-                    await Owned(dbContext).AnyAsync(row => row.TokenHash == rawToken, ct),
-                    "A raw refresh token was found in the refresh_token table."
-                )
-        );
-
     private IQueryable<RefreshToken> Owned(AppDbContext dbContext) =>
         dbContext.RefreshTokens.AsNoTracking().Where(row => row.AccountId == _accountId);
 }

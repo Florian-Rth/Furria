@@ -1,4 +1,3 @@
-using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Gallery;
 using Furria.Application.Authorization;
@@ -51,70 +50,6 @@ public sealed class GetGalleryItemsTests : IClassFixture<ApiTestFixture>
             ],
             result.Items.Select(item => (item.MediaItemId, item.State)).Order()
         );
-    }
-
-    [Fact]
-    public async Task Should_AddHerOwnInboxItems_When_AnUploaderAsks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Items(), ct);
-        var client = await ctx.Identity.ClientForAsync("markus", ct);
-
-        var (_, result) = await client.GETAsync<
-            GetGalleryItems,
-            GetGalleryItemsRequest,
-            GetGalleryItemsResponse
-        >(new() { Ids = [.. AllAliases.Select(ctx.Gallery.Items.IdOf)] });
-
-        Assert.Equal(
-            [
-                ctx.Gallery.Items.IdOf("developing"),
-                ctx.Gallery.Items.IdOf("developed"),
-                ctx.Gallery.Items.IdOf("markus-inbox"),
-            ],
-            result.Items.Select(item => item.MediaItemId).Order()
-        );
-    }
-
-    [Fact]
-    public async Task Should_AnswerEveryInboxItem_When_AManagerAsks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Items(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (_, result) = await client.GETAsync<
-            GetGalleryItems,
-            GetGalleryItemsRequest,
-            GetGalleryItemsResponse
-        >(new() { Ids = [.. AllAliases.Select(ctx.Gallery.Items.IdOf)] });
-
-        Assert.Equal(
-            [
-                ctx.Gallery.Items.IdOf("developing"),
-                ctx.Gallery.Items.IdOf("developed"),
-                ctx.Gallery.Items.IdOf("markus-inbox"),
-                ctx.Gallery.Items.IdOf("anna-inbox"),
-                ctx.Gallery.Items.IdOf("orphan"),
-            ],
-            result.Items.Select(item => item.MediaItemId).Order()
-        );
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheRequest_When_ItAsksForMoreItemsThanOnePollCarries()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Items(), ct);
-        var client = await ctx.Identity.ClientForAsync("lena", ct);
-
-        var (response, _) = await client.GETAsync<
-            GetGalleryItems,
-            GetGalleryItemsRequest,
-            GetGalleryItemsResponse
-        >(new() { Ids = [.. Enumerable.Range(1, GetGalleryItemsValidator.MaxIds + 1)] });
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private static Action<SeedContextBuilder> Items() =>

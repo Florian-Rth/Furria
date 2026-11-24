@@ -16,11 +16,6 @@ public sealed class AttendanceResponseExpectations
         _calendarEntryId = calendarEntryId;
     }
 
-    public Expected ToCarryExactlyOneAnswerFrom(int personId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) => Assert.Single(await AnswersOfAsync(dbContext, personId, ct))
-        );
-
     public Expected ToCarryAnswerFrom(int personId, AttendanceAnswer answer) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

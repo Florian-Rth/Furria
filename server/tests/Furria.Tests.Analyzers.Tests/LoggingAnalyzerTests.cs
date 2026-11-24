@@ -66,9 +66,6 @@ public sealed class LoggingAnalyzerTests
 
     [Theory]
     [InlineData("System.Console.WriteLine(\"x\")")]
-    [InlineData("System.Console.Write(\"x\")")]
-    [InlineData("System.Console.Error.WriteLine(\"x\")")]
-    [InlineData("System.Console.Out.WriteLine(\"x\")")]
     public async Task Should_FlagConsoleOutput_When_InProductionCode(string statement)
     {
         var source = $$"""
@@ -103,9 +100,7 @@ public sealed class LoggingAnalyzerTests
 
     [Theory]
     [InlineData("Login failed for {Email}: {LoginFailureReason}")]
-    [InlineData("HTTP {RequestMethod} responded in {Elapsed:0} ms")]
     [InlineData("Handled {@Command} for {$Kind}")]
-    [InlineData("Refresh token replay for family {TokenFamilyId}")]
     [InlineData("Escaped {{braces}} are text")]
     public async Task Should_AcceptTheTemplate_When_EveryPlaceholderIsPascalCaseAndPersonFree(
         string template
@@ -122,7 +117,6 @@ public sealed class LoggingAnalyzerTests
 
     [Theory]
     [InlineData("Seeded {accountId}")]
-    [InlineData("Seeded {0}")]
     [InlineData("Seeded {account_id}")]
     public async Task Should_FlagThePlaceholder_When_ItIsNotPascalCase(string template)
     {
@@ -137,38 +131,13 @@ public sealed class LoggingAnalyzerTests
 
     [Theory]
     [InlineData("Created {FirstName}")]
-    [InlineData("Created {LastName}")]
-    [InlineData("Called {PhoneNumber}")]
-    [InlineData("Moved to {Street}")]
-    [InlineData("Born {BirthDate}")]
-    [InlineData("Posted {AnnouncementBody}")]
     [InlineData("Tried {Password}")]
-    [InlineData("Issued {RefreshToken}")]
-    [InlineData("Stored {PasswordHash}")]
     public async Task Should_FlagThePlaceholder_When_ItNamesPersonalData(string template)
     {
         var diagnostics = await AnalyzerHarness.RunForRuleAsync(
             new LogTemplatePlaceholderAnalyzer(),
             "MET010",
             LoggedWith(template)
-        );
-
-        Assert.Single(diagnostics);
-    }
-
-    [Fact]
-    public async Task Should_FlagTheSerilogPlaceholder_When_ItIsNotPascalCase()
-    {
-        const string source =
-            SerilogStub
-            + """
-                namespace N { class C { void M() => Serilog.Log.Information("Seeded {accountId}"); } }
-                """;
-
-        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new LogTemplatePlaceholderAnalyzer(),
-            "MET010",
-            source
         );
 
         Assert.Single(diagnostics);

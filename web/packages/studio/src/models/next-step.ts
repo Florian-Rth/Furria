@@ -5,7 +5,6 @@ export interface NextStep {
   number: number;
 }
 
-/** The step after the current one; before any step (or for an unknown id) the first step is next. */
 export const nextStepOf = (
   steps: readonly StudioStep[],
   stepId: number | null,

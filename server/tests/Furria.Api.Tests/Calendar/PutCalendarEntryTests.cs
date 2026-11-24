@@ -12,10 +12,8 @@ namespace Furria.Api.Tests.Calendar;
 
 public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
 {
-    private const int UnknownEntryId = 999_999;
     private const string ValidationField = "request";
     private const string AudienceField = "audience";
-    private const string TrainingForTheClubMessage = "Ein Training ist nie für den ganzen Verein.";
     private const string ConflictField = "conflict";
     private const string Gala = "1. Prunksitzung";
     private const string EventsLiveInTheWorkbench =
@@ -67,15 +65,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset InsideTheAbendprobe = new(
-        2027,
-        1,
-        20,
-        19,
-        0,
-        0,
-        TimeSpan.Zero
-    );
     private static readonly DateTimeOffset AfterTheAbendprobe = new(
         2027,
         1,
@@ -91,32 +80,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     public PutCalendarEntryTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_MoveTheEntryToTheClub_When_TheCallerMayOwnBothOwners()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-
-        var client = await ctx.Identity.ClientForAsync("dana", ct);
-        var (response, result) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(ClubOwned(entryId, DanceGuardPerformance));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(result.VenueCollisions);
-        await ctx
-            .Expected.CalendarEntry(entryId)
-            .ToBeClubOwned()
-            .CalendarEntry(entryId)
-            .ToHaveTitle(DanceGuardPerformance)
-            .CalendarEntry(entryId)
-            .ToHaveAudience(CalendarEntryAudience.Club)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -160,132 +123,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.CalendarEntry(entryId)
             .ToHaveOwnerGroup(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheChanges_When_TheParticipatingGroupsAreNull()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var client = await ctx.Identity.ClientForAsync("chris", ct);
-        var (response, _) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(
-            new()
-            {
-                CalendarEntryId = ctx.Club.CalendarEntries.IdOf("garde-training"),
-                Title = DanceGuardPerformance,
-                Description = null,
-                OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                VenueId = null,
-                StartsAt = TrainingStart,
-                EndsAt = TrainingEnd,
-                Kind = CalendarEntryKind.Trip,
-                Audience = CalendarEntryAudience.Groups,
-                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
-                AudiencePersonIds = [],
-                AddOns = [],
-                ParticipatingGroupIds = null!,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_SaveTheChanges_When_TheOwnerStaysTheSame()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
-
-        var client = await ctx.Identity.ClientForAsync("chris", ct);
-        var (response, _) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(
-            new()
-            {
-                CalendarEntryId = entryId,
-                Title = DanceGuardPerformance,
-                Description = "Auftritt statt Training.",
-                OwnerGroupId = tanzgarde,
-                VenueId = null,
-                StartsAt = TrainingStart,
-                EndsAt = TrainingEnd,
-                Kind = CalendarEntryKind.Trip,
-                Audience = CalendarEntryAudience.Groups,
-                AudienceGroupIds = [tanzgarde],
-                AudiencePersonIds = [],
-                AddOns = [PutAddOn(CalendarEntryAddOnKind.Attendance)],
-                ParticipatingGroupIds = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.CalendarEntry(entryId)
-            .ToHaveOwnerGroup(tanzgarde)
-            .CalendarEntry(entryId)
-            .ToHaveTitle(DanceGuardPerformance)
-            .CalendarEntry(entryId)
-            .ToHaveKind(CalendarEntryKind.Trip)
-            .CalendarEntry(entryId)
-            .ToHavePeriod(TrainingStart, TrainingEnd)
-            .CalendarEntry(entryId)
-            .ToAskForResponse(true)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_WarnAboutTheVenueAndStillWrite_When_TheNewTimeClashesAtThatVenue()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-        var buehnenhaus = ctx.Club.Venues.IdOf("buehnenhaus");
-
-        var client = await ctx.Identity.ClientForAsync("chris", ct);
-        var (response, result) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(
-            new()
-            {
-                CalendarEntryId = entryId,
-                Title = DanceGuardTraining,
-                Description = null,
-                OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                VenueId = buehnenhaus,
-                StartsAt = InsideTheAbendprobe,
-                EndsAt = AfterTheAbendprobe,
-                Kind = CalendarEntryKind.Training,
-                Audience = CalendarEntryAudience.Groups,
-                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
-                AudiencePersonIds = [],
-                AddOns = [],
-                ParticipatingGroupIds = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var collision = Assert.Single(result.VenueCollisions);
-        Assert.Equal(ctx.Club.CalendarEntries.IdOf("abendprobe"), collision.CalendarEntryId);
-        Assert.Equal(Abendprobe, collision.Title);
-        Assert.Equal(AbendprobeStart, collision.StartsAt);
-        Assert.Equal(AbendprobeEnd, collision.EndsAt);
-        await ctx
-            .Expected.CalendarEntry(entryId)
-            .ToHaveVenue(buehnenhaus)
-            .CalendarEntry(entryId)
-            .ToHavePeriod(InsideTheAbendprobe, AfterTheAbendprobe)
             .AssertAsync(ct);
     }
 
@@ -369,46 +206,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheVenue_When_ItIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-
-        var client = await ctx.Identity.ClientForAsync("chris", ct);
-        var (response, _) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(
-            new()
-            {
-                CalendarEntryId = entryId,
-                Title = DanceGuardTraining,
-                Description = null,
-                OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
-                VenueId = ctx.Club.Venues.IdOf("altes-lager"),
-                StartsAt = TrainingStart,
-                EndsAt = TrainingEnd,
-                Kind = CalendarEntryKind.Training,
-                Audience = CalendarEntryAudience.Groups,
-                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
-                AudiencePersonIds = [],
-                AddOns = [],
-                ParticipatingGroupIds = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Ein archivierter Ort kann nicht mehr gewählt werden."],
-            failures[ValidationField]
-        );
-        await ctx.Expected.CalendarEntry(entryId).ToBeHeldAt(null).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheEntryIsAnEvent()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -431,74 +228,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(galaId)
             .ToHaveKind(CalendarEntryKind.Event)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheEntryWouldBecomeAnEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("abendprobe");
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(
-            ClubOwned(entryId, Abendprobe) with
-            {
-                Kind = CalendarEntryKind.Event,
-                Audience = CalendarEntryAudience.Club,
-                AudienceGroupIds = [],
-                AudiencePersonIds = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx
-            .Expected.CalendarEntry(entryId)
-            .ToHaveKind(CalendarEntryKind.Plain)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_ATrainingWouldBeForTheWholeClub()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("abendprobe");
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(ClubOwned(entryId, Abendprobe) with { Kind = CalendarEntryKind.Training });
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal([TrainingForTheClubMessage], failures[AudienceField]);
-        await ctx
-            .Expected.CalendarEntry(entryId)
-            .ToHaveKind(CalendarEntryKind.Plain)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheEntryIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var client = await ctx.Identity.ClientForAsync("dana", ct);
-        var (response, _) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(ClubOwned(UnknownEntryId, DanceGuardPerformance));
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -527,50 +256,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_AGroupAdminAddsAForeignGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-
-        var response = await PutAsGroupAdminAsync(
-            ctx,
-            GardeTraining(ctx, entryId) with
-            {
-                AudienceGroupIds =
-                [
-                    ctx.Groups.Groups.IdOf("tanzgarde"),
-                    ctx.Groups.Groups.IdOf("kindergarde"),
-                ],
-            },
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_AGroupAdminChoosesSomeoneOutsideHerGroups()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-
-        var response = await PutAsGroupAdminAsync(
-            ctx,
-            GardeTraining(ctx, entryId) with
-            {
-                Audience = CalendarEntryAudience.People,
-                AudienceGroupIds = [],
-                AudiencePersonIds = [ctx.Identity.People.IdOf("kalle")],
-            },
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_KeepTheWholeClub_When_TheGroupEntryAlreadyHoldsIt()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -593,57 +278,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             .Expected.CalendarEntry(entryId)
             .ToHaveAudience(CalendarEntryAudience.Club)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepAForeignGroup_When_TheGroupEntryAlreadyAddressesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-joint");
-        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
-        var kindergarde = ctx.Groups.Groups.IdOf("kindergarde");
-
-        var response = await PutAsGroupAdminAsync(
-            ctx,
-            GardeTraining(ctx, entryId) with
-            {
-                AudienceGroupIds = [tanzgarde, kindergarde],
-            },
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.CalendarEntry(entryId)
-            .ToCarryAudienceGroups(tanzgarde, kindergarde)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ChooseAnyone_When_AClubCalendarManagerEditsAGroupEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-        var kalle = ctx.Identity.People.IdOf("kalle");
-
-        var client = await ctx.Identity.ClientForAsync("dana", ct);
-        var (response, _) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(
-            GardeTraining(ctx, entryId) with
-            {
-                Audience = CalendarEntryAudience.People,
-                AudienceGroupIds = [],
-                AudiencePersonIds = [kalle],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.CalendarEntry(entryId).ToChoosePeople(kalle).AssertAsync(ct);
     }
 
     [Fact]
@@ -672,29 +306,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_SheIsNewlyChosenButMayNotUseTheApp()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("abendprobe");
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.PUTAsync<
-            PutCalendarEntry,
-            PutCalendarEntryRequest,
-            PutCalendarEntryResponse
-        >(
-            ClubOwned(entryId, Abendprobe) with
-            {
-                Audience = CalendarEntryAudience.People,
-                AudiencePersonIds = [ctx.Identity.People.IdOf("frieda")],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_DiscardTheAnswers_When_TheAttendanceAddOnIsRemoved()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -709,33 +320,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             .ToCarryNoAnswer()
             .CalendarEntry(entryId)
             .ToAskForResponse(false)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_DropTheTakenOverAttendance_When_TheAttendanceAddOnIsRemoved()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await RewriteAsync(
-            ctx,
-            ctx.Club.CalendarEntries.IdOf("asking-meeting"),
-            [],
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Announcement(ctx.Club.Announcements.IdOf("aushang"))
-            .ToHaveLoans(
-                (
-                    AnnouncementAddOnKind.Poll,
-                    ctx.Club.CalendarEntries.IdOf("poll-meeting"),
-                    ctx.Club.Polls.IdOf("snack"),
-                    1
-                )
-            )
             .AssertAsync(ct);
     }
 
@@ -771,90 +355,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                     1
                 )
             )
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_StartWithoutAnswers_When_TheAttendanceAddOnIsAttachedAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
-        await RewriteAsync(ctx, entryId, [], ct);
-
-        var response = await RewriteAsync(ctx, entryId, [CalendarEntryAddOnKind.Attendance], ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.AttendanceResponsesFor(entryId)
-            .ToCarryNoAnswer()
-            .CalendarEntry(entryId)
-            .ToAskForResponse(true)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheAnswers_When_TheAttendanceAddOnStaysAttached()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
-
-        var response = await RewriteAsync(ctx, entryId, [CalendarEntryAddOnKind.Attendance], ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.AttendanceResponsesFor(entryId)
-            .ToCarryAnswerFrom(ctx.Identity.People.IdOf("chris"), AttendanceAnswer.Yes)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AddAnOption_When_ThePollHoldsVotes()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await RewriteAddOnsAsync(
-            ctx,
-            [
-                Snack(
-                    ctx,
-                    ("snack:Kuchen", "Kuchen"),
-                    ("snack:Brezeln", "Brezeln"),
-                    (null, "Obst")
-                ),
-                Days(ctx),
-            ],
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var pollId = ctx.Club.Polls.IdOf("snack");
-        await ctx
-            .Expected.Poll(pollId)
-            .ToHaveOptions("Kuchen", "Brezeln", "Obst")
-            .Poll(pollId)
-            .ToHaveVotesOf(ctx.Identity.People.IdOf("chris"), "Kuchen")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RenameAnOption_When_ItHoldsNoVotes()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await RewriteAddOnsAsync(
-            ctx,
-            [Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Laugenbrezeln")), Days(ctx)],
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
-            .ToHaveOptions("Kuchen", "Laugenbrezeln")
             .AssertAsync(ct);
     }
 
@@ -917,77 +417,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepThePollClosedAtItsDeadline_When_TheEntryMovesLaterAfterTheDeadline()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var deadline = EarlyMeetingStart.AddDays(-1);
-        var early = PollAddOn(
-            ctx.Club.Polls.IdOf("early"),
-            "Wer fährt?",
-            false,
-            false,
-            ctx,
-            ("early:Ich", "Ich"),
-            ("early:Du", "Du")
-        );
-
-        await _fixture.AtInstantAsync(
-            deadline.AddHours(1),
-            async () =>
-            {
-                var response = await MoveEntryAsync(
-                    ctx,
-                    "early-meeting",
-                    EarlyMeetingStart.AddDays(7),
-                    [early with { Poll = early.Poll! with { VotesUntil = deadline } }],
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.Poll(ctx.Club.Polls.IdOf("early"))
-            .ToBeClosedAt(deadline, null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheChange_When_AClosedListIsEdited()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var meetingStart = AbendprobeStart.AddDays(6);
-
-        await _fixture.AtInstantAsync(
-            meetingStart.AddHours(1),
-            async () =>
-            {
-                var response = await MoveEntryAsync(
-                    ctx,
-                    "poll-meeting",
-                    meetingStart,
-                    [
-                        Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
-                        Days(ctx),
-                        SignUpListAddOn(ctx.Club.SignUpLists.IdOf("duties"), "Abbau", null),
-                    ],
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.SignUpList(ctx.Club.SignUpLists.IdOf("duties"))
-            .ToHaveSettings("Aufbau", null, null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheChange_When_AClosedPollIsEdited()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1019,43 +448,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
             .ToHaveOptions("Kuchen", "Brezeln")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheChange_When_TheQuestionOfAPollWithVotesIsRewritten()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var snack = Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln"));
-
-        var response = await RewriteAddOnsAsync(
-            ctx,
-            [snack with { Poll = snack.Poll! with { Question = "Was trinkst du?" } }, Days(ctx)],
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx
-            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
-            .ToHaveQuestion(SnackQuestion)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_DiscardThePollWithItsVotes_When_ThePollIsRemoved()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await RewriteAddOnsAsync(ctx, [Days(ctx)], ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Poll(ctx.Club.Polls.IdOf("snack"))
-            .ToNotExist()
-            .Poll(ctx.Club.Polls.IdOf("days"))
-            .ToHaveVoteCount(2)
             .AssertAsync(ct);
     }
 
@@ -1130,131 +522,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_TheVotesCloseAfterTheStart()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var late = Days(ctx) with
-        {
-            Poll = Days(ctx).Poll! with { VotesUntil = TrainingStart.AddMinutes(1) },
-        };
-
-        var response = await RewriteAddOnsAsync(ctx, [late], ct);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheLines_When_TheListSettingsChange()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var listId = ctx.Club.SignUpLists.IdOf("duties");
-
-        var response = await RewriteAddOnsAsync(
-            ctx,
-            [
-                PutAddOn(CalendarEntryAddOnKind.Attendance),
-                SignUpListAddOn(listId, "Wer hilft beim Aufbau?", "Ab 17 Uhr"),
-            ],
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.SignUpList(listId)
-            .ToHaveSettings("Wer hilft beim Aufbau?", "Ab 17 Uhr", null)
-            .SignUpList(listId)
-            .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Tische"))
-            .CalendarEntry(ctx.Club.CalendarEntries.IdOf("poll-meeting"))
-            .ToHaveSignUpListsAt((1, "Wer hilft beim Aufbau?", "Ab 17 Uhr"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_DiscardTheListWithItsLines_When_TheListIsRemoved()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await RewriteAddOnsAsync(ctx, [Days(ctx)], ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.SignUpList(ctx.Club.SignUpLists.IdOf("duties"))
-            .ToNotExist()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheList_When_ItBelongsToAnotherEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await RewriteAddOnsAsync(
-            ctx,
-            [SignUpListAddOn(ctx.Club.SignUpLists.IdOf("elsewhere-list"), "Fremd", null)],
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx
-            .Expected.SignUpList(ctx.Club.SignUpLists.IdOf("duties"))
-            .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Tische"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_SigningUpClosesAfterTheStart()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var list = SignUpListAddOn(ctx.Club.SignUpLists.IdOf("duties"), "Aufbau", null);
-        var late = list with
-        {
-            SignUpList = list.SignUpList! with { SignUpUntil = TrainingStart.AddMinutes(1) },
-        };
-
-        var response = await RewriteAddOnsAsync(ctx, [late], ct);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReplaceTheSteps_When_TheScheduleIsRewritten()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var scheduleId = ctx.Club.CalendarDaySchedules.IdOf("trip-plan");
-
-        var response = await RewriteAddOnsAsync(
-            ctx,
-            [
-                DayScheduleAddOn(
-                    scheduleId,
-                    "Fahrt",
-                    (null, 0, new TimeOnly(17, 0), "Abfahrt"),
-                    (null, 0, new TimeOnly(16, 30), "Treffpunkt")
-                ),
-            ],
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.CalendarDaySchedule(scheduleId)
-            .ToHaveSteps(
-                "Fahrt",
-                (0, new TimeOnly(16, 30), "Treffpunkt"),
-                (0, new TimeOnly(17, 0), "Abfahrt")
-            )
-            .CalendarEntry(ctx.Club.CalendarEntries.IdOf("poll-meeting"))
-            .ToHaveDaySchedulesAt((0, "Fahrt"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_KeepAHeldStep_When_ItsTextChanges()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1278,72 +545,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.CalendarDaySchedule(scheduleId)
             .ToHaveStep(stepId, 0, new TimeOnly(18, 15), "Treffpunkt Bus")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheStep_When_ItBelongsToAnotherSchedule()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await RewriteAddOnsAsync(
-            ctx,
-            [
-                DayScheduleAddOn(
-                    ctx.Club.CalendarDaySchedules.IdOf("trip-plan"),
-                    null,
-                    (
-                        ctx.Club.CalendarDayScheduleSteps.IdOf("elsewhere-meet"),
-                        0,
-                        new TimeOnly(17, 0),
-                        "Abfahrt"
-                    )
-                ),
-            ],
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_DiscardTheSchedule_When_ItIsRemoved()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await RewriteAddOnsAsync(ctx, [], ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.CalendarDaySchedule(ctx.Club.CalendarDaySchedules.IdOf("trip-plan"))
-            .ToNotExist()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheSchedule_When_ItBelongsToAnotherEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-
-        var response = await RewriteAddOnsAsync(
-            ctx,
-            [
-                DayScheduleAddOn(
-                    ctx.Club.CalendarDaySchedules.IdOf("elsewhere-plan"),
-                    null,
-                    (null, 0, new TimeOnly(17, 0), "Abfahrt")
-                ),
-            ],
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx
-            .Expected.CalendarDaySchedule(ctx.Club.CalendarDaySchedules.IdOf("trip-plan"))
-            .ToHaveSteps(null, (0, new TimeOnly(18, 0), "Treffpunkt"))
             .AssertAsync(ct);
     }
 

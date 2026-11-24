@@ -6,8 +6,6 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Furria.Tests.Analyzers;
 
-// MET001 — bans `using NSubstitute;` / `using Moq;`. Owned hand-rolled doubles
-// (Fake*/Capturing* in Tests.Common/Doubles) are the only sanctioned test doubles.
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class NoMockingFrameworkAnalyzer : DiagnosticAnalyzer
 {

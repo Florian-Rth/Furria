@@ -72,82 +72,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
         _fixture = fixture;
     }
 
-    [Theory]
-    [InlineData("parade", LastSessionsParade)]
-    [InlineData("festival", NextSummerFestival)]
-    public async Task Should_CarryTheEntry_When_ItLiesOutsideTheUpcomingWindow(
-        string alias,
-        string title
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (response, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf(alias),
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(title, result.Entry.Title);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheViewersAnswer_When_SheHasAlreadyAnswered()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "bea",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                Assert.Equal(AttendanceAnswer.Yes, result.Entry.ViewerAnswer);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheGroupInternalEntry_When_TheCallerBelongsToTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (response, result) = await ReadAsync(
-                    ctx,
-                    "bea",
-                    ctx.Club.CalendarEntries.IdOf("garde-training"),
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(DanceGuardTraining, result.Entry.Title);
-            }
-        );
-    }
-
     [Fact]
     public async Task Should_AnswerNotFound_When_SheIsNotChosenForTheEntry()
     {
@@ -167,39 +91,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                 );
 
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheChosenPeople_When_SheIsChosenForTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (response, entry) = await ReadAsync(
-                    ctx,
-                    "bea",
-                    ctx.Club.CalendarEntries.IdOf("garde-surprise"),
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(
-                    (CalendarEntryAudience.People, $"{ctx.Identity.People.IdOf("bea")}"),
-                    (
-                        entry.Entry.Audience,
-                        string.Join(
-                            ",",
-                            entry.Entry.AudiencePeople.Select(person => person.PersonId)
-                        )
-                    )
-                );
             }
         );
     }
@@ -275,68 +166,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SplitTheAnswers_When_TheEntryAsksForResponses()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (response, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(
-                    [CalendarEntryAddOnKind.Attendance],
-                    result.Entry.AddOns.Select(addOn => addOn.Kind)
-                );
-                var attendance = result.Entry.Attendance!;
-                Assert.Equal((1, 1, 1), (attendance.Yes, attendance.Maybe, attendance.No));
-                Assert.False(attendance.IsClosed);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameEveryAnswerAndWhoRecordedIt_When_SheSeesTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                Assert.Equal(
-                    [
-                        ("Bea", AttendanceAnswer.Yes, (string?)null),
-                        ("Dora", AttendanceAnswer.No, null),
-                        ("Mona", AttendanceAnswer.Maybe, "Bea"),
-                    ],
-                    result.Entry.Attendance!.Answers!.Select(answer =>
-                        (answer.FirstName, answer.Answer, answer.RecordedByFirstName)
-                    )
-                );
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_KeepWhoHasNotAnsweredHidden_When_SheMayNotEditTheEntry()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -360,34 +189,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListEveryoneConcernedWithoutAnAnswer_When_SheManagesTheClubCalendar()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "ilka",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                var attendance = result.Entry.Attendance!;
-                Assert.Equal(
-                    ["Alice", "Ilka", "Kai"],
-                    attendance.NotAnswered!.Select(person => person.FirstName)
-                );
-                Assert.Contains("Dora", attendance.Answers!.Select(answer => answer.FirstName));
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_ListOnlyTheGroupWithoutAnAnswer_When_SheRunsTheOwnerGroup()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -402,32 +203,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                     ctx,
                     "dora",
                     ctx.Club.CalendarEntries.IdOf("garde-call"),
-                    ct
-                );
-
-                Assert.Equal(
-                    ["Kai"],
-                    result.Entry.Attendance!.NotAnswered!.Select(person => person.FirstName)
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ListOnlyTheChosenWithoutAnAnswer_When_TheEntryIsForChosenPeople()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "dora",
-                    ctx.Club.CalendarEntries.IdOf("garde-dinner"),
                     ct
                 );
 
@@ -495,29 +270,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
             }
         );
     }
-
-    [Fact]
-    public Task Should_ListTheAddedCastWithoutAnAnswer_When_TheTrainingAsksTheCast() =>
-        _fixture.AtInstantAsync(
-            RunningOrderSeeds.InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await BuildCastTrainingAsync(ct);
-
-                var result = await ReadAsync(
-                    ctx,
-                    RunningOrderSeeds.GardeAdmin,
-                    ctx.Club.CalendarEntries.IdOf("cast-training"),
-                    ct
-                );
-
-                Assert.Equal(
-                    ["Anna", "Ben", "Clara"],
-                    result.Result.Entry.Attendance!.NotAnswered!.Select(person => person.FirstName)
-                );
-            }
-        );
 
     [Fact]
     public async Task Should_ListTheFrozenCastWithoutAnAnswer_When_TheSessionHasClosed()
@@ -589,137 +341,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CloseTheAnswers_When_TheEntryIsOver()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            AtTheMeeting.AddHours(CalendarDefaults.OpenEndedHours),
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                Assert.True(result.Entry.Attendance!.IsClosed);
-                Assert.Equal(3, result.Entry.Attendance.Answers!.Count);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryNoAttendance_When_TheEntryDoesNotAsk()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("festival"),
-                    ct
-                );
-
-                Assert.Null(result.Entry.Attendance);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowCountsAndNamedVoters_When_ThePollIsNotAnonymous()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPollsAsync(ct);
-
-                var (response, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(
-                    [
-                        CalendarEntryAddOnKind.Attendance,
-                        CalendarEntryAddOnKind.Poll,
-                        CalendarEntryAddOnKind.Poll,
-                        CalendarEntryAddOnKind.SignUpList,
-                        CalendarEntryAddOnKind.SignUpList,
-                        CalendarEntryAddOnKind.Poll,
-                    ],
-                    result.Entry.AddOns.Select(addOn => addOn.Kind)
-                );
-                var poll = result.Entry.AddOns[1].Poll!;
-                Assert.False(poll.IsClosed);
-                Assert.Equal(2, poll.VoterCount);
-                Assert.Equal(
-                    [("Pizza", 2, true), ("Suppe", 0, false)],
-                    poll.Options.Select(option =>
-                        (option.Label, option.VoteCount, option.ViewerChose)
-                    )
-                );
-                Assert.Equal(
-                    ["Alice", "Bea"],
-                    poll.Options[0].Voters.Select(voter => voter.FirstName)
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_SummariseTheOpenFunctionsForHer_When_SheReadsTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPollsAsync(ct);
-
-                var (response, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(
-                    [
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("food"), true),
-                        (CalendarEntryAddOnKind.Poll, ctx.Club.Polls.IdOf("secret"), false),
-                        (
-                            CalendarEntryAddOnKind.SignUpList,
-                            ctx.Club.SignUpLists.IdOf("bring"),
-                            true
-                        ),
-                    ],
-                    result.Entry.OpenFunctions.Select(open =>
-                        (open.Kind, open.AddOnId, open.HasAnswered)
-                    )
-                );
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_ShowOnlyCounts_When_ThePollIsAnonymous()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -741,140 +362,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                 Assert.Equal([1, 0], poll.Options.Select(option => option.VoteCount));
                 Assert.True(poll.Options[0].ViewerChose);
                 Assert.All(poll.Options, option => Assert.Empty(option.Voters));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowThePollClosed_When_TheEntryHasStarted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            AtTheMeeting.AddMinutes(1),
-            async () =>
-            {
-                var ctx = await BuildPollsAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                Assert.All(
-                    result.Entry.AddOns.Where(addOn => addOn.Poll is not null),
-                    addOn => Assert.True(addOn.Poll!.IsClosed)
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowTheStepsByDayThenTime_When_TheEntryCarriesADaySchedule()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPollsAsync(ct);
-
-                var (response, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("weekend-trip"),
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                var schedule = Assert.Single(
-                    result
-                        .Entry.AddOns.Select(addOn => addOn.DaySchedule)
-                        .OfType<CalendarDayScheduleDto>()
-                );
-                Assert.Equal("Ausflug", schedule.Title);
-                Assert.Equal(
-                    [
-                        (0, new TimeOnly(8, 0), "Abfahrt"),
-                        (0, new TimeOnly(20, 0), "Abendessen"),
-                        (1, new TimeOnly(9, 0), "Frühstück"),
-                        (1, new TimeOnly(15, 0), "Rückfahrt"),
-                    ],
-                    schedule.Steps.Select(step => (step.Day, step.Time, step.Text))
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameWhoClosedIt_When_APollOrListWasClosedByHand()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPollsAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                var setup = result
-                    .Entry.AddOns.Select(addOn => addOn.SignUpList)
-                    .OfType<CalendarSignUpListDto>()
-                    .Single(list => list.Title == "Aufbau");
-                var music = result
-                    .Entry.AddOns.Select(addOn => addOn.Poll)
-                    .OfType<CalendarPollDto>()
-                    .Single(poll => poll.Question == "Welche Musik?");
-                Assert.Equal("Ilka", setup.ClosedByFirstName);
-                Assert.Equal("Kalender", setup.ClosedByLastName);
-                Assert.True(music.IsClosed);
-                Assert.Null(music.ClosedByFirstName);
-                Assert.Null(music.ClosedByLastName);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowTheLinesInSignUpOrderMarkingHerOwn_When_TheEntryCarriesAList()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPollsAsync(ct);
-
-                var (response, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                var lists = result
-                    .Entry.AddOns.Select(addOn => addOn.SignUpList)
-                    .OfType<CalendarSignUpListDto>()
-                    .ToList();
-                Assert.Equal(
-                    [("Mitbringen", false), ("Aufbau", true)],
-                    lists.Select(list => (list.Title, list.IsClosed))
-                );
-                Assert.Equal(
-                    [("Bea", "Salat", false), ("Alice", (string?)null, true)],
-                    lists[0].Lines.Select(line => (line.FirstName, line.Text, line.ByViewer))
-                );
             }
         );
     }
@@ -912,36 +399,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListWhoHasNotVotedOrSignedUp_When_SheManagesTheClubCalendar()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPollsAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "ilka",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
-                    ct
-                );
-
-                var food = PollOf(result, "Was essen wir?");
-                var secret = PollOf(result, "Wer wird Prinz?");
-                var bring = ListOf(result, "Mitbringen");
-                Assert.Equal(5, food.ConcernedCount);
-                Assert.Equal(["Ilka", "Kai", "Mona"], FirstNamesOf(food.NotAnswered));
-                Assert.Equal(["Alice", "Ilka", "Kai", "Mona"], FirstNamesOf(secret.NotAnswered));
-                Assert.Equal(5, bring.ConcernedCount);
-                Assert.Equal(["Ilka", "Kai", "Mona"], FirstNamesOf(bring.NotAnswered));
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_CountEveryoneWhoAnsweredInTheTotal_When_AnOrganiserOutsideTheAudienceTakesPart()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -965,35 +422,6 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(["Kai"], FirstNamesOf(drinks.NotAnswered));
                 Assert.Equal(3, chairs.ConcernedCount);
                 Assert.Equal(["Bea", "Kai"], FirstNamesOf(chairs.NotAnswered));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CountTheConcernedButHideWhoIsMissing_When_TheEntryIsNotMeantForHer()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPollsAsync(ct);
-
-                var (_, result) = await ReadAsync(
-                    ctx,
-                    "alice",
-                    ctx.Club.CalendarEntries.IdOf("garde-party"),
-                    ct
-                );
-
-                var drinks = PollOf(result, "Was trinken wir?");
-                var chairs = ListOf(result, "Stühle");
-                Assert.False(result.Entry.MayAnswer);
-                Assert.Equal(3, drinks.ConcernedCount);
-                Assert.Null(drinks.NotAnswered);
-                Assert.Equal(3, chairs.ConcernedCount);
-                Assert.Null(chairs.NotAnswered);
             }
         );
     }

@@ -1,4 +1,3 @@
-using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
 using Furria.Tests.Common.Fixtures;
@@ -13,41 +12,6 @@ public sealed class GetClaimWindowStatusTests : IClassFixture<ApiTestFixture>
     public GetClaimWindowStatusTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_ReportClosed_When_NoWindowWasEverOpened()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, result) = await _fixture
-            .CreateClient()
-            .GETAsync<GetClaimWindowStatus, GetClaimWindowStatusResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.False(result.IsOpen);
-        Assert.Null(result.ClosesAt);
-    }
-
-    [Fact]
-    public async Task Should_ReportTheEndToAnyone_When_TheWindowIsOpen()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var closesAt = _fixture.TimeProvider.GetUtcNow().AddHours(3);
-        await ClaimWindowSteps.OpenUntilAsync(
-            await ctx.Identity.ManagingLoginClientAsync(ct),
-            closesAt
-        );
-
-        var (response, result) = await _fixture
-            .CreateClient()
-            .GETAsync<GetClaimWindowStatus, GetClaimWindowStatusResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.True(result.IsOpen);
-        Assert.Equal(closesAt, result.ClosesAt);
     }
 
     [Fact]

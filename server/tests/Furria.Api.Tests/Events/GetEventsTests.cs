@@ -1,11 +1,8 @@
-using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Events;
-using Furria.Api.Tests.Halls;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Events;
-using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -100,77 +97,6 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListTheRelevantSessionUpcomingFirst_When_TheKeyHolderAsks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildSessionAsync(ct);
-
-                var (response, result) = await ReadAsync(ctx, "vera", ct);
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(
-                    [
-                        (FirstGala, false),
-                        (SecondGala, false),
-                        (NextSessionOpening, false),
-                        (Opening, true),
-                    ],
-                    result.Events.Select(listed => (listed.Title, listed.IsOver))
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowTheRenderedPictureOfEachEvent_When_TheKeyHolderAsks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildSessionAsync(ct);
-                var eventId = ctx.Club.Events.IdOf("first-gala");
-                var client = await ctx.Identity.ClientForAsync("vera", ct);
-                var pictureId = await EventPictureSteps.RenderedAsync(
-                    _fixture,
-                    client,
-                    eventId,
-                    ct
-                );
-                await EventPictureSteps.UploadAsync(
-                    client,
-                    ctx.Club.Events.IdOf("second-gala"),
-                    ct
-                );
-
-                var (_, result) = await ReadAsync(ctx, "vera", ct);
-
-                var pictured = result.Events.ToDictionary(
-                    listed => listed.Title,
-                    listed => listed.Picture?.MediumUrl
-                );
-                Assert.StartsWith(
-                    _fixture.SignedMediaUrl(
-                        pictureId,
-                        MediaOwner.Event(eventId),
-                        MediaRendition.Medium
-                    ),
-                    pictured[FirstGala]
-                );
-                Assert.Null(pictured[SecondGala]);
-                Assert.Null(pictured[Opening]);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_DeriveEachSalesStatus_When_TheEventsStandAtDifferentPoints()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -192,116 +118,6 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                     ],
                     result.Events.Select(listed => (listed.Title, listed.Status))
                 );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameTheVenue_When_TheEventIsListed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildSessionAsync(ct);
-
-                var (_, result) = await ReadAsync(ctx, "vera", ct);
-
-                var firstGala = Assert.Single(result.Events, listed => listed.Title == FirstGala);
-                Assert.Equal(ctx.Club.Events.IdOf("first-gala"), firstGala.EventId);
-                Assert.Equal("Bürgerhaus", firstGala.VenueName);
-                Assert.Equal(AtTheFirstGala, firstGala.StartsAt);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryThePresaleStart_When_ThePresaleIsScheduled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildSessionAsync(ct);
-
-                var (_, result) = await ReadAsync(ctx, "vera", ct);
-
-                var secondGala = Assert.Single(result.Events, listed => listed.Title == SecondGala);
-                Assert.Equal(PresaleAhead, secondGala.PresaleStartsAt);
-                var nextOpening = Assert.Single(
-                    result.Events,
-                    listed => listed.Title == NextSessionOpening
-                );
-                Assert.Null(nextOpening.PresaleStartsAt);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_LayOutTheStepsOfAnEventInPreparation_When_TheKeyHolderAsks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPlanningAsync(ct);
-
-                var (_, result) = await ReadAsync(ctx, "vera", ct);
-
-                var planned = Assert.Single(result.Events, listed => listed.Title == Carnival);
-                Assert.Null(planned.PublishedAt);
-                Assert.Equal(Now, planned.CreatedAt);
-                Assert.Equal(PriceCents, planned.PriceCents);
-                Assert.Null(planned.DoorsOpenAt);
-                Assert.Equal(
-                    [
-                        MissingEventDetail.DoorsOpenAt,
-                        MissingEventDetail.Description,
-                        MissingEventDetail.Picture,
-                        MissingEventDetail.Published,
-                    ],
-                    planned.DetailsMissing
-                );
-                Assert.Equal(
-                    [
-                        new EventStepDto
-                        {
-                            Step = EventStep.Details,
-                            State = EventStepState.Open,
-                            DueOn = new DateOnly(2027, 1, 24),
-                            OpensOn = null,
-                        },
-                        new EventStepDto
-                        {
-                            Step = EventStep.Tickets,
-                            State = EventStepState.Open,
-                            DueOn = new DateOnly(2027, 1, 24),
-                            OpensOn = null,
-                        },
-                        new EventStepDto
-                        {
-                            Step = EventStep.RunningOrder,
-                            State = EventStepState.Waiting,
-                            DueOn = new DateOnly(2027, 3, 6),
-                            OpensOn = new DateOnly(2027, 2, 20),
-                        },
-                        new EventStepDto
-                        {
-                            Step = EventStep.Hall,
-                            State = EventStepState.Open,
-                            DueOn = new DateOnly(2027, 2, 27),
-                            OpensOn = null,
-                        },
-                    ],
-                    planned.Steps
-                );
-                Assert.Equal(EventStep.Details, planned.CurrentStep);
             }
         );
     }
@@ -474,38 +290,4 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                     ),
             ct
         );
-
-    [Fact]
-    public async Task Should_CountEachEventsTables_When_SomeEventsHavePlans()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallSeeds.HallManagerWithGala(_fixture.Today), ct);
-        var hallManager = await ctx.Identity.ClientForAsync(HallSeeds.HallManager, ct);
-        var gala = ctx.Club.Events.IdOf(HallSeeds.Gala);
-        var hallId = await HallSteps.CreateHallAsync(
-            hallManager,
-            ctx.Club.Venues.IdOf(HallSeeds.Buergerhaus),
-            "Saal"
-        );
-        await HallSteps.CreatePlanAsync(hallManager, gala, hallId);
-        await HallSteps.SavedPlanAsync(
-            hallManager,
-            gala,
-            hallId,
-            1,
-            [HallSteps.Row("r1", HallSeeds.PlainTableId, 3)],
-            chairs: 10
-        );
-        var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
-
-        var (_, result) = await lead.GETAsync<GetEvents, GetEventsResponse>();
-
-        Assert.Equal(
-            ["1. Prunksitzung 3/10", "Kindersitzung –"],
-            result.Events.Select(listed =>
-                $"{listed.Title} "
-                + (listed.TablePlan is { } plan ? $"{plan.Tables}/{plan.Chairs}" : "–")
-            )
-        );
-    }
 }

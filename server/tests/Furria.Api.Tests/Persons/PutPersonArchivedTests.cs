@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
-using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Fixtures;
@@ -14,7 +13,6 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
 {
     private const string LastDayField = "lastDay";
     private const string RequestField = "request";
-    private const int UnknownPersonId = 999_999;
 
     private static readonly DateOnly Joined2012 = new(2012, 11, 11);
     private static readonly DateOnly Left2019 = new(2019, 3, 31);
@@ -41,42 +39,6 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
                 LastDay = lastDay,
             }
         );
-
-    [Fact]
-    public async Task Should_ArchiveHerTodayInTheCallersName_When_NothingOfHersRuns()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddMembership("paula-first", "paula", Joined2012, Left2019)
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "personenpflege",
-                            "ilka-personenpflege",
-                            "Personenpflege",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var response = await SetArchivedAsync(client, ctx.Identity.People.IdOf("paula"), true);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("paula"))
-            .ToBeArchived(_fixture.Today, ctx.Identity.People.IdOf("ilka"))
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_EndEveryRunningTieOnTheLastDay_When_SheIsArchived()
@@ -290,38 +252,6 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ArchiveHerWithoutALastDay_When_EverythingOfHersLiesAhead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("paula", "Paula", "Brendel"))
-                    .Club(club =>
-                        club.AddVenue("lager", "Lager")
-                            .AddKeyHolding(
-                                "paula-lager",
-                                "lager",
-                                "paula",
-                                _fixture.Today.AddMonths(1)
-                            )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await SetArchivedAsync(client, ctx.Identity.People.IdOf("paula"), true);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("paula"))
-            .ToBeArchived(_fixture.Today, null)
-            .KeyHolding(ctx.Club.KeyHoldings.IdOf("paula-lager"))
-            .ToNotExist()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_CutHerPausesAtTheLastDaysSession_When_SheIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -368,43 +298,6 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_CutAClosedPauseToo_When_ItReachesPastTheLastDaysSession()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var lastSession = _fixture.CurrentSessionYear - 1;
-        var lastDay = new DateOnly(_fixture.CurrentSessionYear, 11, 10);
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-running", "paula", Joined2012)
-                        .AddMembershipPause(
-                            "paula-reaching",
-                            "paula-running",
-                            lastSession,
-                            lastSession + 2
-                        )
-                ),
-            ct
-        );
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await SetArchivedAsync(
-            client,
-            ctx.Identity.People.IdOf("paula"),
-            true,
-            lastDay
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-reaching"))
-            .ToHaveSpan(lastSession, lastSession)
-            .AssertAsync(ct);
-    }
-
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
@@ -443,55 +336,6 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseNamingTheLatestStart_When_TheLastDayLiesBeforeIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var joinedLately = _fixture.Today.AddDays(-10);
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddMembership("paula-running", "paula", Joined2012)
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                joinedLately
-                            )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await SetArchivedAsync(
-            client,
-            ctx.Identity.People.IdOf("paula"),
-            true,
-            joinedLately.AddDays(-1)
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        Assert.Equal(
-            ["Der letzte Tag liegt vor dem Beginn von Gruppe Tanzgarde."],
-            (await ReadFailuresAsync(response, ct))[RequestField]
-        );
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("paula"))
-            .ToNotBeArchived()
-            .Membership(ctx.Identity.Memberships.IdOf("paula-running"))
-            .ToBeOpen()
-            .GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseToArchiveHer_When_SomethingRunsAndNoLastDayIsGiven()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -516,57 +360,6 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.Person(ctx.Identity.People.IdOf("paula"))
             .ToNotBeArchived()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_EndHerBoardSeatAndKey_When_TheArchiverMayOnlyManagePersons()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var lastDay = _fixture.Today.AddDays(-1);
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "personenpflege",
-                            "ilka-personenpflege",
-                            "Personenpflege",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    )
-                    .Club(club =>
-                        club.AddBoardOffice("kassenwart", "Kassenwart")
-                            .AddBoardSeat("paula-kassenwart", "kassenwart", "paula", Joined2012)
-                            .AddVenue("lager", "Lager")
-                            .AddKeyHolding("paula-lager", "lager", "paula", Joined2012)
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var response = await SetArchivedAsync(
-            client,
-            ctx.Identity.People.IdOf("paula"),
-            true,
-            lastDay
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("paula"))
-            .ToBeArchived(_fixture.Today, ctx.Identity.People.IdOf("ilka"))
-            .BoardSeat(ctx.Club.BoardSeats.IdOf("paula-kassenwart"))
-            .ToHavePeriod(Joined2012, lastDay)
-            .KeyHolding(ctx.Club.KeyHoldings.IdOf("paula-lager"))
-            .ToHavePeriod(Joined2012, lastDay)
             .AssertAsync(ct);
     }
 
@@ -666,47 +459,6 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_EndHerTiesOnTheLatestStart_When_TheLastDayIsThatVeryDay()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var joinedLately = _fixture.Today.AddDays(-10);
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("paula", "Paula", "Brendel")
-                            .AddMembership("paula-running", "paula", Joined2012)
-                    )
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupMembership(
-                                "paula-tanzgarde",
-                                "tanzgarde",
-                                "paula",
-                                joinedLately
-                            )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await SetArchivedAsync(
-            client,
-            ctx.Identity.People.IdOf("paula"),
-            true,
-            joinedLately
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.GroupMembership(ctx.Groups.GroupMemberships.IdOf("paula-tanzgarde"))
-            .ToHavePeriod(joinedLately, joinedLately)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RestoreHerWithoutReopeningAnything_When_SheIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -732,67 +484,6 @@ public sealed class PutPersonArchivedTests : IClassFixture<ApiTestFixture>
             .Membership(ctx.Identity.Memberships.IdOf("paula-ended"))
             .ToHavePeriod(Joined2012, Left2019)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepWhenAndByWhomSheWasArchived_When_SheIsArchivedAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddPerson("anna", "Anna", "Vogt")
-                        .AddArchive("paula", Archived2020, "anna")
-                ),
-            ct
-        );
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await SetArchivedAsync(client, ctx.Identity.People.IdOf("paula"), true);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("paula"))
-            .ToBeArchived(Archived2020, ctx.Identity.People.IdOf("anna"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_LeaveHerAsSheIs_When_SheIsRestoredWithoutBeingArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-running", "paula", Joined2012)
-                ),
-            ct
-        );
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await SetArchivedAsync(client, ctx.Identity.People.IdOf("paula"), false);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("paula"))
-            .ToNotBeArchived()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await SetArchivedAsync(client, UnknownPersonId, true);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

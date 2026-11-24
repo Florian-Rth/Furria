@@ -90,31 +90,6 @@ internal static class EveningSteps
         return (response, response.IsSuccessStatusCode ? result.Version : 0);
     }
 
-    internal static Task<HttpResponseMessage> DropEveningChoreographyAsync(
-        HttpClient client,
-        int actId,
-        int eventId
-    ) =>
-        client.DELETEAsync<DeleteActEveningChoreography, DeleteActEveningChoreographyRequest>(
-            new() { ActId = actId, EventId = eventId }
-        );
-
-    internal static async Task<IReadOnlyList<ChoreographyVersionSummaryDto>> EveningVersionsOfAsync(
-        HttpClient client,
-        int actId,
-        int eventId
-    )
-    {
-        var (response, result) = await client.GETAsync<
-            GetActEveningChoreographyVersions,
-            GetActEveningChoreographyVersionsRequest,
-            GetActEveningChoreographyVersionsResponse
-        >(new() { ActId = actId, EventId = eventId });
-        response.EnsureSuccessStatusCode();
-
-        return result.Versions;
-    }
-
     internal static async Task<(HttpResponseMessage Response, int Version)> RestoreEveningAsync(
         HttpClient client,
         int actId,

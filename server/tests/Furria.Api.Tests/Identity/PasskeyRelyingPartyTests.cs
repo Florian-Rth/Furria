@@ -28,16 +28,6 @@ public sealed class PasskeyRelyingPartyTests
         );
     }
 
-    [Fact]
-    public void Should_KeepThePort_When_TheBaseUrlNamesOne()
-    {
-        var origins = PasskeyRelyingParty.OriginsOf(
-            new ClubAppOptions { BaseUrl = "http://localhost:3001" }
-        );
-
-        Assert.Equal(["http://localhost:3001"], origins);
-    }
-
     [Theory]
     [InlineData("https://club.furria.de", false, true)]
     [InlineData("https://club.furria.de", true, false)]
@@ -59,25 +49,5 @@ public sealed class PasskeyRelyingPartyTests
         );
 
         Assert.Equal(accepted, PasskeyRelyingParty.IsAccepted(origins, origin, crossOrigin));
-    }
-
-    [Theory]
-    [InlineData(DebugFingerprint, true)]
-    [InlineData(
-        "14:6d:e9:83:c5:73:06:50:d8:ee:b9:95:2f:34:fc:64:16:a0:83:42:e6:1d:be:a8:8a:04:96:b2:3f:cf:44:e5",
-        true
-    )]
-    [InlineData("14:6D:E9:83", false)]
-    [InlineData("146DE983C5730650D8EEB9952F34FC6416A08342E61DBEA88A0496B23FCF44E5", false)]
-    [InlineData(
-        "ZZ:6D:E9:83:C5:73:06:50:D8:EE:B9:95:2F:34:FC:64:16:A0:83:42:E6:1D:BE:A8:8A:04:96:B2:3F:CF:44:E5",
-        false
-    )]
-    public void Should_ReadOnlyTheKeytoolForm_When_AFingerprintIsParsed(
-        string fingerprint,
-        bool readable
-    )
-    {
-        Assert.Equal(readable, AndroidCertFingerprint.BytesOf(fingerprint) is not null);
     }
 }

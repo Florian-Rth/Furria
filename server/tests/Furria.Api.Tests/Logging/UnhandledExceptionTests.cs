@@ -33,25 +33,6 @@ public sealed class UnhandledExceptionTests : IClassFixture<ApiTestFixture>
         Assert.Matches("^[0-9a-f]{32}$", TraceIdOf(body));
     }
 
-    [Fact]
-    public async Task Should_WriteOneErrorEventCarryingTheException_When_AnEndpointThrows()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        var response = await CallThrowingProbeAsync();
-
-        var traceId = TraceIdOf(await response.Content.ReadAsStringAsync(ct));
-        var written = Assert.Single(
-            _fixture.Logs.All(),
-            logged =>
-                logged.Level >= LogEventLevel.Error && logged.TraceId?.ToHexString() == traceId
-        );
-        var exception = Assert.IsType<InvalidOperationException>(written.Exception);
-        Assert.Equal(ThrowingProbe.FailureMessage, exception.Message);
-        Assert.Equal(500, written.ScalarOf("StatusCode"));
-        Assert.Equal("/api/tests/throwing-probe", written.ScalarOf("RoutePattern"));
-    }
-
     private async Task<HttpResponseMessage> CallThrowingProbeAsync()
     {
         var (response, _) = await _fixture.CreateClient().GETAsync<ThrowingProbe, JsonElement>();

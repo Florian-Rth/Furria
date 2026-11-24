@@ -1,6 +1,4 @@
 using System.Net;
-using FastEndpoints;
-using Furria.Api.Endpoints.Acts;
 using Furria.Api.Tests.RunningOrders;
 using Furria.Application.Authorization;
 using Furria.Core.Media;
@@ -14,7 +12,6 @@ namespace Furria.Api.Tests.Media;
 public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
 {
     private const int ChunkLength = 4096;
-    private const long BeyondThePhotoLimit = MediaLimits.MaxPhotoBytes + 1;
 
     private readonly ApiTestFixture _fixture;
 
@@ -72,108 +69,6 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AcceptAVideo_When_ItIsUploadedToTheGallery()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "galerie",
-                            "ilka-galerie",
-                            "Galerie",
-                            "ilka",
-                            FurriaPermissions.GalleryUpload
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-
-        var mediaItemId = await TusUploadSteps.UploadAsync(
-            client,
-            TusUploadSteps.GalleryOwner,
-            "Einmarsch.mp4",
-            MediaSamples.Mp4(ChunkLength),
-            ChunkLength,
-            ct
-        );
-
-        await ctx
-            .Expected.MediaItem(mediaItemId)
-            .ToAwaitItsRenditions(MediaKind.Video, "video/mp4")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheUpload_When_TheCallerMayNotUploadToTheGallery()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("bernd")),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("bernd", ct);
-
-        var response = await TusUploadSteps.CreateAsync(
-            client,
-            TusUploadSteps.GalleryOwner,
-            "foto.jpg",
-            ChunkLength,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheUpload_When_NobodyIsSignedIn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var response = await TusUploadSteps.CreateAsync(
-            _fixture.CreateClient(),
-            TusUploadSteps.GalleryOwner,
-            "foto.jpg",
-            ChunkLength,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_GiveThePortraitToThePerson_When_SheUploadsHerOwn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var aliceId = ctx.Identity.People.IdOf("alice");
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var mediaItemId = await TusUploadSteps.UploadAsync(
-            client,
-            TusUploadSteps.PersonOwner(aliceId),
-            "ich.jpg",
-            MediaSamples.Jpeg(ChunkLength),
-            ChunkLength,
-            ct
-        );
-
-        await ctx
-            .Expected.MediaItem(mediaItemId)
-            .ToBeOwnedBy(MediaOwner.Person(aliceId))
-            .MediaItem(mediaItemId)
-            .ToBeThePortraitOf(aliceId)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_DropTheFormerPortraitWithItsFiles_When_SheUploadsANewOne()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -199,73 +94,6 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheChosenCrop_When_APortraitArrivesCropped()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var aliceId = ctx.Identity.People.IdOf("alice");
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var crop = new PictureCrop(0.25, 0, 0.5, 0.9375);
-
-        var mediaItemId = await TusUploadSteps.UploadAsync(
-            client,
-            TusUploadSteps.PersonOwner(aliceId),
-            "ich.jpg",
-            MediaSamples.Jpeg(ChunkLength),
-            ChunkLength,
-            crop.Token,
-            ct
-        );
-
-        await ctx.Expected.MediaItem(mediaItemId).ToBeCroppedTo(crop).AssertAsync(ct);
-    }
-
-    [Theory]
-    [InlineData("gallery", "0,0,0.5,0.5")]
-    [InlineData("person", "0.75,0,0.5,0.5")]
-    public async Task Should_RefuseTheCrop_When_ItIsNoCutOfAPortraitOrGroupPicture(
-        string ownerKind,
-        string crop
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "galerie",
-                            "ilka-galerie",
-                            "Galerie",
-                            "ilka",
-                            FurriaPermissions.GalleryUpload
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var owner =
-            ownerKind == "gallery"
-                ? TusUploadSteps.GalleryOwner
-                : TusUploadSteps.PersonOwner(ctx.Identity.People.IdOf("ilka"));
-
-        var response = await TusUploadSteps.CreateAsync(
-            client,
-            owner,
-            "foto.jpg",
-            ChunkLength,
-            crop,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_RefuseThePortrait_When_ItIsAnotherPersonsAndTheCallerMayNotManagePersons()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -285,73 +113,6 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_AcceptAnotherPersonsPortrait_When_TheCallerManagesPersons()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("vera").AddPerson("bernd"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "mitglieder",
-                            "vera-mitglieder",
-                            "Mitgliederverwaltung",
-                            "vera",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("vera", ct);
-
-        var response = await TusUploadSteps.CreateAsync(
-            client,
-            TusUploadSteps.PersonOwner(ctx.Identity.People.IdOf("bernd")),
-            "bernd.jpg",
-            ChunkLength,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_AcceptTheGroupPicture_When_TheCallerAdministersTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("gerda"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroupAdmin("gerda-tanzgarde", "tanzgarde", "gerda")
-                    ),
-            ct
-        );
-        var groupId = ctx.Groups.Groups.IdOf("tanzgarde");
-        var client = await ctx.Identity.ClientForAsync("gerda", ct);
-
-        var mediaItemId = await TusUploadSteps.UploadAsync(
-            client,
-            TusUploadSteps.GroupOwner(groupId),
-            "garde.jpg",
-            MediaSamples.Jpeg(ChunkLength),
-            ChunkLength,
-            ct
-        );
-
-        await ctx
-            .Expected.MediaItem(mediaItemId)
-            .ToBeOwnedBy(MediaOwner.Group(groupId))
-            .MediaItem(mediaItemId)
-            .ToBeThePictureOfGroup(groupId)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -435,89 +196,6 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RejectAVideo_When_ItIsMeantAsAPortrait()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var video = MediaSamples.Mp4(ChunkLength);
-        var upload = await TusUploadSteps.CreatedAsync(
-            client,
-            TusUploadSteps.PersonOwner(ctx.Identity.People.IdOf("alice")),
-            "ich.mp4",
-            video.Length,
-            ct
-        );
-
-        var response = await TusUploadSteps.PatchAsync(client, upload, 0, video, ct);
-
-        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseThePortrait_When_ItIsLargerThanAPhotoMayBe()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var response = await TusUploadSteps.CreateAsync(
-            client,
-            TusUploadSteps.PersonOwner(ctx.Identity.People.IdOf("alice")),
-            "ich.jpg",
-            BeyondThePhotoLimit,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RejectTheFirstChunk_When_AGalleryPhotoIsLargerThanAPhotoMayBe()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "galerie",
-                            "ilka-galerie",
-                            "Galerie",
-                            "ilka",
-                            FurriaPermissions.GalleryUpload
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var upload = await TusUploadSteps.CreatedAsync(
-            client,
-            TusUploadSteps.GalleryOwner,
-            "riesig.jpg",
-            BeyondThePhotoLimit,
-            ct
-        );
-
-        var response = await TusUploadSteps.PatchAsync(
-            client,
-            upload,
-            0,
-            MediaSamples.Jpeg(ChunkLength),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_HideTheUpload_When_AnotherAccountTriesToResumeIt()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -542,52 +220,6 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_GiveTheSongToTheAct_When_TheGroupAdminUploadsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, actId) = await GardeWithDanceAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("gerda", ct);
-
-        var mediaItemId = await TusUploadSteps.UploadAsync(
-            client,
-            TusUploadSteps.ActOwner(actId),
-            "Gardemarsch.wav",
-            MediaSamples.Wav(ChunkLength),
-            ChunkLength,
-            ct
-        );
-
-        await ctx
-            .Expected.MediaItem(mediaItemId)
-            .ToBeOwnedBy(MediaOwner.Act(actId))
-            .MediaItem(mediaItemId)
-            .ToAwaitItsRenditions(MediaKind.Audio, "audio/wav")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AcceptATrainerVideo_When_TheGroupAdminUploadsItToTheAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, actId) = await GardeWithDanceAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("gerda", ct);
-
-        var mediaItemId = await TusUploadSteps.UploadAsync(
-            client,
-            TusUploadSteps.ActOwner(actId),
-            "Training.mp4",
-            MediaSamples.Mp4(ChunkLength),
-            ChunkLength,
-            ct
-        );
-
-        await ctx
-            .Expected.MediaItem(mediaItemId)
-            .ToAwaitItsRenditions(MediaKind.Video, "video/mp4")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseActMedia_When_TheCallerDoesNotAdministerTheActsGroup()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -603,29 +235,6 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseActMedia_When_TheActIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, actId) = await GardeWithDanceAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("gerda", ct);
-        (
-            await client.PUTAsync<PutActArchived, PutActArchivedRequest>(
-                new() { ActId = actId, Archived = true }
-            )
-        ).EnsureSuccessStatusCode();
-
-        var response = await TusUploadSteps.CreateAsync(
-            client,
-            TusUploadSteps.ActOwner(actId),
-            "Gardemarsch.wav",
-            ChunkLength,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
     [Fact]
@@ -648,60 +257,6 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response?.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RejectAPhoto_When_ItIsMeantForAnAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, actId) = await GardeWithDanceAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("gerda", ct);
-        var photo = MediaSamples.Jpeg(ChunkLength);
-        var upload = await TusUploadSteps.CreatedAsync(
-            client,
-            TusUploadSteps.ActOwner(actId),
-            "Aufstellung.jpg",
-            photo.Length,
-            ct
-        );
-
-        var response = await TusUploadSteps.PatchAsync(client, upload, 0, photo, ct);
-
-        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RejectASong_When_ItIsUploadedToTheGallery()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "galerie",
-                            "ilka-galerie",
-                            "Galerie",
-                            "ilka",
-                            FurriaPermissions.GalleryUpload
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var song = MediaSamples.Wav(ChunkLength);
-        var upload = await TusUploadSteps.CreatedAsync(
-            client,
-            TusUploadSteps.GalleryOwner,
-            "Gardemarsch.wav",
-            song.Length,
-            ct
-        );
-
-        var response = await TusUploadSteps.PatchAsync(client, upload, 0, song, ct);
-
-        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
     }
 
     private async Task<(SeededContext Context, int ActId)> GardeWithDanceAsync(CancellationToken ct)

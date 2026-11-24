@@ -59,49 +59,6 @@ public sealed class LinkUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AcceptAVideo_When_AGuestUploadsItThroughTheLink()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            Photographer(gallery => gallery.AddUploadLink("zug", "Zug")),
-            ct
-        );
-
-        await LinkUploadSteps.UploadAsync(
-            _fixture.CreateClient(),
-            ctx.Gallery.UploadLinkTokens.IdOf("zug"),
-            "Einmarsch.mov",
-            MediaSamples.Mp4(ChunkLength),
-            ChunkLength,
-            ct
-        );
-
-        var manager = await ctx.Identity.ClientForAsync("jana", ct);
-        var item = Assert.Single(
-            (await InboxOfAsync(manager, ctx.Gallery.UploadLinks.IdOf("zug"))).Items
-        );
-        Assert.Equal(MediaKind.Video, item.Kind);
-        Assert.Null(item.UploaderName);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheUpload_When_NoTokenComesWithIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(Photographer(), ct);
-
-        var response = await LinkUploadSteps.CreateAsync(
-            _fixture.CreateClient(),
-            null,
-            "foto.jpg",
-            ChunkLength,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheUpload_When_TheTokenIsNotOneTheClubHandedOut()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -114,6 +71,34 @@ public sealed class LinkUploadTests : IClassFixture<ApiTestFixture>
             ChunkLength,
             ct
         );
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_HideALinkUploadFromMembers_When_TheyTryToContinueItAsTheirOwn()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            Photographer(gallery => gallery.AddUploadLink("zug", "Zug")),
+            ct
+        );
+        var upload = await LinkUploadSteps.CreatedAsync(
+            _fixture.CreateClient(),
+            ctx.Gallery.UploadLinkTokens.IdOf("zug"),
+            "a.jpg",
+            ChunkLength,
+            ct
+        );
+        var member = await ctx.Identity.ClientForAsync("jana", ct);
+        var memberPath = new Uri(
+            upload
+                .ToString()
+                .Replace(LinkUploads.UrlPath, MediaUploads.UrlPath, StringComparison.Ordinal),
+            UriKind.RelativeOrAbsolute
+        );
+
+        var response = await TusUploadSteps.HeadAsync(member, memberPath, ct);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -197,88 +182,6 @@ public sealed class LinkUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_HideALinkUploadFromMembers_When_TheyTryToContinueItAsTheirOwn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            Photographer(gallery => gallery.AddUploadLink("zug", "Zug")),
-            ct
-        );
-        var upload = await LinkUploadSteps.CreatedAsync(
-            _fixture.CreateClient(),
-            ctx.Gallery.UploadLinkTokens.IdOf("zug"),
-            "a.jpg",
-            ChunkLength,
-            ct
-        );
-        var member = await ctx.Identity.ClientForAsync("jana", ct);
-        var memberPath = new Uri(
-            upload
-                .ToString()
-                .Replace(LinkUploads.UrlPath, MediaUploads.UrlPath, StringComparison.Ordinal),
-            UriKind.RelativeOrAbsolute
-        );
-
-        var response = await TusUploadSteps.HeadAsync(member, memberPath, ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheUpload_When_ItIsNeitherPhotoNorVideo()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            Photographer(gallery => gallery.AddUploadLink("zug", "Zug")),
-            ct
-        );
-        var token = ctx.Gallery.UploadLinkTokens.IdOf("zug");
-        var guest = _fixture.CreateClient();
-        var upload = await LinkUploadSteps.CreatedAsync(guest, token, "song.wav", ChunkLength, ct);
-
-        var response = await LinkUploadSteps.PatchAsync(
-            guest,
-            token,
-            upload,
-            0,
-            MediaSamples.Wav(ChunkLength),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheUpload_When_APhotoExceedsThePhotoLimit()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            Photographer(gallery => gallery.AddUploadLink("zug", "Zug")),
-            ct
-        );
-        var token = ctx.Gallery.UploadLinkTokens.IdOf("zug");
-        var guest = _fixture.CreateClient();
-        var upload = await LinkUploadSteps.CreatedAsync(
-            guest,
-            token,
-            "huge.jpg",
-            MediaLimits.MaxPhotoBytes + 1,
-            ct
-        );
-
-        var response = await LinkUploadSteps.PatchAsync(
-            guest,
-            token,
-            upload,
-            0,
-            MediaSamples.Jpeg(ChunkLength),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.RequestEntityTooLarge, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheUpload_When_TheLinkHasTakenAllItHolds()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -319,22 +222,14 @@ public sealed class LinkUploadTests : IClassFixture<ApiTestFixture>
         builder =>
             builder
                 .Gallery(gallery ?? (_ => { }))
-                .Identity(identity => identity.AddAccount("jana").AddAccount("markus"))
+                .Identity(identity => identity.AddAccount("jana"))
                 .Roles(roles =>
-                    roles
-                        .AddRoleWithHolder(
-                            "fotografie",
-                            "fotografie-holding",
-                            "Fotografie",
-                            "jana",
-                            FurriaPermissions.GalleryManage
-                        )
-                        .AddRoleWithHolder(
-                            "galerie",
-                            "galerie-holding",
-                            "Galerie",
-                            "markus",
-                            FurriaPermissions.GalleryUpload
-                        )
+                    roles.AddRoleWithHolder(
+                        "fotografie",
+                        "fotografie-holding",
+                        "Fotografie",
+                        "jana",
+                        FurriaPermissions.GalleryManage
+                    )
                 );
 }

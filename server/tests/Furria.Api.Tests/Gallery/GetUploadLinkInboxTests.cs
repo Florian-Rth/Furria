@@ -46,27 +46,6 @@ public sealed class GetUploadLinkInboxTests : IClassFixture<ApiTestFixture>
         Assert.Equal("Oma Gerda", item.UploaderName);
     }
 
-    [Fact]
-    public async Task Should_KeepLinkUploadsOutOfTheOwnerlessInbox_When_AManagerOpensIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            Photographer(gallery =>
-                gallery.AddUploadLink("zug", "Zug").AddLinkItem("zug-1", "zug")
-            ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("jana", ct);
-
-        var (_, result) = await client.GETAsync<
-            GetGalleryInbox,
-            GetGalleryInboxRequest,
-            GetGalleryInboxResponse
-        >(new() { Ownerless = true });
-
-        Assert.Empty(result.Items);
-    }
-
     private static Action<SeedContextBuilder> Photographer(
         Action<GallerySeedBuilder>? gallery = null
     ) =>

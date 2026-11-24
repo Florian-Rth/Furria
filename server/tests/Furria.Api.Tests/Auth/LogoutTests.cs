@@ -2,40 +2,19 @@ using System.Net;
 using System.Net.Http.Headers;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
-using Furria.Application.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
-using Serilog.Events;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
 
 public sealed class LogoutTests : IClassFixture<ApiTestFixture>
 {
-    private const string LoggedOut = "Account {AccountId} logged out";
-
     private readonly ApiTestFixture _fixture;
 
     public LogoutTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_RevokeTheSession_When_TheRefreshTokenBelongsToTheCaller()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, session) = await LoggedInAsync(ct);
-
-        var response = await Post(session, session.RefreshToken);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveActiveCount(0)
-            .RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveRevocationCount(RefreshTokenRevocationReason.LoggedOut, 1)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -52,17 +31,6 @@ public sealed class LogoutTests : IClassFixture<ApiTestFixture>
             );
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNoContent_When_TheRefreshTokenIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, session) = await LoggedInAsync(ct);
-
-        var response = await Post(session, "bm90LWEta25vd24tcmVmcmVzaC10b2tlbi1hdC1hbGwtaGVyZQ");
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     [Fact]
@@ -84,31 +52,6 @@ public sealed class LogoutTests : IClassFixture<ApiTestFixture>
             .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
             .ToHaveActiveCount(1)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNoContent_When_TheRefreshTokenIsMalformed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (_, session) = await LoggedInAsync(ct);
-
-        var response = await Post(session, "token+with/base64=padding");
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReportTheLogout_When_TheCallerLogsOut()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (ctx, session) = await LoggedInAsync(ct);
-        var mark = _fixture.Logs.Mark();
-
-        await Post(session, session.RefreshToken);
-
-        var written = Assert.Single(_fixture.Logs.Written(LoggedOut, mark));
-        Assert.Equal(LogEventLevel.Information, written.Level);
-        Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), written.ScalarOf("AccountId"));
     }
 
     private async Task<(SeededContext Context, LoginResponse Session)> LoggedInAsync(

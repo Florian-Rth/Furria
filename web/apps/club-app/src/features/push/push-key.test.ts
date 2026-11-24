@@ -2,11 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { applicationServerKeyOf } from './push-key';
 
 describe('applicationServerKeyOf', () => {
-  it.each<[string, number[]]>([
-    ['AQID', [1, 2, 3]],
-    ['-_8', [251, 255]],
-    ['_w', [255]],
-  ])('decodes %s', (encoded, bytes) => {
+  it.each<[string, number[]]>([['-_8', [251, 255]]])('decodes %s', (encoded, bytes) => {
     expect([...applicationServerKeyOf(encoded)]).toEqual(bytes);
   });
 

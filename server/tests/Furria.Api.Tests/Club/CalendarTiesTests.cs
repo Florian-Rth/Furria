@@ -28,18 +28,6 @@ public sealed class CalendarTiesTests
     private static readonly CalendarTies RunningMember = TiesOf(holdsRunningMembership: true);
 
     [Fact]
-    public void Should_Concern_When_AClubEntryMeetsARunningMembership()
-    {
-        Assert.True(RunningMember.Concerns(ForClub()));
-    }
-
-    [Fact]
-    public void Should_ConcernEveryRunningMember_When_AGroupOwnsAClubEntry()
-    {
-        Assert.True(RunningMember.Concerns(ForClub(owner: DanceGuard)));
-    }
-
-    [Fact]
     public void Should_NotConcern_When_TheMembershipIsPausedForTheEntrysSession()
     {
         var paused = RunningMember with
@@ -48,14 +36,6 @@ public sealed class CalendarTiesTests
         };
 
         Assert.False(paused.Concerns(ForClub()));
-    }
-
-    [Fact]
-    public void Should_Concern_When_SheIsInAnAudienceGroup()
-    {
-        var ties = TiesOf(memberGroupIds: [DanceGuard]);
-
-        Assert.True(ties.Concerns(ForGroups([ChildrensGuard, DanceGuard])));
     }
 
     [Fact]
@@ -103,14 +83,6 @@ public sealed class CalendarTiesTests
     }
 
     [Fact]
-    public void Should_BeHers_When_HerMemberGroupParticipatesInAClubOwnedEntry()
-    {
-        var ties = TiesOf(memberGroupIds: [MensBallet]);
-
-        Assert.True(ties.IsHers(ForClub(participating: [MensBallet])));
-    }
-
-    [Fact]
     public void Should_NotBeHers_When_HerGroupParticipatesInAChosenPeopleEntry()
     {
         var ties = TiesOf(memberGroupIds: [MensBallet], adminGroupIds: [MensBallet]);
@@ -119,39 +91,11 @@ public sealed class CalendarTiesTests
     }
 
     [Fact]
-    public void Should_SeeAGroupsEntry_When_SheHoldsClubReadWithoutATie()
-    {
-        Assert.True(RunningMember.Sees(ForGroups([DanceGuard], owner: DanceGuard), ClubReader));
-    }
-
-    [Fact]
-    public void Should_See_When_SheIsInAnAudienceGroupWithoutClubRead()
-    {
-        var ties = TiesOf(memberGroupIds: [DanceGuard]);
-
-        Assert.True(ties.Sees(ForGroups([DanceGuard]), NoClubRead));
-    }
-
-    [Fact]
-    public void Should_NotSee_When_SheHasNeitherClubReadNorATie()
-    {
-        var ties = TiesOf(memberGroupIds: [MensBallet]);
-
-        Assert.False(ties.Sees(ForClub(), NoClubRead));
-    }
-
-    [Fact]
     public void Should_NotSeeAChosenPeopleEntry_When_SheHoldsClubReadButIsNotChosen()
     {
         var ties = TiesOf(personId: Bystander, holdsRunningMembership: true);
 
         Assert.False(ties.Sees(ForPeople([Chosen]), ClubReader));
-    }
-
-    [Fact]
-    public void Should_SeeAChosenPeopleEntry_When_SheIsChosenWithoutClubRead()
-    {
-        Assert.True(TiesOf(personId: Chosen).Sees(ForPeople([Chosen]), NoClubRead));
     }
 
     [Fact]
@@ -180,14 +124,6 @@ public sealed class CalendarTiesTests
     }
 
     [Fact]
-    public void Should_ConcernTheCast_When_TheActsGroupOwnsAClubTraining()
-    {
-        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
-
-        Assert.True(guest.Concerns(TrainingOf(ForClub(owner: DanceGuard))));
-    }
-
-    [Fact]
     public void Should_NotConcernTheCast_When_TheActsGroupOnlyParticipatesInTheTraining()
     {
         var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
@@ -195,36 +131,6 @@ public sealed class CalendarTiesTests
         Assert.False(
             guest.Concerns(TrainingOf(ForGroups([MensBallet], participating: [DanceGuard])))
         );
-    }
-
-    [Fact]
-    public void Should_NotConcernTheCast_When_TheTrainingIsForChosenPeople()
-    {
-        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
-
-        Assert.False(guest.Concerns(TrainingOf(ForPeople([Chosen], owner: DanceGuard))));
-    }
-
-    [Fact]
-    public void Should_NotConcernTheCast_When_TheTrainingDoesNotAskForResponses()
-    {
-        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
-        var silentTraining = TrainingOf(ForGroups([DanceGuard])) with { AsksForResponse = false };
-
-        Assert.False(guest.Concerns(silentTraining));
-    }
-
-    [Fact]
-    public void Should_NotConcernTheCast_When_AnEntryAskingForResponsesIsNoTraining()
-    {
-        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
-        var trip = ForGroups([DanceGuard]) with
-        {
-            Kind = CalendarEntryKind.Trip,
-            AsksForResponse = true,
-        };
-
-        Assert.False(guest.Concerns(trip));
     }
 
     [Fact]

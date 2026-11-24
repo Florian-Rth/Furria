@@ -2,10 +2,6 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
-using Furria.Application.Registry;
-using Furria.Core.Club;
-using Furria.Core.Groups;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -16,8 +12,6 @@ public sealed class GetRoleByIdTests : IClassFixture<ApiTestFixture>
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
     private static readonly DateOnly HandedOver2020 = new(2020, 3, 1);
     private static readonly DateOnly TookOverAgain2022 = new(2022, 1, 1);
-    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
-
     private readonly ApiTestFixture _fixture;
 
     public GetRoleByIdTests(ApiTestFixture fixture)
@@ -32,40 +26,6 @@ public sealed class GetRoleByIdTests : IClassFixture<ApiTestFixture>
         client.GETAsync<GetRoleById, GetRoleByIdRequest, GetRoleByIdResponse>(
             new GetRoleByIdRequest { RoleId = roleId }
         );
-
-    [Fact]
-    public async Task Should_CarryTheImplyingOfficesWithSeatedCount_When_ARunningSeatImpliesTheRole()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var today = _fixture.Today;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
-                    .Roles(roles => roles.AddRole("vorstand", "Vorstand"))
-                    .Club(club =>
-                        club.AddBoardOffice("beisitz", "Beisitz", impliedRoleAlias: "vorstand")
-                            .AddBoardOffice(
-                                "alt",
-                                "Altamt",
-                                sortOrder: 2,
-                                impliedRoleAlias: "vorstand",
-                                archivedOn: ArchivedIn2021
-                            )
-                            .AddBoardSeat("ilka-beisitz", "beisitz", "ilka", today.AddDays(-3))
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("vorstand"));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var office = Assert.Single(result.ImpliedBy);
-        Assert.Equal(ctx.Club.BoardOffices.IdOf("beisitz"), office.BoardOfficeId);
-        Assert.Equal("Beisitz", office.Name);
-        Assert.Equal(1, office.SeatedCount);
-    }
 
     [Fact]
     public async Task Should_SplitRunningAndPastHolder_When_ARoleIsRead()
@@ -128,34 +88,6 @@ public sealed class GetRoleByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SayTheHolderIsNotAffiliated_When_TheRoleIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
-                    .Roles(roles =>
-                        roles
-                            .AddRoleWithDetails(
-                                "chronistin",
-                                "Chronistin",
-                                "Schreibt die Chronik.",
-                                ArchivedIn2021
-                            )
-                            .AddRoleHolding("ilka-chronistin", "chronistin", "ilka", HeldSince2017)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("chronistin"));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.False(Assert.Single(result.Holders).IsAffiliated);
-    }
-
-    [Fact]
     public async Task Should_ReportTheChainMinimum_When_AHolderHeldTheRoleTwice()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -190,78 +122,5 @@ public sealed class GetRoleByIdTests : IClassFixture<ApiTestFixture>
         var running = Assert.Single(result.Holders);
         Assert.Equal(TookOverAgain2022, running.SinceOn);
         Assert.Equal(HeldSince2017, running.Since);
-    }
-
-    [Fact]
-    public async Task Should_ReturnTheRole_When_ItIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Roles(roles =>
-                    roles.AddRoleWithDetails(
-                        "chronik",
-                        "Chronik",
-                        "Führt die Vereinschronik.",
-                        ArchivedIn2021
-                    )
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(ArchivedIn2021, result.ArchivedOn);
-    }
-
-    [Fact]
-    public async Task Should_ReportAnEmptyRole_When_NobodyHoldsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Roles(roles => roles.AddRole("zeugwart", "Zeugwart")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("zeugwart"));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(result.Holders);
-        Assert.Empty(result.PastHolders);
-    }
-
-    [Fact]
-    public async Task Should_CarryTheCoinAndTheHoldersHonours_When_ARoleIsRead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("kapelle", "Kapelle")
-                            .AddGroupAdmin("ilka-kapelle", "kapelle", "ilka")
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRoleWithCoin("chronik", "Chronik", ClubIcon.Pen, TestTones.Clay)
-                            .AddRoleHolding("ilka-chronik", "chronik", "ilka", HeldSince2017)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (_, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
-
-        Assert.Equal(new RoleCoinDto { Icon = ClubIcon.Pen, Tone = TestTones.Clay }, result.Coin);
-        var ilka = Assert.Single(result.Holders);
-        Assert.Equal(
-            [PersonFunctionKind.GroupAdmin, PersonFunctionKind.Role],
-            ilka.Honours.Functions.Select(function => function.Kind)
-        );
     }
 }

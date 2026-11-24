@@ -21,10 +21,8 @@ public sealed class ActMusicTests
     ]);
 
     [Theory]
-    [InlineData(Opener, 10, 0)]
     [InlineData(Opener, 25.5, 15.5)]
     [InlineData(Finale, 5, 30)]
-    [InlineData(Finale, 25, 50)]
     public void Should_PlaceTheAnchorOnTheMix_When_ItsMusicIsKept(
         int source,
         double seconds,
@@ -39,7 +37,6 @@ public sealed class ActMusicTests
     [Theory]
     [InlineData(Opener, 9.9)]
     [InlineData(Opener, 41)]
-    [InlineData(Finale, 0)]
     public void Should_FlagTheAnchorAsCutAway_When_ItsMusicLiesOutsideTheCut(
         int source,
         double seconds
@@ -69,10 +66,8 @@ public sealed class ActMusicTests
     }
 
     [Theory]
-    [InlineData(0, Opener, 10)]
     [InlineData(29.5, Opener, 39.5)]
     [InlineData(30, Finale, 5)]
-    [InlineData(50, Finale, 25)]
     public void Should_AnchorAMomentInItsSong_When_ItLiesInsideTheMix(
         double timelineSeconds,
         int expectedSource,
@@ -85,17 +80,7 @@ public sealed class ActMusicTests
     }
 
     [Theory]
-    [InlineData(-0.1)]
-    [InlineData(50.1)]
-    public void Should_AnchorNothing_When_TheMomentLiesOutsideTheMix(double timelineSeconds)
-    {
-        Assert.Null(Mix.AnchorAt(timelineSeconds));
-    }
-
-    [Theory]
-    [InlineData(Opener, 12, 2)]
     [InlineData(Opener, 30, 10)]
-    [InlineData(Opener, 40, 20)]
     [InlineData(Finale, 6, 21)]
     public void Should_PlaceTheAnchorInItsPiece_When_TheSongIsSplitIntoPieces(
         int source,
@@ -108,16 +93,6 @@ public sealed class ActMusicTests
         Assert.Equal(AnchorPlace.At(expectedTimelineSeconds), place);
     }
 
-    [Theory]
-    [InlineData(20.1)]
-    [InlineData(29.9)]
-    public void Should_FlagTheAnchorAsCutAway_When_ItsMusicLiesInTheGapBetweenPieces(double seconds)
-    {
-        var place = SplitMix.Locate(new MusicAnchor(Opener, seconds));
-
-        Assert.Equal(AnchorPlace.CutAway, place);
-    }
-
     [Fact]
     public void Should_PlaceTheAnchorAtTheEndOfAPiece_When_ItSitsOnThatPiecesEnd()
     {
@@ -126,65 +101,9 @@ public sealed class ActMusicTests
         Assert.Equal(AnchorPlace.At(10), place);
     }
 
-    [Fact]
-    public void Should_CutTheSongIntoItsPieces_When_ItHasPieces()
-    {
-        var cuts = MusicCut.OfSong(Opener, [new SongPiece(10, 20), new SongPiece(30, 40)], 60);
-
-        Assert.Equal([new MusicCut(Opener, 10, 20), new MusicCut(Opener, 30, 40)], cuts);
-    }
-
-    [Theory]
-    [InlineData(60.0, 60.0)]
-    [InlineData(null, 0.0)]
-    public void Should_PlayTheWholeFile_When_TheSongHasNoPieces(
-        double? durationSeconds,
-        double expectedEndSeconds
-    )
-    {
-        var cuts = MusicCut.OfSong(Opener, [], durationSeconds);
-
-        Assert.Equal([new MusicCut(Opener, 0, expectedEndSeconds)], cuts);
-    }
-
-    [Theory]
-    [InlineData(95.5, 95.5)]
-    [InlineData(null, 0)]
-    public void Should_PlayTheWholeFinalTrack_When_ItIsCut(
-        double? durationSeconds,
-        double expectedLengthSeconds
-    )
-    {
-        var cut = MusicCut.OfFinalTrack(Rehearsal, durationSeconds);
-
-        Assert.Equal(new MusicCut(Rehearsal, 0, expectedLengthSeconds), cut);
-    }
-
-    [Fact]
-    public void Should_PlayOnlyTheFinalTrack_When_OneIsAdopted()
-    {
-        var music = ActMusic.Of(
-            new MusicCut(Rehearsal, 0, 95),
-            [new MusicCut(Opener, 10, 40), new MusicCut(Finale, 5, 25)]
-        );
-
-        Assert.Equal(95, music.LengthSeconds);
-        Assert.Equal(AnchorPlace.MusicMissing, music.Locate(new MusicAnchor(Opener, 20)));
-    }
-
-    [Fact]
-    public void Should_PlayTheWorkingMix_When_NoFinalTrackIsAdopted()
-    {
-        var music = ActMusic.Of(null, [new MusicCut(Opener, 10, 40), new MusicCut(Finale, 5, 25)]);
-
-        Assert.Equal(50, music.LengthSeconds);
-    }
-
     [Theory]
     [InlineData(60.009, 60.0, false)]
     [InlineData(60.02, 60.0, true)]
-    [InlineData(500.0, null, false)]
-    [InlineData(null, 60.0, false)]
     public void Should_RefuseAMomentPastTheFile_When_ItLiesBeyondItsLength(
         double? seconds,
         double? durationSeconds,

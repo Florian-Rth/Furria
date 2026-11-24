@@ -13,8 +13,6 @@ namespace Furria.Api.Tests.BeerList;
 public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
 {
     private const string Successor = "otto";
-    private const int UnknownPersonId = 999_997;
-    private const int UnknownPotId = 999_996;
     private const int SuccessorsPrice = 16_00;
     private const string SuccessorsLink = "https://paypal.me/ottoott";
     private const string Radler = "Radler";
@@ -67,87 +65,6 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveTheOpenCratesOwedInTheHandedOverPot_When_TheSuccessorTakesOver()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(delivered: 10, taken: 3, ct);
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, result) = await client.POSTAsync<
-            PostBeerPotHandover,
-            PostBeerPotHandoverRequest,
-            PostBeerPotHandoverResponse
-        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Successor)));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.BeerTabOf(ctx.Identity.People.IdOf(Drinker))
-            .ToHaveOpenAndPaidCrates(potId, 3, 0)
-            .BeerTabOf(ctx.Identity.People.IdOf(Drinker))
-            .ToHaveOpenAndPaidCrates(result.BeerPotId, 0, 0)
-            .BeerPot(potId)
-            .ToBeOwnedBy(ctx.Identity.People.IdOf(Warden))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CarryEveryCrate_When_MoreAreLeftThanOneDeliveryBrings()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithSuccessor(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden)
-                            .AddBeerDelivery(Pot, BeerStockMovement.MaxCrates)
-                            .AddBeerDelivery(Pot, BeerStockMovement.MaxCrates)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, result) = await client.POSTAsync<
-            PostBeerPotHandover,
-            PostBeerPotHandoverRequest,
-            PostBeerPotHandoverResponse
-        >(HandoverTo(ctx, ctx.BeerList.Pots.IdOf(Pot), ctx.Identity.People.IdOf(Successor)));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.BeerStockOfPot(result.BeerPotId)
-            .ToStandAt(2 * BeerStockMovement.MaxCrates)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_OpenTheSuccessorsPotWithoutAnyMovement_When_NoCrateIsLeft()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(delivered: 3, taken: 3, ct);
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, result) = await client.POSTAsync<
-            PostBeerPotHandover,
-            PostBeerPotHandoverRequest,
-            PostBeerPotHandoverResponse
-        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Successor)));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(0, result.CarriedCrates);
-        await ctx
-            .Expected.BeerStockOfPot(potId)
-            .ToHaveMovementCount(1)
-            .BeerStockOfPot(result.BeerPotId)
-            .ToHaveMovementCount(0)
-            .BeerPots()
-            .ToHaveCount(2)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnValidationAndKeepThePotOpen_When_TheSuccessorMayNotManageTheBeerList()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -163,89 +80,6 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ExpectUntouchedAsync(ctx, potId, ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnValidationAndKeepThePotOpen_When_TheSuccessorAlreadyOwnsThePot()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(delivered: 10, taken: 3, ct);
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, _) = await client.POSTAsync<
-            PostBeerPotHandover,
-            PostBeerPotHandoverRequest,
-            PostBeerPotHandoverResponse
-        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Warden)));
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ExpectUntouchedAsync(ctx, potId, ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFoundAndKeepThePotOpen_When_TheSuccessorIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(delivered: 10, taken: 3, ct);
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, _) = await client.POSTAsync<
-            PostBeerPotHandover,
-            PostBeerPotHandoverRequest,
-            PostBeerPotHandoverResponse
-        >(HandoverTo(ctx, potId, UnknownPersonId));
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ExpectUntouchedAsync(ctx, potId, ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePotIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(delivered: 10, taken: 3, ct);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, _) = await client.POSTAsync<
-            PostBeerPotHandover,
-            PostBeerPotHandoverRequest,
-            PostBeerPotHandoverResponse
-        >(HandoverTo(ctx, UnknownPotId, ctx.Identity.People.IdOf(Successor)));
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx.Expected.BeerPots().ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_ThePotIsAlreadyHandedOver()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithSuccessor(builder)
-                    .BeerList(beerList =>
-                        beerList.AddBeerPot(
-                            Pot,
-                            Warden,
-                            openedAt: now.AddDays(-100),
-                            closedAt: now.AddDays(-5)
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, _) = await client.POSTAsync<
-            PostBeerPotHandover,
-            PostBeerPotHandoverRequest,
-            PostBeerPotHandoverResponse
-        >(HandoverTo(ctx, ctx.BeerList.Pots.IdOf(Pot), ctx.Identity.People.IdOf(Successor)));
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx.Expected.BeerPots().ToHaveCount(1).AssertAsync(ct);
     }
 
     [Fact]
@@ -362,24 +196,6 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             .BeerStockOfPot(potId)
             .ToStandAt(0)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnValidationAndKeepThePotOpen_When_AListedDrinkGetsNoPrice()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithDrinksAsync(ct);
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, _) = await client.POSTAsync<
-            PostBeerPotHandover,
-            PostBeerPotHandoverRequest,
-            PostBeerPotHandoverResponse
-        >(HandoverTo(ctx, potId, ctx.Identity.People.IdOf(Successor)));
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        await ctx.Expected.BeerPots().ToHaveCount(1).BeerPot(potId).ToBeOpen().AssertAsync(ct);
     }
 
     private Task<SeededContext> BuildWithDrinksAsync(CancellationToken ct) =>

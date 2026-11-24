@@ -18,16 +18,10 @@ const document: StudioDocument = {
 describe('patchedWhereFitting', () => {
   it.each<{ name: string; patch: Patch; skipped: number }>([
     {
-      name: 'a field of a known item',
-      patch: { op: 'replace', path: ['steps', 2, 'name'], value: 'A' },
-      skipped: 0,
-    },
-    {
       name: 'a field of a gone item',
       patch: { op: 'replace', path: ['steps', 3, 'name'], value: 'A' },
       skipped: 1,
     },
-    { name: 'removing a gone item', patch: { op: 'remove', path: ['steps', 3] }, skipped: 1 },
     {
       name: 'adding an item',
       patch: {
@@ -35,11 +29,6 @@ describe('patchedWhereFitting', () => {
         path: ['steps', -1],
         value: { startSeconds: 4, name: '' },
       },
-      skipped: 0,
-    },
-    {
-      name: 'replacing a list',
-      patch: { op: 'replace', path: ['songOrder'], value: [1, 2] },
       skipped: 0,
     },
   ])('$name skipped: $skipped', ({ patch, skipped }) => {

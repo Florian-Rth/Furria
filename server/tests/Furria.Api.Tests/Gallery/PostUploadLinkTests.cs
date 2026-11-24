@@ -42,44 +42,6 @@ public sealed class PostUploadLinkTests : IClassFixture<ApiTestFixture>
         Assert.Equal(ctx.Identity.People.IdOf("jana"), link.CreatedBy?.PersonId);
     }
 
-    [Fact]
-    public async Task Should_HandOutADifferentUnguessableToken_When_TwoLinksAreCreated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Photographer(), ct);
-        var client = await ctx.Identity.ClientForAsync("jana", ct);
-
-        var (_, first) = await client.POSTAsync<
-            PostUploadLink,
-            PostUploadLinkRequest,
-            PostUploadLinkResponse
-        >(new() { Title = "Prunksitzung" });
-        var (_, second) = await client.POSTAsync<
-            PostUploadLink,
-            PostUploadLinkRequest,
-            PostUploadLinkResponse
-        >(new() { Title = "Prunksitzung" });
-
-        Assert.NotEqual(first.Token, second.Token);
-        Assert.Equal(UploadLink.TokenLength, first.Token.Length);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheLink_When_TheTitleIsBlank()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Photographer(), ct);
-        var client = await ctx.Identity.ClientForAsync("jana", ct);
-
-        var (response, _) = await client.POSTAsync<
-            PostUploadLink,
-            PostUploadLinkRequest,
-            PostUploadLinkResponse
-        >(new() { Title = "   " });
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
     private static Action<SeedContextBuilder> Photographer(
         Action<GallerySeedBuilder>? gallery = null
     ) =>

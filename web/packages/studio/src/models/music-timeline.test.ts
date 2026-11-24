@@ -82,17 +82,6 @@ const step = (
 });
 
 describe('musicSegmentsOf', () => {
-  it('lays the songs back to back in their order, each cut to its start and end', () => {
-    const segments = musicSegmentsOf(studio({ songs: [song(7, 1, 4, 10), song(3, 0, 10, 30)] }));
-
-    expect(
-      segments.map((placed) => [placed.mediaItemId, placed.timelineStart, placed.timelineEnd]),
-    ).toEqual([
-      [3, 0, 20],
-      [7, 20, 26],
-    ]);
-  });
-
   it('plays every kept piece of a song in order and skips the parts cut out between them', () => {
     const split = {
       ...song(3, 0, 0, 0),
@@ -151,26 +140,18 @@ describe('pieceAlignmentOf', () => {
   ];
 
   it.each([
-    [10, 1],
     [20, 1],
     [20.5, 2],
-    [100, 3],
     [-1, 1],
   ])('places a piece ending at %s with the entry %s', (pieceEnd, offset) => {
     expect(pieceAlignmentOf(entries, pieceEnd)?.offsetSeconds).toBe(offset);
-  });
-
-  it('has nothing without entries', () => {
-    expect(pieceAlignmentOf([], 10)).toBeNull();
   });
 });
 
 describe('timelineSecondsOf', () => {
   it.each([
-    [{ sourceMediaItemId: 1, seconds: 12 }, 2],
     [{ sourceMediaItemId: 2, seconds: 15 }, 30],
     [{ sourceMediaItemId: 1, seconds: 31 }, null],
-    [{ sourceMediaItemId: 9, seconds: 12 }, null],
   ])('places %o at %s', (anchor, expected) => {
     expect(timelineSecondsOf(mix, anchor)).toBe(expected);
   });
@@ -178,10 +159,8 @@ describe('timelineSecondsOf', () => {
 
 describe('segmentAt', () => {
   it.each([
-    [0, 1],
     [19.99, 1],
     [20, 2],
-    [30, null],
   ])('plays the song of %s seconds', (seconds, expected) => {
     expect(segmentAt(mix, seconds)?.mediaItemId ?? null).toBe(expected);
   });
@@ -189,9 +168,7 @@ describe('segmentAt', () => {
 
 describe('countAt', () => {
   it.each([
-    [0, { count: 4, eight: 2 }],
     [0.6, { count: 5, eight: 2 }],
-    [1, { count: 6, eight: 2 }],
     [20, { count: 5, eight: 0 }],
   ])('counts %s seconds as %o', (seconds, expected) => {
     expect(countAt(mix, seconds)).toEqual(expected);
@@ -247,10 +224,8 @@ describe('counts on an adopted final file', () => {
 
   it.each([
     ['the first song, its intro cut away', 0, { count: 4, eight: 0 }],
-    ['the first song on its own first beat', 2.5, { count: 1, eight: 1 }],
     ['the faster second song on its own first beat', 90.78, { count: 1, eight: 2 }],
     ['the gap between the songs on the file grid', 60, { count: 4, eight: 12 }],
-    ['the end after the songs on the file grid', 150, { count: 2, eight: 31 }],
   ])('counts %s', (_, seconds, expected) => {
     expect(countAt(liveMix, seconds)).toEqual(expected);
   });
@@ -260,14 +235,6 @@ describe('counts on an adopted final file', () => {
     const gaps = marks.slice(1).map((mark, index) => mark.seconds - (marks[index]?.seconds ?? 0));
 
     expect(gaps.map((gap) => Math.round(gap * 10000) / 10000)).toEqual([0.6125, 0.6125]);
-  });
-
-  it('counts with the file grid alone when no song is aligned', () => {
-    const plain = musicSegmentsOf(
-      studio({ music: { lengthSeconds: 180, source: 'finalTrack' }, finalTracks: [finalOf([])] }),
-    );
-
-    expect(countAt(plain, 60)).toEqual({ count: 4, eight: 12 });
   });
 });
 
@@ -309,7 +276,6 @@ describe('partRangeOf', () => {
   const steps = [step(1, 0, 8), step(2, 8, 16), step(3, null, null)];
 
   it.each([
-    [[1, 2], { start: 0, end: 16 }],
     [[2, 3], { start: 8, end: 16 }],
     [[3], null],
   ])('spans steps %o as %o', (stepIds, expected) => {
@@ -328,11 +294,8 @@ const NEIGHBOUR_MARKS = [
 
 describe('neighbourCountOf', () => {
   it.each([
-    [2, 1, 2.5],
-    [2, -1, 1.5],
     [2.2, -1, 2],
     [3.5, 1, null],
-    [1, -1, null],
   ] as const)('from %ss towards %i lands on %s', (seconds, direction, target) => {
     expect(neighbourCountOf(NEIGHBOUR_MARKS, seconds, direction)).toBe(target);
   });

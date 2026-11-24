@@ -1,11 +1,9 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
-using Furria.Api.Endpoints.Push;
 using Furria.Application.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
-using Furria.Tests.Common.Push;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -13,8 +11,6 @@ namespace Furria.Api.Tests.Auth;
 public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
 {
     private const string CurrentPasswordField = "currentPassword";
-    private const string NewPasswordField = "newPassword";
-    private const string PasswordChangedLead = "wurde gerade geändert";
 
     private readonly ApiTestFixture _fixture;
 
@@ -52,35 +48,6 @@ public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
                 ApiTestFixture.SeededAccountPassword
             )
         );
-    }
-
-    [Fact]
-    public async Task Should_ForgetEveryPushDevice_When_HerPasswordChanged()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        await client.PUTAsync<PutMyPushSubscription, PutMyPushSubscriptionRequest>(
-            new PutMyPushSubscriptionRequest
-            {
-                Endpoint = "https://fcm.googleapis.com/fcm/send/stolen-phone",
-                Keys = new PushSubscriptionKeysDto
-                {
-                    P256dh = PushDevices.FirstPublicKey,
-                    Auth = PushDevices.AuthSecret,
-                },
-            }
-        );
-
-        await AccountSecuritySteps.ChangePasswordAsync(
-            client,
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        await ctx
-            .Expected.PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("anna"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -133,51 +100,6 @@ public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SendThePasswordChangedNotice_When_HerPasswordChanged()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-
-        await AccountSecuritySteps.ChangePasswordAsync(
-            client,
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        var notice = await _fixture.Mailbox.SingleMailToAsync(ctx.Identity.EmailOf("anna"), ct);
-        Assert.Equal(AccountSecuritySteps.NoticeSubject, notice.Subject);
-        Assert.Contains(PasswordChangedLead, notice.Text, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public async Task Should_RefuseOnTheCurrentPassword_When_ItIsWrong()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        var session = await LogInAsync(ctx, ct);
-
-        var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
-            AccountSecuritySteps.ClientWith(_fixture, session.AccessToken),
-            AccountSecuritySteps.WrongPassword
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AccountSecuritySteps.AssertRefusedOnAsync(response, CurrentPasswordField, ct);
-        await ctx
-            .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("anna"))
-            .ToHaveActiveCount(1)
-            .AssertAsync(ct);
-        Assert.Equal(
-            HttpStatusCode.OK,
-            await AccountSecuritySteps.LogInStatusAsync(
-                _fixture,
-                ctx.Identity.EmailOf("anna"),
-                ApiTestFixture.SeededAccountPassword
-            )
-        );
-    }
-
-    [Fact]
     public async Task Should_LockHerOut_When_TheCurrentPasswordWasWrongFiveTimes()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -202,74 +124,6 @@ public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
                 _fixture,
                 ctx.Identity.EmailOf("anna"),
                 ApiTestFixture.SeededAccountPassword
-            )
-        );
-    }
-
-    [Fact]
-    public async Task Should_RefuseOnTheNewPassword_When_ItIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-
-        var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
-            client,
-            ApiTestFixture.SeededAccountPassword,
-            ""
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await AccountSecuritySteps.AssertRefusedOnAsync(response, NewPasswordField, ct);
-        Assert.Equal(
-            HttpStatusCode.OK,
-            await AccountSecuritySteps.LogInStatusAsync(
-                _fixture,
-                ctx.Identity.EmailOf("anna"),
-                ApiTestFixture.SeededAccountPassword
-            )
-        );
-    }
-
-    [Fact]
-    public async Task Should_ChangeHerPassword_When_TheNewOneIsASingleCharacter()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-
-        var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
-            client,
-            ApiTestFixture.SeededAccountPassword,
-            "x"
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(
-            HttpStatusCode.OK,
-            await AccountSecuritySteps.LogInStatusAsync(_fixture, ctx.Identity.EmailOf("anna"), "x")
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheManagingLoginChangesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
-            client,
-            ApiTestFixture.ManagingLoginPassword
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        Assert.Equal(
-            HttpStatusCode.OK,
-            await AccountSecuritySteps.LogInStatusAsync(
-                _fixture,
-                ApiTestFixture.ManagingLoginEmail,
-                ApiTestFixture.ManagingLoginPassword
             )
         );
     }

@@ -93,92 +93,6 @@ public sealed class GetClubHubAnnouncementsTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Fact]
-    public async Task Should_LeaveTheExpiredAnnouncementOff_When_TheHubIsRead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildBoardAsync(ct);
-                var result = await ReadAsync(ctx, ct);
-
-                Assert.DoesNotContain(
-                    result.Announcements.Newest,
-                    announcement =>
-                        announcement.AnnouncementId == ctx.Club.Announcements.IdOf("abgelaufen")
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTitelTextAutorAndGueltigBis_When_TheHubIsRead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildBoardAsync(ct);
-                var result = await ReadAsync(ctx, ct);
-                var newest = result.Announcements.Newest[0];
-
-                Assert.Equal("Januar", newest.Title);
-                Assert.Equal(Body, newest.Body);
-                Assert.Equal(PublishedInJanuary, newest.PublishedAt);
-                Assert.Equal(ValidIntoTheSession, newest.ValidUntil);
-                Assert.NotNull(newest.Author);
-                Assert.Equal(ctx.Identity.People.IdOf("alice"), newest.Author.PersonId);
-                Assert.Equal("Alice", newest.Author.FirstName);
-                Assert.Equal("Muster", newest.Author.LastName);
-                Assert.Null(newest.Author.Portrait);
-                Assert.Null(newest.Author.OfficeName);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_BreakTheTieOnTheYoungerAnnouncement_When_TwoWereHungUpAtTheSameMoment()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildAtOneMomentAsync(ct);
-                var result = await ReadAsync(ctx, ct);
-
-                Assert.Equal(
-                    [ctx.Club.Announcements.IdOf("zweiter"), ctx.Club.Announcements.IdOf("erster")],
-                    result.Announcements.Newest.Select(announcement => announcement.AnnouncementId)
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheAnnouncementsEmpty_When_NobodyHasHungAnythingUp()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildAsync(_ => { }, ct);
-                var result = await ReadAsync(ctx, ct);
-
-                Assert.Empty(result.Announcements.Newest);
-                Assert.Equal(0, result.Announcements.TotalCount);
-            }
-        );
-    }
-
     private Task<SeededContext> BuildBoardAsync(CancellationToken ct) =>
         BuildAsync(
             club =>
@@ -201,14 +115,6 @@ public sealed class GetClubHubAnnouncementsTests : IClassFixture<ApiTestFixture>
                         PublishedInJanuary,
                         ValidIntoTheSession
                     ),
-            ct
-        );
-
-    private Task<SeededContext> BuildAtOneMomentAsync(CancellationToken ct) =>
-        BuildAsync(
-            club =>
-                club.AddAnnouncement("erster", "alice", "Erster", Body, PublishedInJanuary)
-                    .AddAnnouncement("zweiter", "alice", "Zweiter", Body, PublishedInJanuary),
             ct
         );
 

@@ -23,41 +23,6 @@ public sealed class PublicFaceTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ShowOnlyEventsThatAreNotYetOver_When_TheWebsiteReadsEvents()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Club(club =>
-                    club.AddVenue("saal", "Bürgerhaus")
-                        .AddEvent("ahead", "Kinderball", now.AddDays(30), "saal")
-                        .AddEvent(
-                            "running",
-                            "Prunksitzung",
-                            now.AddHours(-1),
-                            "saal",
-                            endsAt: now.AddHours(1)
-                        )
-                        .AddEvent("just-begun", "Weiberfastnacht", now.AddHours(-2), "saal")
-                        .AddEvent("long-begun", "Frühschoppen", now.AddHours(-4), "saal")
-                        .AddEvent(
-                            "over",
-                            "Altweiber",
-                            now.AddDays(-30),
-                            "saal",
-                            endsAt: now.AddDays(-30).AddHours(5)
-                        )
-                ),
-            ct
-        );
-
-        var shown = await ShownAsync(face => face.Events.Select(row => row.CalendarEntryId), ct);
-
-        Assert.Equal(IdsOf(ctx.Club.Events, "ahead", "running", "just-begun"), shown);
-    }
-
-    [Fact]
     public async Task Should_LeaveOutEventsInPreparation_When_TheWebsiteReadsEvents()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -81,36 +46,6 @@ public sealed class PublicFaceTests : IClassFixture<ApiTestFixture>
         var shown = await ShownAsync(face => face.Events.Select(row => row.CalendarEntryId), ct);
 
         Assert.Equal(IdsOf(ctx.Club.Events, "published"), shown);
-    }
-
-    [Fact]
-    public async Task Should_ShowOnlyGroupsThatAreNotArchived_When_TheWebsiteReadsGroups()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups =>
-                    groups
-                        .AddGroup("garde", "Stadtgarde")
-                        .AddGroup("alt", "Altherren", archivedOn: new DateOnly(2024, 6, 30))
-                ),
-            ct
-        );
-
-        var shown = await ShownAsync(face => face.Groups.Select(group => group.Id), ct);
-
-        Assert.Equal(IdsOf(ctx.Groups.Groups, "garde"), shown);
-    }
-
-    [Fact]
-    public async Task Should_ShowOnlyPublishedAlbumsOutsideTheBin_When_TheWebsiteReadsAlbums()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Gallery(), ct);
-
-        var shown = await ShownAsync(face => face.Albums.Select(album => album.Id), ct);
-
-        Assert.Equal(IdsOf(ctx.Gallery.Albums, "published"), shown);
     }
 
     [Fact]

@@ -8,14 +8,11 @@ public sealed class GroupMatcherSeedBuilder
 
     private readonly List<StatementIntent> _statements = [];
     private readonly List<StanceIntent> _stances = [];
-    private readonly List<AdmissionAgeIntent> _admissionAges = [];
     private readonly List<TakingPartIntent> _takingPart = [];
 
     internal IReadOnlyList<StatementIntent> Statements => _statements;
 
     internal IReadOnlyList<StanceIntent> Stances => _stances;
-
-    internal IReadOnlyList<AdmissionAgeIntent> AdmissionAges => _admissionAges;
 
     internal IReadOnlyList<TakingPartIntent> TakingPart => _takingPart;
 
@@ -42,12 +39,6 @@ public sealed class GroupMatcherSeedBuilder
         return this;
     }
 
-    public GroupMatcherSeedBuilder AddAdmissionAge(string groupAlias, AdmissionAgeBand band)
-    {
-        _admissionAges.Add(new AdmissionAgeIntent(groupAlias, band));
-        return this;
-    }
-
     public GroupMatcherSeedBuilder AddTakingPart(string groupAlias, DateTimeOffset? joinedAt = null)
     {
         _takingPart.Add(new TakingPartIntent(groupAlias, joinedAt));
@@ -68,8 +59,6 @@ public sealed class GroupMatcherSeedBuilder
         int Importance,
         DateTimeOffset? TakenAt
     );
-
-    internal sealed record AdmissionAgeIntent(string GroupAlias, AdmissionAgeBand Band);
 
     internal sealed record TakingPartIntent(string GroupAlias, DateTimeOffset? JoinedAt);
 }

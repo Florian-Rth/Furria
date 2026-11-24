@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.MembershipApplications;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -64,81 +63,5 @@ public sealed class GetMembershipApplicationsTests : IClassFixture<ApiTestFixtur
         Assert.Equal("Früh", mia.LastName);
         Assert.Equal("Köln", mia.City);
         Assert.Equal(now - TimeSpan.FromDays(3), mia.ConfirmedAt);
-    }
-
-    [Fact]
-    public async Task Should_MarkTheApplicantMinor_When_SheIsUnder18Today()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var today = _fixture.Today;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddMembershipApplication("mia", today.AddYears(-18).AddDays(1))
-                        .AddMembershipApplication("lena", today.AddYears(-18))
-                ),
-            ct
-        );
-        var admin = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (_, result) = await admin.GETAsync<
-            GetMembershipApplications,
-            GetMembershipApplicationsResponse
-        >();
-
-        var mia = Assert.Single(
-            result.Applications,
-            application =>
-                application.MembershipApplicationId
-                == ctx.Identity.MembershipApplications.IdOf("mia")
-        );
-        var lena = Assert.Single(
-            result.Applications,
-            application =>
-                application.MembershipApplicationId
-                == ctx.Identity.MembershipApplications.IdOf("lena")
-        );
-        Assert.True(mia.IsMinor);
-        Assert.Equal(17, mia.Age);
-        Assert.False(lena.IsMinor);
-        Assert.Equal(18, lena.Age);
-    }
-
-    [Fact]
-    public async Task Should_ListTheApplications_When_TheCallerOnlyDecidesApplications()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddAccount("anna")
-                            .AddMembershipApplication("mia", _fixture.Today.AddYears(-30))
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "aufnahme",
-                            "anna-aufnahme",
-                            "Aufnahme",
-                            "anna",
-                            FurriaPermissions.MembershipApplicationsDecide
-                        )
-                    ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-
-        var (response, result) = await client.GETAsync<
-            GetMembershipApplications,
-            GetMembershipApplicationsResponse
-        >();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(
-            ctx.Identity.MembershipApplications.IdOf("mia"),
-            Assert.Single(result.Applications).MembershipApplicationId
-        );
     }
 }

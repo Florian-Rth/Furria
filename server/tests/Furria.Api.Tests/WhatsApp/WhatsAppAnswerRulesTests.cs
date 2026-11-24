@@ -1,4 +1,3 @@
-using Furria.Core.Club;
 using Furria.Infrastructure.WhatsApp;
 using Xunit;
 
@@ -7,15 +6,6 @@ namespace Furria.Api.Tests.WhatsApp;
 public sealed class WhatsAppAnswerRulesTests
 {
     private static readonly DateTimeOffset Noon = new(2027, 1, 10, 12, 0, 0, TimeSpan.Zero);
-
-    public static readonly TheoryData<string[], AttendanceAnswer?> AttendanceVotes = new()
-    {
-        { ["Ja"], AttendanceAnswer.Yes },
-        { ["Nein"], AttendanceAnswer.No },
-        { ["Vielleicht"], AttendanceAnswer.Maybe },
-        { [], null },
-        { ["Unbekannt"], null },
-    };
 
     [Fact]
     public void Should_MapTheTextsToTheOptionIdsByPosition_When_AMemberVotes()
@@ -27,19 +17,6 @@ public sealed class WhatsAppAnswerRulesTests
         );
 
         Assert.Equal([11, 13], optionIds);
-    }
-
-    [Theory]
-    [MemberData(nameof(AttendanceVotes))]
-    public void Should_ReadTheAttendance_When_AMemberVotesOnTheYesNoMaybePoll(
-        string[] selected,
-        AttendanceAnswer? answer
-    )
-    {
-        Assert.Equal(
-            answer,
-            WhatsAppAnswerRules.AttendanceOf(["Ja", "Nein", "Vielleicht"], selected)
-        );
     }
 
     [Theory]

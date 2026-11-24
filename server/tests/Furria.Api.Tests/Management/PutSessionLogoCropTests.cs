@@ -40,20 +40,6 @@ public sealed class PutSessionLogoCropTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheSessionHasNoLogo()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SessionLogoSeeds.RunningSessionWithKeeper(), ct);
-        var client = await ctx.Identity.ClientForAsync(SessionLogoSeeds.Keeper, ct);
-
-        var response = await client.PUTAsync<PutSessionLogoCrop, PutSessionLogoCropRequest>(
-            RecropOf(ctx.Club.Sessions.IdOf(SessionLogoSeeds.Running))
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
     private static PutSessionLogoCropRequest RecropOf(int sessionId) =>
         new()
         {

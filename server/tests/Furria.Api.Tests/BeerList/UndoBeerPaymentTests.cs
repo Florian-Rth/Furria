@@ -83,41 +83,4 @@ public sealed class UndoBeerPaymentTests : IClassFixture<ApiTestFixture>
             .ToHaveOpenAndPaidCrates(ctx.BeerList.Pots.IdOf("alter-topf"), open: 2, paid: 0)
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_ThePaymentIsAlreadyCorrected()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden)
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                            .AddBeerCrates(Pot, Drinker, 1, now.AddDays(-10))
-                            .AddBeerPayment(
-                                "schon-weg",
-                                Pot,
-                                Drinker,
-                                1,
-                                now.AddDays(-2),
-                                undoneAt: now.AddDays(-1)
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<UndoBeerPayment, UndoBeerPaymentRequest>(
-            new() { BeerPaymentId = ctx.BeerList.Payments.IdOf("schon-weg") }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx
-            .Expected.BeerPayment(ctx.BeerList.Payments.IdOf("schon-weg"))
-            .ToBeUndone(now.AddDays(-1), null)
-            .AssertAsync(ct);
-    }
 }

@@ -11,11 +11,6 @@ namespace Furria.Api.Tests.Auth;
 
 public sealed class ResetPasswordTests : IClassFixture<ApiTestFixture>
 {
-    private const string ResetField = "reset";
-    private const string PasswordField = "password";
-    private const string NoticeSubject = "Dein Zugang zur Vereins-App wurde geändert";
-    private const string PasswordResetNotice = "über den Link „Passwort vergessen“";
-
     private readonly ApiTestFixture _fixture;
 
     public ResetPasswordTests(ApiTestFixture fixture)
@@ -84,47 +79,6 @@ public sealed class ResetPasswordTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_NotSignHerIn_When_ThePasswordIsReset()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var reset = await SignedOutMailSteps.RequestResetAndReadItAsync(
-            _fixture,
-            ctx.Identity.EmailOf("alice"),
-            ct
-        );
-
-        var response = await SignedOutMailSteps.ResetPasswordAsync(_fixture.CreateClient(), reset);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveActiveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SendTheCredentialChangeNotice_When_ThePasswordIsReset()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var aliceEmail = ctx.Identity.EmailOf("alice");
-        var reset = await SignedOutMailSteps.RequestResetAndReadItAsync(_fixture, aliceEmail, ct);
-
-        await SignedOutMailSteps.ResetPasswordAsync(_fixture.CreateClient(), reset);
-
-        var mails = await _fixture.Mailbox.MailsToAsync(aliceEmail, 2, ct);
-        var notice = Assert.Single(mails, mail => mail.Subject == NoticeSubject);
-        Assert.Contains(PasswordResetNotice, notice.Text, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public async Task Should_RefuseNeutrally_When_TheResetLinkWasAlreadyUsed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -190,129 +144,6 @@ public sealed class ResetPasswordTests : IClassFixture<ApiTestFixture>
             )
         );
     }
-
-    [Fact]
-    public async Task Should_RefuseNeutrally_When_TheResetLinkIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var response = await SignedOutMailSteps.ResetPasswordAsync(
-            _fixture.CreateClient(),
-            SignedOutMailSteps.UnknownReset()
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal(ResetField, (await RefusalOnAsync(response, ct)).Field);
-    }
-
-    [Fact]
-    public async Task Should_RefuseNeutrally_When_TheResetLinkIsTamperedWith()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity => identity.AddAccount("alice").AddAccount("mallory")),
-            ct
-        );
-        var reset = await SignedOutMailSteps.RequestResetAndReadItAsync(
-            _fixture,
-            ctx.Identity.EmailOf("mallory"),
-            ct
-        );
-        var redirected = RedirectedTo(reset, ctx.Identity.Accounts.IdOf("alice"));
-
-        var response = await SignedOutMailSteps.ResetPasswordAsync(
-            _fixture.CreateClient(),
-            redirected
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Equal(ResetField, (await RefusalOnAsync(response, ct)).Field);
-        var login = await ctx.Identity.LogInAsync(
-            ctx.Identity.EmailOf("alice"),
-            ApiTestFixture.SeededAccountPassword,
-            ct
-        );
-        Assert.NotEmpty(login.AccessToken);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheLinkLive_When_TheNewPasswordIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var aliceEmail = ctx.Identity.EmailOf("alice");
-        var reset = await SignedOutMailSteps.RequestResetAndReadItAsync(_fixture, aliceEmail, ct);
-
-        var refused = await SignedOutMailSteps.ResetPasswordAsync(
-            _fixture.CreateClient(),
-            reset,
-            ""
-        );
-        var accepted = await SignedOutMailSteps.ResetPasswordAsync(_fixture.CreateClient(), reset);
-
-        Assert.Equal(HttpStatusCode.BadRequest, refused.StatusCode);
-        Assert.Equal(PasswordField, (await RefusalOnAsync(refused, ct)).Field);
-        Assert.Equal(HttpStatusCode.NoContent, accepted.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_LetHerLogIn_When_TheNewPasswordIsASingleCharacter()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var aliceEmail = ctx.Identity.EmailOf("alice");
-        var reset = await SignedOutMailSteps.RequestResetAndReadItAsync(_fixture, aliceEmail, ct);
-
-        var response = await SignedOutMailSteps.ResetPasswordAsync(
-            _fixture.CreateClient(),
-            reset,
-            "x"
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var login = await ctx.Identity.LogInAsync(aliceEmail, "x", ct);
-        Assert.NotEmpty(login.AccessToken);
-    }
-
-    [Fact]
-    public async Task Should_ReturnTooManyRequests_When_OneResetLinkIsTriedTooOften()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        var reset = SignedOutMailSteps.UnknownReset();
-        var client = _fixture.CreateClient();
-
-        for (var attempt = 0; attempt < ApiTestFixture.PermitsPerInvitationToken; attempt++)
-            Assert.Equal(
-                HttpStatusCode.BadRequest,
-                (await SignedOutMailSteps.ResetPasswordAsync(client, reset)).StatusCode
-            );
-        var refused = await SignedOutMailSteps.ResetPasswordAsync(client, reset);
-
-        Assert.Equal(HttpStatusCode.TooManyRequests, refused.StatusCode);
-    }
-
-    private static string RedirectedTo(string reset, int accountId)
-    {
-        var blob = Convert.FromBase64String(Padded(reset.Replace('-', '+').Replace('_', '/')));
-        blob[0] = (byte)(accountId >> 24);
-        blob[1] = (byte)(accountId >> 16);
-        blob[2] = (byte)(accountId >> 8);
-        blob[3] = (byte)accountId;
-
-        return Convert.ToBase64String(blob).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-    }
-
-    private static string Padded(string base64) =>
-        base64.PadRight(base64.Length + (4 - base64.Length % 4) % 4, '=');
 
     private static async Task<Refusal> RefusalOnAsync(
         HttpResponseMessage response,

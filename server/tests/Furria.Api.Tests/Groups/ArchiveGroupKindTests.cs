@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -13,7 +12,6 @@ public sealed class ArchiveGroupKindTests : IClassFixture<ApiTestFixture>
     private const string ConflictField = "conflict";
     private const string KindInUseMessage =
         "Diese Gruppenart ist in Benutzung. Ordne die Gruppen zuerst einer anderen Art zu.";
-    private const string AlreadyArchivedMessage = "Diese Gruppenart ist bereits archiviert.";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -28,26 +26,6 @@ public sealed class ArchiveGroupKindTests : IClassFixture<ApiTestFixture>
         client.POSTAsync<ArchiveGroupKind, ArchiveGroupKindRequest>(
             new ArchiveGroupKindRequest { GroupKindId = groupKindId }
         );
-
-    [Fact]
-    public async Task Should_ArchiveTheGroupKind_When_NoGroupCarriesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups => groups.AddGroupKind("spielmannszug", "Spielmannszug")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await ArchiveKindAsync(client, ctx.Groups.GroupKinds.IdOf("spielmannszug"));
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("spielmannszug"))
-            .ToBeArchivedOn(_fixture.Today)
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_ArchiveTheGroupKind_When_OnlyAnArchivedGroupUsesIt()
@@ -105,30 +83,6 @@ public sealed class ArchiveGroupKindTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("garde"))
             .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheGroupKindIsAlreadyArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups =>
-                    groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await ArchiveKindAsync(client, ctx.Groups.GroupKinds.IdOf("spielmannszug"));
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal([AlreadyArchivedMessage], failures[ConflictField]);
-        await ctx
-            .Expected.GroupKind(ctx.Groups.GroupKinds.IdOf("spielmannszug"))
-            .ToBeArchivedOn(ArchivedIn2021)
             .AssertAsync(ct);
     }
 

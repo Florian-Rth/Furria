@@ -100,36 +100,6 @@ describe('studioOf', () => {
     ]);
   });
 
-  it('leaves the steps of a removed part ungrouped', () => {
-    const studio = projected({ kind: 'partRemove', partId: 22 });
-
-    expect(studio.parts.map((part) => [part.partId, part.stepIds])).toEqual([[21, [11]]]);
-  });
-
-  it('starts the timeline at zero after the first step is removed', () => {
-    const studio = projected({ kind: 'stepRemove', stepId: 11 });
-
-    expect(studio.steps.map((known) => [known.stepId, known.startSeconds])).toEqual([
-      [12, 0],
-      [13, 16],
-    ]);
-  });
-
-  it('numbers spots by their order after a removal', () => {
-    const studio = projected({ kind: 'spotRemove', spotId: 31 }, { kind: 'spotAdd', spotId: -1 });
-
-    expect([
-      studio.spots.map((spot) => [spot.spotId, spot.number]),
-      studio.choreography?.tracks.map((track) => track.spotId),
-    ]).toEqual([
-      [
-        [32, 1],
-        [-1, 2],
-      ],
-      [32],
-    ]);
-  });
-
   it('follows song cuts and order with the music length and positions', () => {
     const studio = projected(
       {

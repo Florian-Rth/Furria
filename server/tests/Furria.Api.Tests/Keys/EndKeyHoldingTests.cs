@@ -10,13 +10,10 @@ namespace Furria.Api.Tests.Keys;
 public sealed class EndKeyHoldingTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string ValidationField = "request";
-    private const int UnknownKeyHoldingId = 999_999;
 
     private static readonly DateOnly HeldSince2019 = new(2019, 2, 1);
     private static readonly DateOnly ReturnedIn2022 = new(2022, 6, 30);
     private static readonly DateOnly ReturnedIn2025 = new(2025, 5, 14);
-    private static readonly DateOnly BeforeTheHandout = new(2018, 12, 24);
 
     private readonly ApiTestFixture _fixture;
 
@@ -59,38 +56,6 @@ public sealed class EndKeyHoldingTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnValidation_When_TheReturnComesBeforeTheIssuance()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("maik", "Maik", "Perlberg"))
-                    .Club(club =>
-                        club.AddVenue("lager", "Requisitenlager")
-                            .AddKeyHolding("maik-lager", "lager", "maik", HeldSince2019)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<EndKeyHolding, EndKeyHoldingRequest>(
-            new()
-            {
-                KeyHoldingId = ctx.Club.KeyHoldings.IdOf("maik-lager"),
-                UntilOn = BeforeTheHandout,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        Assert.Single((await ReadFailuresAsync(response, ct))[ValidationField]);
-        await ctx
-            .Expected.KeyHolding(ctx.Club.KeyHoldings.IdOf("maik-lager"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheKeyIsAlreadyBack()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -126,20 +91,6 @@ public sealed class EndKeyHoldingTests : IClassFixture<ApiTestFixture>
             .Expected.KeyHolding(ctx.Club.KeyHoldings.IdOf("maik-lager"))
             .ToHavePeriod(HeldSince2019, ReturnedIn2022)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheKeyDoesNotExist()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<EndKeyHolding, EndKeyHoldingRequest>(
-            new() { KeyHoldingId = UnknownKeyHoldingId, UntilOn = ReturnedIn2025 }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

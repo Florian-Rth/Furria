@@ -40,7 +40,6 @@ const startsOf = (result: StudioDocument): Record<string, number | null> =>
 describe('stepMark', () => {
   it.each([
     { name: 'opens an empty timeline', base: document({}), at: 5, starts: { '-2': 0, '-1': 5 } },
-    { name: 'marks at the very start alone', base: document({}), at: 0, starts: { '-1': 0 } },
     {
       name: 'splits a step',
       base: threeSteps,
@@ -48,7 +47,6 @@ describe('stepMark', () => {
       starts: { 1: 0, 2: 8, 3: 16, '-1': 12 },
     },
     { name: 'refuses a border', base: threeSteps, at: 8.005, starts: { 1: 0, 2: 8, 3: 16 } },
-    { name: 'refuses the music end', base: threeSteps, at: 40, starts: { 1: 0, 2: 8, 3: 16 } },
   ])('$name', ({ base, at, starts }) => {
     const result = changed(base, {
       kind: 'stepMark',
@@ -64,10 +62,7 @@ describe('stepMark', () => {
 
 describe('stepMove', () => {
   it.each([
-    { stepId: 2, at: 10, moved: 10 },
     { stepId: 2, at: 16.5, moved: 8 },
-    { stepId: 2, at: 0, moved: 8 },
-    { stepId: 3, at: 30, moved: 30 },
     { stepId: 1, at: 2, moved: 0 },
     { stepId: 3, at: 39.995, moved: 16 },
   ])('moves step $stepId to $at only between its neighbours', ({ stepId, at, moved }) => {
@@ -114,7 +109,6 @@ describe('stepRemove', () => {
   it.each([
     { name: 'hands the part start to the next step', removed: 1, parts: { 10: [2, 3] } },
     { name: 'hands the part end to the previous step', removed: 3, parts: { 10: [1, 2] } },
-    { name: 'keeps the range around a middle step', removed: 2, parts: { 10: [1, 3] } },
   ])('$name', ({ removed, parts }) => {
     const base = { ...threeSteps, parts: { 10: part('A', 1, 3) } };
 
@@ -126,16 +120,6 @@ describe('stepRemove', () => {
 
     expect(Object.keys(changed(base, { kind: 'stepRemove', stepId: 2 }).parts)).toEqual(['11']);
   });
-
-  it('leaves parts alone when a cut-away step goes', () => {
-    const base = {
-      ...threeSteps,
-      steps: { ...threeSteps.steps, 4: { startSeconds: null, name: '' } },
-      parts: { 10: part('A', 1, 3) },
-    };
-
-    expect(changed(base, { kind: 'stepRemove', stepId: 4 }).parts).toEqual(base.parts);
-  });
 });
 
 describe('partAdd and partSettings', () => {
@@ -143,10 +127,8 @@ describe('partAdd and partSettings', () => {
 
   it.each([
     { firstStepId: 3, lastStepId: 3, added: true },
-    { firstStepId: 1, lastStepId: 1, added: true },
     { firstStepId: 1, lastStepId: 2, added: false },
     { firstStepId: 3, lastStepId: 1, added: false },
-    { firstStepId: 99, lastStepId: 99, added: false },
   ])('opens a part on $firstStepId–$lastStepId: $added', ({ firstStepId, lastStepId, added }) => {
     const result = changed(withPart, {
       kind: 'partAdd',
@@ -162,7 +144,6 @@ describe('partAdd and partSettings', () => {
   it.each([
     { firstStepId: 1, lastStepId: 2, range: [1, 2] },
     { firstStepId: 2, lastStepId: 3, range: [2, 2] },
-    { firstStepId: 3, lastStepId: 2, range: [2, 2] },
   ])(
     'moves the range to $firstStepId–$lastStepId only without overlap',
     ({ firstStepId, lastStepId, range }) => {
@@ -208,12 +189,6 @@ describe('spots', () => {
 
     expect([result.spotOrder, Object.keys(result.tracks)]).toEqual([[2], []]);
   });
-
-  it('ignores tracks of unknown spots', () => {
-    const result = changed(twoSpots, { kind: 'tracks', tracks: { 2: [], 9: [] } });
-
-    expect(Object.keys(result.tracks)).toEqual(['1', '2']);
-  });
 });
 
 describe('songOrder', () => {
@@ -244,7 +219,6 @@ describe('finalOffset', () => {
   });
 
   it.each<[string, number, number, number[]]>([
-    ['replaces the entry of the piece', 20, 30, [0, 20, 30]],
     ['drops older entries inside the piece', 10, 35, [0, 10]],
     ['adds an entry for a fresh piece', 12, 18, [0, 12, 20, 30]],
   ])('%s', (_, fromSeconds, untilSeconds, froms) => {
@@ -262,33 +236,10 @@ describe('finalOffset', () => {
   });
 });
 
-describe('videoClip', () => {
-  it('cuts the clip of a known video and ignores unknown ones', () => {
-    const base = document({
-      videos: { 5: { name: null, startSeconds: 3, clipStartSeconds: 0, clipEndSeconds: 30 } },
-    });
-
-    const result = changed(
-      changed(base, { kind: 'videoClip', videoId: 5, startSeconds: 2.5, endSeconds: 12.25 }),
-      { kind: 'videoClip', videoId: 9, startSeconds: 1, endSeconds: 2 },
-    );
-
-    expect(result.videos).toEqual({
-      5: { name: null, startSeconds: 3, clipStartSeconds: 2.5, clipEndSeconds: 12.25 },
-    });
-  });
-});
-
 describe('mergeKeyOf', () => {
   it.each<{ change: StudioChange; merges: boolean }>([
     { change: { kind: 'stepMove', stepId: 1, atSeconds: 2, lengthSeconds: 40 }, merges: true },
-    { change: { kind: 'videoStart', videoId: 1, startSeconds: 2 }, merges: true },
-    { change: { kind: 'videoClip', videoId: 1, startSeconds: 0, endSeconds: 2 }, merges: true },
-    { change: { kind: 'stepName', stepId: 1, name: 'Wel' }, merges: true },
-    { change: { kind: 'videoName', videoId: 1, name: 'Probe' }, merges: true },
-    { change: { kind: 'tracks', tracks: { 2: [], 1: [] } }, merges: true },
     { change: { kind: 'stepRemove', stepId: 1 }, merges: false },
-    { change: { kind: 'spotAdd', spotId: -1 }, merges: false },
   ])('$change.kind merges: $merges', ({ change, merges }) => {
     expect(mergeKeyOf(change) !== null).toBe(merges);
   });

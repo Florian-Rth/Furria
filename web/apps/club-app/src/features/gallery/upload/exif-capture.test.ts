@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { captureTimeOf, localStampOf } from './exif-capture';
+import { captureTimeOf } from './exif-capture';
 
 const ascii = (text: string): number[] => [...text].map((letter) => letter.charCodeAt(0));
 
@@ -75,17 +75,8 @@ describe('captureTimeOf', () => {
       jpegWith(tiffWithDateTimeOnly('2026:03:02 09:05:59')),
       '2026-03-02T09:05:59',
     ],
-    ['an unset stamp', jpegWith(tiffWithOriginal(true, '0000:00:00 00:00:0x')), null],
-    ['not a jpeg', new Uint8Array([0x89, 0x50, 0x4e, 0x47]).buffer, null],
-    ['a jpeg without exif', new Uint8Array([0xff, 0xd8, 0xff, 0xda]).buffer, null],
     ['a cut-off segment', new Uint8Array([0xff, 0xd8, 0xff, 0xe1, 0x00, 0x40, 0x45]).buffer, null],
   ])('%s', (_, buffer, expected) => {
     expect(captureTimeOf(buffer)).toBe(expected);
-  });
-});
-
-describe('localStampOf', () => {
-  it('formats local wall-clock time without an offset', () => {
-    expect(localStampOf(new Date(2026, 1, 14, 20, 4, 9).getTime())).toBe('2026-02-14T20:04:09');
   });
 });

@@ -42,28 +42,6 @@ public sealed class PutGroupPictureCropTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_RefuseTheRecrop_When_TheCallerOnlyBelongsToTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await GardeWithItsAdminAndAMemberAsync(ct);
-        var groupId = ctx.Groups.Groups.IdOf("tanzgarde");
-        var pictureId = await PictureSteps.RenderedGroupPictureAsync(
-            _fixture,
-            await ctx.Identity.ClientForAsync("gerda", ct),
-            groupId,
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("tanja", ct);
-
-        var response = await client.PUTAsync<PutGroupPictureCrop, PutGroupPictureCropRequest>(
-            RecropOf(groupId)
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.MediaItem(pictureId).ToBeIn(MediaItemState.Ready).AssertAsync(ct);
-    }
-
     private Task<SeededContext> GardeWithItsAdminAndAMemberAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>

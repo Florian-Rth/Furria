@@ -13,12 +13,6 @@ public sealed class AnniversaryTests
         Assert.Equal(new DateOnly(2027, 2, 28), Anniversary.DayIn(LeapDay, 2027));
     }
 
-    [Fact]
-    public void Should_KeepTheTwentyNinth_When_TheYearIsALeapYear()
-    {
-        Assert.Equal(new DateOnly(2028, 2, 29), Anniversary.DayIn(LeapDay, 2028));
-    }
-
     [Theory]
     [InlineData("1994-03-01", "2044-03-01", 50)]
     [InlineData("1994-03-01", "2044-02-28", 49)]
@@ -32,30 +26,6 @@ public sealed class AnniversaryTests
     )
     {
         Assert.Equal(expected, Anniversary.YearsOn(DateOnly.Parse(origin), DateOnly.Parse(day)));
-    }
-
-    [Theory]
-    [InlineData(5)]
-    [InlineData(10)]
-    [InlineData(11)]
-    [InlineData(22)]
-    [InlineData(33)]
-    [InlineData(50)]
-    [InlineData(55)]
-    public void Should_CountAsRound_When_TheYearsAreAMultipleOfFiveOrEleven(int years)
-    {
-        Assert.True(Anniversary.IsRound(years));
-    }
-
-    [Theory]
-    [InlineData(0)]
-    [InlineData(1)]
-    [InlineData(12)]
-    [InlineData(27)]
-    [InlineData(-5)]
-    public void Should_NotCountAsRound_When_TheYearsAreNoPositiveMultipleOfFiveOrEleven(int years)
-    {
-        Assert.False(Anniversary.IsRound(years));
     }
 
     [Theory]

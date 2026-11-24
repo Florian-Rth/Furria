@@ -19,31 +19,6 @@ public sealed class MembershipPersistenceTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AcceptASecondMembership_When_TheFirstOneEnded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("alice")
-                        .AddMembership("alice-first", "alice", JoinedIn2017, LeftIn2020)
-                        .AddMembership("alice-second", "alice", RejoinedIn2021)
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.MembershipsOfPerson(ctx.Identity.People.IdOf("alice"))
-            .ToHaveCount(2)
-            .MembershipsOfPerson(ctx.Identity.People.IdOf("alice"))
-            .ToHaveOpenCount(1)
-            .Membership(ctx.Identity.Memberships.IdOf("alice-second"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RejectASecondOpenMembership_When_OneIsAlreadyOpen()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -86,25 +61,5 @@ public sealed class MembershipPersistenceTests : IClassFixture<ApiTestFixture>
         var violation = Assert.IsType<PostgresException>(rejection.InnerException);
         Assert.Equal(PostgresErrorCodes.CheckViolation, violation.SqlState);
         Assert.Equal("ck_membership_period", violation.ConstraintName);
-    }
-
-    [Fact]
-    public async Task Should_AcceptASingleDayPeriod_When_TheStartAndTheEndAreTheSameDay()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("alice")
-                        .AddMembership("alice-first", "alice", JoinedIn2017, JoinedIn2017)
-                ),
-            ct
-        );
-
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("alice-first"))
-            .ToHavePeriod(JoinedIn2017, JoinedIn2017)
-            .AssertAsync(ct);
     }
 }

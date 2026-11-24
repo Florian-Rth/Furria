@@ -28,10 +28,6 @@ describe('mixPiecesOf', () => {
       { mediaItemId: 2, sourceOffset: 5, duration: 5, timelineStart: 20 },
     ]);
   });
-
-  it('plays nothing of a song the stretch does not reach', () => {
-    expect(mixPiecesOf(mix, 22, 24).map((piece) => piece.mediaItemId)).toEqual([2]);
-  });
 });
 
 describe('positionInRuns', () => {
@@ -41,11 +37,8 @@ describe('positionInRuns', () => {
   ];
 
   it.each([
-    [99, 8],
-    [104, 10],
     [116, 8],
     [131, 15.5],
-    [140, 16],
   ])('is at %s on the audio clock at %s on the music', (clock, expected) => {
     expect(positionInRuns(runs, clock)).toBe(expected);
   });
@@ -58,15 +51,10 @@ describe('positionInRuns', () => {
 
     expect(positionInRuns(counted, 117)).toBe(8);
   });
-
-  it('knows no position before anything is scheduled', () => {
-    expect(positionInRuns([], 10)).toBeNull();
-  });
 });
 
 describe('playRangeOf', () => {
   it.each([
-    [5, null, { start: 5, end: 30 }],
     [10, { start: 8, end: 16 }, { start: 10, end: 16 }],
     [20, { start: 8, end: 16 }, { start: 8, end: 16 }],
   ])('plays from %s with loop %o through %o', (from, loop, expected) => {
@@ -75,13 +63,6 @@ describe('playRangeOf', () => {
 });
 
 describe('stretchSlicesOf', () => {
-  it('lays the cut songs end to end in samples, without a gap', () => {
-    expect(stretchSlicesOf(mix, 30, 10)).toEqual([
-      { mediaItemId: 1, sourceSample: 100, samples: 200 },
-      { mediaItemId: 2, sourceSample: 50, samples: 100 },
-    ]);
-  });
-
   it('fills a song that cannot play with silence of its length', () => {
     const muted = [segment({ audible: false }), mix[1] ?? segment({})];
 

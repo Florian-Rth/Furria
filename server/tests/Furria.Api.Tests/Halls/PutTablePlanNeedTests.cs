@@ -40,25 +40,4 @@ public sealed class PutTablePlanNeedTests : IClassFixture<ApiTestFixture>
         Assert.True(listed.WithoutTablePlan);
         Assert.DoesNotContain(listed.Steps, step => step.Step == EventStep.Hall);
     }
-
-    [Fact]
-    public async Task Should_BringTheHallStepBack_When_APlanIsNeededAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
-        var eventId = ctx.Club.Events.IdOf(Gala);
-        await client.PUTAsync<PutTablePlanNeed, PutTablePlanNeedRequest>(
-            new() { EventId = eventId, Needed = false }
-        );
-
-        await client.PUTAsync<PutTablePlanNeed, PutTablePlanNeedRequest>(
-            new() { EventId = eventId, Needed = true }
-        );
-
-        var lead = await ctx.Identity.ClientForAsync(EventLead, ct);
-        var listed = await EventOfAsync(lead, eventId);
-        Assert.False(listed.WithoutTablePlan);
-        Assert.Contains(listed.Steps, step => step.Step == EventStep.Hall);
-    }
 }

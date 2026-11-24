@@ -34,10 +34,6 @@ public sealed class Expected
     public StanceExpectations Stance(int groupId, int statementId) =>
         new(this, groupId, statementId);
 
-    public AdmissionAgeSetExpectations AdmissionAgesOf(int groupId) => new(this, groupId);
-
-    public GroupKindSetExpectations GroupKinds() => new(this);
-
     public UsualTrainingTimeSetExpectations UsualTrainingTimesOf(int groupId) => new(this, groupId);
 
     public GroupSetExpectations Groups() => new(this);
@@ -110,9 +106,6 @@ public sealed class Expected
     public AttendanceResponseExpectations AttendanceResponsesFor(int calendarEntryId) =>
         new(this, calendarEntryId);
 
-    public CalendarEntryGroupSetExpectations ParticipatingGroupsOf(int calendarEntryId) =>
-        new(this, calendarEntryId);
-
     public EventExpectations Event(int eventId) => new(this, eventId);
 
     public ActExpectations Act(int actId) => new(this, actId);
@@ -121,8 +114,6 @@ public sealed class Expected
 
     public EmailConfirmationSetExpectations EmailConfirmationsOfAccount(int accountId) =>
         new(this, accountId);
-
-    public DataProtectionKeySetExpectations DataProtectionKeys() => new(this);
 
     public PasskeySetExpectations PasskeysOfAccount(int accountId) => new(this, accountId);
 

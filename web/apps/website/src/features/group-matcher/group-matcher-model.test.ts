@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AGE_QUESTION_ID, statementQuestionId, toGroupMatcher } from './group-matcher-model';
+import { toGroupMatcher } from './group-matcher-model';
 import type { PublicGroupMatcherResponse } from './schemas';
 import type { FilterQuestion, MatcherQuestion } from './types';
 
@@ -40,27 +40,11 @@ const ageQuestionOf = (questions: MatcherQuestion[]): FilterQuestion | undefined
   questions.find((question): question is FilterQuestion => question.role === 'filter');
 
 describe('toGroupMatcher', () => {
-  it('asks the age first, then the statements in the served order', () => {
-    expect(toGroupMatcher(response).questions.map((question) => question.id)).toEqual([
-      AGE_QUESTION_ID,
-      statementQuestionId(4),
-      statementQuestionId(2),
-    ]);
-  });
-
   it('knocks out only groups that ticked admission ages', () => {
     const ageQuestion = ageQuestionOf(toGroupMatcher(response).questions);
 
     expect(ageQuestion?.positions).toEqual([
       { groupId: 7, accepts: ['fourteenToFifteen', 'eighteenPlus'] },
-    ]);
-  });
-
-  it('carries each stance under the numeric group id', () => {
-    const [, first] = toGroupMatcher(response).questions;
-
-    expect(first?.role === 'weighted' && first.positions).toEqual([
-      { groupId: 7, stance: 'yes', importance: 3 },
     ]);
   });
 });

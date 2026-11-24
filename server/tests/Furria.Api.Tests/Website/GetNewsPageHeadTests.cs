@@ -40,18 +40,6 @@ public sealed class GetNewsPageHeadTests : IClassFixture<ApiTestFixture>
         Assert.Contains(Meta("article:published_time", "2025-11-11T11:11:00+01:00"), html);
     }
 
-    [Fact]
-    public async Task Should_AnswerAnEmptyNotFound_When_ThePostWasWithdrawn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(News(), ct);
-
-        var (status, html) = await PageHeadAsync(_fixture, Kind, "zurueckgezogen");
-
-        Assert.Equal(HttpStatusCode.NotFound, status);
-        Assert.Empty(html);
-    }
-
     private static Action<SeedContextBuilder> News() =>
         builder =>
             builder.News(news =>

@@ -2,8 +2,6 @@ using Microsoft.CodeAnalysis;
 
 namespace Furria.Tests.Analyzers;
 
-// Diagnostic descriptors for the test-infrastructure rules (MET001-MET007). All ship as
-// Warning; severity is raised to Error via .editorconfig / TreatWarningsAsErrors.
 internal static class MetDiagnostics
 {
     private const string Category = "TestInfrastructure";

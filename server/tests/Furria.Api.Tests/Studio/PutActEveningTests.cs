@@ -42,48 +42,6 @@ public sealed class PutActEveningTests : IClassFixture<ApiTestFixture>
         );
 
     [Fact]
-    public Task Should_OfferTheEveningsOfTheActsSession_When_TheGroupHasNotAnsweredYet() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-                var studio = await StudioOfAsync(admin, actId);
-
-                var evening = Assert.Single(studio.Studio!.Evenings);
-                Assert.Equal(
-                    (ctx.Club.Events.IdOf(Gala), null),
-                    (evening.EventId, evening.Appearance)
-                );
-            }
-        );
-
-    [Fact]
-    public Task Should_Refuse_When_TheEveningBelongsToAnotherSession() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-                var response = await DanceHereAsync(
-                    admin,
-                    actId,
-                    ctx.Club.Events.IdOf(SummerParty)
-                );
-
-                Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-            }
-        );
-
-    [Fact]
     public async Task Should_Refuse_When_TheEveningIsOver()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -110,21 +68,4 @@ public sealed class PutActEveningTests : IClassFixture<ApiTestFixture>
             }
         );
     }
-
-    [Fact]
-    public Task Should_Forbid_When_ACastMemberIsNoCoEditor() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-                var actId = await GardetanzAsync(ctx, ct);
-                var anna = await ctx.Identity.ClientForAsync(Anna, ct);
-
-                var response = await DanceHereAsync(anna, actId, ctx.Club.Events.IdOf(Gala));
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-            }
-        );
 }

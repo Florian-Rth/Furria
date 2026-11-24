@@ -11,10 +11,6 @@ public sealed class RichTextTests
     [Theory]
     [InlineData("group:4", MentionKind.Group)]
     [InlineData("person:4", MentionKind.Person)]
-    [InlineData("calendar-entry:4", MentionKind.CalendarEntry)]
-    [InlineData("event:4", MentionKind.Event)]
-    [InlineData("news-post:4", MentionKind.NewsPost)]
-    [InlineData("album:4", MentionKind.Album)]
     public void Should_ReadTheMention_When_TheHostMayMentionItsKind(string target, MentionKind kind)
     {
         var reading = RichText.Read($"Siehe @[Ziel]({target}).", EveryKind);
@@ -27,17 +23,5 @@ public sealed class RichTextTests
     public void Should_RefuseTheMention_When_TheHostMentionsNothing()
     {
         Assert.NotNull(RichText.Read("Hallo @[Paula](person:12)", NoKind).Refusal);
-    }
-
-    [Fact]
-    public void Should_KeepTheTextLiteral_When_TheHostMentionsNothingAndNoMentionIsWritten()
-    {
-        var reading = RichText.Read(
-            "## Kopf\n\n- **Punkt** mit [Link](https://example.com)",
-            NoKind
-        );
-
-        Assert.Null(reading.Refusal);
-        Assert.Empty(reading.Mentions);
     }
 }

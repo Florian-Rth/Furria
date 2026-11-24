@@ -14,55 +14,14 @@ public sealed class ClubRecordExpectations
         _expected = expected;
     }
 
-    public Expected ToNotExist() =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.False(
-                    await dbContext.ClubRecords.AsNoTracking().AnyAsync(ct),
-                    "Expected no club record."
-                )
-        );
-
     public Expected ToHaveName(string? name) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(name, (await SingleAsync(dbContext, ct)).Name)
         );
 
-    public Expected ToHaveShortName(string? shortName) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(shortName, (await SingleAsync(dbContext, ct)).ShortName)
-        );
-
-    public Expected ToHaveAddress(string? street, string? zip, string? city) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var record = await SingleAsync(dbContext, ct);
-                Assert.Equal((street, zip, city), (record.Street, record.Zip, record.City));
-            }
-        );
-
     public Expected ToHaveEmail(string? email) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(email, (await SingleAsync(dbContext, ct)).Email)
-        );
-
-    public Expected ToHavePhone(string? phone) =>
-        _expected.Enqueue(
-            async (dbContext, ct) => Assert.Equal(phone, (await SingleAsync(dbContext, ct)).Phone)
-        );
-
-    public Expected ToHaveLinks(string? websiteUrl, string? instagramUrl, string? facebookUrl) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-            {
-                var record = await SingleAsync(dbContext, ct);
-                Assert.Equal(
-                    (websiteUrl, instagramUrl, facebookUrl),
-                    (record.WebsiteUrl, record.InstagramUrl, record.FacebookUrl)
-                );
-            }
         );
 
     public Expected ToHaveFoundedYear(int? foundedYear) =>

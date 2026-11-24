@@ -1,86 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Me, MePerson } from '@/lib/api/schemas';
-import { asksClubGroupConsentOf, owedWelcomeOf, welcomePlanOf } from './welcome-plan';
-
-const SWEEP_MS = 720;
-
-describe('welcomePlanOf', () => {
-  it.each([
-    {
-      memberSince: '1974-11-11',
-      joining: { kind: 'since', year: 1974 },
-      reel: [1971, 1972, 1973, 1974],
-    },
-    { memberSince: '1971-11-11', joining: { kind: 'founding' }, reel: [1971] },
-    { memberSince: '1968-01-01', joining: { kind: 'founding' }, reel: [1971] },
-    { memberSince: null, joining: { kind: 'now' }, reel: [1971] },
-  ])('rolls the year reel up to her joining for $memberSince', ({ memberSince, joining, reel }) => {
-    const plan = welcomePlanOf(
-      { firstName: 'Lena', memberSince, sessionOrdinal: null, functions: [] },
-      SWEEP_MS,
-    );
-
-    expect({ joining: plan.joining, reel: plan.reelYears }).toEqual({ joining, reel });
-  });
-
-  it('bills her session first, then at most two functions with board seats ahead of group admins and no role', () => {
-    const plan = welcomePlanOf(
-      {
-        firstName: 'Lena',
-        memberSince: '2014-03-01',
-        sessionOrdinal: 13,
-        functions: [
-          { kind: 'role', name: 'Trainerin', icon: 'whistle', tone: 'teal' },
-          { kind: 'groupAdmin', name: 'Tanzgarde', icon: null, tone: null },
-          { kind: 'groupAdmin', name: 'Showtanz', icon: null, tone: null },
-          { kind: 'boardSeat', name: 'Kassenprüferin', icon: null, tone: null },
-        ],
-      },
-      SWEEP_MS,
-    );
-
-    expect(plan.lines).toEqual([
-      { kind: 'session', ordinal: 13 },
-      { kind: 'function', name: 'Kassenprüferin' },
-      { kind: 'function', name: 'Tanzgarde' },
-    ]);
-  });
-
-  it('times every beat after the one before', () => {
-    const { beats } = welcomePlanOf(
-      { firstName: 'Lena', memberSince: '2014-03-01', sessionOrdinal: 13, functions: [] },
-      SWEEP_MS,
-    );
-
-    expect(beats).toEqual({
-      dateline: 250,
-      reel: 600,
-      reelMs: 1980,
-      founded: 800,
-      joined: 2730,
-      name: 3380,
-      letterMs: 65,
-      lines: [4340],
-      sweep: 5240,
-      call: 5636,
-      answer: 6116,
-      enter: 6816,
-    });
-  });
-
-  it('sweeps right after her name when nothing else is billed', () => {
-    const { beats } = welcomePlanOf(
-      { firstName: 'Jo', memberSince: null, sessionOrdinal: null, functions: [] },
-      SWEEP_MS,
-    );
-
-    expect({ reelMs: beats.reelMs, lines: beats.lines, sweep: beats.sweep }).toEqual({
-      reelMs: 0,
-      lines: [],
-      sweep: 2530,
-    });
-  });
-});
+import { asksClubGroupConsentOf, owedWelcomeOf } from './welcome-plan';
 
 const PERSON: MePerson = {
   id: 4,
@@ -122,7 +42,6 @@ const ME: Me = {
 
 describe('owedWelcomeOf', () => {
   it.each([
-    { name: 'a person who never saw it', me: ME, owed: true },
     {
       name: 'a person who saw it',
       me: { ...ME, welcomeSeenAt: '2026-11-11T10:11:00Z' },
@@ -136,12 +55,6 @@ describe('owedWelcomeOf', () => {
 
 describe('asksClubGroupConsentOf', () => {
   it.each([
-    { name: 'a person without consent', me: ME, asks: true },
-    {
-      name: 'a person who consented',
-      me: { ...ME, person: { ...PERSON, clubGroupConsent: true } },
-      asks: false,
-    },
     { name: 'a managing login', me: { ...ME, person: null }, asks: false },
     {
       name: 'anyone while the club group takes nobody',

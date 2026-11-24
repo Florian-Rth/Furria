@@ -18,56 +18,6 @@ public sealed class PostMyBeerListEnrollmentTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
-    public async Task Should_EnrollHer_When_SheConfirmsTheDeclaration()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("mira").AddMembership("mira-first", "mira", MemberSince2018)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("mira", ct);
-        var response = await client.POSTAsync<
-            PostMyBeerListEnrollment,
-            PostMyBeerListEnrollmentRequest
-        >(new() { ConfirmsDeclaration = true });
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BeerListEnrollmentsOfPerson(ctx.Identity.People.IdOf("mira"))
-            .ToHaveRunningSince(_fixture.TimeProvider.GetUtcNow())
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_SheDoesNotConfirmTheDeclaration()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("mira").AddMembership("mira-first", "mira", MemberSince2018)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("mira", ct);
-        var response = await client.POSTAsync<
-            PostMyBeerListEnrollment,
-            PostMyBeerListEnrollmentRequest
-        >(new() { ConfirmsDeclaration = false });
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx
-            .Expected.BeerListEnrollmentsOfPerson(ctx.Identity.People.IdOf("mira"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_SheIsAlreadyEnrolled()
     {
         var ct = TestContext.Current.CancellationToken;

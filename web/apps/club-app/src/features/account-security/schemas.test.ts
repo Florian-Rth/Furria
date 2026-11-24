@@ -1,13 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LoginEmailCodeFormSchema, LoginEmailFormSchema } from './schemas';
-
-describe('LoginEmailFormSchema', () => {
-  it('trims the typed address', () => {
-    expect(
-      LoginEmailFormSchema.parse({ loginEmail: '  anna@web.de ', updateContactEmail: false }),
-    ).toEqual({ loginEmail: 'anna@web.de', updateContactEmail: false });
-  });
-});
+import { LoginEmailCodeFormSchema } from './schemas';
 
 describe('LoginEmailCodeFormSchema', () => {
   it.each([

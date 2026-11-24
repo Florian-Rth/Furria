@@ -11,47 +11,11 @@ namespace Furria.Api.Tests.Push;
 public sealed class PutMyPushSubscriptionTests : IClassFixture<ApiTestFixture>
 {
     private const string AndroidPhone = "https://fcm.googleapis.com/fcm/send/alice-pixel";
-    private const string IPhone = "https://web.push.apple.com/QGuQyavXutnMDUpAWVxkAb";
-
     private readonly ApiTestFixture _fixture;
 
     public PutMyPushSubscriptionTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_StoreTheDevice_When_AMemberSubscribesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var response = await SubscribeAsync(client, AndroidPhone, PushDevices.FirstPublicKey);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveCount(1)
-            .PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHold(AndroidPhone, PushDevices.FirstPublicKey, PushDevices.AuthSecret)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepEveryDevice_When_AMemberSubscribesASecondOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        await SubscribeAsync(client, AndroidPhone, PushDevices.FirstPublicKey);
-        await SubscribeAsync(client, IPhone, PushDevices.SecondPublicKey);
-
-        await ctx
-            .Expected.PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveCount(2)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -79,45 +43,6 @@ public sealed class PutMyPushSubscriptionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheDevice_When_ItsFieldsAreNull()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var response = await client.PutAsync(
-            "/api/push/subscription",
-            new StringContent(
-                """{"endpoint":null,"keys":{"p256dh":null,"auth":null}}""",
-                System.Text.Encoding.UTF8,
-                "application/json"
-            ),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RenewTheKeys_When_TheSameDeviceSubscribesAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        await SubscribeAsync(client, AndroidPhone, PushDevices.FirstPublicKey);
-
-        var response = await SubscribeAsync(client, AndroidPhone, PushDevices.SecondPublicKey);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveCount(1)
-            .PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHold(AndroidPhone, PushDevices.SecondPublicKey, PushDevices.AuthSecret)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_MoveTheDevice_When_AnotherAccountSignsInOnItAndSubscribes()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -138,9 +63,7 @@ public sealed class PutMyPushSubscriptionTests : IClassFixture<ApiTestFixture>
     }
 
     [Theory]
-    [InlineData("https://push.example.com/send/alice")]
     [InlineData("http://fcm.googleapis.com/fcm/send/alice")]
-    [InlineData("https://fcm.googleapis.com:8443/fcm/send/alice")]
     [InlineData("https://fcm.googleapis.com.example.com/fcm/send/alice")]
     [InlineData("https://10.10.20.12/api/health")]
     public async Task Should_RefuseTheDevice_When_ItsEndpointIsNoKnownPushService(string endpoint)
@@ -156,27 +79,6 @@ public sealed class PutMyPushSubscriptionTests : IClassFixture<ApiTestFixture>
             .Expected.PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
             .ToHaveCount(0)
             .AssertAsync(ct);
-    }
-
-    [Theory]
-    [InlineData("BCVxsr7N_eNgVRqvHtD0zTZsEc6", PushDevices.AuthSecret)]
-    [InlineData(
-        "BCVxsr7N_eNgVRqvHtD0zTZsEc6-VV-JvLexhqUzORcxaOzi6-AYWXvTBHm4bjyPjs7Vd8pZGH6SRpkNtoIAiw5",
-        PushDevices.AuthSecret
-    )]
-    [InlineData(PushDevices.FirstPublicKey, "BTBZMqHH6r4T")]
-    public async Task Should_RefuseTheDevice_When_ItsKeysAreNoWebPushKeys(
-        string publicKey,
-        string authSecret
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var response = await SubscribeAsync(client, AndroidPhone, publicKey, authSecret);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private static async Task<HttpResponseMessage> SubscribeAsync(

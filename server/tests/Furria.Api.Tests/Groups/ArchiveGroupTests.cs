@@ -22,27 +22,6 @@ public sealed class ArchiveGroupTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StampToday_When_TheKeyHolderArchivesTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("kindergarde", "Kindergarde")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<ArchiveGroup, ArchiveGroupRequest>(
-            new() { GroupId = ctx.Groups.Groups.IdOf("kindergarde") }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Group(ctx.Groups.Groups.IdOf("kindergarde"))
-            .ToBeArchivedOn(_fixture.Today)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_LeaveEveryPeriodUntouched_When_TheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;

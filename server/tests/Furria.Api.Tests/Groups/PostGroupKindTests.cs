@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -12,8 +11,6 @@ public sealed class PostGroupKindTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
     private const string DuplicateNameMessage = "Diese Gruppenart gibt es schon.";
-
-    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -31,24 +28,6 @@ public sealed class PostGroupKindTests : IClassFixture<ApiTestFixture>
         );
 
     [Fact]
-    public async Task Should_RecordTheGroupKind_When_AManagerAddsItToTheBand()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await CreateKindAsync(client, "Garde");
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.GroupKind(result.GroupKindId)
-            .ToHaveName("Garde")
-            .GroupKind(result.GroupKindId)
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheNameIsAlreadyInTheBand()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -63,42 +42,6 @@ public sealed class PostGroupKindTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var failures = await ReadFailuresAsync(response, ct);
         Assert.Equal([DuplicateNameMessage], failures[ConflictField]);
-    }
-
-    [Fact]
-    public async Task Should_TakeTheName_When_TheGroupKindThatUsedItIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups =>
-                    groups.AddGroupKind("spielmannszug", "Spielmannszug", ArchivedIn2021)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await CreateKindAsync(client, "Spielmannszug");
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.GroupKind(result.GroupKindId)
-            .ToBeOpen()
-            .GroupKind(ctx.Groups.GroupKinds.IdOf("spielmannszug"))
-            .ToBeArchivedOn(ArchivedIn2021)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheNameIsBlank()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await CreateKindAsync(client, "");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

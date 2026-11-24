@@ -27,12 +27,6 @@ public sealed class KeyHoldingExpectations
                 )
         );
 
-    public Expected ToBeHeldAt(int venueId) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(venueId, (await SingleAsync(dbContext, ct)).VenueId)
-        );
-
     public Expected ToBeHeldBy(int personId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

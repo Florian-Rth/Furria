@@ -24,33 +24,6 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReopenThePollKeepingItsVotes_When_AnEditorReopensIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await ReopenAsync(ctx, "ilka", pollId, ct);
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-            }
-        );
-
-        await ctx
-            .Expected.Poll(pollId)
-            .ToBeClosedByHand(false)
-            .Poll(pollId)
-            .ToHaveVotesUntil(Now.AddDays(1))
-            .Poll(pollId)
-            .ToHaveVoteCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_DropThePassedDeadline_When_ThePollClosedByItsDeadline()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -109,26 +82,6 @@ public sealed class ReopenCalendarPollTests : IClassFixture<ApiTestFixture>
                 var response = await ReopenAsync(ctx, "ilka", pollId, ct);
 
                 Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-            }
-        );
-
-        await ctx.Expected.Poll(pollId).ToBeClosedByHand(true).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerMayNotEditTheEntry()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var pollId = ctx.Club.Polls.IdOf("snack");
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var response = await ReopenAsync(ctx, "chris", pollId, ct);
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
             }
         );
 

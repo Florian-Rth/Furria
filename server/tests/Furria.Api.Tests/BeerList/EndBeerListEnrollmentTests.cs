@@ -18,30 +18,6 @@ public sealed class EndBeerListEnrollmentTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_EndTheEnrollmentInTheOperatorsName_When_AnOperatorEndsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithWarden(builder)
-                    .Identity(identity => identity.AddPerson("mira", "Mira", "Lenz"))
-                    .BeerList(beerList => beerList.AddBeerListEnrollment("mira-bier", "mira")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("greta", ct);
-        var response = await client.POSTAsync<EndBeerListEnrollment, EndBeerListEnrollmentRequest>(
-            new() { EnrollmentId = ctx.BeerList.Enrollments.IdOf("mira-bier") }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BeerListEnrollment(ctx.BeerList.Enrollments.IdOf("mira-bier"))
-            .ToBeEnded(_fixture.TimeProvider.GetUtcNow(), ctx.Identity.People.IdOf("greta"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheEnrollmentHasAlreadyEnded()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -68,38 +68,9 @@ describe('fixOf', () => {
 
     expect(changeover === undefined ? 'none' : fixOf(draft, changeover)).toBeNull();
   });
-
-  it('has no fix for absences', () => {
-    const draft = evening([act(1, [-3, 4])]);
-    const [absences] = reviewRunningOrder(draft);
-
-    expect(absences === undefined ? 'none' : fixOf(draft, absences)).toBeNull();
-  });
 });
 
 describe('placeOptionsOf', () => {
-  const draft = evening([act(1, [7]), act(2, [8]), act(3, [7])]);
-
-  it('offers every distinct spot once and marks the current one', () => {
-    const options = placeOptionsOf(draft, 'act:3');
-
-    expect(options.map((option) => [option.to, option.current])).toEqual([
-      [0, false],
-      [1, false],
-      [2, true],
-    ]);
-  });
-
-  it('compares the whole evening after each move with now', () => {
-    const options = placeOptionsOf(draft, 'act:3');
-
-    expect(options.map((option) => [option.tally.conflicts, option.change])).toEqual([
-      [1, 'worse'],
-      [1, 'worse'],
-      [0, 'same'],
-    ]);
-  });
-
   const lastWish = (actId: number): RunningOrderDraft['rules'][number] => ({
     ruleKey: 'draft:1',
     ruleId: null,
@@ -149,22 +120,6 @@ describe('placeOptionsOf', () => {
     const options = placeOptionsOf(crowded, 'act:2');
 
     expect(options.filter((option) => option.recommended).map((option) => option.to)).toEqual([3]);
-  });
-
-  it('recommends nothing when the current spot is already the best', () => {
-    const options = placeOptionsOf(draft, 'act:3');
-
-    expect(options.some((option) => option.recommended)).toBe(false);
-  });
-
-  it('marks the first and last spot', () => {
-    const options = placeOptionsOf(draft, 'act:3');
-
-    expect(options.map((option) => [option.previousKey, option.last])).toEqual([
-      [null, false],
-      ['act:1', false],
-      ['act:2', true],
-    ]);
   });
 });
 

@@ -42,12 +42,6 @@ public sealed class AlbumExpectations
                 Assert.Equal(mediaItemId, (await SingleAsync(dbContext, ct)).CoverMediaItemId)
         );
 
-    public Expected ToBePublishedAt(DateTimeOffset publishedAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(publishedAt, (await SingleAsync(dbContext, ct)).PublishedAt)
-        );
-
     public Expected ToBeUnpublished() =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).PublishedAt)

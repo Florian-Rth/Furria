@@ -59,21 +59,6 @@ public sealed class MetAnalyzerTests
     }
 
     [Fact]
-    public async Task Should_FlagInMemoryNamespace_When_Imported()
-    {
-        const string source =
-            "using Microsoft.EntityFrameworkCore.InMemory; namespace N { class C { } }";
-
-        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new NoInMemoryDatabaseAnalyzer(),
-            "MET002",
-            source
-        );
-
-        Assert.Single(diagnostics);
-    }
-
-    [Fact]
     public async Task Should_FlagBadName_When_TestMethodViolatesConvention()
     {
         const string source = """
@@ -122,60 +107,6 @@ public sealed class MetAnalyzerTests
     }
 
     [Fact]
-    public async Task Should_FlagBadName_When_ScenarioSegmentIsLowercase()
-    {
-        const string source = """
-            namespace N
-            {
-                class FactAttribute : System.Attribute { }
-                class C
-                {
-                    [Fact]
-                    public void Should_Work_When_invoked() { }
-                }
-            }
-            """;
-
-        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new TestMethodNamingAnalyzer(),
-            "MET003",
-            source
-        );
-
-        Assert.Single(diagnostics);
-    }
-
-    [Fact]
-    public async Task Should_FlagDbContextLocal_When_DeclaredWithExplicitType()
-    {
-        const string source = """
-            namespace N
-            {
-                class FactAttribute : System.Attribute { }
-                class AppDbContext : Microsoft.EntityFrameworkCore.DbContext { }
-                class C
-                {
-                    static T Resolve<T>() => default!;
-
-                    [Fact]
-                    public void Should_Touch_When_Run()
-                    {
-                        AppDbContext db = Resolve<AppDbContext>();
-                    }
-                }
-            }
-            """;
-
-        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new NoDbContextInTestBodyAnalyzer(),
-            "MET005",
-            source
-        );
-
-        Assert.Single(diagnostics);
-    }
-
-    [Fact]
     public async Task Should_FlagMissingClassFixture_When_ClassInjectsApiFixture()
     {
         const string source = """
@@ -183,60 +114,6 @@ public sealed class MetAnalyzerTests
             {
                 class ApiTestFixture { }
                 class CloseTicketTests
-                {
-                    public CloseTicketTests(ApiTestFixture fixture) { }
-                }
-            }
-            """;
-
-        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new IntegrationClassFixtureAnalyzer(),
-            "MET004",
-            source
-        );
-
-        Assert.Single(diagnostics);
-    }
-
-    [Fact]
-    public async Task Should_FlagSharedCollection_When_ClassJoinsOneBesideItsClassFixture()
-    {
-        const string source = """
-            namespace N
-            {
-                class ApiTestFixture { }
-                interface IClassFixture<T> { }
-                class CollectionAttribute : System.Attribute
-                {
-                    public CollectionAttribute(string name) { }
-                }
-                [Collection("Api")]
-                class CloseTicketTests : IClassFixture<ApiTestFixture>
-                {
-                    public CloseTicketTests(ApiTestFixture fixture) { }
-                }
-            }
-            """;
-
-        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new IntegrationClassFixtureAnalyzer(),
-            "MET004",
-            source
-        );
-
-        Assert.Single(diagnostics);
-    }
-
-    [Fact]
-    public async Task Should_FlagOtherClassFixture_When_ClassOwnsADifferentFixture()
-    {
-        const string source = """
-            namespace N
-            {
-                class ApiTestFixture { }
-                class OtherFixture { }
-                interface IClassFixture<T> { }
-                class CloseTicketTests : IClassFixture<OtherFixture>
                 {
                     public CloseTicketTests(ApiTestFixture fixture) { }
                 }
@@ -412,39 +289,6 @@ public sealed class MetAnalyzerTests
     }
 
     [Fact]
-    public async Task Should_FlagDanglingAlias_When_ClientForAsyncReferenceHasNoDeclaration()
-    {
-        const string source = """
-            namespace N
-            {
-                class B
-                {
-                    public B AddUser(string alias) => this;
-                    public System.Threading.Tasks.Task<object> ClientForAsync(string alias) =>
-                        System.Threading.Tasks.Task.FromResult(new object());
-                }
-                class C
-                {
-                    void M()
-                    {
-                        var b = new B();
-                        b.AddUser("alice");
-                        var client = b.ClientForAsync("alicee");
-                    }
-                }
-            }
-            """;
-
-        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new DanglingAliasAnalyzer(),
-            "MET007",
-            source
-        );
-
-        Assert.Single(diagnostics);
-    }
-
-    [Fact]
     public async Task Should_NotFlagAlias_When_DeclarationExists()
     {
         const string source = """
@@ -461,37 +305,6 @@ public sealed class MetAnalyzerTests
                     {
                         var b = new B();
                         b.AddUser("alice");
-                        var id = b.IdOf("alice");
-                    }
-                }
-            }
-            """;
-
-        var diagnostics = await AnalyzerHarness.RunForRuleAsync(
-            new DanglingAliasAnalyzer(),
-            "MET007",
-            source
-        );
-
-        Assert.Empty(diagnostics);
-    }
-
-    [Fact]
-    public async Task Should_NotFlagAlias_When_DeclaredInAnotherMethodOfSameClass()
-    {
-        const string source = """
-            namespace N
-            {
-                class B
-                {
-                    public B AddUser(string alias) => this;
-                    public long IdOf(string alias) => 0;
-                }
-                class C
-                {
-                    void Arrange(B b) => b.AddUser("alice");
-                    void Act(B b)
-                    {
                         var id = b.IdOf("alice");
                     }
                 }

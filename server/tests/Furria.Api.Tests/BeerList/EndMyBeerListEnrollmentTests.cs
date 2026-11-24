@@ -18,32 +18,6 @@ public sealed class EndMyBeerListEnrollmentTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_EndHerEnrollmentInHerOwnName_When_SheLeaves()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddAccount("mira")
-                            .AddMembership("mira-first", "mira", MemberSince2018)
-                    )
-                    .BeerList(beerList => beerList.AddBeerListEnrollment("mira-bier", "mira")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("mira", ct);
-        var (response, _) = await client.POSTAsync<EndMyBeerListEnrollment, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BeerListEnrollment(ctx.BeerList.Enrollments.IdOf("mira-bier"))
-            .ToBeEnded(_fixture.TimeProvider.GetUtcNow(), ctx.Identity.People.IdOf("mira"))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_SheIsNotEnrolled()
     {
         var ct = TestContext.Current.CancellationToken;

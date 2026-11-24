@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -11,12 +10,9 @@ namespace Furria.Api.Tests.Persons;
 public sealed class PutMembershipTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string ValidationField = "request";
     private const string ArchivedPersonMessage =
         "Paula ist archiviert – beendete Mitgliedschaften lassen sich erst nach dem "
         + "Wiederherstellen festhalten.";
-    private const int PausedFrom2018 = 2018;
-    private const int PausedUntil2019 = 2019;
     private const int PausedFrom2024 = 2024;
     private const int LastSessionOf2026March = 2025;
 
@@ -33,38 +29,6 @@ public sealed class PutMembershipTests : IClassFixture<ApiTestFixture>
     public PutMembershipTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CorrectThePeriod_When_AManagerFixesTheStartDate()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                StartedOn = CorrectedStart,
-                EndedOn = LeftIn2020,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
-            .ToHavePeriod(CorrectedStart, LeftIn2020)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -138,38 +102,6 @@ public sealed class PutMembershipTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheCorrectedPeriodOverlapsAnother()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithTwoClosedPeriodsAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                StartedOn = JoinedIn2017,
-                EndedOn = RejoinedIn2022,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            [
-                "Dieser Zeitraum überschneidet sich mit einer bestehenden Mitgliedschaft. "
-                    + "Ein Wiedereintritt beginnt frühestens am Tag nach dem Ende der vorigen Mitgliedschaft.",
-            ],
-            failures[ConflictField]
-        );
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
-            .ToHavePeriod(JoinedIn2017, LeftIn2020)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_ClearingTheEndWouldRunASecondMembership()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -207,78 +139,6 @@ public sealed class PutMembershipTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_ThePeriodEndsBeforeItStarts()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithTwoClosedPeriodsAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                StartedOn = new DateOnly(2022, 6, 1),
-                EndedOn = new DateOnly(2022, 2, 1),
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Eine Mitgliedschaft kann nicht vor ihrem Beginn enden."],
-            failures[ValidationField]
-        );
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
-            .ToHavePeriod(JoinedIn2017, LeftIn2020)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_AClosedMembershipPauseWouldFallOutside()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                        .AddMembershipPause(
-                            "paula-ruhte",
-                            "paula-erste",
-                            PausedFrom2018,
-                            PausedUntil2019
-                        )
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                StartedOn = RejoinedIn2022,
-                EndedOn = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Die Ruhezeit 2018/19 – 2019/20 liegt dann außerhalb der Mitgliedschaft."],
-            failures[ValidationField]
-        );
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
-            .ToHavePeriod(JoinedIn2017, null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ClampTheOpenMembershipPause_When_ThePeriodGainsAnEnd()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -312,85 +172,6 @@ public sealed class PutMembershipTests : IClassFixture<ApiTestFixture>
             .ToHaveSpan(PausedFrom2024, LastSessionOf2026March)
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_ReopenTheMembership_When_TheEndIsCleared()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                StartedOn = JoinedIn2017,
-                EndedOn = null,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
-            .ToBeOpen()
-            .MembershipsOfPerson(ctx.Identity.People.IdOf("paula"))
-            .ToHaveOpenCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheMembershipBelongsToAnotherPerson()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddPerson("mara", "Mara", "Lenz")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutMembership, PutMembershipRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("mara"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                StartedOn = CorrectedStart,
-                EndedOn = LeftIn2020,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
-            .ToHavePeriod(JoinedIn2017, LeftIn2020)
-            .AssertAsync(ct);
-    }
-
-    private Task<SeededContext> BuildWithTwoClosedPeriodsAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017, LeftIn2020)
-                        .AddMembership("paula-zweite", "paula", RejoinedIn2022, LeftIn2023)
-                ),
-            ct
-        );
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,

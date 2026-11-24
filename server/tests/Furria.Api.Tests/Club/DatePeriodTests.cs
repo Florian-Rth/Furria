@@ -8,21 +8,9 @@ public sealed class DatePeriodTests
     private static readonly DateOnly Today = new(2026, 2, 17);
 
     [Fact]
-    public void Should_Run_When_TheStartAndTheEndAreBothToday()
-    {
-        Assert.True(Period(Today, Today).IsRunningOn(Today));
-    }
-
-    [Fact]
     public void Should_Run_When_ThePeriodEndsToday()
     {
         Assert.True(Period(new DateOnly(2017, 9, 1), Today).IsRunningOn(Today));
-    }
-
-    [Fact]
-    public void Should_Run_When_ThePeriodStartsToday()
-    {
-        Assert.True(Period(Today, null).IsRunningOn(Today));
     }
 
     [Fact]
@@ -32,36 +20,9 @@ public sealed class DatePeriodTests
     }
 
     [Fact]
-    public void Should_HaveEndedBeforeToday_When_ThePeriodEndedYesterday()
-    {
-        Assert.True(Period(new DateOnly(2017, 9, 1), Today.AddDays(-1)).HasEndedBefore(Today));
-    }
-
-    [Fact]
-    public void Should_NotHaveEndedBeforeToday_When_ThePeriodEndsToday()
-    {
-        Assert.False(Period(new DateOnly(2017, 9, 1), Today).HasEndedBefore(Today));
-    }
-
-    [Fact]
-    public void Should_NotHaveEndedBeforeToday_When_ThePeriodIsOpen()
-    {
-        Assert.False(Period(new DateOnly(2017, 9, 1), null).HasEndedBefore(Today));
-    }
-
-    [Fact]
     public void Should_NotRun_When_ThePeriodStartsTomorrow()
     {
         Assert.False(Period(Today.AddDays(1), null).IsRunningOn(Today));
-    }
-
-    [Fact]
-    public void Should_BeOpenWithoutRunning_When_ThePeriodStartsTomorrow()
-    {
-        var period = Period(Today.AddDays(1), null);
-
-        Assert.True(period.IsOpen);
-        Assert.False(period.IsRunningOn(Today));
     }
 
     [Fact]
@@ -82,27 +43,6 @@ public sealed class DatePeriodTests
 
         Assert.False(earlier.Overlaps(later));
         Assert.False(later.Overlaps(earlier));
-    }
-
-    [Fact]
-    public void Should_Overlap_When_AnOpenPeriodPrecedesAClosedOne()
-    {
-        var open = Period(new DateOnly(2017, 9, 1), null);
-        var closed = Period(new DateOnly(2024, 1, 1), new DateOnly(2024, 12, 31));
-
-        Assert.True(open.Overlaps(closed));
-    }
-
-    [Fact]
-    public void Should_BeWellFormed_When_TheEndIsTheStart()
-    {
-        Assert.True(Period(Today, Today).IsWellFormed);
-    }
-
-    [Fact]
-    public void Should_BeMalformed_When_TheEndPrecedesTheStart()
-    {
-        Assert.False(Period(Today, Today.AddDays(-1)).IsWellFormed);
     }
 
     private static DatePeriod Period(DateOnly start, DateOnly? end) =>

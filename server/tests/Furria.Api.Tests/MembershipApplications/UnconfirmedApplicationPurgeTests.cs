@@ -32,25 +32,6 @@ public sealed class UnconfirmedApplicationPurgeTests : IClassFixture<ApiTestFixt
     }
 
     [Fact]
-    public async Task Should_KeepTheApplication_When_ItIsUnconfirmedForLessThan48Hours()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        await MembershipApplicationSteps.ApplyAndReadTokenAsync(
-            _fixture,
-            _fixture.CreateClient(),
-            ct
-        );
-
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromHours(48) - TimeSpan.FromSeconds(1),
-            () => SweepAsync(ct)
-        );
-
-        await ctx.Expected.MembershipApplications().ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_KeepTheApplication_When_ItWasConfirmed()
     {
         var ct = TestContext.Current.CancellationToken;

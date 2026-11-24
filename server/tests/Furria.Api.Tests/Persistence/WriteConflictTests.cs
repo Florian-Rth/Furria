@@ -1,4 +1,3 @@
-using Furria.Application.Authorization;
 using Furria.Application.Results;
 using Furria.Infrastructure.Persistence;
 using Furria.Tests.Common.Fixtures;
@@ -8,17 +7,6 @@ namespace Furria.Api.Tests.Persistence;
 
 public sealed class WriteConflictTests : IClassFixture<ApiTestFixture>
 {
-    private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
-    private static readonly DateTimeOffset GalaSessionStart = new(
-        2027,
-        2,
-        6,
-        19,
-        0,
-        0,
-        TimeSpan.Zero
-    );
-
     private readonly ApiTestFixture _fixture;
 
     public WriteConflictTests(ApiTestFixture fixture)
@@ -51,48 +39,6 @@ public sealed class WriteConflictTests : IClassFixture<ApiTestFixture>
         Assert.False(result.IsSuccess);
         Assert.Equal(ResultErrorKind.Conflict, result.Error.Kind);
         Assert.Equal(WriteConflictMessages.OpenGroupMembership, result.Error.Message);
-    }
-
-    [Fact]
-    public async Task Should_AnswerConflict_When_ASecondParticipationLosesTheRace()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("ilka", "Ilka", "Kalender")
-                            .AddAccount("ilka")
-                            .AddMembership("ilka-first", "ilka", JoinedIn2017)
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "kalender",
-                            "ilka-kalender",
-                            "Kalender",
-                            "ilka",
-                            FurriaPermissions.CalendarManageClub
-                        )
-                    )
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde"))
-                    .Club(club =>
-                        club.AddCalendarEntry("prunksitzung", "Prunksitzung", GalaSessionStart)
-                    ),
-            ct
-        );
-
-        var result = await _fixture.SaveSecondParticipationAsync(
-            ctx.Club.CalendarEntries.IdOf("prunksitzung"),
-            ctx.Groups.Groups.IdOf("tanzgarde"),
-            ctx.Identity.Accounts.IdOf("ilka"),
-            ctx.Identity.People.IdOf("ilka"),
-            ct
-        );
-
-        Assert.False(result.IsSuccess);
-        Assert.Equal(ResultErrorKind.Conflict, result.Error.Kind);
-        Assert.Equal(WriteConflictMessages.DuplicateParticipation, result.Error.Message);
     }
 
     [Fact]

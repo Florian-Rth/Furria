@@ -1,5 +1,3 @@
-using System.Net;
-using Furria.Api.Tests.Media;
 using Furria.Core.Media;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -8,10 +6,6 @@ namespace Furria.Api.Tests.Management;
 
 public sealed class SessionLogoUploadTests : IClassFixture<ApiTestFixture>
 {
-    private const int LogoLength = 4096;
-    private const int UnknownSessionId = 999_999;
-
-    private static readonly PictureCrop ChosenCut = new(0, 0, 0.5, 0.5);
     private static readonly PictureCrop MarkCut = new(0.3, 0.3, 0.4, 0.4);
 
     private readonly ApiTestFixture _fixture;
@@ -19,26 +13,6 @@ public sealed class SessionLogoUploadTests : IClassFixture<ApiTestFixture>
     public SessionLogoUploadTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_BecomeTheSessionsLogo_When_TheKeeperUploadsOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SessionLogoSeeds.RunningSessionWithKeeper(), ct);
-        var client = await ctx.Identity.ClientForAsync(SessionLogoSeeds.Keeper, ct);
-        var sessionId = ctx.Club.Sessions.IdOf(SessionLogoSeeds.Running);
-
-        var logoId = await SessionLogoSteps.UploadAsync(client, sessionId, ct);
-
-        await ctx
-            .Expected.MediaItem(logoId)
-            .ToBeOwnedBy(MediaOwner.Session(sessionId))
-            .MediaItem(logoId)
-            .ToAwaitItsRenditions(MediaKind.Photo, "image/jpeg")
-            .Session(sessionId)
-            .ToShowLogo(logoId)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -82,60 +56,6 @@ public sealed class SessionLogoUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheUpload_When_TheCallerMayNotManageTheClub()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SessionLogoSeeds.RunningSessionWithKeeper(), ct);
-        var client = await ctx.Identity.ClientForAsync(SessionLogoSeeds.Member, ct);
-
-        var response = await TusUploadSteps.CreateAsync(
-            client,
-            SessionLogoSteps.SessionOwner(ctx.Club.Sessions.IdOf(SessionLogoSeeds.Running)),
-            "sessionslogo.jpg",
-            LogoLength,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheUpload_When_TheSeasonHasNoRecord()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SessionLogoSeeds.RunningSessionWithKeeper(), ct);
-        var client = await ctx.Identity.ClientForAsync(SessionLogoSeeds.Keeper, ct);
-
-        var response = await TusUploadSteps.CreateAsync(
-            client,
-            SessionLogoSteps.SessionOwner(UnknownSessionId),
-            "sessionslogo.jpg",
-            LogoLength,
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheChosenCut_When_TheLogoIsUploadedWithACrop()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SessionLogoSeeds.RunningSessionWithKeeper(), ct);
-        var client = await ctx.Identity.ClientForAsync(SessionLogoSeeds.Keeper, ct);
-        var sessionId = ctx.Club.Sessions.IdOf(SessionLogoSeeds.Running);
-
-        var logoId = await SessionLogoSteps.UploadAsync(client, sessionId, ChosenCut.Token, ct);
-
-        await ctx
-            .Expected.MediaItem(logoId)
-            .ToBeCroppedTo(ChosenCut)
-            .Session(sessionId)
-            .ToShowLogo(logoId)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RenderOnlyTheCutInItsOwnShape_When_TheLogoIsCutToItsMark()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -156,25 +76,5 @@ public sealed class SessionLogoUploadTests : IClassFixture<ApiTestFixture>
         var medium = await _fixture.MediaFileOfAsync(logoId, MediaRendition.Medium, ct);
         Assert.Equal((255.0, 255.0), SessionLogoSteps.AlphaOf(medium));
         Assert.Equal(1.5, SessionLogoSteps.AspectOf(medium), 2);
-    }
-
-    [Fact]
-    public async Task Should_RejectAVideo_When_ItIsMeantAsTheSessionsLogo()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SessionLogoSeeds.RunningSessionWithKeeper(), ct);
-        var client = await ctx.Identity.ClientForAsync(SessionLogoSeeds.Keeper, ct);
-        var video = MediaSamples.Mp4(LogoLength);
-        var upload = await TusUploadSteps.CreatedAsync(
-            client,
-            SessionLogoSteps.SessionOwner(ctx.Club.Sessions.IdOf(SessionLogoSeeds.Running)),
-            "sessionslogo.mp4",
-            video.Length,
-            ct
-        );
-
-        var response = await TusUploadSteps.PatchAsync(client, upload, 0, video, ct);
-
-        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
     }
 }

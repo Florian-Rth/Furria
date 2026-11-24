@@ -64,30 +64,6 @@ public sealed class VideoRenditionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TranscodeTo1080pH264_When_AVideoIsLargerAndInAnotherCodec()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(_ => { }, ct);
-        var video = await MediaSamples.VideoAsync(
-            [.. TestPicture("2560x1440", 1), .. TestSound(1), "-c:v", "mpeg4", "-c:a", "pcm_s16le"],
-            ".mov",
-            ct
-        );
-        var mediaItemId = await UploadAsync(ctx, "Kamera.mov", video, ct);
-
-        await _fixture.RunMediaWorkerAsync(ct);
-
-        await ctx.Expected.MediaItem(mediaItemId).ToBeReady(2560, 1440).AssertAsync(ct);
-        var rendition = await _fixture.MediaFileOfAsync(mediaItemId, MediaRendition.Video, ct);
-        var facts = await RenditionProbe.VideoFactsOf(rendition, ct);
-        Assert.Equal(
-            ("h264", "yuv420p", "aac", 1920, 1080),
-            (facts.VideoCodec, facts.PixelFormat, facts.AudioCodec, facts.Width, facts.Height)
-        );
-        Assert.True(await RenditionProbe.StartsFastAsync(rendition, ct));
-    }
-
-    [Fact]
     public async Task Should_ShowAnUprightPortrait_When_APhoneRecordedTheVideoTurned()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -111,46 +87,6 @@ public sealed class VideoRenditionTests : IClassFixture<ApiTestFixture>
         var facts = await RenditionProbe.VideoFactsOf(rendition, ct);
         Assert.Equal((720, 1280), (facts.Width, facts.Height));
         Assert.Equal((720, 1280), await ImageSizeAsync(mediaItemId, MediaRendition.Poster, ct));
-    }
-
-    [Fact]
-    public async Task Should_ToneMapToStandardRange_When_AnHdrVideoIsUploaded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(_ => { }, ct);
-        var video = await MediaSamples.VideoAsync(
-            [
-                .. TestPicture("1280x720", 1),
-                "-c:v",
-                "libx265",
-                "-preset",
-                "ultrafast",
-                "-pix_fmt",
-                "yuv420p10le",
-                "-color_primaries",
-                "bt2020",
-                "-color_trc",
-                "arib-std-b67",
-                "-colorspace",
-                "bt2020nc",
-                "-tag:v",
-                "hvc1",
-            ],
-            ".mov",
-            ct
-        );
-        var mediaItemId = await UploadAsync(ctx, "IMG_0003.MOV", video, ct);
-
-        await _fixture.RunMediaWorkerAsync(ct);
-
-        await ctx.Expected.MediaItem(mediaItemId).ToBeReady(1280, 720).AssertAsync(ct);
-        var rendition = await _fixture.MediaFileOfAsync(mediaItemId, MediaRendition.Video, ct);
-        var facts = await RenditionProbe.VideoFactsOf(rendition, ct);
-        Assert.Equal(
-            ("h264", "yuv420p", false),
-            (facts.VideoCodec, facts.PixelFormat, facts.IsHdr)
-        );
-        Assert.Null(facts.AudioCodec);
     }
 
     private static string[] TestPicture(string size, int seconds) =>

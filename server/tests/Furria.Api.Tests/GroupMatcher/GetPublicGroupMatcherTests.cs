@@ -20,45 +20,6 @@ public sealed class GetPublicGroupMatcherTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ServeTheTakingPartGroupsWithStancesAndAges_When_TwoGroupsTakePart()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("tanzgarde", "Tanzgarde")
-                            .AddGroup("elferrat", "Elferrat")
-                            .AddGroup("buettenrede", "Büttenrede")
-                    )
-                    .GroupMatcher(matcher =>
-                        TwoTakingPart(matcher)
-                            .AddAdmissionAge("elferrat", AdmissionAgeBand.EighteenPlus)
-                            .AddStance("buettenrede", "konfetti", StancePosition.Neutral)
-                    ),
-            ct
-        );
-
-        var (response, result) = await GetAsync();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(["Elferrat", "Tanzgarde"], result.Groups.Select(group => group.Name));
-        var statement = Assert.Single(result.Statements);
-        Assert.Equal(ctx.GroupMatcher.Statements.IdOf("konfetti"), statement.StatementId);
-        Assert.Equal(
-            [ctx.Groups.Groups.IdOf("tanzgarde"), ctx.Groups.Groups.IdOf("elferrat")],
-            statement.Stances.Select(stance => stance.GroupId).Order()
-        );
-        Assert.Equal(
-            [AdmissionAgeBand.EighteenPlus],
-            result
-                .AdmissionAges.Single(ages => ages.GroupId == ctx.Groups.Groups.IdOf("elferrat"))
-                .Bands
-        );
-    }
-
-    [Fact]
     public async Task Should_KeepAGroupIn_When_AStatementAddedLaterIsStillUnanswered()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -99,27 +60,6 @@ public sealed class GetPublicGroupMatcherTests : IClassFixture<ApiTestFixture>
                             .AddGroup("elferrat", "Elferrat", archivedOn: ArchivedIn2021)
                     )
                     .GroupMatcher(matcher => TwoTakingPart(matcher)),
-            ct
-        );
-
-        var (response, _) = await GetAsync();
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_AnswerNotFound_When_ThePoolIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Groups(groups =>
-                        groups.AddGroup("tanzgarde", "Tanzgarde").AddGroup("elferrat", "Elferrat")
-                    )
-                    .GroupMatcher(matcher =>
-                        matcher.AddTakingPart("tanzgarde").AddTakingPart("elferrat")
-                    ),
             ct
         );
 

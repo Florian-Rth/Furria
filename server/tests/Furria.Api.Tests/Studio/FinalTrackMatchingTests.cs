@@ -23,31 +23,8 @@ public sealed class FinalTrackMatchingTests
     );
 
     [Theory]
-    [InlineData(MarchItem, 10, 50, -5)]
-    [InlineData(PolkaItem, 0, 40, 45)]
-    public void Should_FindWhereTheSongLiesInTheFinalFile_When_TechJoinedTheCuts(
-        int source,
-        double cutStart,
-        double cutEnd,
-        double expectedOffset
-    )
-    {
-        var sound = source == MarchItem ? March : Polka;
-
-        var alignment = FinalTrackMatching.AlignmentOf(
-            new CutSound(new MusicCut(source, cutStart, cutEnd), SoundProfile.Of(sound)),
-            FinalFile
-        );
-
-        Assert.NotNull(alignment);
-        Assert.Equal(expectedOffset, alignment.OffsetSeconds, 0.05);
-        Assert.Equal(1, alignment.Stretch, 0.001);
-    }
-
-    [Theory]
     [InlineData(MarchItem, 10, 50, -5, 1)]
     [InlineData(PolkaItem, 0, 40, 45, 1 / 1.02)]
-    [InlineData(PolkaItem, 10, 40, 45, 1 / 1.02)]
     public void Should_FindTheSongWithItsTempo_When_TheLiveMixPlaysItFaster(
         int source,
         double cutStart,

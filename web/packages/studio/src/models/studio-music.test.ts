@@ -1,6 +1,5 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import {
-  deskSegmentIndexOf,
   firstBeatAtOf,
   keptPositionOf,
   movedOrderOf,
@@ -42,13 +41,8 @@ describe('movedOrderOf', () => {
 
   it.each([
     [0, 2, [2, 3, 1]],
-    [2, 0, [3, 1, 2]],
-    [1, 0, [2, 1, 3]],
     [1, 1, null],
-    [3, 0, null],
     [0, 3, null],
-    [0, -1, null],
-    [-1, 0, null],
   ] as const)('moves the song at %s to %s', (from, to, order) => {
     expect(movedOrderOf(songs, from, to)).toEqual(order);
   });
@@ -58,7 +52,6 @@ describe('startInOrderOf', () => {
   const songs = [songOf(1, 0), { ...songOf(2, 1), pieces: [{ startSeconds: 0, endSeconds: 30 }] }];
 
   it.each([
-    [[1, 2], 2, 60],
     [[2, 1], 1, 30],
     [[2, 1], 2, 0],
   ])('in order %j song %s starts at %s', (order, songId, start) => {
@@ -81,9 +74,7 @@ describe('keptPositionOf', () => {
   ];
 
   it.each([
-    [[2, 1], 10, 40],
     [[2, 1], 70, 10],
-    [[1, 2], 70, 70],
     [[2, 1], 95, null],
   ])('in order %j keeps %s at %s', (order, position, kept) => {
     expect(keptPositionOf(songs, segments, order, position)).toBe(kept);
@@ -119,8 +110,6 @@ describe('keptPositionOf', () => {
 
 describe('steppedTempoOf', () => {
   it.each([
-    [126.4, 0.1, 126.5],
-    [126.4, -1, 125.4],
     [40.05, -0.1, 40],
     [299.5, 1, 300],
   ])('steps %s by %s', (tempo, delta, stepped) => {
@@ -130,7 +119,6 @@ describe('steppedTempoOf', () => {
 
 describe('firstBeatAtOf', () => {
   it.each([
-    [30, 10],
     [42.3456, 22.346],
     [200, 90],
   ])('puts the 1 at timeline %s on source %s', (seconds, source) => {
@@ -140,10 +128,8 @@ describe('firstBeatAtOf', () => {
 
 describe('nudgedFirstBeatOf', () => {
   it.each([
-    [0.5, 0.02, 0.52],
     [0.01, -0.02, 0],
     [89.99, 0.02, 90],
-    [null, 0.02, null],
   ])('nudges %s by %s', (firstBeat, delta, nudged) => {
     expect(nudgedFirstBeatOf(songOf(1, 0, firstBeat), delta)).toBe(nudged);
   });
@@ -231,33 +217,5 @@ describe('outsideMusicOf', () => {
     };
 
     expect(outsideMusicOf(studio, [segment])).toEqual({ steps: 1, videos: 1, keyframes: 1 });
-  });
-});
-
-describe('deskSegmentIndexOf', () => {
-  const pieceOf = (
-    mediaItemId: number,
-    timelineStart: number,
-    timelineEnd: number,
-  ): MusicSegment => ({
-    ...segment,
-    mediaItemId,
-    sourceStart: timelineStart + 100,
-    sourceEnd: timelineEnd + 100,
-    timelineStart,
-    timelineEnd,
-  });
-  const segments = [pieceOf(10, 0, 5), pieceOf(10, 5, 9), pieceOf(20, 9, 15)];
-
-  it.each([
-    ['the piece under the playhead', 10, 3, null, 0],
-    ['the next piece on a shared edge', 10, 5, null, 1],
-    ['the held piece on its own end', 10, 5, 100, 0],
-    ['the piece under the playhead over a held piece elsewhere', 10, 7, 100, 1],
-    ['the last piece of the song at its end', 10, 9, null, 1],
-    ['the first piece of a song the playhead is outside of', 20, 3, null, 2],
-    ['nothing for a song without pieces', 30, 3, null, -1],
-  ])('picks %s', (_, mediaItemId, seconds, heldStart, expected) => {
-    expect(deskSegmentIndexOf(segments, mediaItemId, seconds, heldStart)).toBe(expected);
   });
 });

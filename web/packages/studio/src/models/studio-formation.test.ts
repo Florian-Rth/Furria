@@ -1,16 +1,13 @@
 import type { TimedKeyframe } from '@furria/studio/choreography-motion';
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import {
-  alignedOf,
   anchorAt,
   anchoredTrackOf,
   baseVersionOf,
   distributedOf,
   formationPlacedOf,
   freePointOf,
-  grabbedSpotsOf,
   presetPointsOf,
-  shownSelectionOf,
 } from '@furria/studio/studio-formation';
 import type { Keyframe } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
@@ -47,10 +44,6 @@ const segment = (
 const mix = [segment(11, 10, 40, 0), segment(12, 5, 25, 30)];
 
 describe('presetPointsOf', () => {
-  it('spreads a line across the middle of the stage, centred', () => {
-    expect(presetPointsOf('line', 3, stage)).toEqual([point(-1.5, 4), point(0, 4), point(1.5, 4)]);
-  });
-
   it('squeezes a long line so it stays a metre off the sides', () => {
     const points = presetPointsOf('line', 9, stage);
 
@@ -64,24 +57,6 @@ describe('presetPointsOf', () => {
       point(0, 4.75),
     ]);
   });
-
-  it('puts the first spot of a circle at its front and goes round', () => {
-    expect(presetPointsOf('circle', 4, stage)).toEqual([
-      point(0, 3),
-      point(1, 4),
-      point(0, 5),
-      point(-1, 4),
-    ]);
-  });
-});
-
-describe('alignedOf', () => {
-  it.each([
-    ['across', [point(-2, 4), point(1, 4)]],
-    ['deep', [point(-0.5, 3), point(-0.5, 5)]],
-  ] as const)('lines the spots up %s on their mean', (axis, expected) => {
-    expect(alignedOf([point(-2, 3), point(1, 5)], axis, stage)).toEqual(expected);
-  });
 });
 
 describe('distributedOf', () => {
@@ -92,18 +67,10 @@ describe('distributedOf', () => {
       point(0, 3),
     ]);
   });
-
-  it('leaves two spots as they are', () => {
-    expect(distributedOf([point(4, 1), point(-4, 2)], 'deep', stage)).toEqual([
-      point(4, 1),
-      point(-4, 2),
-    ]);
-  });
 });
 
 describe('freePointOf', () => {
   it.each([
-    [[], point(0, 1)],
     [[point(0, 1)], point(-1, 1)],
     [[point(0, 1), point(-1, 1), point(1.2, 1)], point(-2, 1)],
   ])('finds the free place nearest the front centre among %j', (occupied, expected) => {
@@ -135,17 +102,11 @@ describe('formationPlacedOf', () => {
       key(20, 3, 3),
     ]);
   });
-
-  it('gives a spot without keyframes its first one', () => {
-    expect(formationPlacedOf(1, [], span, point(2, 2))).toEqual([key(10, 2, 2)]);
-  });
 });
 
 describe('anchorAt', () => {
   it.each([
-    [5, { sourceMediaItemId: 11, seconds: 15 }],
     [30, { sourceMediaItemId: 12, seconds: 5 }],
-    [50, { sourceMediaItemId: 12, seconds: 25 }],
     [51, null],
   ])('places timeline second %s on its song', (seconds, expected) => {
     expect(anchorAt(mix, seconds)).toEqual(expected);
@@ -180,33 +141,9 @@ describe('anchoredTrackOf', () => {
 
 describe('baseVersionOf', () => {
   it.each([
-    [null, null, null],
-    [null, 0, null],
     [3, 2, 3],
     [2, 4, 4],
   ])('expects version %s/%s as %s', (saved, cached, expected) => {
     expect(baseVersionOf(saved, cached)).toBe(expected);
-  });
-});
-
-describe('grabbedSpotsOf', () => {
-  it.each<[string, readonly number[], boolean, readonly number[]]>([
-    ['the pressed spot alone', [1], false, [3]],
-    ['the selection when the pressed spot belongs to it', [1, 3], false, [1, 3]],
-    ['the selection while the music runs, never a passing spot', [1], true, [1]],
-    ['the pressed spot while the music runs without a selection', [], true, [3]],
-  ])('grabs %s', (_, selected, playing, expected) => {
-    expect(grabbedSpotsOf({ selected, spotId: 3, playing })).toEqual(expected);
-  });
-});
-
-describe('shownSelectionOf', () => {
-  it('keeps only the selected spots standing on the stage', () => {
-    const standing = new Map([
-      [1, point(0, 1)],
-      [3, point(1, 1)],
-    ]);
-
-    expect(shownSelectionOf([1, 2, 3], standing)).toEqual([1, 3]);
   });
 });

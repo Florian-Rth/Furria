@@ -47,9 +47,6 @@ const training = (openSpotIds: number[]): StudioTraining => ({
 
 describe('movingStepNumbersOf', () => {
   it.each([
-    ['no path', undefined, []],
-    ['standing still', path(1, [at(1, 0), at(25, 0)]), []],
-    ['one move inside a step', path(1, [at(12, 0), at(18, 3)]), [2]],
     ['a move across a step change', path(1, [at(8, 0), at(22, 3)]), [1, 2, 3]],
     ['a move ending on a step start', path(1, [at(5, 0), at(10, 3)]), [1]],
     [
@@ -57,7 +54,6 @@ describe('movingStepNumbersOf', () => {
       path(1, [at(31, 0), at(39, 0, { rightMetres: 1, backMetres: 3 })]),
       [4],
     ],
-    ['two moves', path(1, [at(2, 0), at(4, 1), at(25, 1), at(28, 2)]), [1, 3]],
   ])('%s', (_case, spotPath, numbers) => {
     expect(movingStepNumbersOf(spotPath, steps)).toEqual(numbers);
   });
@@ -66,10 +62,6 @@ describe('movingStepNumbersOf', () => {
 describe('trainingGapsOf', () => {
   const spots = [spot(1, 1, 'Anna'), spot(2, 2, 'Ben'), spot(3, 3, null), spot(4, 4, 'Clara')];
   const paths = [path(2, [at(12, 0), at(18, 3)])];
-
-  it('leaves every spot held without a training', () => {
-    expect(trainingGapsOf(null, spots, paths, steps)).toEqual([]);
-  });
 
   it('opens the spots of an Absage and names the steps where they move', () => {
     expect(trainingGapsOf(training([2, 4]), spots, paths, steps)).toEqual([

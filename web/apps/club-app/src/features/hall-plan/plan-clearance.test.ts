@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { blockersOf } from './plan-blockers';
-import { clearanceOf, tallyFindings } from './plan-clearance';
+import { clearanceOf } from './plan-clearance';
 import type { HallDocument, RowSides, SeatingStandard, TableRow, TableType } from './schemas';
 import { layoutPlan, tableTypesById } from './table-layout';
 
@@ -65,10 +65,7 @@ const keptFront = (row: TableRow): TableRow => ({ ...row, chairs: KEPT_FRONT });
 
 describe('clearanceOf between rows', () => {
   it.each([
-    ['far apart rows', 400, []],
-    ['rows with a full aisle', 300, []],
     ['rows with a narrow aisle', 250, ['hint:narrowAisle']],
-    ['rows whose chairs would overlap leave them out', 150, ['hint:narrowAisle']],
     ['rows whose tables overlap', 40, ['conflict:tablesOverlap']],
   ])('%s', (_name, y, expected) => {
     expect(
@@ -76,14 +73,6 @@ describe('clearanceOf between rows', () => {
         (finding) => `${finding.severity}:${finding.kind}`,
       ),
     ).toEqual(expected);
-  });
-
-  it('measures the narrow aisle between the facing chair zones', () => {
-    const [finding] = findingsFor([rowAt('r1', 0), rowAt('r2', 250)]);
-
-    expect(finding?.distanceCm).toBeCloseTo(70);
-    expect(finding?.from.y).toBeCloseTo(90);
-    expect(finding?.to.y).toBeCloseTo(160);
   });
 
   it('reports kept chairs that overlap with every chair involved', () => {
@@ -122,8 +111,6 @@ describe('clearanceOf against the hall', () => {
 
   it.each([
     ['chairs facing a wall too close', 150, LONG_SIDES, ['hint:narrowAisle']],
-    ['chairs running into a wall are left out', 95, LONG_SIDES, []],
-    ['a bare table touching a wall', 50, NO_SIDES, []],
     ['a table through a wall', 30, NO_SIDES, ['conflict:tableBlocked']],
   ])('%s', (_name, wallY, sides, expected) => {
     expect(
@@ -157,33 +144,5 @@ describe('clearanceOf against the hall', () => {
     expect(findingsFor([rowAt('r1', 0, NO_SIDES)], exit).map((finding) => finding.kind)).toEqual([
       'exitBlocked',
     ]);
-  });
-
-  it('ignores ordinary doors, lines and texts', () => {
-    const hall: HallDocument = {
-      elements: [
-        { id: 'd1', kind: 'door', from: { x: -50, y: 60 }, to: { x: 50, y: 60 }, door: 'door' },
-        {
-          id: 'l1',
-          kind: 'line',
-          points: [
-            { x: -50, y: 0 },
-            { x: 50, y: 0 },
-          ],
-          label: null,
-        },
-        { id: 't1', kind: 'text', x: 0, y: 0, text: 'Bar', size: 'small', rotation: 0 },
-      ],
-    };
-
-    expect(findingsFor([rowAt('r1', 0, NO_SIDES)], hall)).toEqual([]);
-  });
-});
-
-describe('tallyFindings', () => {
-  it('counts conflicts and hints', () => {
-    const findings = findingsFor([rowAt('r1', 0), rowAt('r2', 40), rowAt('r3', 290)]);
-
-    expect(tallyFindings(findings)).toEqual({ conflicts: 1, hints: 1 });
   });
 });

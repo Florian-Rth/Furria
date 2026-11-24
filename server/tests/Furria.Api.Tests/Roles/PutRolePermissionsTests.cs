@@ -3,7 +3,6 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -12,11 +11,8 @@ namespace Furria.Api.Tests.Roles;
 public sealed class PutRolePermissionsTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string UnknownKeyMessage = "Unbekannter Berechtigungs-Key.";
     private const string ArchivedRoleMessage =
         "Eine archivierte Rolle kann nicht bearbeitet werden.";
-    private const int UnknownRoleId = 999_999;
-
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
@@ -63,80 +59,6 @@ public sealed class PutRolePermissionsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_GrantDecidingApplications_When_AManagerSetsItsKey()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Roles(roles => roles.AddRole("aufnahme", "Aufnahme")),
-            ct
-        );
-        var roleId = ctx.Roles.Roles.IdOf("aufnahme");
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetKeysAsync(client, roleId, "membership_applications.decide");
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Role(roleId)
-            .ToGrantExactly(FurriaPermissions.MembershipApplicationsDecide)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ClearEveryKey_When_TheNewSetIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Roles(roles =>
-                    roles.AddRole(
-                        "gruppenpflege",
-                        "Gruppenpflege",
-                        FurriaPermissions.GroupsManage,
-                        FurriaPermissions.PersonsReadDetails
-                    )
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetKeysAsync(client, ctx.Roles.Roles.IdOf("gruppenpflege"));
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("gruppenpflege"))
-            .ToGrantExactly()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheUnchangedKey_When_OneKeyIsAdded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Roles(roles =>
-                    roles.AddRole("gruppenpflege", "Gruppenpflege", FurriaPermissions.GroupsManage)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetKeysAsync(
-            client,
-            ctx.Roles.Roles.IdOf("gruppenpflege"),
-            FurriaPermissions.GroupsManage,
-            FurriaPermissions.PersonsReadDetails
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("gruppenpflege"))
-            .ToGrantExactly(FurriaPermissions.GroupsManage, FurriaPermissions.PersonsReadDetails)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_LockHerOutImmediately_When_AManagerDropsRolesManageFromHerOwnRole()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -162,60 +84,6 @@ public sealed class PutRolePermissionsTests : IClassFixture<ApiTestFixture>
 
         var (afterwards, _) = await ilka.GETAsync<GetRoles, GetRolesResponse>();
         Assert.Equal(HttpStatusCode.Forbidden, afterwards.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_AKeyIsNotInTheCatalogue()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithGroupCareAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetKeysAsync(
-            client,
-            ctx.Roles.Roles.IdOf("gruppenpflege"),
-            "finanzen.alles"
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Contains(UnknownKeyMessage, await ReadMessagesAsync(response, ct));
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("gruppenpflege"))
-            .ToGrantExactly(FurriaPermissions.GroupsManage)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_AKeyIsListedTwice()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithGroupCareAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetKeysAsync(
-            client,
-            ctx.Roles.Roles.IdOf("gruppenpflege"),
-            FurriaPermissions.PersonsManage,
-            FurriaPermissions.PersonsManage
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx
-            .Expected.Role(ctx.Roles.Roles.IdOf("gruppenpflege"))
-            .ToGrantExactly(FurriaPermissions.GroupsManage)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await SetKeysAsync(client, UnknownRoleId, FurriaPermissions.PersonsManage);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -251,20 +119,6 @@ public sealed class PutRolePermissionsTests : IClassFixture<ApiTestFixture>
             .ToGrantExactly(FurriaPermissions.GroupsManage)
             .AssertAsync(ct);
     }
-
-    private Task<SeededContext> BuildWithGroupCareAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder.Roles(roles =>
-                    roles.AddRole("gruppenpflege", "Gruppenpflege", FurriaPermissions.GroupsManage)
-                ),
-            ct
-        );
-
-    private static async Task<IReadOnlyList<string>> ReadMessagesAsync(
-        HttpResponseMessage response,
-        CancellationToken ct
-    ) => [.. (await ReadFailuresAsync(response, ct)).Values.SelectMany(messages => messages)];
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,

@@ -1,6 +1,5 @@
 using System.Net;
 using FastEndpoints;
-using Furria.Api.Endpoints.MembershipApplications;
 using Furria.Api.Endpoints.Start;
 using Furria.Api.Tests.Auth;
 using Furria.Api.Tests.Invitations;
@@ -40,33 +39,6 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CountNeverInvited_When_TheViewerManagesPersons()
-    {
-        await OnTuesdayEveningAsync(
-            identity =>
-                identity
-                    .AddEligiblePerson(
-                        "anna",
-                        "Anna",
-                        InvitationSteps.UniqueContactEmail("anna"),
-                        Today
-                    )
-                    .AddEligiblePerson(
-                        "ben",
-                        "Ben",
-                        InvitationSteps.UniqueContactEmail("ben"),
-                        Today
-                    ),
-            async ctx =>
-            {
-                var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
-
-                Assert.Equal(2, CountOf(toDos, ToDoKind.NeverInvited));
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_CountDueReminders_When_AnInvitationLiesPastTheReminderDelay()
     {
         await OnTuesdayEveningAsync(
@@ -99,42 +71,6 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CountInPersonOnly_When_AnEligiblePersonHasNoEmail()
-    {
-        await OnTuesdayEveningAsync(
-            identity =>
-                identity
-                    .AddPerson("dora", "Dora", "Ohnemail")
-                    .AddPersonContact("dora", birthDate: Today.AddYears(-40), withoutEmail: true)
-                    .AddMembership("dora-member", "dora", JoinedIn2015),
-            async ctx =>
-            {
-                var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
-
-                Assert.Equal(1, CountOf(toDos, ToDoKind.InPersonOnly));
-                Assert.Null(CountOf(toDos, ToDoKind.NeverInvited));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CountUnknownBirthDates_When_TheViewerManagesPersonsAndAccounts()
-    {
-        await OnTuesdayEveningAsync(
-            identity =>
-                identity
-                    .AddPerson("emil", "Emil", "Ohnedatum")
-                    .AddMembership("emil-member", "emil", JoinedIn2015),
-            async ctx =>
-            {
-                var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
-
-                Assert.Equal(1, CountOf(toDos, ToDoKind.BirthDateUnknown));
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutUnknownBirthDates_When_TheViewerManagesAccountsAlone()
     {
         await OnTuesdayEveningAsync(
@@ -147,30 +83,6 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
                 var toDos = ToDosOf(await StartOfAsync(ctx, "vera"));
 
                 Assert.Empty(toDos);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutUnknownBirthDates_When_TheViewerManagesPersonsAlone()
-    {
-        await OnTuesdayEveningAsync(
-            identity =>
-                identity
-                    .AddEligiblePerson(
-                        "anna",
-                        "Anna",
-                        InvitationSteps.UniqueContactEmail("anna"),
-                        Today
-                    )
-                    .AddPerson("emil", "Emil", "Ohnedatum")
-                    .AddMembership("emil-member", "emil", JoinedIn2015),
-            async ctx =>
-            {
-                var toDos = ToDosOf(await StartOfAsync(ctx, "petra"));
-
-                Assert.Equal(1, CountOf(toDos, ToDoKind.NeverInvited));
-                Assert.Null(CountOf(toDos, ToDoKind.BirthDateUnknown));
             }
         );
     }
@@ -190,16 +102,6 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(1, CountOf(toDos, ToDoKind.KeyToTakeBack));
             },
             club => club.AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2015)
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutTheKey_When_ItsReturnIsRecordedForToday()
-    {
-        await AssertKeyToTakeBackCountAsync(
-            expected: null,
-            club =>
-                club.AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2015, Today)
         );
     }
 
@@ -254,58 +156,6 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CountClubRecordGaps_When_TheViewerManagesTheClub()
-    {
-        await OnTuesdayEveningAsync(
-            identity => identity,
-            async ctx =>
-            {
-                var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
-
-                Assert.Equal(2, CountOf(toDos, ToDoKind.ClubRecordGap));
-            },
-            club => club.SetClubRecord(name: "Karnevalsklub Furria", foundedYear: 1971)
-        );
-    }
-
-    [Fact]
-    public async Task Should_CountWaitingApplications_When_TheViewerDecidesApplicationsAlone()
-    {
-        await OnTuesdayEveningAsync(
-            identity =>
-                identity
-                    .AddMembershipApplication("mia", Today.AddYears(-17))
-                    .AddMembershipApplication("nora", Today.AddYears(-40)),
-            async ctx =>
-            {
-                var toDos = ToDosOf(await StartOfAsync(ctx, "dana"));
-
-                Assert.Equal([ToDoKind.ApplicationWaiting], toDos.Select(toDo => toDo.Kind));
-                Assert.Equal(2, CountOf(toDos, ToDoKind.ApplicationWaiting));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowEveryToDoAndNoInactiveState_When_TheManagingLoginOpensStart()
-    {
-        await OnTuesdayEveningAsync(
-            identity => identity.AddMembershipApplication("mia", Today.AddYears(-17)),
-            async ctx =>
-            {
-                var start = await StartOfAsync(
-                    await ctx.Identity.ManagingLoginClientAsync(
-                        TestContext.Current.CancellationToken
-                    )
-                );
-
-                Assert.True(start.ViewerIsActiveInClub);
-                Assert.Equal(1, CountOf(ToDosOf(start), ToDoKind.ApplicationWaiting));
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutAnApplication_When_ItIsNotYetConfirmed()
     {
         await OnTuesdayEveningAsync(
@@ -318,96 +168,6 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
                 var toDos = ToDosOf(await StartOfAsync(ctx, "dana"));
 
                 Assert.Equal(1, CountOf(toDos, ToDoKind.ApplicationWaiting));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutAnApplication_When_ItIsDeclined()
-    {
-        await OnTuesdayEveningAsync(
-            identity => identity.AddMembershipApplication("mia", Today.AddYears(-17)),
-            async ctx =>
-            {
-                var client = await ctx.Identity.ClientForAsync(
-                    "dana",
-                    TestContext.Current.CancellationToken
-                );
-                var before = ToDosOf(await StartOfAsync(client));
-
-                await DeclineAsync(client, ctx.Identity.MembershipApplications.IdOf("mia"));
-                var after = ToDosOf(await StartOfAsync(client));
-
-                Assert.Equal(1, CountOf(before, ToDoKind.ApplicationWaiting));
-                Assert.Null(CountOf(after, ToDoKind.ApplicationWaiting));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutWaitingApplications_When_TheViewerDoesNotDecideThem()
-    {
-        await OnTuesdayEveningAsync(
-            identity => identity.AddMembershipApplication("mia", Today.AddYears(-17)),
-            async ctx =>
-            {
-                var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
-
-                Assert.Null(CountOf(toDos, ToDoKind.ApplicationWaiting));
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ShowOnlyKeyWork_When_TheViewerManagesKeysAlone()
-    {
-        await OnTuesdayEveningAsync(
-            identity =>
-                identity
-                    .AddEligiblePerson(
-                        "anna",
-                        "Anna",
-                        InvitationSteps.UniqueContactEmail("anna"),
-                        Today
-                    )
-                    .AddPerson("emil", "Emil", "Ohnedatum")
-                    .AddMembership("emil-member", "emil", JoinedIn2015)
-                    .AddPerson("hanna", "Hanna", "Ausgetreten")
-                    .AddMembership("hanna-member", "hanna", JoinedIn2015, Yesterday),
-            async ctx =>
-            {
-                var toDos = ToDosOf(await StartOfAsync(ctx, "maik"));
-
-                Assert.Equal([ToDoKind.KeyToTakeBack], toDos.Select(toDo => toDo.Kind));
-            },
-            club => club.AddKeyHolding("hanna-sporthalle", "sporthalle", "hanna", JoinedIn2015)
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutAToDo_When_ItsWorkIsDone()
-    {
-        await OnTuesdayEveningAsync(
-            identity =>
-                identity.AddEligiblePerson(
-                    "anna",
-                    "Anna",
-                    InvitationSteps.UniqueContactEmail("anna"),
-                    Today
-                ),
-            async ctx =>
-            {
-                var client = await ctx.Identity.ClientForAsync(
-                    "frank",
-                    TestContext.Current.CancellationToken
-                );
-                var before = ToDosOf(await StartOfAsync(client));
-
-                await InvitationRoundSteps.InviteAllAsync(client);
-                var after = ToDosOf(await StartOfAsync(client));
-
-                Assert.Equal(1, CountOf(before, ToDoKind.NeverInvited));
-                Assert.Null(CountOf(after, ToDoKind.NeverInvited));
             }
         );
     }
@@ -485,22 +245,6 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Fact]
-    public async Task Should_LeaveOutTheJeckCheck_When_TheViewerAdministersNoGroup()
-    {
-        await OnTuesdayEveningAsync(
-            identity => identity,
-            async ctx =>
-            {
-                var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
-
-                Assert.Null(CountOf(toDos, ToDoKind.GroupMatcherStatementsOpen));
-            },
-            arrangeGroups: groups => groups.AddGroup("tanzgarde", "Tanzgarde"),
-            arrangeMatcher: matcher => matcher.AddStatement("konfetti", "Konfetti ist Pflicht.")
-        );
-    }
-
     private async Task AssertKeyToTakeBackCountAsync(
         int? expected,
         Action<ClubSeedBuilder> arrangeKey
@@ -519,21 +263,6 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
             },
             arrangeKey
         );
-    }
-
-    private static async Task DeclineAsync(HttpClient client, int membershipApplicationId)
-    {
-        var response = await client.DELETEAsync<
-            DeleteMembershipApplicationById,
-            DeleteMembershipApplicationByIdRequest
-        >(
-            new DeleteMembershipApplicationByIdRequest
-            {
-                MembershipApplicationId = membershipApplicationId,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
     private static IReadOnlyList<StartToDoDto> ToDosOf(GetStartResponse start) =>

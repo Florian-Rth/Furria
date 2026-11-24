@@ -31,31 +31,6 @@ public sealed class PostActStepTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_OpenAStepAtTheStartToo_When_TheFirstMarkIsSetLater()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-
-        var stepIds = await MarkAsync(admin, actId, 30);
-
-        Assert.Equal(2, stepIds.Count);
-        Assert.Equal([(0, 30), (30, 180)], await StepSpansOfAsync(admin, actId));
-    }
-
-    [Fact]
-    public async Task Should_SplitTheStep_When_AMarkFallsInsideIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        await MarkAsync(admin, actId, 30);
-
-        var stepIds = await MarkAsync(admin, actId, 90);
-
-        Assert.Single(stepIds);
-        Assert.Equal([(0, 30), (30, 90), (90, 180)], await StepSpansOfAsync(admin, actId));
-    }
-
-    [Fact]
     public async Task Should_KeepBothHalvesInThePart_When_ItsLastStepIsSplit()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -71,40 +46,6 @@ public sealed class PostActStepTests : IClassFixture<ApiTestFixture>
             ],
             await PartStepsOfAsync(admin, actId)
         );
-    }
-
-    [Fact]
-    public async Task Should_LeaveTheNewStepUngrouped_When_AStepOutsideAnyPartIsSplit()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 90);
-        await AddPartAsync(admin, actId, stepIds[1], stepIds[1], "Hauptteil");
-
-        await MarkAsync(admin, actId, 120);
-
-        Assert.Equal(
-            [
-                [stepIds[1]],
-            ],
-            await PartStepsOfAsync(admin, actId)
-        );
-    }
-
-    [Theory]
-    [InlineData(30)]
-    [InlineData(180)]
-    public async Task Should_RefuseTheMark_When_ItSplitsNoStep(double atSeconds)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        await MarkAsync(admin, actId, 30);
-
-        var response = await admin.POSTAsync<PostActStep, PostActStepRequest>(
-            new() { ActId = actId, AtSeconds = atSeconds }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     [Fact]

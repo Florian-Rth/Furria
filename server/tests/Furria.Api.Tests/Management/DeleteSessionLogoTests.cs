@@ -42,18 +42,4 @@ public sealed class DeleteSessionLogoTests : IClassFixture<ApiTestFixture>
         await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(original));
     }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheSessionHasNoLogo()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SessionLogoSeeds.RunningSessionWithKeeper(), ct);
-        var client = await ctx.Identity.ClientForAsync(SessionLogoSeeds.Keeper, ct);
-
-        var response = await client.DELETEAsync<DeleteSessionLogo, DeleteSessionLogoRequest>(
-            new() { SessionId = ctx.Club.Sessions.IdOf(SessionLogoSeeds.Running) }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
 }

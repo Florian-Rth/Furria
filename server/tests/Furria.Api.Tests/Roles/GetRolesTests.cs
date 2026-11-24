@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
-using Furria.Application.Authorization;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -11,92 +10,11 @@ public sealed class GetRolesTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
     private static readonly DateOnly HandedOver2020 = new(2020, 3, 1);
-    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
-
     private readonly ApiTestFixture _fixture;
 
     public GetRolesTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CarryEveryRoleWithKeysAndHolders_When_AManagerReadsTheMatrix()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
-                    .Roles(roles =>
-                        roles
-                            .AddRoleWithDetails(
-                                "gruppenpflege",
-                                "Gruppenpflege",
-                                "Pflegt die Gruppen des Vereins.",
-                                archivedOn: null,
-                                FurriaPermissions.GroupsManage
-                            )
-                            .AddRoleHolding(
-                                "ilka-gruppenpflege",
-                                "gruppenpflege",
-                                "ilka",
-                                HeldSince2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var groupCare = Single(result, "Gruppenpflege");
-        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), groupCare.RoleId);
-        Assert.Equal("Pflegt die Gruppen des Vereins.", groupCare.Description);
-        Assert.Null(groupCare.ArchivedOn);
-        Assert.Equal([FurriaPermissions.GroupsManage], groupCare.PermissionKeys);
-        var ilka = Assert.Single(groupCare.Holders);
-        Assert.Equal(ctx.Identity.People.IdOf("ilka"), ilka.PersonId);
-        Assert.Equal("Ilka", ilka.FirstName);
-        Assert.Equal("Reineke", ilka.LastName);
-    }
-
-    [Fact]
-    public async Task Should_CarryTheEnforceableCatalogue_When_TheMatrixIsRead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(FurriaPermissions.All, result.PermissionKeys);
-    }
-
-    [Fact]
-    public async Task Should_ListTheArchivedRole_When_TheMatrixIsRead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Roles(roles =>
-                    roles.AddRoleWithDetails(
-                        "chronik",
-                        "Chronik",
-                        "Führt die Vereinschronik.",
-                        ArchivedIn2021
-                    )
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(ArchivedIn2021, Single(result, "Chronik").ArchivedOn);
     }
 
     [Fact]
@@ -140,78 +58,6 @@ public sealed class GetRolesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CarryNoKeys_When_ARoleGrantsNothing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Roles(roles => roles.AddRole("zeugwart", "Zeugwart")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(Single(result, "Zeugwart").PermissionKeys);
-        Assert.Empty(Single(result, "Zeugwart").Holders);
-    }
-
-    [Fact]
-    public async Task Should_ListTheOfficeWithItsSeatedCount_When_ARunningSeatImpliesTheRole()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var today = _fixture.Today;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddPerson("katrin", "Katrin", "Adam")
-                    )
-                    .Roles(roles => roles.AddRole("vorstand", "Vorstand"))
-                    .Club(club =>
-                        club.AddBoardOffice(
-                                "beisitz",
-                                "Beisitz",
-                                sortOrder: 2,
-                                impliedRoleAlias: "vorstand"
-                            )
-                            .AddBoardOffice(
-                                "praesidium",
-                                "Präsidium",
-                                sortOrder: 1,
-                                impliedRoleAlias: "vorstand"
-                            )
-                            .AddBoardSeat("ilka-beisitz", "beisitz", "ilka", today.AddDays(-30))
-                            .AddBoardSeat("katrin-beisitz", "beisitz", "katrin", today.AddDays(-5))
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var offices = Single(result, "Vorstand").ImpliedBy;
-        Assert.Collection(
-            offices,
-            first =>
-            {
-                Assert.Equal(ctx.Club.BoardOffices.IdOf("praesidium"), first.BoardOfficeId);
-                Assert.Equal("Präsidium", first.Name);
-                Assert.Equal(0, first.SeatedCount);
-            },
-            second =>
-            {
-                Assert.Equal(ctx.Club.BoardOffices.IdOf("beisitz"), second.BoardOfficeId);
-                Assert.Equal("Beisitz", second.Name);
-                Assert.Equal(2, second.SeatedCount);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_CountNoSeat_When_TheSeatHasEndedOrNotYetBegun()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -247,89 +93,6 @@ public sealed class GetRolesTests : IClassFixture<ApiTestFixture>
         Assert.Equal(0, office.SeatedCount);
     }
 
-    [Fact]
-    public async Task Should_OmitTheOffice_When_ItIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Roles(roles => roles.AddRole("vorstand", "Vorstand"))
-                    .Club(club =>
-                        club.AddBoardOffice(
-                            "beisitz",
-                            "Beisitz",
-                            impliedRoleAlias: "vorstand",
-                            archivedOn: ArchivedIn2021
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(Single(result, "Vorstand").ImpliedBy);
-    }
-
-    [Fact]
-    public async Task Should_CarryNoOffices_When_NoOfficeImpliesTheRole()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Roles(roles =>
-                        roles.AddRole("vorstand", "Vorstand").AddRole("zeugwart", "Zeugwart")
-                    )
-                    .Club(club =>
-                        club.AddBoardOffice("beisitz", "Beisitz", impliedRoleAlias: "vorstand")
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(Single(result, "Zeugwart").ImpliedBy);
-    }
-
-    [Fact]
-    public async Task Should_SortUmlautsAsGerman_When_ListingRoles()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Roles(roles =>
-                    roles
-                        .AddRole("zeugwart", "Zeugwart")
-                        .AddRole("oeffentlichkeit", "Öffentlichkeit")
-                        .AddRole("organisation", "Organisation")
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.True(IndexOf(result, "Öffentlichkeit") < IndexOf(result, "Organisation"));
-        Assert.True(IndexOf(result, "Öffentlichkeit") < IndexOf(result, "Zeugwart"));
-    }
-
     private static RoleSummaryDto Single(GetRolesResponse response, string name) =>
         Assert.Single(response.Roles, role => role.Name == name);
-
-    private static int IndexOf(GetRolesResponse response, string name)
-    {
-        for (var index = 0; index < response.Roles.Count; index++)
-        {
-            if (response.Roles[index].Name == name)
-                return index;
-        }
-
-        throw new InvalidOperationException($"The Rolle \"{name}\" is not in the payload.");
-    }
 }

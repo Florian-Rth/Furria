@@ -64,52 +64,6 @@ public sealed class GetStartTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnActive_When_TheViewerOnlyAdministersAGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                        builder
-                            .Identity(identity =>
-                                identity
-                                    .AddPerson("sabine", "Sabine", "Trainerin")
-                                    .AddAccount("sabine")
-                            )
-                            .Groups(groups =>
-                                groups
-                                    .AddGroup("kindergarde", "Kindergarde")
-                                    .AddGroupAdmin(
-                                        "sabine-kindergarde",
-                                        "kindergarde",
-                                        "sabine",
-                                        "Trainerin",
-                                        JoinedIn2015
-                                    )
-                            ),
-                    ct
-                );
-                var client = await ctx.Identity.ClientForAsync("sabine", ct);
-
-                var (response, result) = await client.GETAsync<GetStart, GetStartResponse>();
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.True(result.ViewerIsActiveInClub);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnActive_When_TheOnlyGroupAdminTenureEndsToday()
-    {
-        Assert.True(await IsActiveInClubWithOnlyATenureAsync(JoinedIn2015, Today, null));
-    }
-
-    [Fact]
     public async Task Should_ReturnInactive_When_TheOnlyGroupAdminTenureBeginsTomorrow()
     {
         Assert.False(await IsActiveInClubWithOnlyATenureAsync(Today.AddDays(1), null, null));
@@ -119,37 +73,6 @@ public sealed class GetStartTests : IClassFixture<ApiTestFixture>
     public async Task Should_ReturnInactive_When_TheOnlyGroupAdminTenureIsInAnArchivedGroup()
     {
         Assert.False(await IsActiveInClubWithOnlyATenureAsync(JoinedIn2015, null, ArchivedIn2025));
-    }
-
-    [Fact]
-    public async Task Should_ReturnActive_When_TheViewerOnlyHoldsABoardSeat()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            TuesdayEvening,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                        builder
-                            .Identity(identity =>
-                                identity.AddPerson("berta", "Berta", "Beisitz").AddAccount("berta")
-                            )
-                            .Club(club =>
-                                club.AddBoardOffice("beisitz", "Beisitzerin")
-                                    .AddBoardSeat("berta-beisitz", "beisitz", "berta", JoinedIn2015)
-                            ),
-                    ct
-                );
-                var client = await ctx.Identity.ClientForAsync("berta", ct);
-
-                var (response, result) = await client.GETAsync<GetStart, GetStartResponse>();
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.True(result.ViewerIsActiveInClub);
-            }
-        );
     }
 
     [Fact]

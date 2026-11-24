@@ -39,10 +39,6 @@ describe('missingOf', () => {
       'text',
     ]);
   });
-
-  it('is empty for a complete version without a picture', () => {
-    expect(missingOf(version({}))).toEqual([]);
-  });
 });
 
 describe('pictureKeyOf', () => {
@@ -53,30 +49,9 @@ describe('pictureKeyOf', () => {
   });
 
   it.each([
-    ['another media item', editing({ uncroppedUrl: '/api/media/8/uncropped?exp=1&sig=a&v=100' })],
     ['a new rendering', editing({ uncroppedUrl: '/api/media/7/uncropped?exp=1&sig=a&v=200' })],
-    ['another crop', editing({ crop: { left: 0, top: 0, width: 1, height: 0.5 } })],
   ])('tells %s apart', (_, other) => {
     expect(pictureKeyOf(other)).not.toBe(pictureKeyOf(editing({})));
-  });
-});
-
-describe('pictureOf', () => {
-  it.each([
-    ['ready', editing({}), 'ready'],
-    [
-      'processing',
-      editing({ state: 'processing', picture: null, uncroppedUrl: null }),
-      'developing',
-    ],
-    [
-      'stuck',
-      editing({ state: 'processing', isStalled: true, picture: null, uncroppedUrl: null }),
-      'stalled',
-    ],
-    ['failed', editing({ state: 'failed', picture: null, uncroppedUrl: null }), 'failed'],
-  ] as const)('shows a %s picture as %s', (_, subject, expected) => {
-    expect(pictureOf(subject)?.state).toBe(expected);
   });
 });
 

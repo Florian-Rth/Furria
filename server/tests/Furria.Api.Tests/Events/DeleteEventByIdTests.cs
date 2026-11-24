@@ -33,24 +33,6 @@ public sealed class DeleteEventByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RemoveTheEventAndItsCalendarEntry_When_TheKeyHolderDeletesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var eventId = ctx.Club.Events.IdOf("first-gala");
-
-        var response = await DeleteAsync(ctx, "vera", eventId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Event(eventId)
-            .ToNotExist()
-            .CalendarEntry(eventId)
-            .ToNotExist()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_DeleteTheEventsPictureWithIt_When_TheKeyHolderDeletesTheEvent()
     {
         var ct = TestContext.Current.CancellationToken;

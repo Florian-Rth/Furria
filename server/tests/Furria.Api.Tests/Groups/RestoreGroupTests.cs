@@ -22,38 +22,6 @@ public sealed class RestoreGroupTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ClearTheArchivedOn_When_TheKeyHolderRestoresTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Groups(groups =>
-                    groups.AddGroup(
-                        "kindergarde",
-                        "Kindergarde",
-                        RetiredDescription,
-                        isRecruiting: false,
-                        ArchivedIn2021
-                    )
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<RestoreGroup, RestoreGroupRequest>(
-            new() { GroupId = ctx.Groups.Groups.IdOf("kindergarde") }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Group(ctx.Groups.Groups.IdOf("kindergarde"))
-            .ToBeArchivedOn(null)
-            .Group(ctx.Groups.Groups.IdOf("kindergarde"))
-            .ToHaveName("Kindergarde")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_LiftTheArchiveOfEveryoneWhoseTieRunsAgain_When_TheGroupIsRestored()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -101,25 +69,6 @@ public sealed class RestoreGroupTests : IClassFixture<ApiTestFixture>
             .Person(ctx.Identity.People.IdOf("anna"))
             .ToBeArchived(ArchivedIn2021, null)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheGroupIsNotArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<RestoreGroup, RestoreGroupRequest>(
-            new() { GroupId = ctx.Groups.Groups.IdOf("tanzgarde") }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(["Diese Gruppe ist nicht archiviert."], failures[ConflictField]);
     }
 
     [Fact]

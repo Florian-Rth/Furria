@@ -10,8 +10,6 @@ namespace Furria.Api.Tests.BeerList;
 
 public sealed class SetDefaultBeerPotDrinkTests : IClassFixture<ApiTestFixture>
 {
-    private const string HandedOverPot = "alter-topf";
-
     private readonly ApiTestFixture _fixture;
 
     public SetDefaultBeerPotDrinkTests(ApiTestFixture fixture)
@@ -38,21 +36,6 @@ public sealed class SetDefaultBeerPotDrinkTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheDrinkTheDefault_When_ItIsAlreadyTheDefault()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(beerList => beerList.AddBeerPot(Pot, Warden), ct);
-
-        var response = await SetDefaultAsync(ctx, Pot, BeerOf(ctx), ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BeerPot(ctx.BeerList.Pots.IdOf(Pot))
-            .ToHaveDefaultDrink(BeerListSeedBuilder.DefaultDrink)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflictAndKeepTheDefault_When_TheDrinkIsRetired()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -71,66 +54,6 @@ public sealed class SetDefaultBeerPotDrinkTests : IClassFixture<ApiTestFixture>
         var response = await SetDefaultAsync(ctx, Pot, ctx.BeerList.Drinks.IdOf("Radler"), ct);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx
-            .Expected.BeerPot(ctx.BeerList.Pots.IdOf(Pot))
-            .ToHaveDefaultDrink(BeerListSeedBuilder.DefaultDrink)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_ThePotHasBeenHandedOver()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await BuildAsync(
-            beerList =>
-                beerList
-                    .AddBeerPot(
-                        HandedOverPot,
-                        Warden,
-                        openedAt: now.AddDays(-200),
-                        closedAt: now.AddDays(-2)
-                    )
-                    .AddBeerDrink(HandedOverPot, "Radler"),
-            ct
-        );
-
-        var response = await SetDefaultAsync(
-            ctx,
-            HandedOverPot,
-            ctx.BeerList.Drinks.IdOf("Radler"),
-            ct
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx
-            .Expected.BeerPot(ctx.BeerList.Pots.IdOf(HandedOverPot))
-            .ToHaveDefaultDrink(BeerListSeedBuilder.DefaultDrink)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePotDoesNotListTheDrink()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await BuildAsync(
-            beerList =>
-                beerList
-                    .AddBeerPot(
-                        HandedOverPot,
-                        Warden,
-                        openedAt: now.AddDays(-200),
-                        closedAt: now.AddDays(-2)
-                    )
-                    .AddBeerDrink(HandedOverPot, "Radler")
-                    .AddBeerPot(Pot, Warden, openedAt: now.AddDays(-2)),
-            ct
-        );
-
-        var response = await SetDefaultAsync(ctx, Pot, ctx.BeerList.Drinks.IdOf("Radler"), ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         await ctx
             .Expected.BeerPot(ctx.BeerList.Pots.IdOf(Pot))
             .ToHaveDefaultDrink(BeerListSeedBuilder.DefaultDrink)

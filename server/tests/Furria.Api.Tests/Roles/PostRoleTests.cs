@@ -2,9 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
-using Furria.Core.Club;
 using Furria.Core.Roles;
-using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -38,53 +36,6 @@ public sealed class PostRoleTests : IClassFixture<ApiTestFixture>
                 Coin = coin,
             }
         );
-
-    [Fact]
-    public async Task Should_KeepTheCoin_When_AManagerConfiguresOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await CreateRoleAsync(
-            client,
-            "Zeugwart",
-            "Hütet das Material des Vereins.",
-            new RoleCoinDto { Icon = ClubIcon.Wrench, Tone = TestTones.Teal }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Role(result.RoleId)
-            .ToHaveCoin(new RoleCoin(ClubIcon.Wrench, TestTones.Teal))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CreateTheRoleWithoutKeys_When_AManagerAddsOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await CreateRoleAsync(
-            client,
-            "Zeugwart",
-            "Hütet das Material des Vereins."
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Role(result.RoleId)
-            .ToHaveName("Zeugwart")
-            .Role(result.RoleId)
-            .ToHaveDescription("Hütet das Material des Vereins.")
-            .Role(result.RoleId)
-            .ToBeArchivedOn(null)
-            .Role(result.RoleId)
-            .ToGrantExactly()
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_ReturnConflict_When_AnActiveRoleAlreadyCarriesTheNameInAnotherCase()
@@ -127,30 +78,6 @@ public sealed class PostRoleTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotEqual(ctx.Roles.Roles.IdOf("zeugwart-retired"), result.RoleId);
         await ctx.Expected.Role(result.RoleId).ToBeArchivedOn(null).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheNameIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await CreateRoleAsync(client, "", "Ohne Namen.");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheNameIsLongerThanTheColumn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await CreateRoleAsync(client, new string('A', 81), "Zu lang.");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

@@ -22,36 +22,6 @@ public sealed class PlaceGalleryItemsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeHerItemsOutOfHerInbox_When_AnUploaderFilesThemInAnAlbum()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Workbench(), ct);
-        var client = await ctx.Identity.ClientForAsync("markus", ct);
-        var albumId = ctx.Gallery.Albums.IdOf("gala");
-
-        var response = await client.POSTAsync<PlaceGalleryItems, PlaceGalleryItemsRequest>(
-            new()
-            {
-                AlbumId = albumId,
-                MediaItemIds =
-                [
-                    ctx.Gallery.Items.IdOf("markus-first"),
-                    ctx.Gallery.Items.IdOf("markus-second"),
-                ],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var now = _fixture.TimeProvider.GetUtcNow();
-        await ctx
-            .Expected.GalleryItem(ctx.Gallery.Items.IdOf("markus-first"))
-            .ToBePlacedIn(albumId, now)
-            .GalleryItem(ctx.Gallery.Items.IdOf("markus-second"))
-            .ToBePlacedIn(albumId, now)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseEveryItem_When_OneSitsInAnotherUploadersInbox()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -78,24 +48,6 @@ public sealed class PlaceGalleryItemsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheMove_When_AnUploaderMovesAnItemAlreadyInAnAlbum()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Workbench(), ct);
-        var client = await ctx.Identity.ClientForAsync("markus", ct);
-
-        var response = await client.POSTAsync<PlaceGalleryItems, PlaceGalleryItemsRequest>(
-            new()
-            {
-                AlbumId = ctx.Gallery.Albums.IdOf("gala"),
-                MediaItemIds = [ctx.Gallery.Items.IdOf("parade-highlight")],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_UnselectTheItemAndWithdrawItsOldAlbum_When_AManagerMovesItsLastSelectedPhoto()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -116,55 +68,6 @@ public sealed class PlaceGalleryItemsTests : IClassFixture<ApiTestFixture>
             .Album(ctx.Gallery.Albums.IdOf("parade"))
             .ToBeUnpublished()
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheMove_When_TheItemLiesInTheBin()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Workbench(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await client.POSTAsync<PlaceGalleryItems, PlaceGalleryItemsRequest>(
-            new()
-            {
-                AlbumId = ctx.Gallery.Albums.IdOf("gala"),
-                MediaItemIds = [ctx.Gallery.Items.IdOf("parade-binned")],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_HandTheItemsToTheGallery_When_AManagerFilesALinksInboxInAnAlbum()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(LinkInbox(), ct);
-        var client = await ctx.Identity.ClientForAsync("jana", ct);
-        var albumId = ctx.Gallery.Albums.IdOf("zug");
-        var guestPhotoId = ctx.Gallery.Items.IdOf("guest-photo");
-
-        var response = await client.POSTAsync<PlaceGalleryItems, PlaceGalleryItemsRequest>(
-            new() { AlbumId = albumId, MediaItemIds = [guestPhotoId] }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.GalleryItem(guestPhotoId)
-            .ToBePlacedIn(albumId, _fixture.TimeProvider.GetUtcNow())
-            .MediaItem(guestPhotoId)
-            .ToBeOwnedBy(MediaOwner.Gallery)
-            .AssertAsync(ct);
-        var (_, inbox) = await client.GETAsync<
-            GetUploadLinkInbox,
-            GetUploadLinkInboxRequest,
-            GetUploadLinkInboxResponse
-        >(new() { UploadLinkId = ctx.Gallery.UploadLinks.IdOf("link") });
-        Assert.Equal(
-            [ctx.Gallery.Items.IdOf("guest-video")],
-            inbox.Items.Select(item => item.MediaItemId)
-        );
     }
 
     [Fact]

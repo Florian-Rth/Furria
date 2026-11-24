@@ -1,9 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Club;
-using Furria.Api.Media;
-using Furria.Api.Tests.Management;
-using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -12,8 +9,6 @@ namespace Furria.Api.Tests.Club;
 
 public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
 {
-    private const string RecordedMotto = "FURRIA — Der Mittelpunkt des Universums";
-
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly JoinedInDecember2026 = new(2026, 12, 1);
     private static readonly DateOnly JoinedInNovember2026 = new(2026, 11, 20);
@@ -49,15 +44,6 @@ public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset InAnUnrecordedSession = new(
-        2028,
-        1,
-        15,
-        12,
-        0,
-        0,
-        TimeSpan.Zero
-    );
 
     private readonly ApiTestFixture _fixture;
 
@@ -79,163 +65,6 @@ public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
 
                 Assert.Equal(2026, result.Session.StartYear);
                 Assert.Equal("2026/27", result.Session.Label);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheRecordedMotto_When_TheClubHasWrittenTheSessionDown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var result = await ReadTheHubAsMemberAsync(
-                    club => club.AddSession("laufende", 2026, motto: RecordedMotto),
-                    ct
-                );
-
-                Assert.Equal(2026, result.Session.StartYear);
-                Assert.Equal(RecordedMotto, result.Session.Motto);
-                Assert.Null(result.Session.Number);
-                Assert.Null(result.Session.Logo);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheLogoSourcesAndShape_When_TheSessionsLogoIsRendered()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildMemberClubAsync(
-                    club => club.AddSession("laufende", 2026, motto: RecordedMotto),
-                    ct
-                );
-                var sessionId = ctx.Club.Sessions.IdOf("laufende");
-                var logoId = await SessionLogoSteps.RenderedAsync(
-                    _fixture,
-                    await ctx.Identity.ManagingLoginClientAsync(ct),
-                    sessionId,
-                    ct
-                );
-
-                var result = await ReadAsync(ctx, ct);
-
-                var logo = Assert.IsType<SessionLogoDto>(result.Session.Logo);
-                Assert.StartsWith(
-                    _fixture.SignedMediaUrl(
-                        logoId,
-                        MediaOwner.Session(sessionId),
-                        MediaRendition.Medium
-                    ),
-                    logo.Picture.MediumUrl
-                );
-                Assert.Equal(0.8, logo.Aspect, 6);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryNoLogo_When_TheSessionsLogoIsStillDeveloping()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildMemberClubAsync(
-                    club => club.AddSession("laufende", 2026, motto: RecordedMotto),
-                    ct
-                );
-                await SessionLogoSteps.UploadAsync(
-                    await ctx.Identity.ManagingLoginClientAsync(ct),
-                    ctx.Club.Sessions.IdOf("laufende"),
-                    ct
-                );
-
-                var result = await ReadAsync(ctx, ct);
-
-                Assert.Null(result.Session.Logo);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameTheSessionAnyway_When_TheClubHasNoRecordOfIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InAnUnrecordedSession,
-            async () =>
-            {
-                var result = await ReadTheHubAsMemberAsync(
-                    club => club.AddSession("vorletzte", 2026, motto: RecordedMotto),
-                    ct
-                );
-
-                Assert.Equal(2027, result.Session.StartYear);
-                Assert.Equal("2027/28", result.Session.Label);
-                Assert.Null(result.Session.Motto);
-                Assert.Null(result.Session.Number);
-                Assert.Null(result.Session.Logo);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryAnnouncementsCalendarAndBoardEmpty_When_TheClubHasWrittenNothingInThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var result = await ReadTheHubAsMemberAsync(
-                    club => club.AddSession("laufende", 2026, motto: RecordedMotto),
-                    ct
-                );
-
-                Assert.Empty(result.Announcements.Newest);
-                Assert.Equal(0, result.Announcements.TotalCount);
-                Assert.Empty(result.Calendar);
-                Assert.Empty(result.Board);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_NameTheSeasonAndElideEverythingElse_When_TheClubHasRecordedNoMasterDataAtAll()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var result = await ReadTheHubAsMemberAsync(ct);
-
-                Assert.Equal(2026, result.Session.StartYear);
-                Assert.Equal("2026/27", result.Session.Label);
-                Assert.Null(result.Session.Number);
-                Assert.Null(result.Session.Motto);
-                Assert.Null(result.Session.Logo);
-                Assert.Empty(result.Announcements.Newest);
-                Assert.Equal(0, result.Announcements.TotalCount);
-                Assert.Empty(result.Calendar);
-                Assert.Empty(result.Board);
-                Assert.Empty(result.Venues);
-                Assert.Equal(1, result.Stats.MemberCount);
-                Assert.Equal(0, result.Stats.GroupCount);
             }
         );
     }

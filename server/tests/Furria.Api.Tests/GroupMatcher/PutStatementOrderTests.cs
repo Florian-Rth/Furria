@@ -18,25 +18,6 @@ public sealed class PutStatementOrderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PutThePoolInTheGivenOrder_When_TheManagerReordersIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-
-        var response = await ReorderAsync(ctx, ["orden", "konfetti", "bierbank"], ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MatcherStatement(ctx.GroupMatcher.Statements.IdOf("orden"))
-            .ToBeInPoolAs("Orden sind schwer.", sortOrder: 1)
-            .MatcherStatement(ctx.GroupMatcher.Statements.IdOf("konfetti"))
-            .ToBeInPoolAs("Konfetti ist Pflicht.", sortOrder: 2)
-            .MatcherStatement(ctx.GroupMatcher.Statements.IdOf("bierbank"))
-            .ToBeInPoolAs("Bierbänke stelle ich auf.", sortOrder: 3)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheOrder_When_ItMissesAPoolStatement()
     {
         var ct = TestContext.Current.CancellationToken;

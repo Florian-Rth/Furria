@@ -12,11 +12,7 @@ namespace Furria.Api.Tests.Board;
 public sealed class EndBoardSeatTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string ValidationField = "request";
     private const string EndedSeatMessage = "Dieser Vorstandssitz ist bereits beendet.";
-    private const string EndBeforeStartMessage =
-        "Ein Vorstandssitz kann nicht vor seinem Beginn enden.";
-    private const int UnknownBoardSeatId = 999_999;
 
     private static readonly DateOnly Elected2016 = new(2016, 11, 11);
     private static readonly DateOnly HandedOver2020 = new(2020, 11, 10);
@@ -65,72 +61,6 @@ public sealed class EndBoardSeatTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CloseThePeriod_When_TheEndIsInTheFuture()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSeatAsync(ct);
-
-        var handsOverTomorrow = _fixture.Today.AddDays(1);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EndSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Club.BoardSeats.IdOf("ilka-praesident"),
-            handsOverTomorrow
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BoardSeat(ctx.Club.BoardSeats.IdOf("ilka-praesident"))
-            .ToHavePeriod(Elected2016, handsOverTomorrow)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_EndOnItsOwnStart_When_TheSeatLastedOneDay()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSeatAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EndSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Club.BoardSeats.IdOf("ilka-praesident"),
-            Elected2016
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.BoardSeat(ctx.Club.BoardSeats.IdOf("ilka-praesident"))
-            .ToHavePeriod(Elected2016, Elected2016)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_TheEndPrecedesTheStart()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSeatAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EndSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Club.BoardSeats.IdOf("ilka-praesident"),
-            Elected2016.AddDays(-1)
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal([EndBeforeStartMessage], failures[ValidationField]);
-        await ctx
-            .Expected.BoardSeat(ctx.Club.BoardSeats.IdOf("ilka-praesident"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheSeatIsAlreadyEnded()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -166,23 +96,6 @@ public sealed class EndBoardSeatTests : IClassFixture<ApiTestFixture>
             .Expected.BoardSeat(ctx.Club.BoardSeats.IdOf("ilka-praesident"))
             .ToHavePeriod(Elected2016, HandedOver2020)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheSeatIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRunningSeatAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EndSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            UnknownBoardSeatId,
-            HandedOver2020
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]

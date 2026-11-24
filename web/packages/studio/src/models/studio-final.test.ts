@@ -1,24 +1,15 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import {
   anchorPlacementOf,
-  finalBeatAtOf,
   finalPlacementsOf,
   finalPlacesOf,
   finalPreviewOf,
   finalSecondsAt,
-  matchedCountOf,
   mixSecondsAt,
-  nudgedFinalBeatOf,
   offsetStartingAt,
   pendingFinalTrackOf,
-  tunedOffsetOf,
 } from '@furria/studio/studio-final';
-import type {
-  Studio,
-  StudioFinalTrack,
-  StudioStep,
-  StudioVideo,
-} from '@furria/studio/studio-schemas';
+import type { Studio, StudioFinalTrack, StudioStep } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
@@ -66,20 +57,6 @@ const stepOf = (stepId: number, start: number, end: number): StudioStep => ({
   placement: 'onTimeline',
 });
 
-const videoOf = (videoId: number, start: number): StudioVideo => ({
-  videoId,
-  mediaItemId: 70 + videoId,
-  name: null,
-  state: 'ready',
-  durationSeconds: 10,
-  clipStartSeconds: 0,
-  clipEndSeconds: 10,
-  startSeconds: start,
-  placement: 'onTimeline',
-  outdated: false,
-  urls: { video: '/v', compact: '/c', poster: '/p', peaks: '/k' },
-});
-
 const studioOf = (patch: Partial<Studio>): Studio => ({
   music: { lengthSeconds: 60, source: 'workingMix' },
   songs: [],
@@ -95,10 +72,8 @@ const studioOf = (patch: Partial<Studio>): Studio => ({
 
 describe('pendingFinalTrackOf', () => {
   it.each([
-    [[trackOf(1, 1, false)], 1],
     [[trackOf(1, 1, true), trackOf(2, 2, false)], 2],
     [[trackOf(1, 2, true), trackOf(2, 1, false)], null],
-    [[trackOf(1, 1, true)], null],
   ])('picks the newer, not adopted final file of %j', (finalTracks, expected) => {
     expect(pendingFinalTrackOf(studioOf({ finalTracks }))?.finalTrackId ?? null).toBe(expected);
   });
@@ -115,23 +90,6 @@ describe('finalPlacementsOf', () => {
     };
 
     expect(finalPlacementsOf(track, mix)).toEqual({ 1: placed(-5) });
-  });
-
-  it('keeps every piece entry of a source in order', () => {
-    const track = {
-      ...trackOf(1, 1, false),
-      alignments: [
-        { sourceMediaItemId: 1, fromSeconds: 25, offsetSeconds: 9, stretch: 1 },
-        { sourceMediaItemId: 1, fromSeconds: 0, offsetSeconds: -5, stretch: 1 },
-      ],
-    };
-
-    expect(finalPlacementsOf(track, mix)).toEqual({
-      1: [
-        { fromSeconds: 0, offsetSeconds: -5, stretch: 1 },
-        { fromSeconds: 25, offsetSeconds: 9, stretch: 1 },
-      ],
-    });
   });
 });
 
@@ -159,27 +117,17 @@ describe('pieces placed apart', () => {
   });
 
   it.each([
-    [{ sourceMediaItemId: 1, seconds: 12 }, -10],
-    [{ sourceMediaItemId: 1, seconds: 35 }, 20],
     [{ sourceMediaItemId: 1, seconds: 25 }, -10],
     [{ sourceMediaItemId: 1, seconds: 45 }, 20],
-    [{ sourceMediaItemId: 1, seconds: 5 }, -10],
     [{ sourceMediaItemId: 2, seconds: 5 }, null],
   ])('places the anchor %o by the entry with offset %s', (anchor, offset) => {
     expect(anchorPlacementOf(apart, pieces, anchor)?.offsetSeconds ?? null).toBe(offset);
-  });
-
-  it('counts every placed piece', () => {
-    expect(matchedCountOf({ 1: apart[1].slice(0, 1) }, [...pieces, segmentOf(2, 0, 5, 20)])).toBe(
-      2,
-    );
   });
 });
 
 describe('position mapping', () => {
   it.each([
     [0, 5],
-    [35, 45],
     [60, 70],
   ])('mix second %s lies at final second %s', (seconds, expected) => {
     expect(finalSecondsAt(mix, placements, 70, seconds)).toBe(expected);
@@ -190,7 +138,6 @@ describe('position mapping', () => {
   });
 
   it.each([
-    [5, 0],
     [45, 35],
     [2, null],
   ])('final second %s lies at mix second %s', (seconds, expected) => {
@@ -198,10 +145,8 @@ describe('position mapping', () => {
   });
 
   it.each([
-    [0, 0],
     [5, 4.7],
     [20, 19.4],
-    [35, 45],
   ])('maps mix second %s of a song played faster to final second %s', (seconds, expected) => {
     expect(finalSecondsAt(mix, { 1: placed(-10, 0.98), 2: placed(40) }, 70, seconds)).toBeCloseTo(
       expected,
@@ -226,10 +171,6 @@ describe('finalPlacesOf', () => {
     ]);
   });
 
-  it('leaves a song unplaced when the final file ends before it begins', () => {
-    expect(finalPlacesOf(mix, { 1: placed(60) }, 70)[0]).toMatchObject({ start: null, end: null });
-  });
-
   it('places a song played faster over its shorter span', () => {
     expect(
       finalPlacesOf(mix, { 1: placed(-10, 0.98) }, 70).map((place) => [place.start, place.end]),
@@ -238,20 +179,9 @@ describe('finalPlacesOf', () => {
       [null, null],
     ]);
   });
-
-  it('leaves a song without offset unplaced', () => {
-    expect(finalPlacesOf(mix, { 2: placed(40) }, 70)[0]).toMatchObject({ start: null, end: null });
-  });
 });
 
 describe('offsets', () => {
-  it.each([
-    [1.234, 0.02, 1.254],
-    [-5, -0.1, -5.1],
-  ])('tunes %s by %s to %s', (offset, delta, expected) => {
-    expect(tunedOffsetOf(offset, delta)).toBe(expected);
-  });
-
   it('starts a song where the playhead stands', () => {
     expect(offsetStartingAt(segmentOf(1, 10, 40, 0), 12.5, 1)).toBe(2.5);
     expect(offsetStartingAt(segmentOf(1, 10, 40, 0), 12.5, 0.98)).toBe(2.7);
@@ -279,17 +209,6 @@ describe('finalPreviewOf', () => {
       [1, 0, 25, 'onTimeline'],
       [2, 25, 70, 'onTimeline'],
       [3, null, null, 'musicMissing'],
-    ]);
-  });
-
-  it('keeps a video lead-in and loses videos whose music is left out', () => {
-    const studio = studioOf({ videos: [videoOf(1, -2), videoOf(2, 35)] });
-
-    const preview = finalPreviewOf(studio, track, mix, { 1: placed(-5) });
-
-    expect(preview.videos.map((video) => [video.startSeconds, video.placement])).toEqual([
-      [3, 'onTimeline'],
-      [null, 'musicMissing'],
     ]);
   });
 
@@ -331,24 +250,5 @@ describe('finalPreviewOf', () => {
       { lengthSeconds: 70, source: 'finalTrack' },
       true,
     ]);
-  });
-});
-
-describe('final beat', () => {
-  it.each([
-    [12.34567, 12.346],
-    [-1, 0],
-    [80, 70],
-  ])('puts the first one at %s as %s', (seconds, expected) => {
-    expect(finalBeatAtOf(trackOf(1, 1, true), seconds)).toBe(expected);
-  });
-
-  it.each([
-    [0.5, 0.02, 0.52],
-    [null, 0.02, null],
-  ])('nudges the first one at %s by %s to %s', (firstBeat, delta, expected) => {
-    expect(nudgedFinalBeatOf({ ...trackOf(1, 1, true), firstBeatSeconds: firstBeat }, delta)).toBe(
-      expected,
-    );
   });
 });

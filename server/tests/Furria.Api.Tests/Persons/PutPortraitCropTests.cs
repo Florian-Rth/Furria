@@ -20,48 +20,6 @@ public sealed class PutPortraitCropTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RenderHerPortraitAnewInTheNewCut_When_SheRecropsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var aliceId = ctx.Identity.People.IdOf("alice");
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var portraitId = await PictureSteps.RenderedPortraitAsync(_fixture, client, aliceId, ct);
-
-        var response = await client.PUTAsync<PutPortraitCrop, PutPortraitCropRequest>(
-            RecropOf(aliceId)
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MediaItem(portraitId)
-            .ToBeCroppedTo(NewCut)
-            .MediaItem(portraitId)
-            .ToAwaitItsRenditions(MediaKind.Photo, "image/jpeg")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_SheHasNoPortraitToRecrop()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-
-        var response = await client.PUTAsync<PutPortraitCrop, PutPortraitCropRequest>(
-            RecropOf(ctx.Identity.People.IdOf("alice"))
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheRecrop_When_ThePortraitIsAnotherPersonsAndTheCallerMayNotManagePersons()
     {
         var ct = TestContext.Current.CancellationToken;

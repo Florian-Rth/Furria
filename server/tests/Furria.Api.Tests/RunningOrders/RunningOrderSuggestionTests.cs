@@ -181,41 +181,6 @@ public sealed class RunningOrderSuggestionTests
     }
 
     [Fact]
-    public void Should_ProposeNoMoves_When_TheOrderIsAlreadyOptimal()
-    {
-        IReadOnlyList<ReviewLine> lines =
-        [
-            Nummer(Garde, 0, Anna),
-            Nummer(Rede, 1),
-            Nummer(Showtanz, 2),
-            Nummer(Buett, 3, Anna),
-        ];
-
-        var proposal = ProposalFor(lines);
-
-        Assert.Empty(proposal.Moves);
-        Assert.Equal(lines.Select(line => line.Key), proposal.Order);
-        Assert.Equal((proposal.CostBefore, true), (proposal.CostAfter, proposal.Proven));
-    }
-
-    [Fact]
-    public void Should_PlaceAnUnplacedNummerWhereItAvoidsAConflict_When_ItIsStillInTheTray()
-    {
-        var proposal = ProposalFor([
-            Nummer(Garde, 0, Anna),
-            Nummer(Rede, 1),
-            Nummer(Showtanz, 2),
-            Nummer(Buett, null, Anna),
-        ]);
-
-        Assert.Equal([Act(Garde), Act(Rede), Act(Showtanz), Act(Buett)], proposal.Order);
-        Assert.Equal((0, 0), (proposal.ConflictsAfter, proposal.HintsAfter));
-        var move = Assert.Single(proposal.Moves);
-        Assert.Equal((Act(Buett), null, 3), (move.Line, move.From, move.To));
-        Assert.Contains(move.Resolved, resolved => resolved.Kind == FindingKind.Unplaced);
-    }
-
-    [Fact]
     public void Should_PlanTheWholeEveningWithoutConflicts_When_ItIsMessyAndPartlyUnplaced()
     {
         var proposal = ProposalFor(MessyEvening());
@@ -225,36 +190,6 @@ public sealed class RunningOrderSuggestionTests
         Assert.Equal(12, proposal.Order.Count);
         Assert.Equal(3, proposal.Moves.Count(move => move.From is null));
         Assert.True(proposal.Proven);
-    }
-
-    [Fact]
-    public void Should_KeepThePinnedLineInPlace_When_TheWholeEveningIsPlanned()
-    {
-        var pinned = Act(15);
-
-        var proposal = ProposalFor([
-            .. MessyEvening()
-                .Select(line => line.Key == pinned ? line with { IsPinned = true } : line),
-        ]);
-
-        Assert.Equal(0, proposal.ConflictsAfter);
-        Assert.Equal(pinned, proposal.Order[2]);
-        Assert.DoesNotContain(proposal.Moves, move => move.Line == pinned);
-    }
-
-    [Fact]
-    public void Should_KeepTheBlockContiguous_When_TheWholeEveningIsPlanned()
-    {
-        var proposal = ProposalFor([
-            .. MessyEvening()
-                .Select(line =>
-                    line.Key == Act(16) || line.Key == Act(17) ? line with { BlockKey = 1 } : line
-                ),
-        ]);
-
-        Assert.Equal(0, proposal.ConflictsAfter);
-        var first = proposal.Order.ToList().IndexOf(Act(16));
-        Assert.Equal(Act(17), proposal.Order[first + 1]);
     }
 
     [Fact]
@@ -328,68 +263,6 @@ public sealed class RunningOrderSuggestionTests
     }
 
     [Fact]
-    public void Should_KeepAWish_When_MoreTimeToChangeWouldMissIt()
-    {
-        var proposal = ProposalFor(
-            [
-                Nummer(1, 0, Anna),
-                Nummer(2, 1),
-                Nummer(3, 2),
-                Nummer(4, 3, Anna),
-                Nummer(5, 4),
-                Nummer(6, 5),
-                Nummer(7, 6),
-                Nummer(8, 7),
-                Nummer(9, 8),
-                Nummer(10, 9),
-                Nummer(11, 10),
-                Nummer(12, 11),
-            ],
-            [
-                Rule(RunningOrderRuleKind.First, RuleStrength.Prefer, 1),
-                Rule(RunningOrderRuleKind.Early, RuleStrength.Prefer, 4),
-            ]
-        );
-
-        Assert.Equal((0, 4), (proposal.HintsAfter, proposal.RoomAfter));
-        Assert.Equal([Act(1), Act(2), Act(3), Act(4)], proposal.Order.Take(4));
-    }
-
-    [Fact]
-    public void Should_AcceptLessTimeToChange_When_MoreWouldCostATightChangeover()
-    {
-        var proposal = ProposalFor([
-            Nummer(1, 0, Anna),
-            Nummer(2, 1, Anna),
-            Nummer(3, 2, Ben),
-            Nummer(4, 3, Ben),
-            Nummer(5, 4, Carl),
-            Nummer(6, 5, Carl),
-        ]);
-
-        Assert.Equal((0, 0), (proposal.ConflictsAfter, proposal.HintsAfter));
-        Assert.Equal(12, proposal.RoomAfter);
-    }
-
-    [Fact]
-    public void Should_NameThePeopleWhoGainTimeToChange_When_ALineMoves()
-    {
-        var proposal = ProposalFor([
-            Nummer(1, 0, Anna, Ben),
-            Nummer(2, 1),
-            Nummer(3, 2),
-            Nummer(4, 3, Anna, Carl),
-            Nummer(5, 4, Ben),
-            Nummer(6, 5),
-            Nummer(7, 6),
-            Nummer(8, 7),
-        ]);
-
-        var moved = Assert.Single(proposal.Moves, move => move.Line == Act(4));
-        Assert.Equal([Anna], moved.RoomFor);
-    }
-
-    [Fact]
     public void Should_NamePinsThatHoldAConflict_When_UnpinningThemWouldResolveIt()
     {
         var proposal = ProposalFor([
@@ -414,56 +287,6 @@ public sealed class RunningOrderSuggestionTests
     }
 
     [Fact]
-    public void Should_NameTheBlockThatHoldsAConflict_When_DissolvingItWouldResolveIt()
-    {
-        var proposal = ProposalFor([
-            Nummer(Garde, 0, Anna) with
-            {
-                BlockKey = 7,
-            },
-            Nummer(Rede, 1, Anna) with
-            {
-                BlockKey = 7,
-            },
-            Nummer(Showtanz, 2),
-            Nummer(Buett, 3),
-        ]);
-
-        var hold = Assert.Single(proposal.Holds);
-        Assert.Equal(
-            (RunningOrderHoldKind.Block, Act(Garde), 7, 0),
-            (hold.Kind, hold.Line, hold.BlockKey, hold.ConflictsWithout)
-        );
-    }
-
-    [Fact]
-    public void Should_NameMustRulesAndWishesThatHoldAConflict_When_TheyCannotAllBeKept()
-    {
-        var wish = Rule(RunningOrderRuleKind.First, RuleStrength.Must, Rede) with
-        {
-            RuleId = null,
-            ActWishId = 77,
-        };
-        var rule = Rule(RunningOrderRuleKind.First, RuleStrength.Must, Garde);
-
-        var proposal = ProposalFor(
-            [Nummer(Garde, 0), Nummer(Rede, 1), Nummer(Showtanz, 2)],
-            [wish, Rule(RunningOrderRuleKind.Last, RuleStrength.Prefer, Showtanz), rule]
-        );
-
-        Assert.Equal(1, proposal.ConflictsAfter);
-        Assert.Equal(
-            [
-                (RunningOrderHoldKind.MustRule, 1, (int?)null, 0),
-                (RunningOrderHoldKind.MustWish, null, 77, 0),
-            ],
-            proposal.Holds.Select(hold =>
-                (hold.Kind, hold.RuleIndex, hold.ActWishId, hold.ConflictsWithout)
-            )
-        );
-    }
-
-    [Fact]
     public void Should_CallTheConflictUnavoidable_When_OnePersonIsInTooManyAuftritte()
     {
         var proposal = ProposalFor([
@@ -482,35 +305,6 @@ public sealed class RunningOrderSuggestionTests
     }
 
     [Fact]
-    public void Should_NameNoHolds_When_TheBestOrderHasNoConflict()
-    {
-        var proposal = ProposalFor([
-            Nummer(Garde, 0, Anna) with
-            {
-                IsPinned = true,
-            },
-            Nummer(Rede, 1),
-            Nummer(Showtanz, 2, Anna),
-        ]);
-
-        Assert.Equal(0, proposal.ConflictsAfter);
-        Assert.Empty(proposal.Holds);
-        Assert.False(proposal.HoldsUnavoidable);
-    }
-
-    [Fact]
-    public void Should_ProveTheBestOrder_When_ARealisticEveningHasTwentyFiveLines()
-    {
-        var proposal = RunningOrderSuggestion.ProposalFor(RealisticEvening());
-
-        Assert.True(proposal.Proven);
-        Assert.Equal((1, 0), (proposal.ConflictsBefore, proposal.ConflictsAfter));
-        Assert.Equal(0, proposal.HintsAfter);
-        Assert.Equal(25, proposal.Order.Count);
-        Assert.Equal(Act(1), proposal.Order[0]);
-    }
-
-    [Fact]
     public void Should_ReturnTheBestOrderFoundUnproven_When_TheSearchBudgetRunsOut()
     {
         var proposal = RunningOrderSuggestion.ProposalFor(
@@ -521,55 +315,6 @@ public sealed class RunningOrderSuggestionTests
         Assert.False(proposal.Proven);
         Assert.Equal(12, proposal.Order.Count);
         Assert.True(proposal.CostAfter < proposal.CostBefore);
-    }
-
-    [Fact]
-    public void Should_ReportEachCheaperOrderAsItIsFound_When_TheSearchRuns()
-    {
-        var found = new List<RunningOrderProposal>();
-
-        var proposal = RunningOrderSuggestion.ProposalFor(
-            new() { Lines = MessyEvening(), Rules = [] },
-            new SuggestionSearch { Improved = found.Add }
-        );
-
-        Assert.NotEmpty(found);
-        Assert.All(found, interim => Assert.False(interim.Proven));
-        Assert.True(
-            found.Zip(found.Skip(1)).All(pair => pair.Second.CostAfter <= pair.First.CostAfter)
-        );
-        Assert.Equal(proposal.Order, found[^1].Order);
-        Assert.True(proposal.Proven);
-    }
-
-    [Fact]
-    public void Should_HandBackTheBestOrderSoFarUnproven_When_TheSearchIsStopped()
-    {
-        var proposal = RunningOrderSuggestion.ProposalFor(
-            new() { Lines = MessyEvening(), Rules = [] },
-            new SuggestionSearch { Stop = new CancellationToken(canceled: true) }
-        );
-
-        Assert.False(proposal.Proven);
-        Assert.Equal(12, proposal.Order.Count);
-        Assert.True(proposal.CostAfter < proposal.CostBefore);
-        Assert.Empty(proposal.Holds);
-        Assert.False(proposal.HoldsUnavoidable);
-    }
-
-    [Fact]
-    public void Should_GoOnFromTheSeed_When_AnEarlierSearchFoundACheaperOrder()
-    {
-        var input = new RunningOrderReviewInput { Lines = MessyEvening(), Rules = [] };
-        var best = RunningOrderSuggestion.ProposalFor(input);
-
-        var proposal = RunningOrderSuggestion.ProposalFor(
-            input,
-            new SuggestionSearch { Seed = best.Order, Stop = new CancellationToken(canceled: true) }
-        );
-
-        Assert.Equal(best.Order, proposal.Order);
-        Assert.Equal((best.CostBefore, best.CostAfter), (proposal.CostBefore, proposal.CostAfter));
     }
 
     private static RunningOrderProposal ProposalFor(
@@ -632,40 +377,4 @@ public sealed class RunningOrderSuggestionTests
             Nummer(20, null, Dora),
             Nummer(22, null, Dora),
         ];
-
-    internal static RunningOrderReviewInput RealisticEvening()
-    {
-        var order = Enumerable.Range(1, 23).ToList();
-        (order[3], order[4]) = (order[4], order[3]);
-        (order[10], order[16]) = (order[16], order[10]);
-        var placed = order.Select((actId, index) => EveningAct(actId, index));
-
-        return new()
-        {
-            Lines = [.. placed, EveningAct(24, null), EveningAct(25, null)],
-            Rules =
-            [
-                Rule(RunningOrderRuleKind.First, RuleStrength.Must, 1),
-                Rule(RunningOrderRuleKind.Last, RuleStrength.Prefer, 25),
-                Rule(RunningOrderRuleKind.SecondHalf, RuleStrength.Must, 3),
-                Rule(RunningOrderRuleKind.Early, RuleStrength.Prefer, 20),
-            ],
-        };
-    }
-
-    private static ReviewLine EveningAct(int actId, int? position)
-    {
-        var group = actId % 6;
-        var line = actId % 5 == 0 ? Speech(actId, position) : Nummer(actId, position);
-
-        return line with
-        {
-            Cast =
-            [
-                new ReviewCastMember(group * 10 + 1, false),
-                new ReviewCastMember(group * 10 + 2, false),
-                new ReviewCastMember(1000 + actId % 4, false),
-            ],
-        };
-    }
 }

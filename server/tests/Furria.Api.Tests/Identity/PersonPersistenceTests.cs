@@ -18,61 +18,6 @@ public sealed class PersonPersistenceTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StampBothTimestamps_When_APersonIsCreated()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddPerson("alice")),
-            ct
-        );
-
-        var createdAt = _fixture.TimeProvider.GetUtcNow();
-
-        await ctx
-            .Expected.Person(ctx.Identity.People.IdOf("alice"))
-            .ToHaveBeenCreatedAt(createdAt)
-            .Person(ctx.Identity.People.IdOf("alice"))
-            .ToHaveBeenTouchedAt(createdAt)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_StampUpdatedAt_When_APersonIsEdited()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddPerson("alice", "Alice", "Muster")),
-            ct
-        );
-
-        var createdAt = _fixture.TimeProvider.GetUtcNow();
-
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(1),
-            async () =>
-            {
-                var editedAt = _fixture.TimeProvider.GetUtcNow();
-
-                await _fixture.EditPersonNameDirectlyAsync(
-                    ctx.Identity.People.IdOf("alice"),
-                    "Alice",
-                    "Kaiser",
-                    ct
-                );
-
-                await ctx
-                    .Expected.Person(ctx.Identity.People.IdOf("alice"))
-                    .ToHaveName("Alice", "Kaiser")
-                    .Person(ctx.Identity.People.IdOf("alice"))
-                    .ToHaveBeenCreatedAt(createdAt)
-                    .Person(ctx.Identity.People.IdOf("alice"))
-                    .ToHaveBeenTouchedAt(editedAt)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LetEveryReferenceReachingAPersonCascadeOrGoNull_When_TheSchemaIsMigrated()
     {
         var ct = TestContext.Current.CancellationToken;

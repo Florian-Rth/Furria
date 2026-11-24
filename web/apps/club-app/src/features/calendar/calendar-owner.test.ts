@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CalendarAudienceChoice, CalendarOwnerOption } from './calendar-owner';
-import { toChoiceForKind, toDerivedOwnerId, toHeldOwnership } from './calendar-owner';
+import { toChoiceForKind, toDerivedOwnerId } from './calendar-owner';
 
 const CLUB_MANAGER: CalendarOwnerOption[] = [
   { id: 'club', ownerGroupId: null, label: 'Verein' },
@@ -18,12 +18,6 @@ const groups = (...groupIds: string[]): CalendarAudienceChoice => ({
   audiencePersonIds: [],
 });
 
-const PEOPLE: CalendarAudienceChoice = {
-  audience: 'people',
-  audienceGroupIds: [],
-  audiencePersonIds: ['4'],
-};
-
 const CLUB: CalendarAudienceChoice = {
   audience: 'club',
   audienceGroupIds: [],
@@ -32,14 +26,9 @@ const CLUB: CalendarAudienceChoice = {
 
 describe('toDerivedOwnerId', () => {
   it.each<[string, CalendarAudienceChoice, string, CalendarOwnerOption[], string]>([
-    ['the club audience', CLUB, '7', CLUB_MANAGER, 'club'],
-    ['one own group', groups('7'), 'club', CLUB_MANAGER, '7'],
     ['one foreign group for a club manager', groups('9'), '7', CLUB_MANAGER, 'club'],
-    ['several groups for a club manager', groups('7', '9'), '7', CLUB_MANAGER, 'club'],
-    ['chosen people for a club manager', PEOPLE, '7', CLUB_MANAGER, 'club'],
     ['several own groups keeping the preferred one', groups('3', '7'), '7', GROUP_ADMIN, '7'],
     ['several groups without the preferred one', groups('9', '3'), '7', GROUP_ADMIN, '3'],
-    ['chosen people keeping the preferred group', PEOPLE, '7', GROUP_ADMIN, '7'],
   ])('owns %s', (_, choice, preferred, options, expected) => {
     expect(toDerivedOwnerId(choice, preferred, options, null)).toBe(expected);
   });
@@ -61,25 +50,11 @@ describe('toChoiceForKind', () => {
   it.each([
     ['training', 'club', 'groups', []],
     ['training', '7', 'groups', ['7']],
-    ['plain', '7', 'club', []],
   ] as const)('turns a club %s with owner %s into %s %j', (kind, ownerId, audience, groupIds) => {
     expect(toChoiceForKind(CLUB, kind, ownerId)).toEqual({
       audience,
       audienceGroupIds: groupIds,
       audiencePersonIds: [],
     });
-  });
-});
-
-describe('toHeldOwnership', () => {
-  it('reads a club-owned entry with its audience', () => {
-    expect(
-      toHeldOwnership({
-        ownerGroupId: null,
-        audience: 'groups',
-        audienceGroups: [{ groupId: 9, name: 'Garde', tone: null }],
-        audiencePeople: [],
-      }),
-    ).toEqual({ ownerId: 'club', choice: groups('9') });
   });
 });

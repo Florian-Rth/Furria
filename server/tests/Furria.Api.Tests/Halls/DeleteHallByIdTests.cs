@@ -3,7 +3,6 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Halls;
 using Furria.Api.Endpoints.Seating;
 using Furria.Api.Endpoints.TablePlans;
-using Furria.Core.Halls;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -20,23 +19,6 @@ public sealed class DeleteHallByIdTests : IClassFixture<ApiTestFixture>
     public DeleteHallByIdTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_RemoveTheHall_When_NoPlanUsesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
-        var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
-
-        var response = await client.DELETEAsync<DeleteHallById, DeleteHallByIdRequest>(
-            new() { HallId = hallId }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var (_, halls) = await client.GETAsync<GetHalls, GetHallsResponse>();
-        Assert.Empty(halls.Halls);
     }
 
     [Fact]

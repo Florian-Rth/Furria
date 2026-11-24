@@ -1,4 +1,3 @@
-using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -28,21 +27,6 @@ public sealed class GroupExpectations
                 Assert.Equal(description, (await SingleAsync(dbContext, ct)).Description)
         );
 
-    public Expected ToBeRecruiting(bool isRecruiting) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(isRecruiting, (await SingleAsync(dbContext, ct)).IsRecruiting)
-        );
-
-    public Expected ToBeManagementGroup(bool isManagementGroup) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(
-                    isManagementGroup,
-                    (await SingleAsync(dbContext, ct)).IsManagementGroup
-                )
-        );
-
     public Expected ToHaveGroupKind(int? groupKindId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
@@ -55,38 +39,16 @@ public sealed class GroupExpectations
                 Assert.Equal(foundedYear, (await SingleAsync(dbContext, ct)).FoundedYear)
         );
 
-    public Expected ToHaveTone(GroupTone? tone) =>
-        _expected.Enqueue(
-            async (dbContext, ct) => Assert.Equal(tone, (await SingleAsync(dbContext, ct)).Tone)
-        );
-
     public Expected ToHaveJoinedTheGroupMatcherAt(DateTimeOffset? joinedAt) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(joinedAt, (await SingleAsync(dbContext, ct)).GroupMatcherJoinedAt)
         );
 
-    public Expected ToHaveIcon(ClubIcon? icon) =>
-        _expected.Enqueue(
-            async (dbContext, ct) => Assert.Equal(icon, (await SingleAsync(dbContext, ct)).Icon)
-        );
-
     public Expected ToBeArchivedOn(DateOnly? archivedOn) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(archivedOn, (await SingleAsync(dbContext, ct)).ArchivedOn)
-        );
-
-    public Expected ToHaveBeenCreatedAt(DateTimeOffset createdAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(createdAt, (await SingleAsync(dbContext, ct)).CreatedAt)
-        );
-
-    public Expected ToHaveBeenTouchedAt(DateTimeOffset updatedAt) =>
-        _expected.Enqueue(
-            async (dbContext, ct) =>
-                Assert.Equal(updatedAt, (await SingleAsync(dbContext, ct)).UpdatedAt)
         );
 
     private Task<Group> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

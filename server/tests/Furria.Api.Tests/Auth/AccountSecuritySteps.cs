@@ -12,8 +12,6 @@ internal static class AccountSecuritySteps
 {
     public const string NewPassword = "Anderes-Passwort-2026?";
     public const string WrongPassword = "Falsches-Passwort-2026!";
-    public const string NoticeSubject = "Dein Zugang zur Vereins-App wurde geändert";
-    public const string ConfirmationSubject = "Dein Bestätigungscode";
     public const int LockoutThreshold = 5;
 
     public static HttpClient ClientWith(ApiTestFixture fixture, string accessToken)

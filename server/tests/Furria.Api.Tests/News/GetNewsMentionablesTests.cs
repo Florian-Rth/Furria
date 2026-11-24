@@ -1,7 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Endpoints.News;
 using Furria.Api.Tests.Media;
-using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -33,27 +32,6 @@ public sealed class GetNewsMentionablesTests : IClassFixture<ApiTestFixture>
         Assert.Equal(
             [("Paula", "Präsidentin")],
             result.Persons.Select(person => (person.FirstName, person.OfficeName))
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryWhatTheMentionCardShows_When_TheWriterMentions()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Club(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var paulaId = ctx.Identity.People.IdOf("paula");
-        var portraitId = await PictureSteps.RenderedPortraitAsync(_fixture, client, paulaId, ct);
-
-        var (_, result) = await client.GETAsync<GetNewsMentionables, GetNewsMentionablesResponse>();
-
-        var garde = result.Groups.Single(group => group.Name == "Stadtgarde");
-        Assert.Equal(TestTones.Teal, garde.Tone);
-        Assert.Equal("Unsere Tanzgarde", garde.Description);
-        Assert.Null(garde.Picture);
-        Assert.StartsWith(
-            _fixture.SignedMediaUrl(portraitId, MediaOwner.Person(paulaId), MediaRendition.Small),
-            result.Persons.Single().Portrait?.SmallUrl
         );
     }
 

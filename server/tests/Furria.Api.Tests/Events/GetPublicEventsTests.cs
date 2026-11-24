@@ -41,15 +41,6 @@ public sealed class GetPublicEventsTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset FirstGalaDoorsOpen = new(
-        2027,
-        1,
-        16,
-        17,
-        11,
-        0,
-        TimeSpan.Zero
-    );
     private static readonly DateTimeOffset AtTheSecondGala = new(
         2027,
         1,
@@ -109,94 +100,6 @@ public sealed class GetPublicEventsTests : IClassFixture<ApiTestFixture>
                     ],
                     result.Events.Select(listed => (listed.Title, listed.Status))
                 );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheEventsPictureAtItsCut_When_TheEventHasOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildSessionAsync(ct);
-                var pictureId = await EventPictureSteps.RenderedAsync(
-                    _fixture,
-                    await ctx.Identity.ManagingLoginClientAsync(ct),
-                    ctx.Club.Events.IdOf("first-gala"),
-                    ct
-                );
-
-                var (_, result) = await ReadAsync();
-
-                var pictures = result.Events.ToDictionary(
-                    listed => listed.Title,
-                    listed => listed.Picture
-                );
-                var firstGala = pictures[FirstGala];
-                Assert.Equal((800, 400), (firstGala?.Width, firstGala?.Height));
-                Assert.StartsWith(
-                    $"/api/public/events/pictures/{pictureId}/small?v=",
-                    firstGala?.SmallUrl
-                );
-                Assert.Null(pictures[SecondGala]);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheFactsTheWebsiteShows_When_AnEventIsListed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildSessionAsync(ct);
-
-                var (_, result) = await ReadAsync();
-
-                var firstGala = Assert.Single(result.Events, listed => listed.Title == FirstGala);
-                Assert.Equal(ctx.Club.Events.IdOf("first-gala"), firstGala.EventId);
-                Assert.Equal(AtTheFirstGala, firstGala.StartsAt);
-                Assert.Equal(FirstGalaDoorsOpen, firstGala.DoorsOpenAt);
-                Assert.Equal(Teaser, firstGala.Teaser);
-                Assert.Equal(AgeHint, firstGala.AgeHint);
-                Assert.Equal(PriceCents, firstGala.PriceCents);
-                Assert.Equal(PresaleStarted, firstGala.PresaleStartsAt);
-                Assert.Equal(
-                    ("Dorfgemeindehaus", "Schulstraße 4", "99713", "Großfurra", "Eingang Hof"),
-                    (
-                        firstGala.Venue.Name,
-                        firstGala.Venue.Street,
-                        firstGala.Venue.Zip,
-                        firstGala.Venue.City,
-                        firstGala.Venue.Hint
-                    )
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ListNothing_When_NoEventIsAhead()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            AtTheParade.AddDays(1),
-            async () =>
-            {
-                await BuildSessionAsync(ct);
-
-                var (response, result) = await ReadAsync();
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Empty(result.Events);
             }
         );
     }

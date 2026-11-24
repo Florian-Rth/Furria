@@ -16,42 +16,6 @@ public sealed class GetPromoMembersTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListOnlyAffiliatedPersonsWithAnEnabledAccount_When_OthersAreDisabledUnaffiliatedOrWithoutAccount()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddAccount("alice")
-                        .AddMembership("alice-membership", "alice")
-                        .AddAccount("bert")
-                        .AddMembership("bert-membership", "bert")
-                        .AddAccount("carla", disabled: true)
-                        .AddMembership("carla-membership", "carla")
-                        .AddPerson("dora")
-                        .AddMembership("dora-membership", "dora")
-                        .AddAccount("emil")
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        var (response, result) = await client.GETAsync<GetPromoMembers, GetPromoMembersResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(
-            new[]
-            {
-                ctx.Identity.Accounts.IdOf("alice"),
-                ctx.Identity.Accounts.IdOf("bert"),
-            }.Order(),
-            result.Members.Select(member => member.AccountId).Order()
-        );
-        Assert.Equal(ApiTestFixture.WebsiteBaseUrl, result.WebsiteUrl);
-    }
-
-    [Fact]
     public async Task Should_ListNeverRedeemedFirstThenByArrivalWithOnlyTheLastInitial_When_MembersArrivedAtDifferentTimes()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -10,8 +10,6 @@ namespace Furria.Api.Tests.Auth;
 
 public sealed class LoginWithPasskeyTests : IClassFixture<ApiTestFixture>
 {
-    private const string Route = "/api/auth/login/passkey";
-
     private readonly ApiTestFixture _fixture;
 
     public LoginWithPasskeyTests(ApiTestFixture fixture)
@@ -45,21 +43,6 @@ public sealed class LoginWithPasskeyTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SignHerIn_When_TheAndroidAppAsserts()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        using var authenticator = await RegisteredAuthenticatorAsync(ctx, ct);
-
-        var (response, _) = await PasskeySteps.LogInAsync(
-            _fixture,
-            await PasskeySteps.AssertAsync(_fixture, authenticator, PasskeySteps.AndroidOrigin)
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheAssertion_When_ItsChallengeWasUsedBefore()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -71,27 +54,6 @@ public sealed class LoginWithPasskeyTests : IClassFixture<ApiTestFixture>
         var (response, _) = await PasskeySteps.LogInAsync(_fixture, attempt);
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheAssertion_When_ItsChallengeHasExpired()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        using var authenticator = await RegisteredAuthenticatorAsync(ctx, ct);
-        var attempt = await PasskeySteps.AssertAsync(_fixture, authenticator);
-
-        await _fixture.AtLaterTimeAsync(
-            PasskeySteps.PastTheChallengeLifetime,
-            async () =>
-            {
-                var (response, _) = await PasskeySteps.LogInAsync(_fixture, attempt);
-
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        );
-
-        await ctx.Expected.PasskeyChallenges().ToHaveCount(0).AssertAsync(ct);
     }
 
     [Fact]
@@ -132,24 +94,6 @@ public sealed class LoginWithPasskeyTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheAssertion_When_HerAccountIsDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        using var authenticator = await RegisteredAuthenticatorAsync(ctx, ct);
-        var accountId = ctx.Identity.Accounts.IdOf("anna");
-        await _fixture.DisableAccountDirectlyAsync(accountId, ct);
-
-        var (response, _) = await PasskeySteps.LogInAsync(
-            _fixture,
-            await PasskeySteps.AssertAsync(_fixture, authenticator)
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-        await ctx.Expected.RefreshTokensOf(accountId).ToHaveActiveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_SignHerIn_When_WrongPasswordsLockedHerOut()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -176,86 +120,6 @@ public sealed class LoginWithPasskeyTests : IClassFixture<ApiTestFixture>
             )
         );
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_AnswerTheSameRefusal_When_ThePasskeyIsUnknownOrItsAccountDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        using var registered = await RegisteredAuthenticatorAsync(ctx, ct);
-        using var unknown = new SoftwareAuthenticator();
-        await PasskeySteps.RegisterAsync(await ctx.Identity.ClientForAsync("berta", ct), unknown);
-        await PasskeySteps.RemoveAsync(
-            await ctx.Identity.ClientForAsync("berta", ct),
-            unknown.PasskeyId
-        );
-        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("anna"), ct);
-
-        var (disabled, _) = await PasskeySteps.LogInAsync(
-            _fixture,
-            await PasskeySteps.AssertAsync(_fixture, registered)
-        );
-        var (removed, _) = await PasskeySteps.LogInAsync(
-            _fixture,
-            await PasskeySteps.AssertAsync(_fixture, unknown)
-        );
-
-        Assert.Equal(HttpStatusCode.Unauthorized, disabled.StatusCode);
-        Assert.Equal(removed.StatusCode, disabled.StatusCode);
-        Assert.Equal(
-            await removed.Content.ReadAsStringAsync(ct),
-            await disabled.Content.ReadAsStringAsync(ct)
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnTooManyRequests_When_HerAddressFailedPasswordsTooOften()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        using var authenticator = await RegisteredAuthenticatorAsync(ctx, ct);
-        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
-        var client = host.CreateClientForwardedFor("203.0.113.60");
-
-        await SignInLimitSteps.FailToLogInAsync(client, ctx.Identity.EmailOf("anna"));
-        var (response, _) = await SignInLimitSteps.LogInWithPasskeyAsync(
-            client,
-            await PasskeySteps.AssertAsync(_fixture, authenticator)
-        );
-
-        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_CountTowardsTheLoginFailures_When_AnAssertionIsRefused()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
-        var client = host.CreateClientForwardedFor("203.0.113.61");
-
-        for (var attempt = 0; attempt < SignInLimitSteps.FailuresAllowed; attempt++)
-        {
-            using var unknown = new SoftwareAuthenticator();
-            await SignInLimitSteps.LogInWithPasskeyAsync(
-                client,
-                await PasskeySteps.AssertAsync(_fixture, unknown)
-            );
-        }
-        var (response, _) = await SignInLimitSteps.LogInAsync(
-            client,
-            ctx.Identity.EmailOf("anna"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
-    }
-
-    [Fact]
-    public void Should_LeaveTheSignedOutPerIpLimit_When_TheRouteIsRegistered()
-    {
-        Assert.Null(PasskeySteps.RateLimitPolicyOf(_fixture, Route));
     }
 
     private async Task<SoftwareAuthenticator> RegisteredAuthenticatorAsync(

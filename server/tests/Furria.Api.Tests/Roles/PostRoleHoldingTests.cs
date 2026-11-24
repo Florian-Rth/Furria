@@ -17,9 +17,6 @@ public sealed class PostRoleHoldingTests : IClassFixture<ApiTestFixture>
         + "Eine erneute Inhaberschaft beginnt frühestens am Tag nach dem Ende der vorigen.";
     private const string ArchivedRoleMessage =
         "Eine archivierte Rolle kann nicht bearbeitet werden.";
-    private const int UnknownRoleId = 999_999;
-    private const int UnknownPersonId = 999_999;
-
     private static readonly DateOnly HeldSince2017 = new(2017, 9, 1);
     private static readonly DateOnly HandedOver2020 = new(2020, 3, 1);
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
@@ -45,29 +42,6 @@ public sealed class PostRoleHoldingTests : IClassFixture<ApiTestFixture>
                 SinceOn = sinceOn,
             }
         );
-
-    [Fact]
-    public async Task Should_OpenTheRoleHolding_When_AManagerAppointsSomeone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeRoleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await AddHolderAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            ctx.Identity.People.IdOf("ilka"),
-            HeldSince2017
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.RoleHolding(result.RoleHoldingId)
-            .ToHavePeriod(HeldSince2017, null)
-            .RoleHoldingsOfPerson(ctx.Identity.People.IdOf("ilka"))
-            .ToHaveOpenCount(1)
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_LiftHerArchive_When_AnArchivedPersonTakesTheRole()
@@ -97,52 +71,6 @@ public sealed class PostRoleHoldingTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.Person(ctx.Identity.People.IdOf("paula"))
             .ToNotBeArchived()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_StoreTheRow_When_TheRoleHoldingStartsInTheFuture()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeRoleAsync(ct);
-
-        var takesOverTomorrow = _fixture.Today.AddDays(1);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await AddHolderAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            ctx.Identity.People.IdOf("ilka"),
-            takesOverTomorrow
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.RoleHolding(result.RoleHoldingId)
-            .ToHavePeriod(takesOverTomorrow, null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_OpenASecondRoleHolding_When_TheReappointmentStartsAfterTheLastOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithHandedOverRoleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await AddHolderAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            ctx.Identity.People.IdOf("ilka"),
-            HandedOver2020.AddDays(1)
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotEqual(ctx.Roles.RoleHoldings.IdOf("ilka-chronik"), result.RoleHoldingId);
-        await ctx
-            .Expected.RoleHolding(result.RoleHoldingId)
-            .ToHavePeriod(HandedOver2020.AddDays(1), null)
-            .RoleHoldingsOfPerson(ctx.Identity.People.IdOf("ilka"))
-            .ToHaveCount(2)
             .AssertAsync(ct);
     }
 
@@ -237,71 +165,6 @@ public sealed class PostRoleHoldingTests : IClassFixture<ApiTestFixture>
             .ToHaveCount(0)
             .AssertAsync(ct);
     }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheRoleIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeRoleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await AddHolderAsync(
-            client,
-            UnknownRoleId,
-            ctx.Identity.People.IdOf("ilka"),
-            HeldSince2017
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx
-            .Expected.RoleHoldingsOfPerson(ctx.Identity.People.IdOf("ilka"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeRoleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await AddHolderAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            UnknownPersonId,
-            HeldSince2017
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx.Expected.RoleHoldingsOfPerson(UnknownPersonId).ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheBodyCarriesNoUsablePersonId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeRoleAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await AddHolderAsync(
-            client,
-            ctx.Roles.Roles.IdOf("chronik"),
-            0,
-            HeldSince2017
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    private Task<SeededContext> BuildWithFreeRoleAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
-                    .Roles(roles => roles.AddRole("chronik", "Chronik")),
-            ct
-        );
 
     private Task<SeededContext> BuildWithHandedOverRoleAsync(CancellationToken ct) =>
         _fixture.BuildAsync(

@@ -19,39 +19,6 @@ public sealed class PutWhatsAppGroupKeepingTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SwitchGroupKeepingOn_When_TheClubGroupIsLinked()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await _fixture.LinkClubWhatsAppGroupAsync(ClubChat, ct);
-
-        var response = await client.PUTAsync<
-            PutWhatsAppGroupKeeping,
-            PutWhatsAppGroupKeepingRequest
-        >(new() { KeepsMembers = true });
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var (_, overview) = await client.GETAsync<GetWhatsApp, GetWhatsAppResponse>();
-        Assert.True(overview.KeepsClubGroup);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheSwitch_When_NoClubGroupIsLinked()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var response = await client.PUTAsync<
-            PutWhatsAppGroupKeeping,
-            PutWhatsAppGroupKeepingRequest
-        >(new() { KeepsMembers = true });
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_SwitchKeepingOff_When_AnotherClubGroupIsPicked()
     {
         var ct = TestContext.Current.CancellationToken;

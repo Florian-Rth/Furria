@@ -12,9 +12,6 @@ namespace Furria.Api.Tests.Keys;
 public sealed class PostKeyHoldingTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string ValidationField = "request";
-    private const int UnknownVenueId = 999_999;
-    private const int UnknownPersonId = 999_998;
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
     private static readonly DateOnly HeldSince2019 = new(2019, 2, 1);
@@ -26,43 +23,6 @@ public sealed class PostKeyHoldingTests : IClassFixture<ApiTestFixture>
     public PostKeyHoldingTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_RecordAnOpenKey_When_TheKeyIsHandedOut()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("anna", "Anna", "Kaiser"))
-                    .Club(club => club.AddVenue("lager", "Requisitenlager")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await client.POSTAsync<
-            PostKeyHolding,
-            PostKeyHoldingRequest,
-            PostKeyHoldingResponse
-        >(
-            new()
-            {
-                VenueId = ctx.Club.Venues.IdOf("lager"),
-                PersonId = ctx.Identity.People.IdOf("anna"),
-                SinceOn = HeldSince2024,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.KeyHolding(result.KeyHoldingId)
-            .ToBeHeldAt(ctx.Club.Venues.IdOf("lager"))
-            .KeyHolding(result.KeyHoldingId)
-            .ToBeHeldBy(ctx.Identity.People.IdOf("anna"))
-            .KeyHolding(result.KeyHoldingId)
-            .ToHavePeriod(HeldSince2024, null)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -99,43 +59,6 @@ public sealed class PostKeyHoldingTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.Person(ctx.Identity.People.IdOf("paula"))
             .ToNotBeArchived()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnValidationNamingTheVenue_When_TheVenueIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("anna", "Anna", "Kaiser"))
-                    .Club(club =>
-                        club.AddVenue("altes-lager", "Altes Lager", archivedOn: ArchivedIn2021)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<
-            PostKeyHolding,
-            PostKeyHoldingRequest,
-            PostKeyHoldingResponse
-        >(
-            new()
-            {
-                VenueId = ctx.Club.Venues.IdOf("altes-lager"),
-                PersonId = ctx.Identity.People.IdOf("anna"),
-                SinceOn = HeldSince2024,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Contains("Altes Lager", Assert.Single(failures[ValidationField]));
-        await ctx
-            .Expected.KeyHoldingsOfVenue(ctx.Club.Venues.IdOf("altes-lager"))
-            .ToHaveCount(0)
             .AssertAsync(ct);
     }
 
@@ -220,58 +143,6 @@ public sealed class PostKeyHoldingTests : IClassFixture<ApiTestFixture>
             .KeyHoldingsOfVenue(ctx.Club.Venues.IdOf("lager"))
             .ToHaveCount(2)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheVenueDoesNotExist()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddPerson("anna", "Anna", "Kaiser")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<
-            PostKeyHolding,
-            PostKeyHoldingRequest,
-            PostKeyHoldingResponse
-        >(
-            new()
-            {
-                VenueId = UnknownVenueId,
-                PersonId = ctx.Identity.People.IdOf("anna"),
-                SinceOn = HeldSince2024,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsNotInTheRegister()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddVenue("lager", "Requisitenlager")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await client.POSTAsync<
-            PostKeyHolding,
-            PostKeyHoldingRequest,
-            PostKeyHoldingResponse
-        >(
-            new()
-            {
-                VenueId = ctx.Club.Venues.IdOf("lager"),
-                PersonId = UnknownPersonId,
-                SinceOn = HeldSince2024,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]

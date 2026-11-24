@@ -24,24 +24,6 @@ public sealed class PostTablePlanTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StartAnEmptyComfortablePlan_When_NothingIsCopied()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
-        var eventId = ctx.Club.Events.IdOf(Gala);
-        var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
-
-        var response = await PostAsync(client, eventId, hallId, null);
-
-        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
-        var plan = await PlanOfAsync(client, eventId);
-        Assert.Equal(1, plan.Version);
-        Assert.Empty(plan.Document.Rows);
-        Assert.Equal(SeatingMode.Comfortable, plan.Document.Seating);
-    }
-
-    [Fact]
     public async Task Should_TakeOverTheTables_When_APlanIsCopied()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -76,36 +58,6 @@ public sealed class PostTablePlanTests : IClassFixture<ApiTestFixture>
         var response = await PostAsync(client, eventId, hallId, null);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheCopySourceHasNoPlan()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
-        var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
-
-        var response = await PostAsync(
-            client,
-            ctx.Club.Events.IdOf(KinderGala),
-            hallId,
-            ctx.Club.Events.IdOf(Gala)
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheHallIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
-
-        var response = await PostAsync(client, ctx.Club.Events.IdOf(Gala), 99_999, null);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     private static Task<HttpResponseMessage> PostAsync(

@@ -1,12 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DevelopedItems } from './developing-items';
-import {
-  developedAfter,
-  developingPollDelayOf,
-  mergeItems,
-  POLL_BATCH_LIMIT,
-  pollBatchOf,
-} from './developing-items';
+import { mergeItems } from './developing-items';
 import type { AlbumItem, InboxItem } from './schemas';
 
 const urls = (mediaItemId: number, version: string): InboxItem['urls'] => ({
@@ -49,66 +42,6 @@ const albumItem = (
   caption: `Bild ${mediaItemId}`,
 });
 
-describe('developingPollDelayOf', () => {
-  const stuck = (mediaItemId: number): InboxItem => ({
-    ...inboxItem(mediaItemId, 'processing', null),
-    isStalled: true,
-  });
-
-  it.each<[string, InboxItem[], number[], DevelopedItems, number]>([
-    ['a developing item', [inboxItem(1, 'processing', null)], [], new Map(), 3_000],
-    ['only stuck items', [stuck(1), inboxItem(2, 'failed', null)], [], new Map(), 30_000],
-    [
-      'a stuck item beside a developing one',
-      [stuck(1), inboxItem(2, 'processing', null)],
-      [],
-      new Map(),
-      3_000,
-    ],
-    ['a sent file the server has not answered for yet', [stuck(1)], [5], new Map(), 3_000],
-    ['a sent file the server reports stuck', [], [5], new Map([[5, stuck(5)]]), 30_000],
-  ])('polls %s', (_, listed, uploadedIds, developed, delay) => {
-    expect(developingPollDelayOf([listed], uploadedIds, developed)).toBe(delay);
-  });
-});
-
-describe('pollBatchOf', () => {
-  it('polls processing list items and unsettled uploads once each, lowest ids first', () => {
-    const developed: DevelopedItems = new Map([
-      [20, inboxItem(20, 'ready', null)],
-      [21, null],
-      [22, inboxItem(22, 'processing', null)],
-    ]);
-
-    const batch = pollBatchOf(
-      [
-        [
-          { mediaItemId: 9, state: 'processing' },
-          { mediaItemId: 3, state: 'ready' },
-        ],
-        [
-          { mediaItemId: 9, state: 'processing' },
-          { mediaItemId: 4, state: 'failed' },
-          { mediaItemId: 5, state: 'processing' },
-        ],
-      ],
-      [23, 20, 21, 22, 9],
-      developed,
-    );
-
-    expect(batch).toEqual([5, 9, 22, 23]);
-  });
-
-  it('carries no more than one batch, starting with the oldest uploads', () => {
-    const uploaded = Array.from({ length: POLL_BATCH_LIMIT + 50 }, (_, index) => 1000 - index);
-
-    const batch = pollBatchOf([], uploaded, new Map());
-
-    expect(batch).toHaveLength(POLL_BATCH_LIMIT);
-    expect(batch[0]).toBe(1000 - POLL_BATCH_LIMIT - 49);
-  });
-});
-
 describe('mergeItems', () => {
   it('takes the developed state, keeps album fields and drops polled items that are gone', () => {
     const merged = mergeItems(
@@ -128,29 +61,5 @@ describe('mergeItems', () => {
       [4, 'processing', 4],
     ]);
     expect(merged[0]?.urls.small).toBe('/api/media/2/small?v=ready');
-  });
-
-  it('keeps unpolled items untouched in capture order', () => {
-    const items = [inboxItem(1, 'processing', null), inboxItem(2, 'ready', '2026-02-14T20:00:00Z')];
-
-    const merged = mergeItems(items, [], []);
-
-    expect(merged.map((item) => item.mediaItemId)).toEqual([2, 1]);
-  });
-});
-
-describe('developedAfter', () => {
-  it('records answered items and marks polled ids without an answer as gone', () => {
-    const developed = developedAfter(
-      new Map([[1, inboxItem(1, 'ready', null)]]),
-      [2, 3],
-      [inboxItem(2, 'failed', null)],
-    );
-
-    expect([...developed].map(([id, item]) => [id, item?.state ?? null])).toEqual([
-      [1, 'ready'],
-      [2, 'failed'],
-      [3, null],
-    ]);
   });
 });

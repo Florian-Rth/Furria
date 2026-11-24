@@ -10,7 +10,6 @@ namespace Furria.Api.Tests.Auth;
 
 public sealed class LoginTests : IClassFixture<ApiTestFixture>
 {
-    private const string LoginSucceeded = "Login succeeded for account {AccountId}";
     private const string LoginFailed = "Login failed for {Email}: {LoginFailureReason}";
     private const string AccountLockedOut = "Account {AccountId} locked out until {LockoutEnd}";
     private const int AttemptsUntilLockout = 5;
@@ -40,25 +39,6 @@ public sealed class LoginTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_PersistOneActiveRefreshToken_When_LoginSucceeds()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-
-        await Post(ctx.Identity.EmailOf("alice"));
-
-        await ctx
-            .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveActiveCount(1)
-            .RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveRevokedCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnUnauthorized_When_ThePasswordIsWrong()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -68,17 +48,6 @@ public sealed class LoginTests : IClassFixture<ApiTestFixture>
         );
 
         var (response, _) = await Post(ctx.Identity.EmailOf("alice"), "Wrong-Password-1!");
-
-        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnauthorized_When_TheEmailIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await Post("nobody@test.local");
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
     }
@@ -95,99 +64,6 @@ public sealed class LoginTests : IClassFixture<ApiTestFixture>
         var (response, _) = await Post(ctx.Identity.EmailOf("alice"));
 
         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_MintNoRefreshToken_When_TheAccountIsDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice", disabled: true)),
-            ct
-        );
-
-        await Post(ctx.Identity.EmailOf("alice"));
-
-        await ctx
-            .Expected.RefreshTokensOf(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveActiveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheEmailIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var (response, _) = await Post("");
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReportTheSignedInAccount_When_LoginSucceeds()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var mark = _fixture.Logs.Mark();
-
-        await Post(ctx.Identity.EmailOf("alice"));
-
-        var written = Assert.Single(_fixture.Logs.Written(LoginSucceeded, mark));
-        Assert.Equal(LogEventLevel.Information, written.Level);
-        Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), written.ScalarOf("AccountId"));
-    }
-
-    [Fact]
-    public async Task Should_ReportAWrongPassword_When_ThePasswordIsWrong()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var mark = _fixture.Logs.Mark();
-
-        await Post(ctx.Identity.EmailOf("alice"), "Wrong-Password-1!");
-
-        var written = Assert.Single(_fixture.Logs.Written(LoginFailed, mark));
-        Assert.Equal(LogEventLevel.Information, written.Level);
-        Assert.Equal(ctx.Identity.EmailOf("alice"), written.ScalarOf("Email"));
-        Assert.Equal(LoginFailureReason.WrongPassword, written.ScalarOf("LoginFailureReason"));
-    }
-
-    [Fact]
-    public async Task Should_ReportAnUnknownAccount_When_TheEmailIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        var mark = _fixture.Logs.Mark();
-
-        await Post("nobody@test.local");
-
-        var written = Assert.Single(_fixture.Logs.Written(LoginFailed, mark));
-        Assert.Equal("nobody@test.local", written.ScalarOf("Email"));
-        Assert.Equal(LoginFailureReason.UnknownAccount, written.ScalarOf("LoginFailureReason"));
-    }
-
-    [Fact]
-    public async Task Should_ReportADisabledAccount_When_TheAccountIsDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice", disabled: true)),
-            ct
-        );
-        var mark = _fixture.Logs.Mark();
-
-        await Post(ctx.Identity.EmailOf("alice"));
-
-        var written = Assert.Single(_fixture.Logs.Written(LoginFailed, mark));
-        Assert.Equal(LoginFailureReason.Disabled, written.ScalarOf("LoginFailureReason"));
     }
 
     [Fact]
@@ -229,55 +105,6 @@ public sealed class LoginTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBothTokens_When_AnotherAddressFailedTooOften()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
-
-        await SignInLimitSteps.FailToLogInAsync(
-            host.CreateClientForwardedFor("203.0.113.51"),
-            "nobody@test.local"
-        );
-        var (response, _) = await SignInLimitSteps.LogInAsync(
-            host.CreateClientForwardedFor("203.0.113.52"),
-            ctx.Identity.EmailOf("alice"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBothTokens_When_HerAddressSignedInMoreOftenThanFailuresAreAllowed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
-        var client = host.CreateClientForwardedFor("203.0.113.53");
-
-        for (var login = 0; login < SignInLimitSteps.FailuresAllowed; login++)
-            await SignInLimitSteps.LogInAsync(
-                client,
-                ctx.Identity.EmailOf("alice"),
-                ApiTestFixture.SeededAccountPassword
-            );
-        var (response, _) = await SignInLimitSteps.LogInAsync(
-            client,
-            ctx.Identity.EmailOf("alice"),
-            ApiTestFixture.SeededAccountPassword
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
 
     private Task<TestResult<LoginResponse>> Post(

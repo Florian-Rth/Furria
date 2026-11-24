@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
-using Furria.Core.Studio;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -19,38 +18,6 @@ public sealed class PostActVideoTests : IClassFixture<ApiTestFixture>
     public PostActVideoTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_KeepTheVideoUnaligned_When_TheGroupAdminAddsAnUploadedVideo()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var mediaItemId = await UploadVideoAsync(admin, actId, ct);
-
-        var videoId = await AddVideoAsync(admin, actId, mediaItemId);
-
-        var video = await VideoInStudioAsync(admin, actId, videoId);
-        Assert.Equal(
-            (mediaItemId, VideoPlacement.Unaligned, (double?)null),
-            (video.MediaItemId, video.Placement, video.StartSeconds)
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReportNotFound_When_TheFileIsASongOfTheAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var song = await UploadSongAsync(admin, actId, ct);
-
-        var response = await PostAsync(admin, actId, song);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]

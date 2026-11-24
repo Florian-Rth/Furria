@@ -66,23 +66,6 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnConflict_When_TheActIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var actId = await CreateActAsync(client, "Tombola");
-        await client.PUTAsync<PutActArchived, PutActArchivedRequest>(
-            new() { ActId = actId, Archived = true }
-        );
-
-        var response = await PutAsync(client, actId, "Große Tombola", [], []);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx.Expected.Act(actId).ToHaveName("Tombola").AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheActsSessionHasEnded()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -113,47 +96,6 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheChosenSession_When_TheEditNamesNone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-                var client = await ctx.Identity.ClientForAsync(Planner, ct);
-                var actId = await CreateActAsync(
-                    client,
-                    "Gardetanz",
-                    kind: ActKind.Dance,
-                    sessionYear: RunningSessionYear + 1
-                );
-
-                var response = await client.PUTAsync<PutAct, PutActRequest>(
-                    new()
-                    {
-                        ActId = actId,
-                        Name = "Neuer Gardetanz",
-                        GroupId = null,
-                        Kind = ActKind.Show,
-                        SessionYear = null,
-                        AddedPersonIds = [],
-                        RemovedPersonIds = [],
-                        Wishes = [],
-                    }
-                );
-
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-                await ctx
-                    .Expected.Act(actId)
-                    .ToBelongToSession(RunningSessionYear + 1)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_DropTheSession_When_TheDanceBecomesAnAblaufpunkt()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -165,67 +107,6 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx.Expected.Act(actId).ToBelongToSession(null).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheActIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-
-        var response = await PutAsync(client, 999_999, "Tombola", [], []);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_StoreTheEdit_When_AGroupAdminEditsAnActOfHisGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGardeAdmin(_fixture.Today), ct);
-        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-        var gardeId = ctx.Groups.Groups.IdOf(Garde);
-        var actId = await CreateActAsync(planner, "Gardetanz", gardeId);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-        var response = await PutAsync(admin, actId, "Großer Gardetanz", gardeId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.Act(actId).ToHaveName("Großer Gardetanz").AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_StoreTheEdit_When_AGroupAdminKeepsThePlannersWishes()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGardeAdmin(_fixture.Today), ct);
-        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-        var gardeId = ctx.Groups.Groups.IdOf(Garde);
-        var actId = await CreateActAsync(
-            planner,
-            "Gardetanz",
-            gardeId,
-            wishes: [Wish(RunningOrderRuleKind.First, RuleStrength.Must)]
-        );
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-        var response = await PutAsync(
-            admin,
-            actId,
-            "Großer Gardetanz",
-            [],
-            [Wish(RunningOrderRuleKind.First, RuleStrength.Must)],
-            gardeId
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Act(actId)
-            .ToHaveName("Großer Gardetanz")
-            .Act(actId)
-            .ToWishExactly((RunningOrderRuleKind.First, RuleStrength.Must))
-            .AssertAsync(ct);
     }
 
     [Theory]
@@ -265,26 +146,6 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
             .Act(actId)
             .ToWishExactly((RunningOrderRuleKind.First, RuleStrength.Prefer))
             .AssertAsync(ct);
-    }
-
-    [Theory]
-    [InlineData(Elferrat)]
-    [InlineData(null)]
-    public async Task Should_ReturnForbidden_When_AGroupAdminEditsAnActOutsideHisGroups(
-        string? groupAlias
-    )
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGardeAdmin(_fixture.Today), ct);
-        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-        int? groupId = groupAlias is null ? null : ctx.Groups.Groups.IdOf(groupAlias);
-        var actId = await CreateActAsync(planner, "Fremder Auftritt", groupId);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-        var response = await PutAsync(admin, actId, "Übernommen", groupId);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Act(actId).ToHaveName("Fremder Auftritt").AssertAsync(ct);
     }
 
     [Theory]

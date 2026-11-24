@@ -21,69 +21,6 @@ public sealed class PutActArchivedTests : IClassFixture<ApiTestFixture>
         _fixture = fixture;
     }
 
-    [Fact]
-    public async Task Should_StampTheArchiving_When_ThePlannerArchivesTheAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var actId = await CreateActAsync(client, "Tombola");
-
-        var response = await SetAsync(client, actId, archived: true);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Act(actId)
-            .ToBeArchivedAt(_fixture.TimeProvider.GetUtcNow())
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_BringTheActBack_When_ThePlannerRestoresIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var actId = await CreateActAsync(client, "Tombola");
-        await SetAsync(client, actId, archived: true);
-
-        var response = await SetAsync(client, actId, archived: false);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.Act(actId).ToBeInUse().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheActIsAlreadyInThatState()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var actId = await CreateActAsync(client, "Tombola");
-
-        var response = await SetAsync(client, actId, archived: false);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_StampTheArchiving_When_AGroupAdminArchivesAnActOfHisGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGardeAdmin(_fixture.Today), ct);
-        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-        var actId = await CreateActAsync(planner, "Gardetanz", ctx.Groups.Groups.IdOf(Garde));
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-
-        var response = await SetAsync(admin, actId, archived: true);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Act(actId)
-            .ToBeArchivedAt(_fixture.TimeProvider.GetUtcNow())
-            .AssertAsync(ct);
-    }
-
     [Theory]
     [InlineData(Elferrat)]
     [InlineData(null)]

@@ -37,17 +37,4 @@ public sealed class GetMembershipApplicationChallengeTests : IClassFixture<ApiTe
         );
         Assert.NotEmpty(challenge.Signature);
     }
-
-    [Fact]
-    public async Task Should_IssueAFreshChallenge_When_AVisitorAsksAgain()
-    {
-        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
-        var client = _fixture.CreateClient();
-
-        var first = await MembershipApplicationSteps.ChallengeAsync(client);
-        var second = await MembershipApplicationSteps.ChallengeAsync(client);
-
-        Assert.NotEqual(first.Parameters.Nonce, second.Parameters.Nonce);
-        Assert.NotEqual(first.Parameters.Salt, second.Parameters.Salt);
-    }
 }

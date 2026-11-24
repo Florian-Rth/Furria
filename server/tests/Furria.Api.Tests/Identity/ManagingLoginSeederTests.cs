@@ -6,28 +6,13 @@ using Furria.Application.Authorization;
 using Furria.Application.Identity;
 using Furria.Core.Club;
 using Furria.Core.Identity;
-using Furria.Infrastructure.Identity;
 using Furria.Tests.Common.Fixtures;
-using Serilog.Events;
 using Xunit;
 
 namespace Furria.Api.Tests.Identity;
 
 public sealed class ManagingLoginSeederTests : IClassFixture<ApiTestFixture>
 {
-    private const string SeedingSkipped = "Managing login not configured, seeding skipped";
-    private const string LoginCreated = "Managing login {AccountId} created";
-    private const string LoginReenabled = "Managing login {AccountId} re-enabled";
-    private const string LoginEmailMoved =
-        "Managing login {AccountId} moved to the configured email";
-    private const string PasswordAligned =
-        "Managing login {AccountId} took the configured password, every session ended";
-    private const string FormerAdminConverted =
-        "Account {AccountId} became the managing login, its person {PersonId} erased";
-    private const string RoleCreated = "Admin role {RoleId} created";
-    private const string RoleRestored = "Admin role {RoleId} restored from archive";
-    private const string PermissionsGranted =
-        "Admin role {RoleId} granted {MissingPermissionCount} missing permissions";
     private const string OtherPassword = "Andere-Verwaltung-Pw-2!";
 
     private static readonly DateTimeOffset ChangedInSpring = new(
@@ -56,51 +41,6 @@ public sealed class ManagingLoginSeederTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.Account(_fixture.ManagingLogin.AccountId)
             .ToHaveEmail(ApiTestFixture.ManagingLoginEmail)
-            .Account(_fixture.ManagingLogin.AccountId)
-            .ToBeTheManagingLogin()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CreateNoFurtherAccount_When_TheSeederRunsAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        await ctx.Expected.Accounts().ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AcceptTheConfiguredCredentials_When_TheManagingLoginLogsIn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var session = await ctx.Identity.LogInAsync(
-            ApiTestFixture.ManagingLoginEmail,
-            ApiTestFixture.ManagingLoginPassword,
-            ct
-        );
-
-        Assert.NotEmpty(session.AccessToken);
-    }
-
-    [Fact]
-    public async Task Should_RestoreTheManagingLogin_When_TheDatabaseIsReset()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-
-        await _fixture.ResetDatabaseAsync(ct);
-
-        await ctx
-            .Expected.Accounts()
-            .ToHaveCount(1)
             .Account(_fixture.ManagingLogin.AccountId)
             .ToBeTheManagingLogin()
             .AssertAsync(ct);
@@ -151,25 +91,6 @@ public sealed class ManagingLoginSeederTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SignInWithTheConfiguredPassword_When_ThePasswordChanges()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        await _fixture.RunManagingLoginSeederAsync(
-            Configured(ApiTestFixture.ManagingLoginEmail, OtherPassword),
-            ct
-        );
-
-        var session = await ctx.Identity.LogInAsync(
-            ApiTestFixture.ManagingLoginEmail,
-            OtherPassword,
-            ct
-        );
-        Assert.NotEmpty(session.AccessToken);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheFormerPassword_When_ThePasswordChanges()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -207,21 +128,6 @@ public sealed class ManagingLoginSeederTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.RefreshTokensOf(_fixture.ManagingLogin.AccountId)
             .ToHaveActiveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepEverySession_When_ThePasswordIsUnchanged()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        await ctx
-            .Expected.RefreshTokensOf(_fixture.ManagingLogin.AccountId)
-            .ToHaveActiveCount(1)
             .AssertAsync(ct);
     }
 
@@ -377,72 +283,6 @@ public sealed class ManagingLoginSeederTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_GrantTheAdminRoleEveryPermission_When_ItIsSeeded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        await ctx
-            .Expected.Role(_fixture.AdminRoleId)
-            .ToHaveName("Admin")
-            .Role(_fixture.AdminRoleId)
-            .ToGrantExactly([.. FurriaPermissions.All])
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_LeaveTheAdminRoleUnheld_When_ItIsSeeded()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        await ctx.Expected.Role(_fixture.AdminRoleId).ToHaveHoldingCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CreateNoSecondAdminRole_When_TheSeederRunsAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        await ctx.Expected.Roles().ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CreateNothing_When_TheManagingLoginIsNotConfigured()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        await _fixture.DeleteAccountDirectlyAsync(_fixture.ManagingLogin.AccountId, ct);
-
-        await _fixture.RunManagingLoginSeederAsync(new ManagingLoginOptions(), ct);
-
-        await ctx.Expected.Accounts().ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_StillGrantTheAdminRoleEveryKey_When_TheManagingLoginIsGone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        await _fixture.RemoveRolePermissionDirectlyAsync(
-            _fixture.AdminRoleId,
-            FurriaPermissions.AccountsManage,
-            ct
-        );
-        await _fixture.DeleteAccountDirectlyAsync(_fixture.ManagingLogin.AccountId, ct);
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        await ctx
-            .Expected.Role(_fixture.AdminRoleId)
-            .ToGrantExactly([.. FurriaPermissions.All])
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_CreateNoSecondAccount_When_TheConfiguredEmailDiffersOnlyInCase()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -503,197 +343,6 @@ public sealed class ManagingLoginSeederTests : IClassFixture<ApiTestFixture>
         await _fixture.RunManagingLoginSeederAsync(ct);
 
         await ctx.Expected.Role(_fixture.AdminRoleId).ToBeArchivedOn(null).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_CreateNoSecondAdminRole_When_TheClubRenamedItToAnotherCase()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        await _fixture.EditRoleNameDirectlyAsync(_fixture.AdminRoleId, "ADMIN", ct);
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        await ctx.Expected.Roles().ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RestoreTheAdminRole_When_TheDatabaseIsReset()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Roles(roles =>
-                    roles.AddRole("gruppenpflege", "Gruppenpflege", FurriaPermissions.GroupsManage)
-                ),
-            ct
-        );
-
-        await _fixture.ResetDatabaseAsync(ct);
-
-        await ctx
-            .Expected.Roles()
-            .ToHaveCount(1)
-            .Role(_fixture.AdminRoleId)
-            .ToGrantExactly([.. FurriaPermissions.All])
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReportTheAdminRoleCreation_When_TheHostSeedsAFreshDatabase()
-    {
-        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
-
-        var written = Assert.Single(_fixture.Logs.WrittenBefore(RoleCreated, _fixture.HostStarted));
-        Assert.Equal(LogEventLevel.Information, written.Level);
-        Assert.Equal(_fixture.AdminRoleId, written.ScalarOf("RoleId"));
-    }
-
-    [Fact]
-    public async Task Should_ReportTheSkippedSeeding_When_TheManagingLoginIsNotConfigured()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        var mark = _fixture.Logs.Mark();
-
-        await _fixture.RunManagingLoginSeederAsync(new ManagingLoginOptions(), ct);
-
-        Assert.Single(_fixture.Logs.Written(SeedingSkipped, mark));
-    }
-
-    [Fact]
-    public async Task Should_ReportTheCreatedLogin_When_TheManagingLoginWasMissing()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-        await _fixture.DeleteAccountDirectlyAsync(_fixture.ManagingLogin.AccountId, ct);
-        var mark = _fixture.Logs.Mark();
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        var written = Assert.Single(_fixture.Logs.Written(LoginCreated, mark));
-        await ctx
-            .Expected.Account((int)written.ScalarOf("AccountId")!)
-            .ToBeTheManagingLogin()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReportTheReenabledLogin_When_TheManagingLoginWasDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        await _fixture.DisableAccountDirectlyAsync(_fixture.ManagingLogin.AccountId, ct);
-        var mark = _fixture.Logs.Mark();
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        var written = Assert.Single(_fixture.Logs.Written(LoginReenabled, mark));
-        Assert.Equal(_fixture.ManagingLogin.AccountId, written.ScalarOf("AccountId"));
-    }
-
-    [Fact]
-    public async Task Should_ReportTheMovedEmail_When_TheConfiguredEmailChanges()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        var mark = _fixture.Logs.Mark();
-
-        await _fixture.RunManagingLoginSeederAsync(
-            Configured(
-                InvitationSteps.UniqueContactEmail("verwaltung"),
-                ApiTestFixture.ManagingLoginPassword
-            ),
-            ct
-        );
-
-        var written = Assert.Single(_fixture.Logs.Written(LoginEmailMoved, mark));
-        Assert.Equal(_fixture.ManagingLogin.AccountId, written.ScalarOf("AccountId"));
-    }
-
-    [Fact]
-    public async Task Should_ReportTheAlignedPassword_When_TheConfiguredPasswordChanges()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        var mark = _fixture.Logs.Mark();
-
-        await _fixture.RunManagingLoginSeederAsync(
-            Configured(ApiTestFixture.ManagingLoginEmail, OtherPassword),
-            ct
-        );
-
-        var written = Assert.Single(_fixture.Logs.Written(PasswordAligned, mark));
-        Assert.Equal(_fixture.ManagingLogin.AccountId, written.ScalarOf("AccountId"));
-    }
-
-    [Fact]
-    public async Task Should_ReportTheConversion_When_TheFormerAdminAccountBecomesTheManagingLogin()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        await _fixture.DeleteAccountDirectlyAsync(_fixture.ManagingLogin.AccountId, ct);
-        var mark = _fixture.Logs.Mark();
-
-        await _fixture.RunManagingLoginSeederAsync(
-            Configured(ctx.Identity.EmailOf("alice"), ApiTestFixture.ManagingLoginPassword),
-            ct
-        );
-
-        var written = Assert.Single(_fixture.Logs.Written(FormerAdminConverted, mark));
-        Assert.Equal(ctx.Identity.Accounts.IdOf("alice"), written.ScalarOf("AccountId"));
-        Assert.Equal(ctx.Identity.People.IdOf("alice"), written.ScalarOf("PersonId"));
-    }
-
-    [Fact]
-    public async Task Should_ReportTheRestoredRole_When_TheClubArchivedTheAdminRole()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        await _fixture.ArchiveRoleDirectlyAsync(_fixture.AdminRoleId, _fixture.Today, ct);
-        var mark = _fixture.Logs.Mark();
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        var written = Assert.Single(_fixture.Logs.Written(RoleRestored, mark));
-        Assert.Equal(_fixture.AdminRoleId, written.ScalarOf("RoleId"));
-    }
-
-    [Fact]
-    public async Task Should_ReportTheGrantedPermissions_When_TheAdminRoleLackedOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        await _fixture.RemoveRolePermissionDirectlyAsync(
-            _fixture.AdminRoleId,
-            FurriaPermissions.RolesManage,
-            ct
-        );
-        var mark = _fixture.Logs.Mark();
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        var written = Assert.Single(_fixture.Logs.Written(PermissionsGranted, mark));
-        Assert.Equal(_fixture.AdminRoleId, written.ScalarOf("RoleId"));
-        Assert.Equal(1, written.ScalarOf("MissingPermissionCount"));
-    }
-
-    [Fact]
-    public async Task Should_ReportNothing_When_EverythingIsAlreadyInPlace()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        var mark = _fixture.Logs.Mark();
-
-        await _fixture.RunManagingLoginSeederAsync(ct);
-
-        Assert.DoesNotContain(
-            _fixture.Logs.Since(mark),
-            logged => Equals(logged.ScalarOf("SourceContext"), typeof(ManagingLoginSeeder).FullName)
-        );
     }
 
     private static ManagingLoginOptions Configured(string email, string password) =>

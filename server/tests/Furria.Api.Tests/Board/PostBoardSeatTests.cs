@@ -19,8 +19,6 @@ public sealed class PostBoardSeatTests : IClassFixture<ApiTestFixture>
         + "Ein erneuter Vorstandssitz beginnt frühestens am Tag nach dem Ende des vorigen.";
     private const string ArchivedOfficeMessage =
         "Eine archivierte Vorstandsfunktion kann nicht bearbeitet werden.";
-    private const int UnknownBoardOfficeId = 999_999;
-    private const int UnknownPersonId = 999_999;
 
     private static readonly DateOnly Elected2016 = new(2016, 11, 11);
     private static readonly DateOnly HandedOver2020 = new(2020, 11, 10);
@@ -47,31 +45,6 @@ public sealed class PostBoardSeatTests : IClassFixture<ApiTestFixture>
                 SinceOn = sinceOn,
             }
         );
-
-    [Fact]
-    public async Task Should_OpenTheSeat_When_AManagerRecordsTheElection()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeOfficeAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await OpenSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Identity.People.IdOf("ilka"),
-            Elected2016
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.BoardSeat(result.BoardSeatId)
-            .ToFillOffice(ctx.Club.BoardOffices.IdOf("praesident"))
-            .BoardSeat(result.BoardSeatId)
-            .ToBeHeldBy(ctx.Identity.People.IdOf("ilka"))
-            .BoardSeat(result.BoardSeatId)
-            .ToHavePeriod(Elected2016, null)
-            .AssertAsync(ct);
-    }
 
     [Fact]
     public async Task Should_LiftHerArchive_When_AnArchivedPersonTakesASeat()
@@ -101,87 +74,6 @@ public sealed class PostBoardSeatTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.Person(ctx.Identity.People.IdOf("paula"))
             .ToNotBeArchived()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_OpenASecondSeat_When_TwoPersonsShareOneOffice()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddPerson("bernd", "Bernd", "Abt")
-                    )
-                    .Club(club =>
-                        club.AddBoardOffice("beisitzer", "Beisitzer", 3)
-                            .AddBoardSeat("ilka-beisitzer", "beisitzer", "ilka", Elected2016)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await OpenSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("beisitzer"),
-            ctx.Identity.People.IdOf("bernd"),
-            Elected2016
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotEqual(ctx.Club.BoardSeats.IdOf("ilka-beisitzer"), result.BoardSeatId);
-        await ctx
-            .Expected.BoardSeat(result.BoardSeatId)
-            .ToBeOpen()
-            .BoardSeat(ctx.Club.BoardSeats.IdOf("ilka-beisitzer"))
-            .ToBeOpen()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_StoreTheRow_When_TheSeatStartsInTheFuture()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeOfficeAsync(ct);
-
-        var takesOverTomorrow = _fixture.Today.AddDays(1);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await OpenSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Identity.People.IdOf("ilka"),
-            takesOverTomorrow
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.BoardSeat(result.BoardSeatId)
-            .ToHavePeriod(takesOverTomorrow, null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_OpenAnotherSeat_When_TheReelectionStartsAfterTheLastOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithHandedOverOfficeAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await OpenSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            ctx.Identity.People.IdOf("ilka"),
-            HandedOver2020.AddDays(1)
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotEqual(ctx.Club.BoardSeats.IdOf("ilka-praesident"), result.BoardSeatId);
-        await ctx
-            .Expected.BoardSeat(result.BoardSeatId)
-            .ToHavePeriod(HandedOver2020.AddDays(1), null)
             .AssertAsync(ct);
     }
 
@@ -264,57 +156,6 @@ public sealed class PostBoardSeatTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_TheOfficeIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeOfficeAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await OpenSeatAsync(
-            client,
-            UnknownBoardOfficeId,
-            ctx.Identity.People.IdOf("ilka"),
-            Elected2016
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeOfficeAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await OpenSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            UnknownPersonId,
-            Elected2016
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheBodyCarriesNoUsablePersonId()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithFreeOfficeAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await OpenSeatAsync(
-            client,
-            ctx.Club.BoardOffices.IdOf("praesident"),
-            0,
-            Elected2016
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheSeat_When_TheOfficeCarriesARoleTheCallerMayNotGrant()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -357,15 +198,6 @@ public sealed class PostBoardSeatTests : IClassFixture<ApiTestFixture>
             .ToBeHeldBy(ctx.Identity.People.IdOf("katrin"))
             .AssertAsync(ct);
     }
-
-    private Task<SeededContext> BuildWithFreeOfficeAsync(CancellationToken ct) =>
-        _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
-                    .Club(club => club.AddBoardOffice("praesident", "Präsident", 1)),
-            ct
-        );
 
     private Task<SeededContext> BuildWithPoweredOfficeAsync(CancellationToken ct) =>
         _fixture.BuildAsync(

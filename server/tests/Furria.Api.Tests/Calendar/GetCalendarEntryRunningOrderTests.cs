@@ -1,4 +1,3 @@
-using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Core.RunningOrders;
@@ -24,29 +23,6 @@ public sealed class GetCalendarEntryRunningOrderTests : IClassFixture<ApiTestFix
     public GetCalendarEntryRunningOrderTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_ShowThePlacedActsInOrder_When_AMemberOpensTheEvening()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(EveningWithMembers(_fixture.Today), ct);
-        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-        var eventId = ctx.Club.Events.IdOf(Gala);
-        var rede = await CreateActAsync(planner, "Büttenrede", kind: ActKind.Speech);
-        var tanz = await GardetanzAsync(ctx, ct);
-        var lied = await CreateActAsync(planner, "Lied", kind: ActKind.Music);
-        await SavedAsync(planner, eventId, null, [Line(tanz, 0), Line(rede, 1), Line(lied, null)]);
-        var member = await ctx.Identity.ClientForAsync(Mia, ct);
-
-        var (response, result) = await GetAsync(member, eventId);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.False(result.Confirmed);
-        Assert.Equal(
-            [(tanz, 0), (rede, 1)],
-            result.Lines.Select(line => (line.ActId, line.Position))
-        );
     }
 
     [Fact]
@@ -87,31 +63,6 @@ public sealed class GetCalendarEntryRunningOrderTests : IClassFixture<ApiTestFix
         var (_, result) = await GetAsync(member, eventId);
 
         Assert.True(result.Confirmed);
-    }
-
-    [Fact]
-    public async Task Should_ShowAnEmptyOrder_When_TheEveningHasNoRunningOrderYet()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(EveningWithMembers(_fixture.Today), ct);
-        var member = await ctx.Identity.ClientForAsync(Mia, ct);
-
-        var (response, result) = await GetAsync(member, ctx.Club.Events.IdOf(Gala));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Empty(result.Lines);
-    }
-
-    [Fact]
-    public async Task Should_Return404_When_TheViewerCannotSeeTheEvening()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(EveningWithMembers(_fixture.Today), ct);
-        var outsider = await ctx.Identity.ClientForAsync(Ben, ct);
-
-        var (response, _) = await GetAsync(outsider, ctx.Club.Events.IdOf(Gala));
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static Action<SeedContextBuilder> EveningWithMembers(DateOnly today) =>

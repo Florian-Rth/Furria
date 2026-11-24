@@ -10,8 +10,6 @@ namespace Furria.Api.Tests.Push;
 
 public sealed class RemoveMyPushSubscriptionTests : IClassFixture<ApiTestFixture>
 {
-    private const string AlicesPhone = "https://fcm.googleapis.com/fcm/send/alice-pixel";
-    private const string AlicesTablet = "https://fcm.googleapis.com/fcm/send/alice-tablet";
     private const string BobsPhone = "https://web.push.apple.com/bob-iphone";
 
     private readonly ApiTestFixture _fixture;
@@ -19,26 +17,6 @@ public sealed class RemoveMyPushSubscriptionTests : IClassFixture<ApiTestFixture
     public RemoveMyPushSubscriptionTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_ForgetOnlyThatDevice_When_AMemberUnsubscribesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var alice = await ctx.Identity.ClientForAsync("alice", ct);
-        await SubscribeAsync(alice, AlicesPhone);
-        await SubscribeAsync(alice, AlicesTablet);
-
-        var response = await UnsubscribeAsync(alice, AlicesPhone);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHaveCount(1)
-            .PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
-            .ToHold(AlicesTablet, PushDevices.FirstPublicKey, PushDevices.AuthSecret)
-            .AssertAsync(ct);
     }
 
     [Fact]

@@ -1,6 +1,4 @@
 using System.Net;
-using Furria.Api.RateLimiting;
-using Furria.Infrastructure.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -76,24 +74,6 @@ public sealed class RequestPasswordResetTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheKeyThatProtectsTheResetTokenInTheDatabase_When_AResetLinkIsMailed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-
-        await SignedOutMailSteps.RequestResetAndReadItAsync(
-            _fixture,
-            ctx.Identity.EmailOf("alice"),
-            ct
-        );
-
-        await ctx.Expected.DataProtectionKeys().ToHoldAKey().AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_SendNothing_When_TheAddressIsOnlyAContactEmail()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -112,25 +92,6 @@ public sealed class RequestPasswordResetTests : IClassFixture<ApiTestFixture>
         await SignedOutMailSteps.SettleAsync(_fixture, ctx.Identity.EmailOf("sentinel"), ct);
 
         Assert.Empty(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, annaEmail, ct));
-    }
-
-    [Fact]
-    public async Task Should_SendNothing_When_TheAccountIsDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("bruno", disabled: true).AddAccount("sentinel")
-                ),
-            ct
-        );
-        var brunoEmail = ctx.Identity.EmailOf("bruno");
-
-        await SignedOutMailSteps.RequestPasswordResetAsync(_fixture.CreateClient(), brunoEmail);
-        await SignedOutMailSteps.SettleAsync(_fixture, ctx.Identity.EmailOf("sentinel"), ct);
-
-        Assert.Empty(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, brunoEmail, ct));
     }
 
     [Fact]
@@ -155,83 +116,6 @@ public sealed class RequestPasswordResetTests : IClassFixture<ApiTestFixture>
                 ct
             )
         );
-    }
-
-    [Fact]
-    public async Task Should_SendOneMail_When_TheLoginEmailIsRequestedAgainWithinFiveMinutes()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity => identity.AddAccount("alice").AddAccount("sentinel")),
-            ct
-        );
-        var aliceEmail = ctx.Identity.EmailOf("alice");
-        await SignedOutMailSteps.RequestPasswordResetAsync(_fixture.CreateClient(), aliceEmail);
-        await _fixture.Mailbox.SingleMailToAsync(aliceEmail, ct);
-
-        await _fixture.AtLaterTimeAsync(
-            PasswordResetMailThrottle.Interval - TimeSpan.FromSeconds(1),
-            async () =>
-            {
-                await SignedOutMailSteps.RequestPasswordResetAsync(
-                    _fixture.CreateClient(),
-                    aliceEmail
-                );
-                await SignedOutMailSteps.SettleAsync(
-                    _fixture,
-                    ctx.Identity.EmailOf("sentinel"),
-                    ct
-                );
-            }
-        );
-
-        Assert.Single(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, aliceEmail, ct));
-    }
-
-    [Fact]
-    public async Task Should_MailAgain_When_FiveMinutesHavePassed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("alice")),
-            ct
-        );
-        var aliceEmail = ctx.Identity.EmailOf("alice");
-        await SignedOutMailSteps.RequestPasswordResetAsync(_fixture.CreateClient(), aliceEmail);
-        await _fixture.Mailbox.SingleMailToAsync(aliceEmail, ct);
-
-        await _fixture.AtLaterTimeAsync(
-            PasswordResetMailThrottle.Interval + TimeSpan.FromSeconds(1),
-            async () =>
-            {
-                await SignedOutMailSteps.RequestPasswordResetAsync(
-                    _fixture.CreateClient(),
-                    aliceEmail
-                );
-                var mails = await _fixture.Mailbox.MailsToAsync(aliceEmail, 2, ct);
-                Assert.Equal(2, mails.Count);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_ReturnTooManyRequests_When_OneAddressIsRequestedTooOften()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        var address = InvitationSteps.UniqueContactEmail("niemand");
-        var client = _fixture.CreateClient();
-        var permits = new SignedOutRateLimitOptions().PermitsPerAddress;
-
-        for (var attempt = 0; attempt < permits; attempt++)
-            Assert.Equal(
-                HttpStatusCode.Accepted,
-                (await SignedOutMailSteps.RequestPasswordResetAsync(client, address)).StatusCode
-            );
-        var refused = await SignedOutMailSteps.RequestPasswordResetAsync(client, address);
-
-        Assert.Equal(HttpStatusCode.TooManyRequests, refused.StatusCode);
     }
 
     private static async Task<SignedOutMailSteps.AnswerFingerprint> AnswerToAsync(

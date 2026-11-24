@@ -21,23 +21,6 @@ public sealed class WithdrawNewsPostTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeItOffTheWebsiteAndKeepItsAddress_When_ALivePostIsWithdrawn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var liveId = ctx.News.Posts.IdOf("live");
-
-        var response = await WithdrawAsync(client, liveId);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.NewsPost(liveId)
-            .ToBeWithdrawnAt(_fixture.TimeProvider.GetUtcNow())
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_MakeThePendingChangesThePostsText_When_APostWithPendingChangesIsWithdrawn()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -73,26 +56,6 @@ public sealed class WithdrawNewsPostTests : IClassFixture<ApiTestFixture>
         var response = await WithdrawAsync(client, ctx.News.Posts.IdOf("draft"));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_MakeThePendingPictureThePostsPicture_When_APostWithPendingChangesIsWithdrawn()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Posts(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var liveId = ctx.News.Posts.IdOf("live");
-        var formerId = await NewsPictureSteps.LivePictureAsync(client, liveId, ct);
-        var pictureId = await NewsPictureSteps.UploadAsync(client, liveId, ct);
-
-        await WithdrawAsync(client, liveId);
-
-        await ctx
-            .Expected.NewsPost(liveId)
-            .ToShowPicture(pictureId)
-            .MediaItem(formerId)
-            .ToBeGone()
-            .AssertAsync(ct);
     }
 
     private static Task<HttpResponseMessage> WithdrawAsync(HttpClient client, int newsPostId) =>

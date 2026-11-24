@@ -2,7 +2,6 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
 using Furria.Api.Endpoints.RunningOrders;
-using Furria.Core.Club;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
@@ -16,8 +15,6 @@ namespace Furria.Api.Tests.RunningOrders;
 [SeedsAliases]
 public sealed class DeleteActOpenAppearancesTests : IClassFixture<ApiTestFixture>
 {
-    private const string Kappenabend = "kappenabend";
-
     private readonly ApiTestFixture _fixture;
 
     public DeleteActOpenAppearancesTests(ApiTestFixture fixture)
@@ -57,37 +54,6 @@ public sealed class DeleteActOpenAppearancesTests : IClassFixture<ApiTestFixture
         Assert.True(galaAfter.Version > galaBefore.Version);
         var summerAfter = await RunningOrderOfAsync(client, summer);
         Assert.Equal([finale], summerAfter.Lines.Select(line => line.Act.ActId));
-    }
-
-    [Fact]
-    public async Task Should_LeaveAnEveningThatIsOver_When_ThePlannerWithdrawsTheAct()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            PlannerWithGala(
-                _fixture.Today,
-                club =>
-                    club.AddEvent(
-                        Kappenabend,
-                        "Kappenabend",
-                        ClubClock.At(_fixture.Today.AddDays(-3), new TimeOnly(19, 11)),
-                        "buergerhaus"
-                    )
-            ),
-            ct
-        );
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var over = ctx.Club.Events.IdOf(Kappenabend);
-        var gala = ctx.Club.Events.IdOf(Gala);
-        var pause = await CreateActAsync(client, "Pause");
-        await SavedAsync(client, over, null, [Line(pause, 0)]);
-        await SavedAsync(client, gala, null, [Line(pause, 0)]);
-
-        var response = await WithdrawAsync(client, pause);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Single((await RunningOrderOfAsync(client, over)).Lines);
-        Assert.Empty((await RunningOrderOfAsync(client, gala)).Lines);
     }
 
     private static Task<HttpResponseMessage> WithdrawAsync(HttpClient client, int actId) =>

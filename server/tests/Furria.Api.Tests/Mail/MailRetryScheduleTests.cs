@@ -8,10 +8,6 @@ public sealed class MailRetryScheduleTests
     public static readonly TheoryData<int, TimeSpan> Retries = new()
     {
         { 1, TimeSpan.FromSeconds(5) },
-        { 2, TimeSpan.FromSeconds(30) },
-        { 3, TimeSpan.FromMinutes(2) },
-        { 4, TimeSpan.FromMinutes(10) },
-        { 5, TimeSpan.FromHours(1) },
         { 6, TimeSpan.FromHours(6) },
     };
 

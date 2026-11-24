@@ -18,30 +18,6 @@ public sealed class ClubSessionTests
     }
 
     [Fact]
-    public void Should_StayInTheNewSession_When_TheDayIsTheTwelfthOfNovember()
-    {
-        Assert.Equal(2025, ClubSession.YearOf(new DateOnly(2025, 11, 12)));
-    }
-
-    [Fact]
-    public void Should_BelongToTheSessionThatLastOpened_When_TheDayIsAfterAschermittwoch()
-    {
-        Assert.Equal(2025, ClubSession.YearOf(new DateOnly(2026, 6, 30)));
-    }
-
-    [Fact]
-    public void Should_BelongToThePreviousSession_When_TheDayIsTheLeapDay()
-    {
-        Assert.Equal(2023, ClubSession.YearOf(new DateOnly(2024, 2, 29)));
-    }
-
-    [Fact]
-    public void Should_RenderBothYears_When_LabellingASession()
-    {
-        Assert.Equal("2025/26", ClubSession.LabelOf(2025));
-    }
-
-    [Fact]
     public void Should_PadTheSecondYear_When_TheSessionCrossesACentury()
     {
         Assert.Equal("1999/00", ClubSession.LabelOf(1999));

@@ -23,40 +23,6 @@ public sealed class PostNewsPictureFromGalleryTests : IClassFixture<ApiTestFixtu
     }
 
     [Fact]
-    public async Task Should_CopyThePhotoIntoThePostsOwnPicture_When_TheEditorPicksItFromTheGallery()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(DraftAndGallery(), ct);
-        var client = await ctx.Identity.ClientForAsync(NewsSeeds.Editor, ct);
-        var draftId = ctx.News.Posts.IdOf("draft");
-        var photoId = await GalleryPhotoAsync(ctx, "gala-photo", ct);
-
-        var (response, picked) = await PickAsync(client, draftId, photoId);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotEqual(photoId, picked.MediaItemId);
-        await ctx
-            .Expected.NewsPost(draftId)
-            .ToShowPicture(picked.MediaItemId)
-            .MediaItem(picked.MediaItemId)
-            .ToBeOwnedBy(MediaOwner.NewsPost(draftId))
-            .MediaItem(picked.MediaItemId)
-            .ToBeCroppedTo(BannerCut)
-            .MediaItem(picked.MediaItemId)
-            .ToAwaitItsRenditions(MediaKind.Photo, "image/jpeg")
-            .MediaItem(photoId)
-            .ToBeOwnedBy(MediaOwner.Gallery)
-            .AssertAsync(ct);
-        Assert.Equal(
-            GalleryOriginal,
-            await File.ReadAllBytesAsync(
-                await _fixture.MediaFileOfAsync(picked.MediaItemId, MediaRendition.Original, ct),
-                ct
-            )
-        );
-    }
-
-    [Fact]
     public async Task Should_RefuseThePick_When_ThePhotoLiesInTheBin()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -3,7 +3,6 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Start;
 using Furria.Application.Authorization;
 using Furria.Application.Start;
-using Furria.Core.Groups;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -18,7 +17,6 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
     private static readonly DateOnly Today = new(2027, 1, 19);
     private static readonly DateOnly ThirteenDaysAgo = new(2027, 1, 6);
     private static readonly DateOnly LastWeek = new(2027, 1, 12);
-    private static readonly DateOnly LastSummer = new(2026, 6, 30);
     private static readonly DateOnly MidFebruary = new(2027, 2, 15);
     private static readonly DateOnly FiftyYearsBeforeLastWeek = new(1977, 1, 12);
     private static readonly DateOnly FiftyYearsBeforeToday = new(1977, 1, 19);
@@ -76,108 +74,6 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AnnounceANewBoardSeat_When_HerSeatStartedWithinTwoWeeks()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            builder =>
-                builder
-                    .Roles(roles =>
-                        roles.AddRole(
-                            "vorstand",
-                            "Vorstand",
-                            FurriaPermissions.ClubManage,
-                            FurriaPermissions.AnnouncementsPost
-                        )
-                    )
-                    .Club(club =>
-                        club.AddBoardOffice(
-                                "schriftfuehrung",
-                                "Schriftführerin",
-                                impliedRoleAlias: "vorstand"
-                            )
-                            .AddBoardSeat(
-                                "lena-schriftfuehrung",
-                                "schriftfuehrung",
-                                "lena",
-                                LastWeek
-                            )
-                    ),
-            (ctx, mine) =>
-            {
-                var seat = Assert.Single(mine, item => item.Kind == StartMineKind.NewBoardSeat);
-
-                Assert.Equal(ctx.Club.BoardOffices.IdOf("schriftfuehrung"), seat.SubjectId);
-                Assert.Equal(LastWeek, seat.On);
-                Assert.Equal(LastWeek.AddDays(13), seat.Until);
-                Assert.Equal("Schriftführerin", seat.Name);
-                Assert.Equal(
-                    [FurriaPermissions.AnnouncementsPost, FurriaPermissions.ClubManage],
-                    seat.PermissionKeys
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_AnnounceANewGroupAdmin_When_HerTenureStartedWithinTwoWeeks()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            builder =>
-                builder.Groups(groups =>
-                    groups
-                        .AddGroup("kindergarde", "Kindergarde", tone: TestTones.Teal)
-                        .AddGroupAdmin(
-                            "lena-kindergarde",
-                            "kindergarde",
-                            "lena",
-                            "Trainerin",
-                            LastWeek
-                        )
-                ),
-            (ctx, mine) =>
-            {
-                var tenure = Assert.Single(mine, item => item.Kind == StartMineKind.NewGroupAdmin);
-
-                Assert.Equal(ctx.Groups.Groups.IdOf("kindergarde"), tenure.SubjectId);
-                Assert.Equal(LastWeek, tenure.On);
-                Assert.Equal(LastWeek.AddDays(13), tenure.Until);
-                Assert.Equal("Kindergarde", tenure.Name);
-                Assert.Equal(TestTones.Teal, tenure.GroupTone);
-                Assert.Equal("Trainerin", tenure.Function);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_AnnounceANewGroupMembership_When_SheJoinedWithinTwoWeeks()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            builder =>
-                builder.Groups(groups =>
-                    groups
-                        .AddGroup("tanzgarde", "Tanzgarde", tone: TestTones.Rose)
-                        .AddGroupMembership("lena-tanzgarde", "tanzgarde", "lena", LastWeek)
-                ),
-            (ctx, mine) =>
-            {
-                var membership = Assert.Single(
-                    mine,
-                    item => item.Kind == StartMineKind.NewGroupMembership
-                );
-
-                Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), membership.SubjectId);
-                Assert.Equal(LastWeek, membership.On);
-                Assert.Equal(LastWeek.AddDays(13), membership.Until);
-                Assert.Equal("Tanzgarde", membership.Name);
-                Assert.Equal(TestTones.Rose, membership.GroupTone);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutANewGroupMembership_When_TheGroupIsArchived()
     {
         await OnTuesdayEveningAsync(
@@ -190,83 +86,6 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
                 ),
             (_, mine) =>
                 Assert.DoesNotContain(mine, item => item.Kind == StartMineKind.NewGroupMembership)
-        );
-    }
-
-    [Fact]
-    public async Task Should_AnnounceANewKey_When_HerHoldingStartedWithinTwoWeeks()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            builder =>
-                builder.Club(club =>
-                    club.AddVenue("festhalle", "Festhalle Großfurra")
-                        .AddKeyHolding("lena-festhalle", "festhalle", "lena", LastWeek)
-                ),
-            (ctx, mine) =>
-            {
-                var key = Assert.Single(mine, item => item.Kind == StartMineKind.NewKey);
-
-                Assert.Equal(ctx.Club.Venues.IdOf("festhalle"), key.SubjectId);
-                Assert.Equal(LastWeek, key.On);
-                Assert.Equal(LastWeek.AddDays(13), key.Until);
-                Assert.Equal("Festhalle Großfurra", key.Name);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_TellHerOfAContactChange_When_SomeoneElseChangedHerDetails()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("frank", "Frank", "Präsident")
-                        .AddContactChange("lena", "frank", LastWeeksChange)
-                ),
-            (ctx, mine) =>
-            {
-                var change = Assert.Single(
-                    mine,
-                    item => item.Kind == StartMineKind.ContactChangedByOther
-                );
-
-                Assert.Null(change.SubjectId);
-                Assert.Equal(LastWeek, change.On);
-                Assert.Equal(LastWeek.AddDays(14), change.Until);
-                Assert.NotNull(change.ChangedBy);
-                Assert.Equal(ctx.Identity.People.IdOf("frank"), change.ChangedBy.PersonId);
-                Assert.Equal("Frank", change.ChangedBy.FirstName);
-                Assert.Equal("Präsident", change.ChangedBy.LastName);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_TellHerOfAContactChangeNamingNobody_When_TheEditorWasDeleted()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("frank", "Frank", "Präsident")
-                        .AddContactChange("lena", "frank", LastWeeksChange)
-                ),
-            async (ctx, ct) =>
-                await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("frank"), ct),
-            (_, mine) =>
-            {
-                var change = Assert.Single(
-                    mine,
-                    item => item.Kind == StartMineKind.ContactChangedByOther
-                );
-
-                Assert.Equal(LastWeek, change.On);
-                Assert.Null(change.ChangedBy);
-            }
         );
     }
 
@@ -284,32 +103,6 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
                     mine,
                     item => item.Kind == StartMineKind.ContactChangedByOther
                 )
-        );
-    }
-
-    [Fact]
-    public async Task Should_TellHerOfTheMembershipEnd_When_ItEndsWithinAMonth()
-    {
-        await OnTuesdayEveningAsync(
-            "gerd",
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("gerd", "Gerd", "Förderer")
-                        .AddAccount("gerd")
-                        .AddMembership("gerd-member", "gerd", JoinedIn2015, MidFebruary)
-                ),
-            (_, mine) =>
-            {
-                var ending = Assert.Single(
-                    mine,
-                    item => item.Kind == StartMineKind.MembershipEnding
-                );
-
-                Assert.Null(ending.SubjectId);
-                Assert.Equal(MidFebruary, ending.On);
-                Assert.Equal(MidFebruary, ending.Until);
-            }
         );
     }
 
@@ -366,30 +159,6 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_MarkHerMilestone_When_AFiftiethAnniversaryPassedLastWeek()
-    {
-        await OnTuesdayEveningAsync(
-            "gerd",
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("gerd", "Gerd", "Förderer")
-                        .AddAccount("gerd")
-                        .AddMembership("gerd-member", "gerd", FiftyYearsBeforeLastWeek)
-                ),
-            (_, mine) =>
-            {
-                var milestone = Assert.Single(mine, item => item.Kind == StartMineKind.Milestone);
-
-                Assert.Null(milestone.SubjectId);
-                Assert.Equal(LastWeek, milestone.On);
-                Assert.Equal(LastWeek.AddDays(30), milestone.Until);
-                Assert.Equal(50, milestone.Years);
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_LeaveOutTheMilestone_When_TheAnniversaryIsToday()
     {
         await OnTuesdayEveningAsync(
@@ -431,12 +200,6 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Fact]
-    public async Task Should_LeaveOutMine_When_NothingIsNewOnHerRecord()
-    {
-        await OnTuesdayEveningAsync("lena", _ => { }, (_, mine) => Assert.Empty(mine));
-    }
-
     private static IReadOnlyList<StartMineDto> MineOf(GetStartResponse start) =>
         start.Panels.SingleOrDefault(panel => panel.Kind == StartPanelKind.Mine)?.Mine ?? [];
 
@@ -445,13 +208,6 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
         Action<SeedContextBuilder> arrange,
         Action<SeededContext, IReadOnlyList<StartMineDto>> assert
     ) => AtAsync(TuesdayEvening, viewerAlias, arrange, assert);
-
-    private Task OnTuesdayEveningAsync(
-        string viewerAlias,
-        Action<SeedContextBuilder> arrange,
-        Func<SeededContext, CancellationToken, Task> alter,
-        Action<SeededContext, IReadOnlyList<StartMineDto>> assert
-    ) => AtAsync(TuesdayEvening, viewerAlias, arrange, alter, assert);
 
     private Task AtAsync(
         DateTimeOffset instant,

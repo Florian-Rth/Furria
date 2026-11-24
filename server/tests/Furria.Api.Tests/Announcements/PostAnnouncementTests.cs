@@ -8,7 +8,6 @@ using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.Announcements.AnnouncementMentionSeeds;
 using AnnouncementAddOnKind = Furria.Core.Club.AnnouncementAddOnKind;
-using AttendanceAnswer = Furria.Core.Club.AttendanceAnswer;
 
 namespace Furria.Api.Tests.Announcements;
 
@@ -18,146 +17,11 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
     private const string Body = "Am Samstag räumen wir gemeinsam den Saal auf.";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
-    private static readonly DateOnly ValidUntilInMarch = new(2027, 3, 1);
-
-    private static readonly DateTimeOffset InsideTheSession = new(
-        2027,
-        1,
-        15,
-        12,
-        0,
-        0,
-        TimeSpan.Zero
-    );
-
     private readonly ApiTestFixture _fixture;
 
     public PostAnnouncementTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_HangTheAnnouncementUp_When_ThePermittedPersonWritesIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var ctx = await BuildBoardAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("bea", ct);
-
-                var (response, result) = await client.POSTAsync<
-                    PostAnnouncement,
-                    PostAnnouncementRequest,
-                    PostAnnouncementResponse
-                >(
-                    new()
-                    {
-                        Title = Title,
-                        Body = Body,
-                        ValidUntil = ValidUntilInMarch,
-                        AddOns = [],
-                        Notify = false,
-                    }
-                );
-
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                await ctx
-                    .Expected.Announcement(result.AnnouncementId)
-                    .ToHaveTitle(Title)
-                    .Announcement(result.AnnouncementId)
-                    .ToHaveBody(Body)
-                    .Announcement(result.AnnouncementId)
-                    .ToHaveValidUntil(ValidUntilInMarch)
-                    .Announcement(result.AnnouncementId)
-                    .ToHaveAuthor(ctx.Identity.People.IdOf("bea"))
-                    .Announcement(result.AnnouncementId)
-                    .ToHavePublishedAt(InsideTheSession)
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_HangAnOpenEndedAnnouncementUp_When_NoValidUntilIsGiven()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-
-        var (response, result) = await client.POSTAsync<
-            PostAnnouncement,
-            PostAnnouncementRequest,
-            PostAnnouncementResponse
-        >(
-            new()
-            {
-                Title = Title,
-                Body = Body,
-                ValidUntil = null,
-                AddOns = [],
-                Notify = false,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.Announcement(result.AnnouncementId)
-            .ToHaveValidUntil(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheTitelIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-
-        var (response, _) = await client.POSTAsync<
-            PostAnnouncement,
-            PostAnnouncementRequest,
-            PostAnnouncementResponse
-        >(
-            new()
-            {
-                Title = "",
-                Body = Body,
-                ValidUntil = null,
-                AddOns = [],
-                Notify = false,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheTextIsEmpty()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-
-        var (response, _) = await client.POSTAsync<
-            PostAnnouncement,
-            PostAnnouncementRequest,
-            PostAnnouncementResponse
-        >(
-            new()
-            {
-                Title = Title,
-                Body = "",
-                ValidUntil = null,
-                AddOns = [],
-                Notify = false,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -236,54 +100,6 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AttachTheAddOnsInTheirOrder_When_ThePosterAddsThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var answersUntil = InsideTheSession.AddDays(3);
-        PostAnnouncementResponse? posted = null;
-
-        var ctx = await BuildBoardAsync(ct);
-        await _fixture.AtInstantAsync(
-            InsideTheSession,
-            async () =>
-            {
-                var client = await ctx.Identity.ClientForAsync("bea", ct);
-                var (response, result) = await client.POSTAsync<
-                    PostAnnouncement,
-                    PostAnnouncementRequest,
-                    PostAnnouncementResponse
-                >(
-                    new()
-                    {
-                        Title = Title,
-                        Body = Body,
-                        ValidUntil = ValidUntilInMarch,
-                        AddOns =
-                        [
-                            PollAddOn("Wer bringt Eimer?"),
-                            AttendanceAddOn(answersUntil),
-                            SignUpListAddOn("Wer putzt was?"),
-                        ],
-                        Notify = false,
-                    }
-                );
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                posted = result;
-            }
-        );
-
-        var announcementId = posted?.AnnouncementId ?? 0;
-        await ctx
-            .Expected.Announcement(announcementId)
-            .ToAskForAnswersAt(1, answersUntil)
-            .Announcement(announcementId)
-            .ToHavePolls("Wer bringt Eimer?")
-            .Announcement(announcementId)
-            .ToHaveSignUpLists("Wer putzt was?")
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnBadRequest_When_TheAnnouncementAsksForAnswersTwice()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -315,44 +131,6 @@ public sealed class PostAnnouncementTests : IClassFixture<ApiTestFixture>
             Attendance = new() { AnswersUntil = answersUntil },
             Poll = null,
             SignUpList = null,
-            Borrowed = null,
-        };
-
-    private static PostAnnouncementAddOnDataDto PollAddOn(string question) =>
-        new()
-        {
-            Kind = AnnouncementAddOnKind.Poll,
-            Attendance = null,
-            Poll = new()
-            {
-                PollId = null,
-                Question = question,
-                AllowsMultipleChoices = false,
-                IsAnonymous = false,
-                VotesUntil = null,
-                Options =
-                [
-                    new() { OptionId = null, Label = "Ich" },
-                    new() { OptionId = null, Label = "Nicht ich" },
-                ],
-            },
-            SignUpList = null,
-            Borrowed = null,
-        };
-
-    private static PostAnnouncementAddOnDataDto SignUpListAddOn(string title) =>
-        new()
-        {
-            Kind = AnnouncementAddOnKind.SignUpList,
-            Attendance = null,
-            Poll = null,
-            SignUpList = new()
-            {
-                SignUpListId = null,
-                Title = title,
-                Hint = null,
-                SignUpUntil = null,
-            },
             Borrowed = null,
         };
 

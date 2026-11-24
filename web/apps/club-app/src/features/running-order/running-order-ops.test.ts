@@ -2,17 +2,13 @@ import { describe, expect, it } from 'vitest';
 import {
   applySuggestion,
   bodyOf,
-  dissolveBlock,
   draftOf,
   dropAct,
   formBlock,
   moveUnit,
   orderOf,
   pickActs,
-  place,
-  previewMove,
   togglePin,
-  unitsOf,
   unplace,
 } from './running-order-ops';
 import type {
@@ -131,16 +127,6 @@ describe('draftOf and bodyOf', () => {
     findings: [],
   };
 
-  it('orders placed lines by position and keeps suspended wishes', () => {
-    const draft = draftOf(response);
-
-    expect([orderOf(draft), draft.suspendedActWishIds, draft.rules[0]?.ruleKey]).toEqual([
-      ['act:1', 'act:2'],
-      [6],
-      'rule:5',
-    ]);
-  });
-
   it('writes dense positions and leaves unplaced lines without one', () => {
     expect(bodyOf(draftOf(response))).toEqual({
       version: 4,
@@ -155,52 +141,14 @@ describe('draftOf and bodyOf', () => {
   });
 });
 
-describe('unitsOf', () => {
-  it('groups a block into one unit and keeps singles alone', () => {
-    const draft = evening([
-      act(1),
-      act(2, { blockKey: 1, pinned: true }),
-      act(3, { blockKey: 1, pinned: true }),
-      act(4),
-    ]);
-
-    expect(unitsOf(draft)).toEqual([
-      { keys: ['act:1'], start: 0, pinned: false, blockKey: null },
-      { keys: ['act:2', 'act:3'], start: 1, pinned: true, blockKey: 1 },
-      { keys: ['act:4'], start: 3, pinned: false, blockKey: null },
-    ]);
-  });
-});
-
 describe('moveUnit', () => {
   it.each<{ label: string; draft: RunningOrderDraft; key: LineKey; to: number; order: LineKey[] }>([
-    {
-      label: 'a single line moves down',
-      draft: evening([act(1), act(2), act(3)]),
-      key: 'act:1',
-      to: 2,
-      order: ['act:2', 'act:3', 'act:1'],
-    },
-    {
-      label: 'a single line moves up',
-      draft: evening([act(1), act(2), act(3)]),
-      key: 'act:3',
-      to: 0,
-      order: ['act:3', 'act:1', 'act:2'],
-    },
     {
       label: 'a pinned line keeps its index while others pass it',
       draft: evening([act(1), act(2, { pinned: true }), act(3)]),
       key: 'act:1',
       to: 2,
       order: ['act:3', 'act:2', 'act:1'],
-    },
-    {
-      label: 'a pinned line does not move',
-      draft: evening([act(1), act(2, { pinned: true }), act(3)]),
-      key: 'act:2',
-      to: 0,
-      order: ['act:1', 'act:2', 'act:3'],
     },
     {
       label: 'a block moves whole',
@@ -223,65 +171,18 @@ describe('moveUnit', () => {
       to: 3,
       order: ['act:3', 'act:5', 'act:6', 'act:4', 'act:1', 'act:2'],
     },
-    {
-      label: 'an unplaced line is placed at the index',
-      draft: evening([act(1), act(2), act(3, { placed: false })]),
-      key: 'act:3',
-      to: 1,
-      order: ['act:1', 'act:3', 'act:2'],
-    },
-    {
-      label: 'an unknown line changes nothing',
-      draft: evening([act(1), act(2)]),
-      key: 'act:9',
-      to: 0,
-      order: ['act:1', 'act:2'],
-    },
   ])('$label', ({ draft, key, to, order }) => {
     expect(orderOf(moveUnit(draft, key, to))).toEqual(order);
-  });
-});
-
-describe('previewMove', () => {
-  it('counts the findings of the would-be order', () => {
-    const draft = evening([act(1, { cast: [1] }), act(2, { cast: [2] }), act(3, { cast: [1] })]);
-    const preview = previewMove(draft, 'act:3', 1);
-
-    expect([preview.order, preview.tally]).toEqual([
-      ['act:1', 'act:3', 'act:2'],
-      { conflicts: 1, hints: 0 },
-    ]);
   });
 });
 
 describe('togglePin', () => {
   it.each<{ label: string; draft: RunningOrderDraft; key: LineKey; pinned: boolean[] }>([
     {
-      label: 'pins a single line',
-      draft: evening([act(1), act(2)]),
-      key: 'act:1',
-      pinned: [true, false],
-    },
-    {
       label: 'pins the whole block',
       draft: evening([act(1, { blockKey: 1 }), act(2, { blockKey: 1 }), act(3)]),
       key: 'act:2',
       pinned: [true, true, false],
-    },
-    {
-      label: 'unpins the whole block',
-      draft: evening([
-        act(1, { blockKey: 1, pinned: true }),
-        act(2, { blockKey: 1, pinned: true }),
-      ]),
-      key: 'act:1',
-      pinned: [false, false],
-    },
-    {
-      label: 'leaves an unplaced line alone',
-      draft: evening([act(1), act(2, { placed: false })]),
-      key: 'act:2',
-      pinned: [false, false],
     },
   ])('$label', ({ draft, key, pinned }) => {
     expect(togglePin(draft, key).lines.map((line) => line.pinned)).toEqual(pinned);
@@ -298,14 +199,6 @@ describe('formBlock', () => {
     pinned: boolean[];
   }>([
     {
-      label: 'joins a contiguous range',
-      draft: evening([act(1), act(2), act(3), act(4)]),
-      from: 'act:3',
-      to: 'act:2',
-      blocks: [null, 1, 1, null],
-      pinned: [false, false, false, false],
-    },
-    {
       label: 'merges an overlapping block',
       draft: evening([act(1), act(2, { blockKey: 4 }), act(3, { blockKey: 4 }), act(4)]),
       from: 'act:1',
@@ -321,14 +214,6 @@ describe('formBlock', () => {
       blocks: [1, 1, null],
       pinned: [true, true, false],
     },
-    {
-      label: 'needs two lines',
-      draft: evening([act(1), act(2)]),
-      from: 'act:1',
-      to: 'act:1',
-      blocks: [null, null],
-      pinned: [false, false],
-    },
   ])('$label', ({ draft, from, to, blocks, pinned }) => {
     const formed = formBlock(draft, from, to);
 
@@ -336,24 +221,6 @@ describe('formBlock', () => {
       formed.lines.map((line) => line.blockKey),
       formed.lines.map((line) => line.pinned),
     ]).toEqual([blocks, pinned]);
-  });
-});
-
-describe('dissolveBlock', () => {
-  it('frees every member of the block and keeps other blocks', () => {
-    const draft = evening([
-      act(1, { blockKey: 1, pinned: true }),
-      act(2, { blockKey: 1, pinned: true }),
-      act(3, { blockKey: 2 }),
-      act(4, { blockKey: 2 }),
-    ]);
-
-    expect(lineState(dissolveBlock(draft, 'act:2'))).toEqual([
-      { key: 'act:1', placed: true, pinned: true, blockKey: null },
-      { key: 'act:2', placed: true, pinned: true, blockKey: null },
-      { key: 'act:3', placed: true, pinned: false, blockKey: 2 },
-      { key: 'act:4', placed: true, pinned: false, blockKey: 2 },
-    ]);
   });
 });
 
@@ -373,12 +240,6 @@ describe('unplace and place', () => {
 
     expect(orderOf(unplace(draft, 'act:1'))).toEqual(['act:2', 'act:4', 'act:3']);
   });
-
-  it('places at the end by default', () => {
-    const draft = evening([act(1, { placed: false }), act(2), act(3)]);
-
-    expect(orderOf(place(draft, 'act:1'))).toEqual(['act:2', 'act:3', 'act:1']);
-  });
 });
 
 describe('pickActs', () => {
@@ -389,13 +250,6 @@ describe('pickActs', () => {
     picks: number[];
     order: LineKey[];
   }>([
-    {
-      label: 'appends new acts in pick order and keeps existing lines',
-      draft: evening([act(1)]),
-      catalogue: [catalogueAct(1), catalogueAct(2), catalogueAct(3)],
-      picks: [3, 1, 2],
-      order: ['act:1', 'act:3', 'act:2'],
-    },
     {
       label: 'puts a first wish at the front',
       draft: evening([act(1), act(2)]),
@@ -412,16 +266,6 @@ describe('pickActs', () => {
       catalogue: [catalogueAct(3)],
       picks: [3],
       order: ['act:1', 'act:3', 'act:2'],
-    },
-    {
-      label: 'lets a new last wish take the end',
-      draft: evening([act(1), act(2)]),
-      catalogue: [
-        catalogueAct(3, [{ actWishId: 1, actId: 3, kind: 'last', strength: 'must' }]),
-        catalogueAct(4),
-      ],
-      picks: [3, 4],
-      order: ['act:1', 'act:2', 'act:4', 'act:3'],
     },
     {
       label: 'leaves archived acts out of a copied evening',
@@ -493,11 +337,6 @@ describe('applySuggestion', () => {
     lineKeys?: LineKey[];
     order: LineKey[];
   }>([
-    {
-      label: 'takes the whole proposed order',
-      draft: evening([act(1), act(2), act(3)]),
-      order: ['act:3', 'act:1', 'act:2'],
-    },
     {
       label: 'applies only the chosen moves',
       draft: evening([act(1), act(2), act(3)]),

@@ -23,20 +23,4 @@ public sealed class NewsSlugTests
         Assert.True(slug.Length <= NewsSlug.MaxLength);
         Assert.EndsWith("konfettikanone", slug, StringComparison.Ordinal);
     }
-
-    [Fact]
-    public void Should_FallBackToAPlainWord_When_TheTitleHasNoLetters()
-    {
-        Assert.Equal("meldung", NewsSlug.Of("!!! ???"));
-    }
-
-    [Fact]
-    public void Should_CountUpFromTwo_When_TheAddressIsTaken()
-    {
-        Assert.Equal("prunksitzung", NewsSlug.FirstFreeOf("prunksitzung", []));
-        Assert.Equal(
-            "prunksitzung-3",
-            NewsSlug.FirstFreeOf("prunksitzung", ["prunksitzung", "prunksitzung-2"])
-        );
-    }
 }

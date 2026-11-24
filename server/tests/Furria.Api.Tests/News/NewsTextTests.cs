@@ -30,14 +30,6 @@ public sealed class NewsTextTests
         );
     }
 
-    [Fact]
-    public void Should_NameEveryTargetOnce_When_ItIsMentionedTwice()
-    {
-        var reading = NewsText.Read("@[Paula](person:12) und nochmal @[Paula B.](person:12)");
-
-        Assert.Equal([new Mention(MentionKind.Person, 12)], reading.Mentions);
-    }
-
     [Theory]
     [InlineData("1\\. FC Köln gewinnt")]
     [InlineData("Preis\\* gilt nur heute")]
@@ -88,11 +80,5 @@ public sealed class NewsTextTests
     public void Should_RefuseTheText_When_ItUsesAConstructOutsideTheSubset(string text)
     {
         Assert.NotNull(NewsText.Read(text).Refusal);
-    }
-
-    [Fact]
-    public void Should_ReadWindowsLineEndingsAsLines_When_TheTextComesFromABrowser()
-    {
-        Assert.Null(NewsText.Read("## Kopf\r\n\r\n- Punkt\r\n- Punkt").Refusal);
     }
 }

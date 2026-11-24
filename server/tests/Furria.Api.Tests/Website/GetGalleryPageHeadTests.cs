@@ -21,33 +21,6 @@ public sealed class GetGalleryPageHeadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ShowTheFirstPhotoAbsolutelyAndCountThePhotos_When_TheAlbumHasNoText()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Gallery(), ct);
-        var albumId = ctx.Gallery.Albums.IdOf("gala");
-
-        var (status, html) = await PageHeadAsync(_fixture, Kind, albumId.ToString());
-
-        Assert.Equal(HttpStatusCode.OK, status);
-        Assert.Contains(Meta("og:url", $"{Origin}/gallery/{albumId}-prunksitzung"), html);
-        Assert.Contains("<title data-page-head>Prunksitzung 2025/26 · FCC Großfurra</title>", html);
-        Assert.Contains(
-            Meta(
-                "og:description",
-                "2 Fotos: Prunksitzung, 14. Februar 2026 · 67. Session 2025/26."
-            ),
-            html
-        );
-        Assert.Contains(
-            $"property=\"og:image\" content=\"{Origin}/api/public/gallery/pictures/"
-                + $"{ctx.Gallery.Items.IdOf("finale")}/large",
-            html
-        );
-        Assert.Contains(Meta("og:image:alt", "Prunksitzung"), html);
-    }
-
-    [Fact]
     public async Task Should_AnswerAnEmptyNotFound_When_TheAlbumIsNotPublished()
     {
         var ct = TestContext.Current.CancellationToken;

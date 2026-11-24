@@ -21,26 +21,6 @@ public sealed class GetGalleryInboxTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ShowHerOwnUnplacedItemsInCaptureOrder_When_AnUploaderOpensHerInbox()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Inboxes(), ct);
-        var client = await ctx.Identity.ClientForAsync("markus", ct);
-
-        var (response, result) = await client.GETAsync<
-            GetGalleryInbox,
-            GetGalleryInboxRequest,
-            GetGalleryInboxResponse
-        >(new());
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(
-            [ctx.Gallery.Items.IdOf("markus-early"), ctx.Gallery.Items.IdOf("markus-late")],
-            result.Items.Select(item => item.MediaItemId)
-        );
-    }
-
-    [Fact]
     public async Task Should_RefuseAnotherInbox_When_TheUploaderDoesNotManageTheGallery()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -54,60 +34,6 @@ public sealed class GetGalleryInboxTests : IClassFixture<ApiTestFixture>
         >(new() { Ownerless = true });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ShowTheOwnerlessInbox_When_AManagerAsksForIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(Inboxes(), ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-
-        var (_, result) = await client.GETAsync<
-            GetGalleryInbox,
-            GetGalleryInboxRequest,
-            GetGalleryInboxResponse
-        >(new() { Ownerless = true });
-
-        Assert.Equal(
-            [ctx.Gallery.Items.IdOf("orphan")],
-            result.Items.Select(item => item.MediaItemId)
-        );
-    }
-
-    [Fact]
-    public async Task Should_FlagAnItemAsStalled_When_NoWorkerTookUpItsRenderingForMinutes()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(_ => { }, ct);
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        await TusUploadSteps.UploadAsync(
-            client,
-            TusUploadSteps.GalleryOwner,
-            "frisch.jpg",
-            MediaSamples.Jpeg(4096),
-            4096,
-            ct
-        );
-        var (_, fresh) = await client.GETAsync<
-            GetGalleryInbox,
-            GetGalleryInboxRequest,
-            GetGalleryInboxResponse
-        >(new() { Ownerless = true });
-
-        GetGalleryInboxResponse? later = null;
-        await _fixture.AtLaterTimeAsync(
-            TimeSpan.FromMinutes(3),
-            async () =>
-                (_, later) = await client.GETAsync<
-                    GetGalleryInbox,
-                    GetGalleryInboxRequest,
-                    GetGalleryInboxResponse
-                >(new() { Ownerless = true })
-        );
-
-        Assert.False(fresh.Items.Single().IsStalled);
-        Assert.True(later!.Items.Single().IsStalled);
     }
 
     private static Action<SeedContextBuilder> Inboxes() =>

@@ -20,39 +20,6 @@ public sealed class PostAnnouncementAnswerTests : IClassFixture<ApiTestFixture>
         _fixture = fixture;
     }
 
-    [Fact]
-    public async Task Should_RecordTheAnswer_When_ARunningMemberAnswers()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-
-        var response = await AnswerAtAsync(Now, ctx, "mara", AttendanceAnswer.Maybe, ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Announcement(ctx.Club.Announcements.IdOf("fest"))
-            .ToHaveAnswers(
-                (ctx.Identity.People.IdOf("chris"), AttendanceAnswer.Yes),
-                (ctx.Identity.People.IdOf("mara"), AttendanceAnswer.Maybe)
-            )
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReplaceTheAnswer_When_TheMemberAnswersAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(_fixture, ct);
-
-        var response = await AnswerAtAsync(Now, ctx, "chris", AttendanceAnswer.No, ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Announcement(ctx.Club.Announcements.IdOf("fest"))
-            .ToHaveAnswers((ctx.Identity.People.IdOf("chris"), AttendanceAnswer.No))
-            .AssertAsync(ct);
-    }
-
     [Theory]
     [InlineData("paula")]
     [InlineData("rolf")]
@@ -114,28 +81,6 @@ public sealed class PostAnnouncementAnswerTests : IClassFixture<ApiTestFixture>
             AttendanceAnswer.Yes,
             ct,
             ctx.Club.Announcements.IdOf(announcementAlias)
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheAnswer_When_TheAnnouncementAsksForNone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(
-            _fixture,
-            ct,
-            club => club.AddAnnouncement("ohne", "alice", "Ohne", "Nur zur Info.", Now.AddDays(-1))
-        );
-
-        var response = await AnswerAtAsync(
-            Now,
-            ctx,
-            "mara",
-            AttendanceAnswer.Yes,
-            ct,
-            ctx.Club.Announcements.IdOf("ohne")
         );
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);

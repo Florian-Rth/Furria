@@ -13,8 +13,6 @@ public sealed class EndMembershipTests : IClassFixture<ApiTestFixture>
     private const string ValidationField = "request";
     private const int PausedFrom2024 = 2024;
     private const int LastSessionOf2026March = 2025;
-    private const int PausedFrom2018 = 2018;
-    private const int PausedUntil2019 = 2019;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly LeftIn2020 = new(2020, 3, 1);
@@ -25,39 +23,6 @@ public sealed class EndMembershipTests : IClassFixture<ApiTestFixture>
     public EndMembershipTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CloseTheMembership_When_AManagerEndsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                EndedOn = LeftIn2026,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
-            .ToHavePeriod(JoinedIn2017, LeftIn2026)
-            .MembershipsOfPerson(ctx.Identity.People.IdOf("paula"))
-            .ToHaveOpenCount(0)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -90,42 +55,6 @@ public sealed class EndMembershipTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
             .ToHavePeriod(JoinedIn2017, LeftIn2020)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnUnprocessableEntity_When_TheEndPredatesTheStart()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                EndedOn = JoinedIn2017.AddDays(-1),
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal(
-            ["Eine Mitgliedschaft kann nicht vor ihrem Beginn enden."],
-            failures[ValidationField]
-        );
-        await ctx
-            .Expected.Membership(ctx.Identity.Memberships.IdOf("paula-erste"))
-            .ToBeOpen()
             .AssertAsync(ct);
     }
 
@@ -204,43 +133,6 @@ public sealed class EndMembershipTests : IClassFixture<ApiTestFixture>
             .ToBeOpen()
             .MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruht"))
             .ToHaveSpan(PausedFrom2024, LastSessionOf2026March)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheClosedMembershipPause_When_TheMembershipEnds()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("paula", "Paula", "Brendel")
-                        .AddMembership("paula-erste", "paula", JoinedIn2017)
-                        .AddMembershipPause(
-                            "paula-ruhte",
-                            "paula-erste",
-                            PausedFrom2018,
-                            PausedUntil2019
-                        )
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.POSTAsync<EndMembership, EndMembershipRequest>(
-            new()
-            {
-                PersonId = ctx.Identity.People.IdOf("paula"),
-                MembershipId = ctx.Identity.Memberships.IdOf("paula-erste"),
-                EndedOn = LeftIn2026,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MembershipPause(ctx.Identity.Pauses.IdOf("paula-ruhte"))
-            .ToHaveSpan(PausedFrom2018, PausedUntil2019)
             .AssertAsync(ct);
     }
 

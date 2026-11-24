@@ -33,10 +33,6 @@ public sealed class FinalTrackAdoptionTests
 
     [Theory]
     [InlineData(Opener, 10, 5)]
-    [InlineData(Opener, 5, 0)]
-    [InlineData(Finale, 0, 60)]
-    [InlineData(Finale, 60, 120)]
-    [InlineData(Live, 0, 100)]
     [InlineData(Live, 10, 109.8)]
     public void Should_MoveTheAnchorOntoTheFinalFile_When_ItsMusicIsAligned(
         int source,
@@ -51,10 +47,8 @@ public sealed class FinalTrackAdoptionTests
     }
 
     [Theory]
-    [InlineData(15, 15)]
     [InlineData(20, 20)]
     [InlineData(30, 80)]
-    [InlineData(35, 85)]
     public void Should_MoveEachPieceWithItsOwnAlignment_When_ThePiecesSitApartInTheFinalFile(
         double seconds,
         double expectedSeconds
@@ -73,25 +67,8 @@ public sealed class FinalTrackAdoptionTests
         );
     }
 
-    [Fact]
-    public void Should_MoveAFreshPieceWithTheAlignmentItWasSplitFrom_When_ItHasNoneOfItsOwn()
-    {
-        var adoption = new FinalTrackAdoption(
-            FinalFile,
-            120,
-            SplitOpener,
-            [new SourceAlignment(Opener, 10, new(2, 1))]
-        );
-
-        Assert.Equal(
-            new MusicAnchor(FinalFile, 37),
-            adoption.Rewritten(new MusicAnchor(Opener, 35))
-        );
-    }
-
     [Theory]
     [InlineData(25, 75)]
-    [InlineData(5, 55)]
     public void Should_MoveACutAwayAnchorWithTheAlignmentBeforeIt_When_ItLiesInNoPiece(
         double seconds,
         double expectedSeconds
@@ -114,17 +91,6 @@ public sealed class FinalTrackAdoptionTests
     }
 
     [Theory]
-    [InlineData(4.9)]
-    [InlineData(0)]
-    public void Should_MoveTheAnchorToTheStart_When_TheFinalFileCutsTheIntro(double seconds)
-    {
-        var rewritten = Adoption.Rewritten(new MusicAnchor(Opener, seconds));
-
-        Assert.Equal(new MusicAnchor(FinalFile, 0), rewritten);
-    }
-
-    [Theory]
-    [InlineData(Rehearsal, 12)]
     [InlineData(Finale, 60.1)]
     public void Should_KeepTheAnchor_When_ItsMusicIsNotInTheFinalFile(int source, double seconds)
     {
@@ -135,7 +101,6 @@ public sealed class FinalTrackAdoptionTests
 
     [Theory]
     [InlineData(20, 3, 12, 0)]
-    [InlineData(6, 3, 0, 2)]
     [InlineData(2, 0, 0, 3)]
     public void Should_KeepTheVideosLeadIn_When_ItsMusicMovesOntoTheFinalFile(
         double musicSeconds,

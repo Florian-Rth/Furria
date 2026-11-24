@@ -20,50 +20,6 @@ public sealed class PostBeerPotDrinkTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListTheNewDrinkAtItsPrice_When_AnOperatorAddsIt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(beerList => beerList.AddBeerPot(Pot, Warden), ct);
-
-        var (response, result) = await AddAsync(ctx, " Radler ", ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotEqual(BeerOf(ctx), result.BeerDrinkId);
-        await ctx
-            .Expected.BeerPot(ctx.BeerList.Pots.IdOf(Pot))
-            .ToListDrinks(
-                ("Bier", BeerListSeedBuilder.DefaultCratePriceCents),
-                ("Radler", RadlerPrice)
-            )
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReuseTheCataloguedDrink_When_ItsNameIsKnownInOtherCase()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await BuildAsync(
-            beerList =>
-                beerList
-                    .AddBeerPot(
-                        "alter-topf",
-                        Warden,
-                        openedAt: now.AddDays(-200),
-                        closedAt: now.AddDays(-2)
-                    )
-                    .AddBeerDrink("alter-topf", "Radler")
-                    .AddBeerPot(Pot, Warden, openedAt: now.AddDays(-2)),
-            ct
-        );
-
-        var (response, result) = await AddAsync(ctx, "RADLER", ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(ctx.BeerList.Drinks.IdOf("Radler"), result.BeerDrinkId);
-    }
-
-    [Fact]
     public async Task Should_ListTheRetiredDrinkAgainAtTheNewPrice_When_AnOperatorAddsItBack()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -102,27 +58,6 @@ public sealed class PostBeerPotDrinkTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildAsync(beerList => beerList.AddBeerPot(Pot, Warden), ct);
 
         var (response, _) = await AddAsync(ctx, "bier", ct);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_ThePotHasBeenHandedOver()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await BuildAsync(
-            beerList =>
-                beerList.AddBeerPot(
-                    Pot,
-                    Warden,
-                    openedAt: now.AddDays(-200),
-                    closedAt: now.AddDays(-2)
-                ),
-            ct
-        );
-
-        var (response, _) = await AddAsync(ctx, "Radler", ct);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }

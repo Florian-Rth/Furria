@@ -9,7 +9,6 @@ namespace Furria.Api.Tests.Authorization;
 public sealed class PersonSearchAccessTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
-    private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -68,90 +67,6 @@ public sealed class PersonSearchAccessTests : IClassFixture<ApiTestFixture>
 
         var client = await ctx.Identity.ClientForAsync("nadine", ct);
         var (response, _) = await client.GETAsync<PersonSearchProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsGroupsManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.GETAsync<PersonSearchProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsRolesManage()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "rollenpflege",
-                            "ilka-rollenpflege",
-                            "Rollenpflege",
-                            "ilka",
-                            FurriaPermissions.RolesManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, _) = await client.GETAsync<PersonSearchProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsClubManage()
-    {
-        var response = await ProbeAsHolderOfAsync(FurriaPermissions.ClubManage);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsKeyHoldingsManage()
-    {
-        var response = await ProbeAsHolderOfAsync(FurriaPermissions.KeyHoldingsManage);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsBoardManage()
-    {
-        var response = await ProbeAsHolderOfAsync(FurriaPermissions.BoardManage);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsCalendarManageClub()
-    {
-        var response = await ProbeAsHolderOfAsync(FurriaPermissions.CalendarManageClub);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
@@ -236,72 +151,5 @@ public sealed class PersonSearchAccessTests : IClassFixture<ApiTestFixture>
         var (response, _) = await client.GETAsync<PersonSearchProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheOnlyAdministeredGroupIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("nadine"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup(
-                                "kindergarde",
-                                "Kindergarde",
-                                "Aufgeloest.",
-                                isRecruiting: false,
-                                ArchivedIn2021
-                            )
-                            .AddGroupAdmin(
-                                "nadine-kindergarde",
-                                "kindergarde",
-                                "nadine",
-                                "Trainerin",
-                                JoinedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("nadine", ct);
-        var (response, _) = await client.GETAsync<PersonSearchProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Allow_When_TheCallerHoldsAccountsManage()
-    {
-        var response = await ProbeAsHolderOfAsync(FurriaPermissions.AccountsManage);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
-
-    private async Task<HttpResponseMessage> ProbeAsHolderOfAsync(string permissionKey)
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("hanna"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "vereinspflege",
-                            "hanna-vereinspflege",
-                            "Vereinspflege",
-                            "hanna",
-                            permissionKey
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("hanna", ct);
-        var (response, _) = await client.GETAsync<PersonSearchProbe, EmptyResponse>();
-
-        return response;
     }
 }

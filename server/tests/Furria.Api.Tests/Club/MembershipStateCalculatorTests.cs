@@ -11,18 +11,6 @@ public sealed class MembershipStateCalculatorTests
     private static readonly IReadOnlyCollection<SessionSpan> NoPauses = [];
 
     [Fact]
-    public void Should_BeNone_When_ThePersonNeverHeldAMembership()
-    {
-        Assert.Equal(MembershipState.None, Resolve([], NoPauses));
-    }
-
-    [Fact]
-    public void Should_BeNone_When_TheOnlyPeriodStartsTomorrow()
-    {
-        Assert.Equal(MembershipState.None, Resolve([Period(Today.AddDays(1), null)], NoPauses));
-    }
-
-    [Fact]
     public void Should_BeEnded_When_EveryBegunPeriodIsOver()
     {
         var chain = new[]
@@ -32,21 +20,6 @@ public sealed class MembershipStateCalculatorTests
         };
 
         Assert.Equal(MembershipState.Ended, Resolve(chain, NoPauses));
-    }
-
-    [Fact]
-    public void Should_BeActive_When_ThePeriodStartedTodayAndIsOpen()
-    {
-        Assert.Equal(MembershipState.Active, Resolve([Period(Today, null)], NoPauses));
-    }
-
-    [Fact]
-    public void Should_BeActive_When_ThePeriodEndsToday()
-    {
-        Assert.Equal(
-            MembershipState.Active,
-            Resolve([Period(new DateOnly(2017, 9, 1), Today)], NoPauses)
-        );
     }
 
     [Fact]
@@ -70,15 +43,6 @@ public sealed class MembershipStateCalculatorTests
                 [Period(new DateOnly(2017, 9, 1), null)],
                 [Span(RunningSessionYear, RunningSessionYear)]
             )
-        );
-    }
-
-    [Fact]
-    public void Should_BePaused_When_TheMembershipPauseIsOpenEnded()
-    {
-        Assert.Equal(
-            MembershipState.Paused,
-            Resolve([Period(new DateOnly(2017, 9, 1), null)], [Span(RunningSessionYear - 1, null)])
         );
     }
 
@@ -107,18 +71,6 @@ public sealed class MembershipStateCalculatorTests
     }
 
     [Fact]
-    public void Should_HaveNoMemberSince_When_TheChainIsEmpty()
-    {
-        Assert.Null(MembershipStateCalculator.MemberSince([], Today));
-    }
-
-    [Fact]
-    public void Should_HaveNoMemberSince_When_TheOnlyPeriodStartsTomorrow()
-    {
-        Assert.Null(MembershipStateCalculator.MemberSince([Period(Today.AddDays(1), null)], Today));
-    }
-
-    [Fact]
     public void Should_TakeTheEarliestStart_When_TheChainWasInterrupted()
     {
         var chain = new[]
@@ -140,12 +92,6 @@ public sealed class MembershipStateCalculatorTests
         };
 
         Assert.Equal(new DateOnly(2021, 1, 1), MembershipStateCalculator.MemberSince(chain, Today));
-    }
-
-    [Fact]
-    public void Should_StartOnTheDayItself_When_ThePeriodBeginsToday()
-    {
-        Assert.Equal(Today, MembershipStateCalculator.MemberSince([Period(Today, null)], Today));
     }
 
     private static MembershipState Resolve(

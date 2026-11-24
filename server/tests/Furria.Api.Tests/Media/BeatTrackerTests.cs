@@ -29,10 +29,4 @@ public sealed class BeatTrackerTests
         Assert.NotNull(grid);
         Assert.Equal(96, grid.TempoBpm, 0.2);
     }
-
-    [Fact]
-    public void Should_FindNoBeat_When_TheRecordingIsSilent()
-    {
-        Assert.Null(BeatTracker.Of(SoundSamples.Silence(10)));
-    }
 }

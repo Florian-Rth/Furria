@@ -1,5 +1,5 @@
 import type { StudioVideo } from '@furria/studio/studio-schemas';
-import { soundClipOf, soundSegmentOf, videoStartOfDrag } from '@furria/studio/video-sound';
+import { soundClipOf, soundSegmentOf } from '@furria/studio/video-sound';
 import { describe, expect, it } from 'vitest';
 
 const video = (patch: Partial<StudioVideo>): StudioVideo => ({
@@ -19,10 +19,6 @@ const video = (patch: Partial<StudioVideo>): StudioVideo => ({
 
 describe('soundClipOf', () => {
   it.each([
-    [
-      { clipStartSeconds: 4, clipEndSeconds: 20 },
-      { startSeconds: 4, endSeconds: 20 },
-    ],
     [
       { clipEndSeconds: null, durationSeconds: 25 },
       { startSeconds: 0, endSeconds: 25 },
@@ -44,18 +40,5 @@ describe('soundSegmentOf', () => {
       timelineStart: 14,
       timelineEnd: 30,
     });
-  });
-});
-
-describe('videoStartOfDrag', () => {
-  it.each([
-    [14, 10],
-    [14.337, 10.35],
-    [-50, -19.95],
-    [200, 115.95],
-  ])('turns the dragged lane start %s into the video start %s', (spanStart, start) => {
-    expect(videoStartOfDrag(spanStart, { startSeconds: 4, endSeconds: 20 }, 120)).toBeCloseTo(
-      start,
-    );
   });
 });

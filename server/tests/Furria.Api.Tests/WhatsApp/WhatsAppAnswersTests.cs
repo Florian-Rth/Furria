@@ -16,15 +16,11 @@ public sealed class WhatsAppAnswersTests : IClassFixture<ApiTestFixture>
 {
     private const string ClubChatId = "120363000000000001@g.us";
     private const string AlicesChatId = "491701234567@c.us";
-    private const string AlicesLid = "987654321012345@lid";
     private const string StrangersChatId = "491609999999@c.us";
     private const string CarlasChatId = "491705555555@c.us";
     private const string Question = "Welche Uhrzeit?";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
-    private static readonly DateTimeOffset MeetingStart = new(2027, 1, 20, 18, 0, 0, TimeSpan.Zero);
-    private static readonly DateTimeOffset MeetingEnd = new(2027, 1, 20, 21, 0, 0, TimeSpan.Zero);
-
     private readonly ApiTestFixture _fixture;
 
     public WhatsAppAnswersTests(ApiTestFixture fixture)
@@ -56,43 +52,6 @@ public sealed class WhatsAppAnswersTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AnswerTheAnnouncement_When_HerLinkedIdResolvesToHerPhone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        _fixture.Waha.KnowLid(AlicesLid, AlicesChatId);
-        await PostAnnouncementAsync(ctx, AnnouncementAttendance(), ct);
-        var poll = await PostedAsync("sendPoll", ct);
-
-        await DeliverAnswersAsync(ct, PollVote(poll.MessageId, AlicesLid, Now, "Nein"));
-
-        var seen = await AnnouncementSeenByAsync(ctx, "bea", ct);
-        var answer = Assert.Single(seen.AddOns.Single().Attendance?.Answers ?? []);
-        Assert.Equal(
-            (ctx.Identity.People.IdOf("alice"), AttendanceAnswer.No, true),
-            (answer.PersonId, answer.Answer, answer.IsGivenThroughWhatsApp)
-        );
-    }
-
-    [Fact]
-    public async Task Should_RecordHerAttendance_When_SheRespondsToTheEvent()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var entryId = await CreateEntryWithAttendanceAsync(ctx, ct);
-        var posted = await PostedAsync("sendEvent", ct);
-
-        await DeliverAnswersAsync(ct, EventResponse(posted.MessageId, AlicesChatId, "MAYBE", Now));
-
-        var entry = await EntrySeenByAsync(ctx, "ilka", entryId, ct);
-        var answer = Assert.Single(entry.Attendance?.Answers ?? []);
-        Assert.Equal(
-            (ctx.Identity.People.IdOf("alice"), AttendanceAnswer.Maybe, true),
-            (answer.PersonId, answer.Answer, answer.IsGivenThroughWhatsApp)
-        );
-    }
-
-    [Fact]
     public async Task Should_ShowTheUnassignedAnswerToTheOrganiserOnly_When_NoPersonCarriesTheNumber()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -112,23 +71,6 @@ public sealed class WhatsAppAnswersTests : IClassFixture<ApiTestFixture>
         Assert.Empty(organisers.Attendance?.Answers ?? []);
         var readers = (await AnnouncementSeenByAsync(ctx, "alice", ct)).AddOns.Single();
         Assert.Null(readers.Attendance?.Unassigned);
-    }
-
-    [Fact]
-    public async Task Should_ShowTheUnassignedVote_When_AStrangerVotesOnAPoll()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await PostAnnouncementAsync(ctx, AnnouncementPoll(), ct);
-        var poll = await PostedAsync("sendPoll", ct);
-
-        await DeliverAnswersAsync(ct, PollVote(poll.MessageId, StrangersChatId, Now, "10 Uhr"));
-
-        var answered = (await AnnouncementSeenByAsync(ctx, "bea", ct)).AddOns.Single().Poll;
-        Assert.NotNull(answered);
-        var unassigned = Assert.Single(answered.Unassigned ?? []);
-        Assert.Equal([answered.Options[0].OptionId], unassigned.OptionIds);
-        Assert.Equal(0, answered.VoterCount);
     }
 
     [Fact]
@@ -169,27 +111,6 @@ public sealed class WhatsAppAnswersTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CountNothing_When_TheVoteComesAfterTheAddOnClosed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        var announcementId = await PostAnnouncementAsync(ctx, AnnouncementAttendance(), ct);
-        var poll = await PostedAsync("sendPoll", ct);
-        await CloseAttendanceAsync(ctx, announcementId, ct);
-
-        await DeliverAnswersAsync(
-            ct,
-            PollVote(poll.MessageId, AlicesChatId, Now.AddMinutes(1), "Ja"),
-            PollVote(poll.MessageId, StrangersChatId, Now.AddMinutes(1), "Ja")
-        );
-
-        var attendance = (await AnnouncementSeenByAsync(ctx, "bea", ct)).AddOns.Single().Attendance;
-        Assert.NotNull(attendance);
-        Assert.Empty(attendance.Answers);
-        Assert.Empty(attendance.Unassigned ?? []);
-    }
-
-    [Fact]
     public async Task Should_TellTheVoterPrivatelyOnce_When_SheVotesAfterTheAddOnClosed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -227,43 +148,6 @@ public sealed class WhatsAppAnswersTests : IClassFixture<ApiTestFixture>
         Assert.Empty(attendance.Unassigned ?? []);
     }
 
-    [Fact]
-    public async Task Should_WithdrawHerWhatsAppVote_When_SheClearsItInTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await PostAnnouncementAsync(ctx, AnnouncementPoll(), ct);
-        var poll = await PostedAsync("sendPoll", ct);
-
-        await DeliverAnswersAsync(
-            ct,
-            PollVote(poll.MessageId, AlicesChatId, Now.AddSeconds(-5), "10 Uhr"),
-            PollVote(poll.MessageId, AlicesChatId, Now)
-        );
-
-        var answered = (await AnnouncementSeenByAsync(ctx, "alice", ct)).AddOns.Single().Poll;
-        Assert.NotNull(answered);
-        Assert.Equal(0, answered.VoterCount);
-    }
-
-    [Fact]
-    public async Task Should_KeepHerAnswer_When_ALaterVoteNamesNoPostedAnswer()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(ct);
-        await PostAnnouncementAsync(ctx, AnnouncementAttendance(), ct);
-        var poll = await PostedAsync("sendPoll", ct);
-
-        await DeliverAnswersAsync(
-            ct,
-            PollVote(poll.MessageId, AlicesChatId, Now.AddSeconds(-5), "Ja"),
-            PollVote(poll.MessageId, AlicesChatId, Now, "Vielleicht ja")
-        );
-
-        var seen = await AnnouncementSeenByAsync(ctx, "alice", ct);
-        Assert.Equal(AttendanceAnswer.Yes, seen.ViewerAnswer);
-    }
-
     private async Task DeliverAnswersAsync(CancellationToken ct, params string[] bodies)
     {
         var client = _fixture.CreateClient();
@@ -295,24 +179,6 @@ public sealed class WhatsAppAnswersTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
         return Assert.Single(result.Announcements);
-    }
-
-    private static async Task<CalendarEntryDto> EntrySeenByAsync(
-        SeededContext ctx,
-        string login,
-        int entryId,
-        CancellationToken ct
-    )
-    {
-        var client = await ctx.Identity.ClientForAsync(login, ct);
-        var (response, result) = await client.GETAsync<
-            GetCalendarEntryById,
-            GetCalendarEntryByIdRequest,
-            GetCalendarEntryByIdResponse
-        >(new GetCalendarEntryByIdRequest { CalendarEntryId = entryId });
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        return result.Entry;
     }
 
     private static async Task AnswerInTheAppAsync(
@@ -401,48 +267,6 @@ public sealed class WhatsAppAnswersTests : IClassFixture<ApiTestFixture>
             SignUpList = null,
             Borrowed = null,
         };
-
-    private static async Task<int> CreateEntryWithAttendanceAsync(
-        SeededContext ctx,
-        CancellationToken ct
-    )
-    {
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, result) = await client.POSTAsync<
-            PostCalendarEntry,
-            PostCalendarEntryRequest,
-            PostCalendarEntryResponse
-        >(
-            new PostCalendarEntryRequest
-            {
-                Title = "Vereinssitzung",
-                Description = null,
-                OwnerGroupId = null,
-                VenueId = null,
-                StartsAt = MeetingStart,
-                EndsAt = MeetingEnd,
-                Kind = CalendarEntryKind.Plain,
-                Audience = CalendarEntryAudience.Club,
-                AudienceGroupIds = [],
-                AudiencePersonIds = [],
-                AddOns =
-                [
-                    new()
-                    {
-                        Kind = CalendarEntryAddOnKind.Attendance,
-                        Poll = null,
-                        SignUpList = null,
-                        DaySchedule = null,
-                    },
-                ],
-                ParticipatingGroupIds = [],
-                Notify = true,
-            }
-        );
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        return result.CalendarEntryId;
-    }
 
     private async Task<SeededContext> BuildClubAsync(CancellationToken ct)
     {

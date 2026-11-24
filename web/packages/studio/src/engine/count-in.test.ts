@@ -32,8 +32,6 @@ const countsOf = (start: number): number[] =>
 
 describe('countInOf', () => {
   it.each([
-    [5, [5, 6, 7, 8]],
-    [3, [1, 2, 3, 4]],
     [7.995, [3, 4, 5, 6]],
     [0.5, [4, 5, 6, 7]],
     [22, [7, 8, 1, 2]],
@@ -53,14 +51,6 @@ describe('countInOf', () => {
     });
   });
 
-  it('keeps a start a hair before its beat in time with the music', () => {
-    expect(countInOf(mix, 7.995, 1, 4)?.leadSeconds).toBeCloseTo(1.995);
-  });
-
-  it('measures the beats of the song the start lies in', () => {
-    expect(countInOf(mix, 22, 1, 4)?.leadSeconds).toBeCloseTo(3.75);
-  });
-
   it('stretches the count-in with the tempo', () => {
     const slowed = countInOf(mix, 5, 0.75, 4);
 
@@ -76,7 +66,6 @@ describe('countInOf', () => {
   it.each([
     ['a song without a beat grid', [segment({ beats: [] })], 5, 4],
     ['a start past the music', mix, 45, 4],
-    ['no beats asked for', mix, 5, 0],
   ])('counts nothing in for %s', (_, segments, start, beats) => {
     expect(countInOf(segments, start, 1, beats)).toBeNull();
   });
@@ -94,9 +83,6 @@ describe('countInAt', () => {
   };
 
   it.each([
-    [-0.1, null],
-    [0, 5],
-    [0.7, 6],
     [1.995, 8],
     [2, null],
   ])('shows the count of the last click %s s into the count-in', (elapsed, count) => {

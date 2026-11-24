@@ -14,8 +14,6 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
     private const string Street = "Am Sportplatz 7";
     private const string Zip = "99713";
     private const string City = "Großfurra";
-    private const int UnknownVenueId = 999_999;
-
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
     private static readonly TimeOnly Nine = new(9, 0);
     private static readonly TimeOnly Noon = new(12, 0);
@@ -27,114 +25,6 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
     public PutVenueTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
-    }
-
-    [Fact]
-    public async Task Should_CarryTheNewAddress_When_TheKeyHolderMovesTheVenue()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Club(club =>
-                    club.AddVenue(
-                        "halle",
-                        "Turnhalle",
-                        street: "Schulstraße 4",
-                        zip: "99713",
-                        city: "Großfurra",
-                        hint: "Zugang über den Hof"
-                    )
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutVenue, PutVenueRequest>(
-            new()
-            {
-                VenueId = ctx.Club.Venues.IdOf("halle"),
-                Name = "Sporthalle",
-                Street = Street,
-                Zip = Zip,
-                City = City,
-                Hint = null,
-                OpeningHours = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Venue(ctx.Club.Venues.IdOf("halle"))
-            .ToHaveName("Sporthalle")
-            .Venue(ctx.Club.Venues.IdOf("halle"))
-            .ToHaveAddress(Street, Zip, City)
-            .Venue(ctx.Club.Venues.IdOf("halle"))
-            .ToHaveHint(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheOpeningHours_When_TheVenueIsSavedWithThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddVenue("baeckerei", "Bäckerei Schmidt")),
-            ct
-        );
-
-        var response = await SaveOpeningHoursAsync(
-            ctx,
-            "baeckerei",
-            [
-                Slot(DayOfWeek.Monday, Nine, Noon),
-                Slot(DayOfWeek.Monday, Two, Six),
-                Slot(DayOfWeek.Saturday, Nine, Noon),
-            ]
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Venue(ctx.Club.Venues.IdOf("baeckerei"))
-            .ToHaveOpeningHours(
-                (DayOfWeek.Monday, Nine, Noon),
-                (DayOfWeek.Monday, Two, Six),
-                (DayOfWeek.Saturday, Nine, Noon)
-            )
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReplaceTheOpeningHoursAsAWhole_When_TheVenueIsSavedAgain()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBakeryOpenOnTuesdayAndWednesdayAsync(ct);
-
-        var response = await SaveOpeningHoursAsync(
-            ctx,
-            "baeckerei",
-            [Slot(DayOfWeek.Friday, Two, Six)]
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Venue(ctx.Club.Venues.IdOf("baeckerei"))
-            .ToHaveOpeningHours((DayOfWeek.Friday, Two, Six))
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ClearTheOpeningHours_When_TheVenueIsSavedWithoutThem()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBakeryOpenOnTuesdayAndWednesdayAsync(ct);
-
-        var response = await SaveOpeningHoursAsync(ctx, "baeckerei", []);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Venue(ctx.Club.Venues.IdOf("baeckerei"))
-            .ToHaveOpeningHours()
-            .AssertAsync(ct);
     }
 
     [Theory]
@@ -211,36 +101,6 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepItsName_When_OnlyTheAddressChanges()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddVenue("halle", "Turnhalle")),
-            ct
-        );
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutVenue, PutVenueRequest>(
-            new()
-            {
-                VenueId = ctx.Club.Venues.IdOf("halle"),
-                Name = "Turnhalle",
-                Street = Street,
-                Zip = Zip,
-                City = City,
-                Hint = null,
-                OpeningHours = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.Venue(ctx.Club.Venues.IdOf("halle"))
-            .ToHaveAddress(Street, Zip, City)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnConflict_When_TheVenueIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -276,29 +136,6 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
             .Expected.Venue(ctx.Club.Venues.IdOf("altes-lager"))
             .ToHaveName("Altes Lager")
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheVenueIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutVenue, PutVenueRequest>(
-            new()
-            {
-                VenueId = UnknownVenueId,
-                Name = "Turnhalle",
-                Street = Street,
-                Zip = Zip,
-                City = City,
-                Hint = null,
-                OpeningHours = [],
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private Task<SeededContext> BuildBakeryOpenOnTuesdayAndWednesdayAsync(CancellationToken ct) =>

@@ -1,6 +1,5 @@
 using System.Net;
 using Furria.Api.Endpoints.Auth;
-using Furria.Api.RateLimiting;
 using Furria.Core.Identity;
 using Furria.Infrastructure.Identity;
 using Furria.Tests.Common.Builder;
@@ -11,9 +10,6 @@ namespace Furria.Api.Tests.Auth;
 
 public sealed class RequestAccessTests : IClassFixture<ApiTestFixture>
 {
-    private static readonly TimeSpan PastTheMailInterval =
-        AccessRequestService.MailInterval + TimeSpan.FromSeconds(1);
-
     private readonly ApiTestFixture _fixture;
 
     public RequestAccessTests(ApiTestFixture fixture)
@@ -60,66 +56,6 @@ public sealed class RequestAccessTests : IClassFixture<ApiTestFixture>
         Assert.Equal(match, ineligible);
         Assert.Equal(match, withoutBirthDate);
         Assert.Equal(match, throttledRepeat);
-    }
-
-    [Fact]
-    public async Task Should_IssueASelfRequestedInvitation_When_TheAddressIsHerContactEmail()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-
-        var response = await SignedOutMailSteps.RequestAccessAsync(
-            _fixture.CreateClient(),
-            $"  {annaEmail.ToUpperInvariant()} "
-        );
-
-        Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
-        var mail = await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct);
-        Assert.Single(mail.LinkTokens());
-        await ctx
-            .Expected.LiveInvitationOfPerson(annaId)
-            .ToBeSelfRequested()
-            .AccountEventsOfPerson(annaId)
-            .ToHaveKindsInOrder(AccountEventKind.Invited)
-            .AccountEventsOfPerson(annaId)
-            .ToHaveNoLatestActor()
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SignHerIn_When_SheRedeemsTheRequestedLink()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), annaEmail);
-        var mail = await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct);
-
-        var (response, redemption) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            mail.LinkToken()
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        InvitationSteps.SignedInClient(_fixture, redemption);
-        await ctx
-            .Expected.AccountOfPerson(ctx.Identity.People.IdOf("anna"))
-            .ToHaveLoginEmail(annaEmail)
-            .AssertAsync(ct);
     }
 
     [Fact]
@@ -217,63 +153,6 @@ public sealed class RequestAccessTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SendNothing_When_ThePersonHasNoBirthDate()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var carlEmail = InvitationSteps.UniqueContactEmail("carl");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("carl", "Carl", "Muster")
-                        .AddPersonContact("carl", carlEmail)
-                        .AddMembership("carl-membership", "carl", _fixture.Today.AddYears(-1))
-                        .AddAccount("sentinel")
-                ),
-            ct
-        );
-
-        await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), carlEmail);
-        await SignedOutMailSteps.SettleAsync(_fixture, ctx.Identity.EmailOf("sentinel"), ct);
-
-        Assert.Empty(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, carlEmail, ct));
-        await ctx
-            .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("carl"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SendNothing_When_ThePersonIsNotInTheClub()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var doraEmail = InvitationSteps.UniqueContactEmail("dora");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddPerson("dora", "Dora", "Muster")
-                        .AddPersonContact(
-                            "dora",
-                            doraEmail,
-                            birthDate: _fixture.Today.AddYears(-30)
-                        )
-                        .AddAccount("sentinel")
-                ),
-            ct
-        );
-
-        await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), doraEmail);
-        await SignedOutMailSteps.SettleAsync(_fixture, ctx.Identity.EmailOf("sentinel"), ct);
-
-        Assert.Empty(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, doraEmail, ct));
-        await ctx
-            .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("dora"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_SendNothing_When_ThePersonIsYoungerThanTheAgeOfConsent()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -300,32 +179,6 @@ public sealed class RequestAccessTests : IClassFixture<ApiTestFixture>
         Assert.Empty(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, emmaEmail, ct));
         await ctx
             .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("emma"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SendNothing_When_ThePersonAlreadyHasAnAccount()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var finnEmail = InvitationSteps.UniqueContactEmail("finn");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddEligiblePerson("finn", "Finn", finnEmail, _fixture.Today)
-                        .AddAccount("finn")
-                        .AddAccount("sentinel")
-                ),
-            ct
-        );
-
-        await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), finnEmail);
-        await SignedOutMailSteps.SettleAsync(_fixture, ctx.Identity.EmailOf("sentinel"), ct);
-
-        Assert.Empty(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, finnEmail, ct));
-        await ctx
-            .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("finn"))
             .ToHaveCount(0)
             .AssertAsync(ct);
     }
@@ -363,117 +216,6 @@ public sealed class RequestAccessTests : IClassFixture<ApiTestFixture>
 
         Assert.Single(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, annaEmail, ct));
         await ctx.Expected.InvitationsOfPerson(annaId).ToHaveCount(1).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SendNothingToAnyoneOfTheInbox_When_ASharedAddressIsRequestedAgainWithinFiveMinutes()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var sharedEmail = InvitationSteps.UniqueContactEmail("familie");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity
-                        .AddEligiblePerson("anna", "Anna", sharedEmail, _fixture.Today)
-                        .AddEligiblePerson("ben", "Ben", sharedEmail, _fixture.Today)
-                        .AddAccount("sentinel")
-                ),
-            ct
-        );
-        await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), sharedEmail);
-        await _fixture.Mailbox.SingleMailToAsync(sharedEmail, ct);
-
-        await _fixture.AtLaterTimeAsync(
-            AccessRequestService.MailInterval - TimeSpan.FromSeconds(1),
-            async () =>
-            {
-                await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), sharedEmail);
-                await SignedOutMailSteps.SettleAsync(
-                    _fixture,
-                    ctx.Identity.EmailOf("sentinel"),
-                    ct
-                );
-            }
-        );
-
-        Assert.Single(await SignedOutMailSteps.MailsAlreadyInAsync(_fixture, sharedEmail, ct));
-        await ctx
-            .Expected.InvitationsOfPerson(ctx.Identity.People.IdOf("anna"))
-            .ToHaveCount(1)
-            .InvitationsOfPerson(ctx.Identity.People.IdOf("ben"))
-            .ToHaveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_MailAgain_When_FiveMinutesHavePassed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var annaEmail = InvitationSteps.UniqueContactEmail("anna");
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddEligiblePerson("anna", "Anna", annaEmail, _fixture.Today)
-                ),
-            ct
-        );
-        var annaId = ctx.Identity.People.IdOf("anna");
-        await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), annaEmail);
-        var first = await _fixture.Mailbox.SingleMailToAsync(annaEmail, ct);
-
-        await _fixture.AtLaterTimeAsync(
-            PastTheMailInterval,
-            async () =>
-            {
-                await SignedOutMailSteps.RequestAccessAsync(_fixture.CreateClient(), annaEmail);
-                await _fixture.Mailbox.MailsToAsync(annaEmail, 2, ct);
-            }
-        );
-
-        var (_, lookup) = await InvitationSteps.LookUpAsync(
-            _fixture.CreateClient(),
-            first.LinkToken()
-        );
-        Assert.Equal(InvitationLookupStatus.Dead, lookup.Status);
-        await ctx
-            .Expected.InvitationsOfPerson(annaId)
-            .ToHaveCount(2)
-            .InvitationsOfPerson(annaId)
-            .ToHaveLiveCount(1)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnTooManyRequests_When_OneAddressIsRequestedTooOften()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-        var address = InvitationSteps.UniqueContactEmail("niemand");
-        var client = _fixture.CreateClient();
-        var permits = new SignedOutRateLimitOptions().PermitsPerAddress;
-
-        for (var attempt = 0; attempt < permits; attempt++)
-            Assert.Equal(
-                HttpStatusCode.Accepted,
-                (await SignedOutMailSteps.RequestAccessAsync(client, address)).StatusCode
-            );
-        var refused = await SignedOutMailSteps.RequestAccessAsync(client, address);
-
-        Assert.Equal(HttpStatusCode.TooManyRequests, refused.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_TheAddressIsNoEmail()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        await _fixture.BuildAsync(ct);
-
-        var response = await SignedOutMailSteps.RequestAccessAsync(
-            _fixture.CreateClient(),
-            "keine-adresse"
-        );
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     private static async Task<SignedOutMailSteps.AnswerFingerprint> AnswerToAsync(

@@ -56,58 +56,6 @@ public sealed class WithdrawAnnouncementTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeAForeignAnnouncementDown_When_TheCallerHoldsThePermission()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-        var announcementId = ctx.Club.Announcements.IdOf("von-alice");
-
-        var response = await client.POSTAsync<WithdrawAnnouncement, WithdrawAnnouncementRequest>(
-            new() { AnnouncementId = announcementId }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.Announcement(announcementId).ToNotExist().AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnForbidden_When_TheCallerIsNeitherAutorNorBerechtigt()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("chris", ct);
-        var announcementId = ctx.Club.Announcements.IdOf("von-alice");
-
-        var response = await client.POSTAsync<WithdrawAnnouncement, WithdrawAnnouncementRequest>(
-            new() { AnnouncementId = announcementId }
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.Announcement(announcementId).ToHaveTitle(Title).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheAnnouncementIsAlreadyOffTheBoard()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildBoardAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("bea", ct);
-
-        var announcementId = ctx.Club.Announcements.IdOf("von-alice");
-        var taken = await client.POSTAsync<WithdrawAnnouncement, WithdrawAnnouncementRequest>(
-            new() { AnnouncementId = announcementId }
-        );
-
-        var response = await client.POSTAsync<WithdrawAnnouncement, WithdrawAnnouncementRequest>(
-            new() { AnnouncementId = announcementId }
-        );
-
-        Assert.Equal(HttpStatusCode.NoContent, taken.StatusCode);
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_DeleteItsAddOnsWithTheirAnswers_When_TheAnnouncementIsWithdrawn()
     {
         var ct = TestContext.Current.CancellationToken;

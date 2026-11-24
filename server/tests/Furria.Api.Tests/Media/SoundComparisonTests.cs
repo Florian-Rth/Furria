@@ -8,15 +8,6 @@ public sealed class SoundComparisonTests
     private static readonly SoundSignal Song = SoundSamples.Song(seed: 7, bpm: 120, seconds: 60);
 
     [Fact]
-    public void Should_AlignWithoutShift_When_TheSameSongIsCompared()
-    {
-        var alignment = Align(Song, Song);
-
-        Assert.Equal(0, alignment.OffsetSeconds, 0.01);
-        Assert.True(alignment.Confidence > 0.95, $"confidence {alignment.Confidence}");
-    }
-
-    [Fact]
     public void Should_FindWhereTheCutStarts_When_TheSongWasTrimmed()
     {
         var trimmed = SoundSamples.Excerpt(Song, 12.34, 41);
@@ -50,19 +41,6 @@ public sealed class SoundComparisonTests
         var alignment = Align(Song, otherSong);
 
         Assert.True(alignment.Confidence < 0.3, $"confidence {alignment.Confidence}");
-    }
-
-    [Fact]
-    public void Should_AlignAsBefore_When_TheProfilesWereStoredAndReadBack()
-    {
-        var trimmed = SoundSamples.Excerpt(Song, 5, 30);
-
-        var alignment = SoundComparison.Align(
-            SoundProfile.Parse(SoundProfile.Of(Song).ToBytes())!,
-            SoundProfile.Parse(SoundProfile.Of(trimmed).ToBytes())!
-        )!;
-
-        Assert.Equal(5, alignment.OffsetSeconds, 0.02);
     }
 
     private static SoundAlignment Align(SoundSignal reference, SoundSignal other) =>

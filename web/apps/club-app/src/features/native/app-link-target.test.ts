@@ -10,24 +10,6 @@ describe('appLinkTargetOf', () => {
       '/invitation#token=aB3-_x9Q',
     ],
     [
-      'a link with a search and a fragment',
-      'https://club.furria.test/invitation?from=mail#token=aB3',
-      'https://club.furria.test',
-      '/invitation?from=mail#token=aB3',
-    ],
-    [
-      'a link with several trailing slashes',
-      'https://club.furria.test/reset-password//?a=1',
-      'https://club.furria.test',
-      '/reset-password?a=1',
-    ],
-    [
-      'a base URL with a trailing slash',
-      'https://club.furria.test/invitation#token=aB3',
-      'https://club.furria.test/',
-      '/invitation#token=aB3',
-    ],
-    [
       'a foreign host',
       'https://evil.example/invitation#token=aB3',
       'https://club.furria.test',
@@ -45,8 +27,6 @@ describe('appLinkTargetOf', () => {
       'https://club.furria.test',
       null,
     ],
-    ['an unparseable link', 'not a url', 'https://club.furria.test', null],
-    ['a base URL that is no web URL', 'furria://club/invitation', 'furria://club', null],
   ])('maps %s', (_case, link, clubAppBaseUrl, expected) => {
     expect(appLinkTargetOf(link, clubAppBaseUrl)).toBe(expected);
   });

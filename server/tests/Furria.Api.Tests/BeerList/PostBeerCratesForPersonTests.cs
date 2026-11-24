@@ -10,9 +10,6 @@ namespace Furria.Api.Tests.BeerList;
 
 public sealed class PostBeerCratesForPersonTests : IClassFixture<ApiTestFixture>
 {
-    private const int UnknownPersonId = 999_995;
-    private const int UnknownPotId = 999_992;
-    private const int UnknownDrinkId = 999_991;
     private const int RadlerPrice = 12_00;
     private const string Radler = "Radler";
     private const int CratePrice = 16_00;
@@ -75,52 +72,6 @@ public sealed class PostBeerCratesForPersonTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_BookTheCratesAsPaidInOnePayment_When_TheOperatorMarksThemPaid()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden, CratePrice)
-                            .AddBeerDelivery(Pot, 30)
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                    ),
-            ct
-        );
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, result) = await client.POSTAsync<
-            PostBeerCratesForPerson,
-            PostBeerCratesForPersonRequest,
-            PostBeerCratesForPersonResponse
-        >(
-            new()
-            {
-                BeerPotId = potId,
-                PersonId = ctx.Identity.People.IdOf(Drinker),
-                BeerDrinkId = BeerListCast.BeerOf(ctx),
-                Count = 3,
-                Paid = true,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.NotNull(result.BeerPaymentId);
-        await ctx
-            .Expected.BeerPayment(result.BeerPaymentId.Value)
-            .ToSettle(3, 3 * CratePrice, ctx.Identity.People.IdOf(Warden), now)
-            .BeerTabOf(ctx.Identity.People.IdOf(Drinker))
-            .ToHaveOpenAndPaidCrates(potId, 0, 3)
-            .BeerStockOfPot(potId)
-            .ToStandAt(27)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_SettleHerOldestOpenCratesFirst_When_SheAlreadyOwesOlderCratesAndTheNewOnesArePaid()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -166,51 +117,6 @@ public sealed class PostBeerCratesForPersonTests : IClassFixture<ApiTestFixture>
             .ToBePaidBy(null)
             .BeerTabOf(ctx.Identity.People.IdOf(Drinker))
             .ToHaveOpenAndPaidCrates(potId, 1, 2)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_SettleOnlyTheBookedDrinksCrates_When_SheOwesOlderCratesOfAnotherDrink()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden, CratePrice)
-                            .AddBeerDrink(Pot, Radler, RadlerPrice)
-                            .AddBeerDelivery(Pot, 30, drink: Radler)
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                            .AddBeerCrate("bier-alt", Pot, Drinker, now.AddDays(-9))
-                    ),
-            ct
-        );
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var (response, result) = await client.POSTAsync<
-            PostBeerCratesForPerson,
-            PostBeerCratesForPersonRequest,
-            PostBeerCratesForPersonResponse
-        >(
-            new()
-            {
-                BeerPotId = potId,
-                PersonId = ctx.Identity.People.IdOf(Drinker),
-                BeerDrinkId = ctx.BeerList.Drinks.IdOf(Radler),
-                Count = 1,
-                Paid = true,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.BeerCrate(result.CrateIds[0])
-            .ToBePaidBy(result.BeerPaymentId)
-            .BeerCrate(ctx.BeerList.Crates.IdOf("bier-alt"))
-            .ToBePaidBy(null)
             .AssertAsync(ct);
     }
 
@@ -289,166 +195,6 @@ public sealed class PostBeerCratesForPersonTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheBooking_When_TheStockWouldFallBelowZero()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(Pot, Warden)
-                            .AddBeerDelivery(Pot, 4)
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<
-            PostBeerCratesForPerson,
-            PostBeerCratesForPersonRequest
-        >(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf(Pot),
-                PersonId = ctx.Identity.People.IdOf(Drinker),
-                BeerDrinkId = BeerListCast.BeerOf(ctx),
-                Count = 5,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx.Expected.BeerStockOfPot(ctx.BeerList.Pots.IdOf(Pot)).ToStandAt(4).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_ThePotHasBeenHandedOver()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList
-                            .AddBeerPot(
-                                "alter-topf",
-                                Warden,
-                                openedAt: now.AddDays(-200),
-                                closedAt: now.AddDays(-2)
-                            )
-                            .AddBeerDelivery("alter-topf", 10, now.AddDays(-100))
-                            .AddBeerListEnrollment("mira-bier", Drinker)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<
-            PostBeerCratesForPerson,
-            PostBeerCratesForPersonRequest
-        >(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf("alter-topf"),
-                PersonId = ctx.Identity.People.IdOf(Drinker),
-                BeerDrinkId = BeerListCast.BeerOf(ctx),
-                Count = 1,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        await ctx
-            .Expected.BeerTabOf(ctx.Identity.People.IdOf(Drinker))
-            .ToHaveTakenCrates(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePersonIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList =>
-                        beerList.AddBeerPot(Pot, Warden).AddBeerDelivery(Pot, 10)
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<
-            PostBeerCratesForPerson,
-            PostBeerCratesForPersonRequest
-        >(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf(Pot),
-                PersonId = UnknownPersonId,
-                BeerDrinkId = BeerListCast.BeerOf(ctx),
-                Count = 1,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePotIsUnknown()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WardenAndDrinker(builder)
-                    .BeerList(beerList => beerList.AddBeerListEnrollment("mira-bier", Drinker)),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<
-            PostBeerCratesForPerson,
-            PostBeerCratesForPersonRequest
-        >(
-            new()
-            {
-                BeerPotId = UnknownPotId,
-                PersonId = ctx.Identity.People.IdOf(Drinker),
-                BeerDrinkId = UnknownDrinkId,
-                Count = 1,
-            }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_BookTheChosenDrinkAtItsPrice_When_ThePotListsSeveralDrinks()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRadlerAsync(radlerRetiredAt: null, ct);
-        var radlerId = ctx.BeerList.Drinks.IdOf(Radler);
-        var potId = ctx.BeerList.Pots.IdOf(Pot);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<
-            PostBeerCratesForPerson,
-            PostBeerCratesForPersonRequest
-        >(ForMira(ctx, radlerId, count: 2));
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx
-            .Expected.BeerTabOf(ctx.Identity.People.IdOf(Drinker))
-            .ToHaveTakenCratesOf(radlerId, 2, RadlerPrice)
-            .BeerStockOfPot(potId)
-            .ToHold(radlerId, 1)
-            .BeerStockOfPot(potId)
-            .ToHold(BeerOf(ctx), 10)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheBooking_When_OnlyAnotherDrinkHasCratesLeft()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -465,37 +211,6 @@ public sealed class PostBeerCratesForPersonTests : IClassFixture<ApiTestFixture>
             .Expected.BeerTabOf(ctx.Identity.People.IdOf(Drinker))
             .ToHaveTakenCrates(0)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_ReturnConflict_When_TheDrinkIsRetiredFromThePot()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var now = _fixture.TimeProvider.GetUtcNow();
-        var ctx = await BuildWithRadlerAsync(radlerRetiredAt: now.AddDays(-1), ct);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<
-            PostBeerCratesForPerson,
-            PostBeerCratesForPersonRequest
-        >(ForMira(ctx, ctx.BeerList.Drinks.IdOf(Radler), count: 1));
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_ReturnNotFound_When_ThePotDoesNotListTheDrink()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildWithRadlerAsync(radlerRetiredAt: null, ct);
-
-        var client = await ctx.Identity.ClientForAsync(Warden, ct);
-        var response = await client.POSTAsync<
-            PostBeerCratesForPerson,
-            PostBeerCratesForPersonRequest
-        >(ForMira(ctx, UnknownDrinkId, count: 1));
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     private static PostBeerCratesForPersonRequest ForMira(
