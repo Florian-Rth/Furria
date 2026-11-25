@@ -170,6 +170,16 @@ public sealed class TablePlanService
                 ct
             );
 
+    public async Task<IReadOnlyDictionary<int, string>> HallNamesOfAsync(
+        IReadOnlyCollection<int> eventIds,
+        CancellationToken ct
+    ) =>
+        await _dbContext
+            .TablePlans.AsNoTracking()
+            .Where(plan => eventIds.Contains(plan.CalendarEntryId))
+            .Select(plan => new { plan.CalendarEntryId, HallName = plan.Hall!.Name })
+            .ToDictionaryAsync(plan => plan.CalendarEntryId, plan => plan.HallName, ct);
+
     private Task<bool> IsEventAsync(int eventId, CancellationToken ct) =>
         _dbContext.Events.AnyAsync(row => row.CalendarEntryId == eventId, ct);
 

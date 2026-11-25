@@ -1,3 +1,4 @@
+using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
@@ -39,9 +40,22 @@ public sealed class ClubAssistantAskers
             personId,
             firstName,
             await GroupNamesOfAsync(personId, ct),
-            await _authorizer.GrantedKeysOfPersonAsync(personId, ct)
+            await GrantedKeysOfAsync(personId, ct),
+            await _authorizer.AdministeredGroupIdsOfPersonAsync(personId, ct)
         );
     }
+
+    private async Task<IReadOnlySet<string>> GrantedKeysOfAsync(
+        int personId,
+        CancellationToken ct
+    ) =>
+        await _dbContext.Users.AnyAsync(
+            account =>
+                account.PersonId == personId && account.IsManagingLogin && !account.IsDisabled,
+            ct
+        )
+            ? FurriaPermissions.All.ToHashSet(StringComparer.Ordinal)
+            : await _authorizer.GrantedKeysOfPersonAsync(personId, ct);
 
     private async Task<IReadOnlyList<string>> GroupNamesOfAsync(int personId, CancellationToken ct)
     {

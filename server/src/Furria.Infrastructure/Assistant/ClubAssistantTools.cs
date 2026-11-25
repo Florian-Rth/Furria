@@ -5,6 +5,8 @@ using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Groups;
+using Furria.Infrastructure.Halls;
+using Furria.Infrastructure.Management;
 using Furria.Infrastructure.News;
 using Furria.Infrastructure.RunningOrders;
 using Microsoft.Extensions.AI;
@@ -30,6 +32,10 @@ public sealed partial class ClubAssistantTools
     public const string AddOns = "add_ons";
     public const string MyThings = "my_things";
     public const string BeerList = "beer_list";
+    public const string EventPreparation = "event_preparation";
+    public const string RunningOrderPlanning = "running_order_planning";
+    public const string TablePlans = "table_plans";
+    public const string MyToDos = "my_to_dos";
 
     private readonly ClubService _clubService;
     private readonly CalendarService _calendarService;
@@ -42,6 +48,8 @@ public sealed partial class ClubAssistantTools
     private readonly NewsService _newsService;
     private readonly BeerListService _beerListService;
     private readonly BeerTabService _beerTabService;
+    private readonly TablePlanService _tablePlanService;
+    private readonly ToDoService _toDoService;
     private readonly IOptions<ClubAppOptions> _clubApp;
     private readonly TimeProvider _timeProvider;
 
@@ -59,6 +67,8 @@ public sealed partial class ClubAssistantTools
         NewsService newsService,
         BeerListService beerListService,
         BeerTabService beerTabService,
+        TablePlanService tablePlanService,
+        ToDoService toDoService,
         IOptions<ClubAppOptions> clubApp,
         TimeProvider timeProvider
     )
@@ -74,6 +84,8 @@ public sealed partial class ClubAssistantTools
         _newsService = newsService;
         _beerListService = beerListService;
         _beerTabService = beerTabService;
+        _tablePlanService = tablePlanService;
+        _toDoService = toDoService;
         _clubApp = clubApp;
         _timeProvider = timeProvider;
     }
@@ -85,6 +97,7 @@ public sealed partial class ClubAssistantTools
             .. EventToolsFor(asker),
             .. ClubToolsFor(asker),
             .. PersonalToolsFor(asker),
+            .. ManagementToolsFor(asker),
         ];
 
     private IEnumerable<AIFunction> CalendarToolsFor(ClubAssistantAsker asker) =>

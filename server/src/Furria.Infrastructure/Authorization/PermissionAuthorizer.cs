@@ -22,7 +22,7 @@ public sealed class PermissionAuthorizer
     private IReadOnlySet<string>? _grantedKeys;
     private bool? _isAffiliated;
     private bool? _canSearchPersons;
-    private List<int>? _administeredGroupIds;
+    private IReadOnlyList<int>? _administeredGroupIds;
 
     public PermissionAuthorizer(AppDbContext dbContext, TimeProvider timeProvider)
     {
@@ -209,11 +209,19 @@ public sealed class PermissionAuthorizer
         if (personId is null)
             return _administeredGroupIds = [];
 
+        return _administeredGroupIds = await AdministeredGroupIdsOfPersonAsync(personId.Value, ct);
+    }
+
+    public async Task<IReadOnlyList<int>> AdministeredGroupIdsOfPersonAsync(
+        int personId,
+        CancellationToken ct
+    )
+    {
         var today = ClubClock.Today(_timeProvider);
-        return _administeredGroupIds = await _dbContext
+        return await _dbContext
             .GroupAdmins.AsNoTracking()
             .Where(Running.GroupAdmins(today))
-            .Where(admin => admin.PersonId == personId.Value)
+            .Where(admin => admin.PersonId == personId)
             .Select(admin => admin.GroupId)
             .Distinct()
             .ToListAsync(ct);

@@ -137,8 +137,9 @@ Goal: everything attached to an entry or announcement is answerable, without nam
 
 ### Phase 6 — Management knowledge
 Goal: permission holders get their extra knowledge, still without names.
-- [ ] Tools offered only when the asker holds the permission: event preparation (event steps, current step), running order planning, table plan, my to-dos as counts
-- [ ] Tests: tools absent without the permission, counts only
+- [x] Tools offered only when the asker holds the permission: event preparation (event steps, current step), running order planning, table plan, my to-dos as counts
+- [x] Tests: tools absent without the permission, counts only
+- Built 2026-11-25: tools are offered per asker — *event_preparation* (`events.manage`) = the events workbench's not-over events, cancelled and unpublished included: steps with state, due and opening day, current step, missing key facts, published or not, link to `/events/{id}`; *running_order_planning* (running-order planners) and *table_plans* (hall planners) cover the not-over, not-cancelled events: placed/unplaced acts, conflicts and hints (unplaced not counted twice), confirmed and changed since, link to `/events/{id}/running-order`; table plan needed/present, hall, tables, chairs, link to `/events/{id}/table-plan`. *my_to_dos* is offered to holders of a to-do-granting permission or group admins: counts per kind (Jeck-Check per group) with the Start link. `ToDoService.ForViewerAsync(ToDoViewer)` serves askers without an account; a person whose account is the managing login gets all permissions, as in the app. Running-order planning loads each event's running order separately (a handful per session; no batch query until it matters).
 
 ### Phase 7 — Rollout
 Goal: ready to switch on.

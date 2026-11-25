@@ -33,6 +33,15 @@ public sealed class FakeModelService : HttpMessageHandler
                 ?? [],
         ];
 
+    public IReadOnlyList<string> OfferedTools() =>
+        [
+            .. Requests
+                .FirstOrDefault()
+                ?["tools"]?.AsArray()
+                .Select(tool => tool?["function"]?["name"]?.GetValue<string>() ?? "")
+                ?? [],
+        ];
+
     public string? SystemPrompt() =>
         Requests
             .FirstOrDefault()
