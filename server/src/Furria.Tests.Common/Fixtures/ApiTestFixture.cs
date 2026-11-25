@@ -136,8 +136,9 @@ public sealed class ApiTestFixture : IAsyncLifetime
     internal const decimal ClubAssistantOutputEurosPerMillion = 4m;
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
-    private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan ChangeListenerTimeout = TimeSpan.FromSeconds(20);
+
+    public static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
 
     private readonly ApiTestInfrastructure _infrastructure;
 
@@ -490,6 +491,9 @@ public sealed class ApiTestFixture : IAsyncLifetime
     }
 
     public Task ClubAssistantAnsweredAsync(CancellationToken ct = default) =>
+        ClubAssistantAnsweredAsync(OutboxDrainTimeout, ct);
+
+    public Task ClubAssistantAnsweredAsync(TimeSpan timeout, CancellationToken ct = default) =>
         Polling.UntilAsync(
             async token =>
             {
@@ -505,7 +509,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
                     ? null
                     : db;
             },
-            OutboxDrainTimeout,
+            timeout,
             "The club assistant still owes answers",
             ct
         );

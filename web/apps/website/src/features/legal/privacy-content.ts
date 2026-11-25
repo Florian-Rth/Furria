@@ -51,7 +51,17 @@ export const privacyContent: LegalDocument = {
       ],
     },
     {
-      heading: '7. Deine Rechte',
+      heading: '7. Vereinsassistent auf WhatsApp',
+      paragraphs: [
+        'Mitglieder können dem WhatsApp-Konto des Vereins private Nachrichten schreiben, etwa um nach Trainingszeiten, Terminen oder Veranstaltungen zu fragen. Geantwortet wird nur, wenn deine Handynummer in unserer Mitgliederverwaltung hinterlegt ist; anderen Absendern schicken wir höchstens einmal am Tag einen kurzen Hinweis. Nachrichten in Gruppen, Sprachnachrichten und Bilder werden nicht ausgewertet.',
+        'Die Antworten formuliert ein KI-Sprachmodell der Mistral AI SAS, 15 rue des Halles, 75001 Paris, Frankreich, das in Rechenzentren in der EU betrieben wird. Mistral erhält dafür deinen Vornamen, deine Frage, den bisherigen Gesprächsverlauf der letzten 30 Minuten und die Angaben aus unserer Vereinsverwaltung, die zur Antwort nötig sind – ausschließlich solche, die du auch selbst in der Vereins-App sehen darfst, zum Beispiel Termine, deine Gruppen, deine eigenen Antworten oder deinen Stand auf der Bierliste. Deine Handynummer und Angaben zu anderen Personen werden nicht übermittelt. Mistral verarbeitet diese Daten in unserem Auftrag (Art. 28 DSGVO).',
+        'Fragen und Antworten speichern wir sieben Tage, damit der Assistent Rückfragen im Zusammenhang versteht; danach werden sie gelöscht. Niemand im Verein liest sie. Für die Kostenkontrolle zählen wir je Anfrage nur die verbrauchte Textmenge, ohne Inhalt.',
+        'Die Nachrichten selbst laufen über WhatsApp (WhatsApp Ireland Limited, Merrion Road, Dublin 4, Irland); dafür gelten die Bedingungen und die Datenschutzrichtlinie von WhatsApp, die du bei der Nutzung von WhatsApp akzeptiert hast.',
+        'Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse ist, Mitgliedern Vereinsinformationen dort zugänglich zu machen, wo sie ohnehin miteinander schreiben. Möchtest du den Assistenten nicht nutzen, schreib ihm einfach nicht.',
+      ],
+    },
+    {
+      heading: '8. Deine Rechte',
       paragraphs: [
         'Du hast das Recht auf Auskunft (Art. 15 DSGVO), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung der Verarbeitung (Art. 18) und Datenübertragbarkeit (Art. 20). Eine erteilte Einwilligung kannst du jederzeit mit Wirkung für die Zukunft widerrufen (Art. 7 Abs. 3).',
         'Widerspruchsrecht: Verarbeiten wir Daten auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO), kannst du aus Gründen, die sich aus deiner besonderen Situation ergeben, jederzeit widersprechen (Art. 21 DSGVO).',

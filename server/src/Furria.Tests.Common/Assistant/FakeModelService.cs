@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -10,6 +11,8 @@ public sealed class FakeModelService : HttpMessageHandler
 {
     private readonly ConcurrentQueue<FakeModelReply> _script = new();
     private readonly ConcurrentQueue<JsonNode> _requests = new();
+    private readonly HttpMessageInvoker _provider = new(new SocketsHttpHandler());
+    private string? _relayKey;
     private int _failuresLeft;
     private int _callCount;
 
@@ -20,6 +23,8 @@ public sealed class FakeModelService : HttpMessageHandler
         foreach (var reply in replies)
             _script.Enqueue(reply);
     }
+
+    public void RelayToProvider(string apiKey) => _relayKey = apiKey;
 
     public void Fail(int times) => Interlocked.Exchange(ref _failuresLeft, times);
 
@@ -54,6 +59,14 @@ public sealed class FakeModelService : HttpMessageHandler
         _script.Clear();
         _requests.Clear();
         Interlocked.Exchange(ref _failuresLeft, 0);
+        _relayKey = null;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+            _provider.Dispose();
+        base.Dispose(disposing);
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(
@@ -65,6 +78,9 @@ public sealed class FakeModelService : HttpMessageHandler
             ? "{}"
             : await request.Content.ReadAsStringAsync(cancellationToken);
         _requests.Enqueue(JsonNode.Parse(body) ?? new JsonObject());
+
+        if (_relayKey is { } apiKey)
+            return await RelayAsync(request, body, apiKey, cancellationToken);
 
         if (Interlocked.Decrement(ref _failuresLeft) >= 0)
             return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
@@ -81,6 +97,21 @@ public sealed class FakeModelService : HttpMessageHandler
                 "application/json"
             ),
         };
+    }
+
+    private Task<HttpResponseMessage> RelayAsync(
+        HttpRequestMessage request,
+        string body,
+        string apiKey,
+        CancellationToken cancellationToken
+    )
+    {
+        var relayed = new HttpRequestMessage(request.Method, request.RequestUri)
+        {
+            Content = new StringContent(body, Encoding.UTF8, "application/json"),
+        };
+        relayed.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        return _provider.SendAsync(relayed, cancellationToken);
     }
 
     private static string CompletionOf(FakeModelReply reply, int call) =>

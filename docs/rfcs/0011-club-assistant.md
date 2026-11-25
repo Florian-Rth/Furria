@@ -143,10 +143,11 @@ Goal: permission holders get their extra knowledge, still without names.
 
 ### Phase 7 — Rollout
 Goal: ready to switch on.
-- [ ] Website privacy page: section *Vereinsassistent* (Mistral AI, EU; 7 days; no third-party personal data; legitimate interest)
-- [ ] Ops docs: config keys, prices, how to switch on; live compose edit listed as owed (needs approval)
-- [ ] Manual eval script with ~30 real German questions and expected facts (run on demand, costs cents)
+- [x] Website privacy page: section *Vereinsassistent* (Mistral AI, EU; 7 days; no third-party personal data; legitimate interest)
+- [x] Ops docs: config keys, prices, how to switch on; live compose edit listed as owed (needs approval)
+- [x] Manual eval script with ~30 real German questions and expected facts (run on demand, costs cents)
 - [ ] Device check: DM the bot from a member phone and an unknown phone
+- Built 2026-11-25: privacy section *7. Vereinsassistent auf WhatsApp* (Mistral AI SAS as processor, EU; first name, question, 30-minute history and the asker's own visible facts; 7 days; WhatsApp's own terms; Art. 6 (1) f). `docs/ops/PRODUCTION.md` → *Club assistant* (config table, switching on, running it, eval, owed live edits); `CLUB_ASSISTANT_API_KEY` in `.env.example` and the example compose (`ClubAssistant__ApiKey`, optional). Eval = `ClubAssistantEvalTests`, an xUnit `Explicit` theory (35 German questions against a seeded club, whole-word fact matching, forbidden words, a provider failure fails the case); the fake model relays to the real provider with `CLUB_ASSISTANT_EVAL_API_KEY`. Never runs in CI. Owed: one real eval run, the live compose edit (`ClubAssistant__ApiKey`, `message` hook event; needs approval), the device check, and accepting Mistral's DPA on the account.
 
 ## Risks & alternatives
 - **Wrong answers.** An LLM may misread a date or a tool result. Mitigated by exact tool data, „facts

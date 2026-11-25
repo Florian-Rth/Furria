@@ -12,10 +12,18 @@ internal static class ClubAssistantSteps
 {
     internal static string Iso(DateOnly day) => day.ToString("yyyy-MM-dd");
 
+    internal static Task AskAsync(
+        ApiTestFixture fixture,
+        string chatId,
+        string text,
+        CancellationToken ct
+    ) => AskAsync(fixture, chatId, text, ApiTestFixture.OutboxDrainTimeout, ct);
+
     internal static async Task AskAsync(
         ApiTestFixture fixture,
         string chatId,
         string text,
+        TimeSpan answerTimeout,
         CancellationToken ct
     )
     {
@@ -29,7 +37,7 @@ internal static class ClubAssistantSteps
         );
         Assert.Equal(HttpStatusCode.OK, received.StatusCode);
         await fixture.WhatsAppInboxDrainedAsync(ct);
-        await fixture.ClubAssistantAnsweredAsync(ct);
+        await fixture.ClubAssistantAnsweredAsync(answerTimeout, ct);
         await fixture.WhatsAppOutboxDrainedAsync(ct);
         fixture.TimeProvider.SetUtcNow(now.AddMinutes(1));
     }
