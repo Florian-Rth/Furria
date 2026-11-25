@@ -5,7 +5,8 @@ public sealed record FakeModelReply(
     string? ToolName = null,
     string? ToolArguments = null,
     int InputTokens = FakeModelReply.DefaultInputTokens,
-    int OutputTokens = FakeModelReply.DefaultOutputTokens
+    int OutputTokens = FakeModelReply.DefaultOutputTokens,
+    string? Thought = null
 )
 {
     public const int DefaultInputTokens = 1_000;
@@ -16,4 +17,6 @@ public sealed record FakeModelReply(
 
     public static FakeModelReply Calling(string toolName, object arguments) =>
         new(null, toolName, System.Text.Json.JsonSerializer.Serialize(arguments));
+
+    public FakeModelReply ThinkingFirst(string thought) => this with { Thought = thought };
 }

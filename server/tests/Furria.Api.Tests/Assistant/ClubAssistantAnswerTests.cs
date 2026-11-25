@@ -51,6 +51,32 @@ public sealed class ClubAssistantAnswerTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_AnswerWithTheTextOnly_When_TheModelAlsoSendsItsThinking()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(
+            club => club.AddCalendarEntry("evening", "Vereinsabend", Now.AddHours(2)),
+            ct
+        );
+        await SwitchOnAsync(ctx, ct);
+        _fixture.Model.Script(
+            FakeModelReply
+                .Calling(ClubAssistantTools.CalendarEntries, TodayAndTomorrow())
+                .ThinkingFirst("Sie fragt nach heute, ich schaue in den Kalender."),
+            FakeModelReply
+                .Saying("Heute um *20:00* ist Vereinsabend! 🎉")
+                .ThinkingFirst("Der Kalender nennt den Vereinsabend.")
+        );
+
+        await AskAsync("Was ist heute los?", ct);
+
+        Assert.Equal(
+            ClubAssistantLines.Introduced("Heute um *20:00* ist Vereinsabend! 🎉"),
+            Assert.Single(_fixture.Waha.Sent).Text
+        );
+    }
+
+    [Fact]
     public async Task Should_IntroduceItselfOnlyOnce_When_SheAsksAgain()
     {
         var ct = TestContext.Current.CancellationToken;

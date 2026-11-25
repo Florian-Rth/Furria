@@ -31,8 +31,10 @@ public static class ClubAssistantModel
         services.AddScoped<ClubAssistantDialogue>();
         services.AddScoped<ClubAssistantAnswers>();
         services.AddHostedService<ClubAssistantAnswerWorker>();
+        services.AddTransient<ClubAssistantThinkingFilter>();
         services
             .AddHttpClient(HttpClientName)
+            .AddHttpMessageHandler<ClubAssistantThinkingFilter>()
             .ConfigurePrimaryHttpMessageHandler(() =>
                 new SocketsHttpHandler { PooledConnectionLifetime = PooledConnectionLifetime }
             );

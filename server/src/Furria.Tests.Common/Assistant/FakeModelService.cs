@@ -145,7 +145,7 @@ public sealed class FakeModelService : HttpMessageHandler
             ? new
             {
                 role = "assistant",
-                content = (string?)null,
+                content = ContentOf(reply),
                 tool_calls = new[]
                 {
                     new
@@ -159,7 +159,20 @@ public sealed class FakeModelService : HttpMessageHandler
             : new
             {
                 role = "assistant",
-                content = reply.Text,
+                content = ContentOf(reply),
                 tool_calls = (object[]?)null,
             };
+
+    private static object? ContentOf(FakeModelReply reply) =>
+        reply.Thought is { } thought
+            ? new object[]
+            {
+                new
+                {
+                    type = "thinking",
+                    thinking = new[] { new { type = "text", text = thought } },
+                },
+                new { type = "text", text = reply.Text ?? "" },
+            }
+            : reply.Text;
 }
