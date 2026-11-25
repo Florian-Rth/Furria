@@ -6,17 +6,29 @@ public sealed class ClubAssistantOptions
 {
     public const string SectionName = "ClubAssistant";
     public const string DefaultEndpoint = "https://api.mistral.ai/v1";
-    public const string DefaultModel = "mistral-large-latest";
+    public const string DefaultModel = "mistral-small-2603";
+    public const string DefaultReasoningEffort = "none";
 
-    private const decimal DefaultInputEurosPerMillion = 0.70m;
-    private const decimal DefaultCachedInputEurosPerMillion = 0.07m;
-    private const decimal DefaultOutputEurosPerMillion = 2.10m;
+    private const decimal DefaultInputEurosPerMillion = 0.15m;
+    private const decimal DefaultCachedInputEurosPerMillion = 0.015m;
+    private const decimal DefaultOutputEurosPerMillion = 0.60m;
+
+    private static readonly HashSet<string> ReasoningEfforts = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "",
+        "none",
+        "low",
+        "medium",
+        "high",
+    };
 
     public string Endpoint { get; set; } = DefaultEndpoint;
 
     public string ApiKey { get; set; } = "";
 
     public string Model { get; set; } = DefaultModel;
+
+    public string ReasoningEffort { get; set; } = DefaultReasoningEffort;
 
     public decimal InputEurosPerMillion { get; set; } = DefaultInputEurosPerMillion;
 
@@ -31,6 +43,7 @@ public sealed class ClubAssistantOptions
         || (
             Uri.TryCreate(Endpoint, UriKind.Absolute, out _)
             && Model.Length > 0
+            && ReasoningEfforts.Contains(ReasoningEffort)
             && InputEurosPerMillion >= 0
             && CachedInputEurosPerMillion >= 0
             && OutputEurosPerMillion >= 0

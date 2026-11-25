@@ -3,8 +3,8 @@
 Members want to ask the bot plain questions ("Hat heute jemand Training?", "Ist der Vereinsraum
 Samstag um 14 Uhr frei?"), so the **club assistant** hands each private message to a hosted LLM
 that answers by calling read-only tools over the club's data, each run with the asker's own
-visibility. We chose a mid-tier model from an EU provider (Mistral Large 4 on Mistral's EU platform,
-under a data processing agreement) over a self-hosted model, which a small club cannot run at that
+visibility. We chose a mid-tier model from an EU provider (Mistral on its EU platform — Small 4 without
+thinking since 2026-11-25, Large 4 the step up — under a data processing agreement) over a self-hosted model, which a small club cannot run at that
 quality, and over a decision-only model such as Jev, which cannot extract dates, times or names
 from a free sentence nor write a reply. The code talks to the model only through
 `Microsoft.Extensions.AI`'s `IChatClient`, so the provider is configuration, not code.

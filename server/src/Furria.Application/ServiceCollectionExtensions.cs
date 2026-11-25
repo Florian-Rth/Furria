@@ -132,8 +132,9 @@ public static class ServiceCollectionExtensions
             .BindConfiguration(ClubAssistantOptions.SectionName)
             .Validate(
                 options => options.IsUsable,
-                $"{ClubAssistantOptions.SectionName} needs an absolute Endpoint, a Model and "
-                    + "prices of zero or more once an ApiKey is set; without an ApiKey the club "
+                $"{ClubAssistantOptions.SectionName} needs an absolute Endpoint, a Model, a "
+                    + "ReasoningEffort of none, low, medium, high or empty, and prices of zero or "
+                    + "more once an ApiKey is set; without an ApiKey the club "
                     + "assistant stays off."
             )
             .ValidateOnStart();

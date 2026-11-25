@@ -77,6 +77,22 @@ public sealed class ClubAssistantAnswerTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_AskTheSmallModelToSkipThinking_When_ItCallsTheModel()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(_ => { }, ct);
+        await SwitchOnAsync(ctx, ct);
+
+        await AskAsync("Was ist heute los?", ct);
+
+        var request = Assert.Single(_fixture.Model.Requests);
+        Assert.Equal(
+            ("mistral-small-2603", "none"),
+            (request["model"]?.GetValue<string>(), request["reasoning_effort"]?.GetValue<string>())
+        );
+    }
+
+    [Fact]
     public async Task Should_IntroduceItselfOnlyOnce_When_SheAsksAgain()
     {
         var ct = TestContext.Current.CancellationToken;

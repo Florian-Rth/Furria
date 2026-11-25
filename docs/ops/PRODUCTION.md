@@ -399,14 +399,21 @@ its code defaults unless set in the compose file (`ClubAssistant__<Key>`):
 |---|---|---|
 | `ApiKey` | empty | The provider's key (`CLUB_ASSISTANT_API_KEY`). Empty: no model client, the switch stays disabled with a note — a deploy never breaks a host without it. |
 | `Endpoint` | `https://api.mistral.ai/v1` | OpenAI-compatible base URL. |
-| `Model` | `mistral-large-latest` | Model id. |
-| `InputEurosPerMillion` | `0.70` | € per 1M uncached input tokens. |
-| `CachedInputEurosPerMillion` | `0.07` | € per 1M cached input tokens. |
-| `OutputEurosPerMillion` | `2.10` | € per 1M output tokens. |
+| `Model` | `mistral-small-2603` | Model id (Mistral Small 4, pinned). |
+| `ReasoningEffort` | `none` | Sent as `reasoning_effort`: `none`, `low`, `medium`, `high`, or empty to send nothing. |
+| `InputEurosPerMillion` | `0.15` | € per 1M uncached input tokens. |
+| `CachedInputEurosPerMillion` | `0.015` | € per 1M cached input tokens. |
+| `OutputEurosPerMillion` | `0.60` | € per 1M output tokens. |
 
 The API refuses to start when a key is set but the endpoint is no absolute URL, the model id is
-empty or a price is negative. **Prices** only meter the budget: check them against Mistral's price
-list (converted to euros) when switching on and whenever the model changes, or the budget lies.
+empty, the reasoning effort is unknown or a price is negative. **Prices** only meter the budget:
+the defaults are Small 4's dollar list prices taken as euros (a little above the real cost); check
+them against Mistral's price list whenever the model changes, or the budget lies.
+
+**Model and thinking go together**: Small 4 accepts `none` and then answers without thinking.
+Mistral Large 4 (`mistral-large-4`, 0.70 / 0.07 / 2.10) always thinks and takes only `low`,
+`medium` or `high` — any other value makes every call fail with 400. Answers that still carry
+thinking parts are read anyway; only the text goes out.
 
 **Switching on**, once:
 

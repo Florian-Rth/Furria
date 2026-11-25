@@ -1,9 +1,11 @@
 using System.Diagnostics.Contracts;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Furria.Application.Assistant;
 using Furria.Core.Assistant;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure.Assistant;
 
@@ -27,11 +29,17 @@ public sealed class ClubAssistantDialogue
     };
 
     private readonly ClubAssistantBudget _budget;
+    private readonly IOptions<ClubAssistantOptions> _options;
     private readonly ILogger<ClubAssistantDialogue> _logger;
 
-    public ClubAssistantDialogue(ClubAssistantBudget budget, ILogger<ClubAssistantDialogue> logger)
+    public ClubAssistantDialogue(
+        ClubAssistantBudget budget,
+        IOptions<ClubAssistantOptions> options,
+        ILogger<ClubAssistantDialogue> logger
+    )
     {
         _budget = budget;
+        _options = options;
         _logger = logger;
     }
 
@@ -42,7 +50,12 @@ public sealed class ClubAssistantDialogue
         CancellationToken ct
     )
     {
-        var options = new ChatOptions { Tools = [.. tools], MaxOutputTokens = MostOutputTokens };
+        var options = new ChatOptions
+        {
+            Tools = [.. tools],
+            MaxOutputTokens = MostOutputTokens,
+            Reasoning = ReasoningOf(_options.Value.ReasoningEffort),
+        };
         for (var call = 0; call < MostModelCalls; call++)
         {
             if (!await _budget.HasBudgetLeftAsync(ct))
@@ -142,4 +155,10 @@ public sealed class ClubAssistantDialogue
 
     [Pure]
     private static int CountOf(long? tokens) => (int)Math.Clamp(tokens ?? 0, 0, int.MaxValue);
+
+    [Pure]
+    private static ReasoningOptions? ReasoningOf(string effort) =>
+        Enum.TryParse<ReasoningEffort>(effort, ignoreCase: true, out var parsed)
+            ? new ReasoningOptions { Effort = parsed }
+            : null;
 }

@@ -12,7 +12,7 @@ created: 2026-11-24
 ## Summary
 Members write the club's WhatsApp bot a private message — *„Hat heute jemand Training?"*, *„Ist
 der Vereinsraum Samstag um 14 Uhr frei?"*, *„Wann beginnt die Herbstwanderung?"* — and the **club
-assistant** (*Vereinsassistent*) answers from the club's data. A hosted LLM (Mistral Large 4, EU)
+assistant** (*Vereinsassistent*) answers from the club's data. A hosted LLM (Mistral Small 4, EU)
 answers by calling **read-only tools** that run with the asker's own visibility; managers get the
 extra knowledge their **permissions** grant. It never changes anything, never names other persons,
 and stays within a monthly euro budget. Grilled 2026-11-24; decisions:
@@ -56,8 +56,8 @@ exposing anyone's personal data.
 - The first answer to a person says once that it is the club's AI assistant.
 
 ### The model
-- `Microsoft.Extensions.AI` `IChatClient`; Mistral Large 4 on Mistral's EU platform first. Provider,
-  endpoint, model id and prices are configuration.
+- `Microsoft.Extensions.AI` `IChatClient`; Mistral Small 4 without thinking on Mistral's EU platform (Large 4 was tried first; it always thinks). Provider,
+  endpoint, model id, reasoning effort and prices are configuration.
 - System prompt: German, *du*, short (1–4 lines), plenty of carnival humour, **facts exact and
   first**, WhatsApp formatting (`*fett*` for dates and times), app links to entries and events;
   what Furria does not hold it says it does not know — no general knowledge, no guessing.
