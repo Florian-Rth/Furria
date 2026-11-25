@@ -18,6 +18,7 @@ import {
   PERSON_FILTER_ALL,
   PERSON_FILTER_LABEL,
 } from '../beer-hub-copy';
+import { BEER_HUB_HELP_SPOTS } from '../beer-hub-help-copy';
 
 const ALL_PERSONS = 'all';
 
@@ -62,7 +63,10 @@ export const BeerHubFilters: FC = () => {
     );
 
   return (
-    <Stack sx={{ gap: 0.5, minWidth: 0, alignItems: 'flex-start' }}>
+    <Stack
+      data-kk-landing={BEER_HUB_HELP_SPOTS.journal}
+      sx={{ gap: 0.5, minWidth: 0, alignItems: 'flex-start' }}
+    >
       <Grid container spacing={1} sx={{ width: '100%', alignItems: 'center' }}>
         <Grid size={{ xs: 12, md: 8 }} sx={{ minWidth: 0 }}>
           <KkFilterChips

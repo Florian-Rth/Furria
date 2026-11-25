@@ -14,6 +14,7 @@ import { ActCardHubActTile } from '@/features/act-card/components/ActCardHubActT
 import { HISTORY_LINK_LABEL, NEW_ACT_LABEL } from '@/features/acts/acts-copy';
 import { NEW_ACT } from '@/features/acts/schemas';
 import type { GroupTone } from '@/features/groups/group-identity';
+import { HUB_HELP_SPOTS } from '../group-hub-help-copy';
 import { useHubActs } from '../hooks/use-hub-acts';
 import { HubActRow } from './HubActRow';
 
@@ -85,7 +86,12 @@ export const HubActsPanel: FC<HubActsPanelProps> = ({ groupId, tone, canManage }
       }
     : undefined;
   return (
-    <KkPanelSection title={SECTION_TITLE} groupTone={tone} action={action}>
+    <KkPanelSection
+      landing={HUB_HELP_SPOTS.acts}
+      title={SECTION_TITLE}
+      groupTone={tone}
+      action={action}
+    >
       <Stack sx={{ gap: 1.5, minWidth: 0 }}>
         {failure}
         {loading}

@@ -11,14 +11,19 @@ import { EventGallerySheet } from './EventGallerySheet';
 
 interface EventStagedPicturePanelProps {
   desk: StagedEventPictureDesk;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const EventStagedPicturePanel: FC<EventStagedPicturePanelProps> = ({ desk, sx }) => {
+export const EventStagedPicturePanel: FC<EventStagedPicturePanelProps> = ({
+  desk,
+  landing,
+  sx,
+}) => {
   const { banner } = desk;
 
   return (
-    <KkPanelSection title={EVENT_SECTION_TITLES.picture} sx={sx}>
+    <KkPanelSection title={EVENT_SECTION_TITLES.picture} landing={landing} sx={sx}>
       <KkBannerDesk
         id="event-picture"
         state={banner.state}

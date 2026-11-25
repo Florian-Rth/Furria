@@ -6,6 +6,7 @@ import { KkMeta } from '@furria/ui/KkMeta';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { UploadMood } from '../hooks/use-gallery-upload';
+import { UPLOAD_HELP_SPOTS } from '../upload-help-copy';
 
 const COUNTER_TONES: Record<UploadMood, KkFlapCountTone> = {
   running: 'red',
@@ -33,7 +34,7 @@ export const GalleryUploadCounter: FC<GalleryUploadCounterProps> = ({
   const icon = mood === 'paused' ? 'offline' : 'upload';
 
   return (
-    <Stack sx={{ rowGap: 0.25 }}>
+    <Stack data-kk-landing={UPLOAD_HELP_SPOTS.status} sx={{ rowGap: 0.25 }}>
       <Stack direction="row" sx={{ alignItems: 'baseline', columnGap: 1 }}>
         <KkFlapCount value={counter} variant="h2" tone={COUNTER_TONES[mood]} />
         <KkIcon name={icon} size="small" />

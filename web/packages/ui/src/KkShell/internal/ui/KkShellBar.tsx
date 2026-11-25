@@ -39,6 +39,7 @@ interface KkShellBarProps {
   origin?: KkScreenOrigin;
   actions?: readonly KkScreenAction[];
   search?: KkScreenSearch;
+  helpLabel?: string;
   thread?: KkScreenThread;
 }
 
@@ -50,6 +51,7 @@ export const KkShellBar: FC<KkShellBarProps> = ({
   origin,
   actions,
   search,
+  helpLabel,
   thread,
 }) => {
   const { path, profile } = useKkShell();
@@ -59,6 +61,7 @@ export const KkShellBar: FC<KkShellBarProps> = ({
   const searching = search !== undefined && search.query !== null;
   const shownProfile = searching || kind === 'fullscreen' ? null : profile;
   const shownActions = folded ? undefined : actions;
+  const shownHelpLabel = folded ? undefined : helpLabel;
   const profileLink = shownProfile === null ? null : <KkShellBarProfile profile={shownProfile} />;
 
   const row =
@@ -69,6 +72,7 @@ export const KkShellBar: FC<KkShellBarProps> = ({
         key={scene.current.path}
         actions={shownActions}
         search={search}
+        helpLabel={shownHelpLabel}
         scene={scene}
         divided={shownProfile !== null}
       />

@@ -3,6 +3,7 @@ import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
+import { APPLICATION_HELP_SPOTS } from '../applications-help-copy';
 import {
   APPLICANT_SECTION_TITLE,
   MINOR_NOTE,
@@ -35,7 +36,7 @@ export const MembershipApplicantPanel: FC<MembershipApplicantPanelProps> = ({ ap
   ) : null;
 
   return (
-    <KkPanelSection title={APPLICANT_SECTION_TITLE}>
+    <KkPanelSection title={APPLICANT_SECTION_TITLE} landing={APPLICATION_HELP_SPOTS.applicant}>
       <KkPanel>
         <KkFieldRow label={NAME_LABEL} value={name} />
         <KkFieldRow label={BIRTH_DATE_LABEL} value={birthDate} />

@@ -5,6 +5,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { MANAGE_SESSIONS_CREATE_LABEL, SESSION_SECTION_TITLES } from '../manage-sessions-labels';
 import type { SessionRecordSummary } from '../schemas';
+import { SESSIONS_HELP_SPOTS } from '../sessions-help-copy';
 import { SessionRecordRow } from './SessionRecordRow';
 import { VacantSessionRow } from './VacantSessionRow';
 
@@ -33,7 +34,11 @@ export const SessionsAheadSection: FC<SessionsAheadSectionProps> = ({
   const vacantRow = vacantYear === null ? null : <VacantSessionRow startYear={vacantYear} />;
 
   return (
-    <KkPanelSection title={SESSION_SECTION_TITLES.ahead} action={action}>
+    <KkPanelSection
+      title={SESSION_SECTION_TITLES.ahead}
+      action={action}
+      landing={SESSIONS_HELP_SPOTS.current}
+    >
       <KkPanel variant="list">
         {records.map((record) => (
           <SessionRecordRow key={record.sessionId} record={record} today={today} />

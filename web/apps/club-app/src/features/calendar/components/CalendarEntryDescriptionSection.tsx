@@ -1,6 +1,7 @@
 import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkTextArea } from '@furria/ui/KkTextArea';
 import type { FC } from 'react';
+import { ENTRY_HELP_SPOTS } from '../calendar-entry-help-copy';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import { CALENDAR_DESCRIPTION_MAX_LENGTH } from '../schemas';
 
@@ -21,7 +22,7 @@ export const CalendarEntryDescriptionSection: FC<CalendarEntryDescriptionSection
   const errorText = control.form.formState.errors.description?.message;
 
   return (
-    <KkFormSection title={SECTION_TITLE}>
+    <KkFormSection title={SECTION_TITLE} landing={ENTRY_HELP_SPOTS.description}>
       <KkTextArea
         name="description"
         label={DESCRIPTION_LABEL}

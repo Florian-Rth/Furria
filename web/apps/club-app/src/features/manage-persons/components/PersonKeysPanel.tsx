@@ -6,6 +6,7 @@ import type { FC } from 'react';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
+import { PERSON_HELP_SPOTS } from '../person-help-copy';
 import { toSectionLandingKey } from '../person-identity';
 import type { PersonKeyHolding } from '../schemas';
 
@@ -42,7 +43,7 @@ export const PersonKeysPanel: FC<PersonKeysPanelProps> = ({
   ));
 
   return (
-    <KkPanelSection title={TITLE}>
+    <KkPanelSection title={TITLE} landing={PERSON_HELP_SPOTS.ties}>
       <KkPanel highlight={highlightedKey === landingKey} landing={landingKey}>
         {rows}
       </KkPanel>

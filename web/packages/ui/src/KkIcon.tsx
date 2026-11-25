@@ -51,6 +51,7 @@ import Groups2Icon from '@mui/icons-material/Groups2';
 import Groups2OutlinedIcon from '@mui/icons-material/Groups2Outlined';
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
+import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import HomeIcon from '@mui/icons-material/Home';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
@@ -173,6 +174,7 @@ export type KkIconName =
   | 'back'
   | 'bolt'
   | 'info'
+  | 'help'
   | 'alert'
   | 'offline'
   | 'archive'
@@ -317,6 +319,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   back: ChevronLeftIcon,
   bolt: BoltOutlinedIcon,
   info: InfoOutlinedIcon,
+  help: HelpOutlineOutlinedIcon,
   alert: ErrorOutlineOutlinedIcon,
   offline: CloudOffOutlinedIcon,
   archive: Inventory2OutlinedIcon,

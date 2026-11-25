@@ -3,11 +3,14 @@ import type { KkNumberStepLabels } from '@furria/ui/KkNumberField';
 import { KkNumberField } from '@furria/ui/KkNumberField';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
+import { CLUB_EDITOR_HELP_SPOTS } from '../club-record-help-copy';
 import { CLUB_RECORD_ORIGIN, CLUB_RECORD_SECTION_TITLES } from '../club-record-labels';
 import { useClubIdentityEditor } from '../hooks/use-club-identity-editor';
 import type { ClubRecord } from '../schemas';
 import { EARLIEST_FOUNDED_YEAR, LATEST_FOUNDED_YEAR } from '../schemas';
+import { ClubIdentityHelp } from './ClubIdentityHelp';
 
 const SAVE_LABEL = 'Speichern';
 const NAME_LABEL = 'Vereinsname';
@@ -26,6 +29,7 @@ interface ClubIdentityEditorProps {
 }
 
 export const ClubIdentityEditor: FC<ClubIdentityEditorProps> = ({ record }) => {
+  const help = toScreenHelp(<ClubIdentityHelp />);
   const control = useClubIdentityEditor(record);
   const name = control.form.register('name');
   const shortName = control.form.register('shortName');
@@ -40,6 +44,7 @@ export const ClubIdentityEditor: FC<ClubIdentityEditorProps> = ({ record }) => {
       title={CLUB_RECORD_SECTION_TITLES.identity}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: SAVE_LABEL,
@@ -49,7 +54,7 @@ export const ClubIdentityEditor: FC<ClubIdentityEditorProps> = ({ record }) => {
         },
       }}
     >
-      <KkFormSection title={SECTION_TITLE}>
+      <KkFormSection title={SECTION_TITLE} landing={CLUB_EDITOR_HELP_SPOTS.identity}>
         <KkTextField
           name={name.name}
           label={NAME_LABEL}

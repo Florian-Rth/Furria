@@ -37,6 +37,7 @@ interface KkReadoutRootProps extends PropsWithChildren {
   label?: string;
   aside?: string;
   dimmed?: boolean;
+  landing?: string;
   sx?: KkSx;
 }
 
@@ -46,6 +47,7 @@ export const KkReadoutRoot: FC<KkReadoutRootProps> = ({
   label,
   aside,
   dimmed = false,
+  landing,
   sx,
   children,
 }) => {
@@ -94,6 +96,7 @@ export const KkReadoutRoot: FC<KkReadoutRootProps> = ({
       aria-labelledby={labelledBy}
       aria-label={label}
       data-kk-readout
+      data-kk-landing={landing}
       sx={[FRAME, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {head}

@@ -28,14 +28,16 @@ const rootPaint = (theme: Theme): CSSObject => ({
 
 interface KkPourHeadRootProps extends PropsWithChildren {
   label: string;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkPourHeadRoot: FC<KkPourHeadRootProps> = ({ label, children, sx }) => (
+export const KkPourHeadRoot: FC<KkPourHeadRootProps> = ({ label, landing, children, sx }) => (
   <Stack
     component="section"
     aria-label={label}
     data-kk-pour-head
+    data-kk-landing={landing}
     sx={[rootPaint, ...(Array.isArray(sx) ? sx : [sx])]}
   >
     {children}

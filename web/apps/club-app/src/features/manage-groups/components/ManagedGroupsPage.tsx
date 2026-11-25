@@ -2,6 +2,7 @@ import { KkScreen } from '@furria/ui/KkScreen';
 import { KkSkeletonToolbar } from '@furria/ui/KkSkeletonToolbar';
 import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
 import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
@@ -11,6 +12,7 @@ import { useManagedGroupsQuery } from '../api';
 import { useManagedGroupsListing } from '../hooks/use-managed-groups-listing';
 import { MANAGE_GROUPS_TITLE } from '../manage-groups-labels';
 import { ManagedGroupsBody } from './ManagedGroupsBody';
+import { ManagedGroupsHelp } from './ManagedGroupsHelp';
 import { ManagedGroupsToolbar } from './ManagedGroupsToolbar';
 
 const SEARCH_PLACEHOLDER = 'Name der Gruppe';
@@ -21,6 +23,7 @@ const MIN_OFFERED_FILTERS = 2;
 
 export const ManagedGroupsPage: FC = () => {
   const searchMode = useScreenSearch(SEARCH_PLACEHOLDER);
+  const help = toScreenHelp(<ManagedGroupsHelp />);
   const permissions = usePermissions();
   const groups = useManagedGroupsQuery(permissions.has(PERMISSION_KEYS.groupsManage));
   const listing = useManagedGroupsListing(groups.data?.groups);
@@ -49,6 +52,7 @@ export const ManagedGroupsPage: FC = () => {
       origin={MANAGE_ORIGIN}
       header={<KkTitleHeader title={MANAGE_GROUPS_TITLE} />}
       handover={AREA_HANDOVERS.manage}
+      help={help}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.groupsManage}>
         <ManagedGroupsBody listing={listing} />

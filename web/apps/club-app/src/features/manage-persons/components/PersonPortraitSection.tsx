@@ -4,6 +4,7 @@ import { usePictureSection } from '@/features/pictures/hooks/use-picture-section
 import { toInitials } from '@/lib/initials';
 import { usePersonQuery } from '../api';
 import { toPersonName } from '../manage-persons-labels';
+import { PERSON_EDITOR_HELP_SPOTS } from '../person-editor-help-copy';
 import type { PersonDetails } from '../schemas';
 
 interface PersonPortraitSectionProps {
@@ -19,5 +20,12 @@ export const PersonPortraitSection: FC<PersonPortraitSectionProps> = ({ person }
   });
   const initials = toInitials(person.firstName, person.lastName);
 
-  return <PictureSection desk={desk} placeholderLabel={initials} alt={toPersonName(person)} />;
+  return (
+    <PictureSection
+      desk={desk}
+      placeholderLabel={initials}
+      alt={toPersonName(person)}
+      landing={PERSON_EDITOR_HELP_SPOTS.portrait}
+    />
+  );
 };

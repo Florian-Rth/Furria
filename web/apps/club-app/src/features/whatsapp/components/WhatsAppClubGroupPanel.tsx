@@ -12,6 +12,7 @@ import {
   CLUB_GROUP_LABEL,
   CLUB_GROUP_TITLE,
 } from '../whatsapp-copy';
+import { WHATSAPP_HELP_SPOTS } from '../whatsapp-help-copy';
 
 interface WhatsAppClubGroupPanelProps {
   groups: readonly WhatsAppGroup[];
@@ -50,7 +51,7 @@ export const WhatsAppClubGroupPanel: FC<WhatsAppClubGroupPanelProps> = ({ groups
     );
 
   return (
-    <KkPanelSection title={CLUB_GROUP_TITLE}>
+    <KkPanelSection title={CLUB_GROUP_TITLE} landing={WHATSAPP_HELP_SPOTS.clubGroup}>
       <KkPanel>
         <Stack sx={{ gap: 1.5, minWidth: 0 }}>
           {goneNote}

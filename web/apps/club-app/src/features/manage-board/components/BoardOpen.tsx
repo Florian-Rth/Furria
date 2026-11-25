@@ -2,6 +2,7 @@ import { KkMeta } from '@furria/ui/KkMeta';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkWorkQueue } from '@furria/ui/KkWorkQueue';
 import type { FC } from 'react';
+import { BOARD_HELP_SPOTS } from '../board-help-copy';
 import type { QueueItem } from '../board-hub';
 import { canSeatOffice } from '../board-hub';
 import { FILTER_EMPTY, OPEN_EMPTY, OPEN_TITLE, QUEUE_LABEL } from '../board-hub-copy';
@@ -58,5 +59,9 @@ export const BoardOpen: FC<BoardOpenProps> = ({
       <KkWorkQueue label={QUEUE_LABEL}>{rows}</KkWorkQueue>
     );
 
-  return <KkPanelSection title={OPEN_TITLE}>{list}</KkPanelSection>;
+  return (
+    <KkPanelSection title={OPEN_TITLE} landing={BOARD_HELP_SPOTS.open}>
+      {list}
+    </KkPanelSection>
+  );
 };

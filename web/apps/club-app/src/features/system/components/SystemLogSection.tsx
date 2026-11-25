@@ -15,6 +15,7 @@ import {
   SECTION_TITLES,
 } from '../system-copy';
 import { formatDate } from '../system-format';
+import { SYSTEM_HELP_SPOTS } from '../system-help-copy';
 import { SystemLogBody } from './SystemLogBody';
 
 const FILTER_GAP = 1;
@@ -32,7 +33,7 @@ export const SystemLogSection: FC<SystemLogSectionProps> = ({ logsSince, nowMs, 
 
   return (
     <KkReadout label={SECTION_TITLES.log} aside={since}>
-      <Stack sx={{ gap: FILTER_GAP, minWidth: 0 }}>
+      <Stack data-kk-landing={SYSTEM_HELP_SPOTS.area} sx={{ gap: FILTER_GAP, minWidth: 0 }}>
         <KkFilterChips
           label={LOG_SOURCE_LABEL}
           options={LOG_SOURCE_OPTIONS}

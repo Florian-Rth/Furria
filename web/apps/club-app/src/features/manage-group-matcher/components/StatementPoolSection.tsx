@@ -3,6 +3,7 @@ import { KkNote } from '@furria/ui/KkNote';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkStatementList } from '@furria/ui/KkStatementList';
 import type { FC } from 'react';
+import { GROUP_MATCHER_HELP_SPOTS } from '../group-matcher-help-copy';
 import { POOL_EMPTY, POOL_LABEL, toPoolTitle } from '../group-matcher-hub-copy';
 import { usePoolOrder } from '../hooks/use-pool-order';
 import { StatementAddForm } from './StatementAddForm';
@@ -24,7 +25,7 @@ export const StatementPoolSection: FC = () => {
     );
 
   return (
-    <KkPanelSection title={title}>
+    <KkPanelSection title={title} landing={GROUP_MATCHER_HELP_SPOTS.pool}>
       {list}
       <StatementAddForm />
     </KkPanelSection>

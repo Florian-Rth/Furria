@@ -11,6 +11,7 @@ import {
   updatedLineOf,
 } from '../website-copy';
 import { positionFrameOf, selectedIndexOf } from '../website-frames';
+import { WEBSITE_HELP_SPOTS } from '../website-help-copy';
 import { editorNameOf } from '../website-people';
 
 interface WebsiteOrphanSectionProps {
@@ -54,5 +55,9 @@ export const WebsiteOrphanSection: FC<WebsiteOrphanSectionProps> = ({
     );
   });
 
-  return <KkPanelSection title={ORPHANS_TITLE}>{rows}</KkPanelSection>;
+  return (
+    <KkPanelSection title={ORPHANS_TITLE} landing={WEBSITE_HELP_SPOTS.orphans}>
+      {rows}
+    </KkPanelSection>
+  );
 };

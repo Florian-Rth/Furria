@@ -1,16 +1,21 @@
 import { KkScreen } from '@furria/ui/KkScreen';
 import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { BOARD_TITLE, HUB_ORIGIN } from '../board-hub-copy';
+import { useBoardHelpViewer } from '../hooks/use-board-help-viewer';
 import { useBoardOfficePage } from '../hooks/use-board-office-page';
 import { BoardOfficeBody } from './BoardOfficeBody';
 import { BoardOfficeHeader } from './BoardOfficeHeader';
+import { BoardOfficeHelp } from './BoardOfficeHelp';
 
 export const BoardOfficePage: FC = () => {
   const page = useBoardOfficePage();
+  const helpViewer = useBoardHelpViewer();
+  const help = toScreenHelp(<BoardOfficeHelp viewer={helpViewer} />);
   const title = page.office?.name ?? BOARD_TITLE;
   const pendingHeader = page.query.isPending ? <KkScreenHeaderSkeleton /> : null;
   const header =
@@ -27,6 +32,7 @@ export const BoardOfficePage: FC = () => {
       origin={HUB_ORIGIN}
       header={header}
       handover={AREA_HANDOVERS.manage}
+      help={help}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.boardManage}>
         <BoardOfficeBody page={page} />

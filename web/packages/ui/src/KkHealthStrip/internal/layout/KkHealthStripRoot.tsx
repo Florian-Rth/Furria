@@ -5,15 +5,17 @@ import { kkTokens } from '../../../tokens';
 
 interface KkHealthStripRootProps extends PropsWithChildren {
   label: string;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkHealthStripRoot: FC<KkHealthStripRootProps> = ({ label, sx, children }) => (
+export const KkHealthStripRoot: FC<KkHealthStripRootProps> = ({ label, landing, sx, children }) => (
   <Stack
     component="section"
     aria-label={label}
     direction={{ xs: 'column', md: 'row' }}
     data-kk-health-strip
+    data-kk-landing={landing}
     sx={[
       {
         alignItems: { xs: 'stretch', md: 'center' },

@@ -4,6 +4,7 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC, ReactNode } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { PHONE_WHATSAPP_HINT } from '@/features/whatsapp/whatsapp-copy';
+import { PERSON_EDITOR_HELP_SPOTS } from '../person-editor-help-copy';
 import type { PersonForm } from '../schemas';
 
 const NAME_SECTION_TITLE = 'Name';
@@ -43,7 +44,7 @@ export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors, emai
 
   return (
     <>
-      <KkFormSection title={NAME_SECTION_TITLE}>
+      <KkFormSection title={NAME_SECTION_TITLE} landing={PERSON_EDITOR_HELP_SPOTS.name}>
         <KkFormPair
           start={
             <KkTextField

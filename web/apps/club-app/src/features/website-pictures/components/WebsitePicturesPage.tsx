@@ -3,6 +3,7 @@ import { KkErrorState } from '@furria/ui/KkErrorState';
 import { KkScreen } from '@furria/ui/KkScreen';
 import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session/app-sections';
 import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { useWebsiteBoard } from '../hooks/use-website-board';
@@ -14,6 +15,7 @@ import {
   WEBSITE_TITLE,
 } from '../website-copy';
 import { WebsiteBoardBody } from './WebsiteBoardBody';
+import { WebsitePicturesHelp } from './WebsitePicturesHelp';
 
 export const WebsitePicturesPage: FC = () => {
   const state = useWebsiteBoard();
@@ -23,6 +25,8 @@ export const WebsitePicturesPage: FC = () => {
       {RETRY_LABEL}
     </KkButton>
   );
+  const hasOrphans = state.board !== null && state.board.orphans.length > 0;
+  const help = toScreenHelp(<WebsitePicturesHelp hasOrphans={hasOrphans} />);
   const failure =
     errorMessage === null ? null : (
       <KkErrorState title={LOAD_ERROR_TITLE} description={errorMessage} action={retry} />
@@ -40,6 +44,7 @@ export const WebsitePicturesPage: FC = () => {
       title={WEBSITE_TITLE}
       origin={GALLERY_ORIGIN}
       header={<KkTitleHeader title={WEBSITE_TITLE} />}
+      help={help}
       handover={AREA_HANDOVERS.gallery}
     >
       {content}

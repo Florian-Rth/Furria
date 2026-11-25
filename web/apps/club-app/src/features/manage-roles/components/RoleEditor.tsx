@@ -3,14 +3,17 @@ import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import { KkTextArea } from '@furria/ui/KkTextArea';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { useRoleEditor } from '../hooks/use-role-editor';
 import { ROLES_ORIGIN, toRoleOrigin } from '../manage-roles-labels';
 import { toRoleCoinForm } from '../role-coin';
+import { ROLES_HELP_SPOTS } from '../roles-help-copy';
 import type { EditorReturn } from '../roles-hub';
 import type { RoleDetails, RoleForm } from '../schemas';
 import { ROLE_DESCRIPTION_MAX_LENGTH } from '../schemas';
 import { RoleCoinFields } from './RoleCoinFields';
+import { RoleEditorHelp } from './RoleEditorHelp';
 
 const CREATE_TITLE = 'Rolle hinzufügen';
 const EDIT_TITLE = 'Rolle bearbeiten';
@@ -55,6 +58,7 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry, returnTo }) => {
   const origin = roleEntry === null ? ROLES_ORIGIN : toRoleOrigin(roleEntry, returnTo);
 
   const nameField = control.form.register('name');
+  const help = toScreenHelp(<RoleEditorHelp isEditing={roleEntry !== null} />);
   const coinFields = control.showsCoin ? (
     <RoleCoinFields
       icon={control.coinIcon}
@@ -70,6 +74,7 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry, returnTo }) => {
       title={title}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: actionLabel,
@@ -79,7 +84,7 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry, returnTo }) => {
         },
       }}
     >
-      <KkFormSection title={ROLE_SECTION}>
+      <KkFormSection title={ROLE_SECTION} landing={ROLES_HELP_SPOTS.coreSection}>
         <KkTextField
           name={nameField.name}
           label={NAME_LABEL}
@@ -105,7 +110,7 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry, returnTo }) => {
           helperText={errors.description?.message}
         />
       </KkFormSection>
-      <KkFormSection title={COIN_SECTION}>
+      <KkFormSection title={COIN_SECTION} landing={ROLES_HELP_SPOTS.coinSection}>
         <KkSwitchRow
           label={COIN_SWITCH_LABEL}
           checked={control.showsCoin}

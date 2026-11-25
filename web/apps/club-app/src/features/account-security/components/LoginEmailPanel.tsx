@@ -10,6 +10,7 @@ import {
   LOGIN_EMAIL_EDIT_TITLE,
   SECURITY_LANDINGS,
 } from '../account-security-labels';
+import { SECURITY_HELP_SPOTS } from '../security-help-copy';
 
 const TITLE = 'Anmelde-E-Mail';
 const EMAIL_LABEL = 'E-Mail';
@@ -37,7 +38,7 @@ export const LoginEmailPanel: FC<LoginEmailPanelProps> = ({ loginEmail, highligh
   const isHighlighted = highlightedKey === LANDING_KEY;
 
   return (
-    <KkPanelSection title={TITLE} action={EDIT_ACTION}>
+    <KkPanelSection title={TITLE} action={EDIT_ACTION} landing={SECURITY_HELP_SPOTS.loginEmail}>
       <KkPanel highlight={isHighlighted} landing={LANDING_KEY}>
         <KkFieldRow label={EMAIL_LABEL} value={loginEmail} />
       </KkPanel>

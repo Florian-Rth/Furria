@@ -12,6 +12,7 @@ import {
   PICK_FOLDER_LABEL,
 } from '../upload/upload-copy';
 import { UPLOAD_ACCEPT } from '../upload/upload-queue';
+import { UPLOAD_HELP_SPOTS } from '../upload-help-copy';
 
 interface GalleryUploadDropZoneProps {
   dragging: boolean;
@@ -36,7 +37,7 @@ export const GalleryUploadDropZone: FC<GalleryUploadDropZoneProps> = ({
   const edgeTone = dragging ? 'gold' : 'ink';
 
   return (
-    <KkDropZone active={dragging} roomy={roomy}>
+    <KkDropZone active={dragging} roomy={roomy} landing={UPLOAD_HELP_SPOTS.pick}>
       <KkFilmEdge lead={lead} meta={DROP_META} tone={edgeTone} sprockets />
       <Stack direction="row" sx={{ columnGap: 1, flexWrap: 'wrap', rowGap: 1 }}>
         <KkButton size="small" variant="contained" onClick={onPickFolder}>

@@ -17,6 +17,7 @@ interface GallerySessionSectionProps {
   order: number;
   marks: HubMarkSight;
   now: Date;
+  landing?: string;
   onOpen: (albumId: number, photo?: number) => void;
 }
 
@@ -31,6 +32,7 @@ export const GallerySessionSection: FC<GallerySessionSectionProps> = ({
   order,
   marks,
   now,
+  landing,
   onOpen,
 }) => {
   const lead = section.sessionStartYear === null ? FREE_TITLE : SESSION_WORD;
@@ -55,7 +57,7 @@ export const GallerySessionSection: FC<GallerySessionSectionProps> = ({
   });
 
   return (
-    <Stack component="section" sx={{ rowGap: 1.5 }}>
+    <Stack component="section" data-kk-landing={landing} sx={{ rowGap: 1.5 }}>
       <Stack direction="row" sx={{ alignItems: 'baseline', columnGap: 1, minWidth: 0 }}>
         <KkFilmEdge lead={lead} size="title" level="h2" tone="red" />
         {numeral}

@@ -10,6 +10,7 @@ import {
 } from '@/lib/club-group-consent-copy';
 import { SWITCH_STATE_LABELS } from '@/lib/state-chips';
 import { useClubGroupConsent } from '../hooks/use-club-group-consent';
+import { PROFILE_HELP_SPOTS } from '../profile-help-copy';
 
 interface ProfileClubGroupPanelProps {
   person: MePerson;
@@ -19,7 +20,7 @@ export const ProfileClubGroupPanel: FC<ProfileClubGroupPanelProps> = ({ person }
   const consent = useClubGroupConsent(person.clubGroupConsent);
 
   return (
-    <KkPanelSection title={CLUB_GROUP_CONSENT_TITLE}>
+    <KkPanelSection title={CLUB_GROUP_CONSENT_TITLE} landing={PROFILE_HELP_SPOTS.clubGroup}>
       <KkPanel variant="block">
         <KkSwitchRow
           label={CLUB_GROUP_CONSENT_LABEL}

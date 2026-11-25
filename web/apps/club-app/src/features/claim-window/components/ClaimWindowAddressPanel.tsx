@@ -5,6 +5,7 @@ import { KkQrCode } from '@furria/ui/KkQrCode';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { WINDOW_ADDRESS_LINE, WINDOW_ADDRESS_TITLE } from '../claim-window-copy';
+import { CLAIM_WINDOW_HELP_SPOTS } from '../claim-window-help-copy';
 
 const QR_MAX_WIDTH = '15rem';
 
@@ -13,7 +14,7 @@ interface ClaimWindowAddressPanelProps {
 }
 
 export const ClaimWindowAddressPanel: FC<ClaimWindowAddressPanelProps> = ({ address }) => (
-  <KkPanelSection title={WINDOW_ADDRESS_TITLE}>
+  <KkPanelSection title={WINDOW_ADDRESS_TITLE} landing={CLAIM_WINDOW_HELP_SPOTS.address}>
     <KkPanel>
       <Stack sx={{ gap: 1.5, alignItems: 'center', minWidth: 0 }}>
         <KkQrCode value={address} label={address} sx={{ maxWidth: QR_MAX_WIDTH }} />

@@ -6,6 +6,7 @@ import type { FC } from 'react';
 import { CalendarAddOnRemovalDialog } from '@/features/calendar/components/CalendarAddOnRemovalDialog';
 import { CalendarAddOnSheet } from '@/features/calendar/components/CalendarAddOnSheet';
 import { toHeldCalendarAddOns } from '../announcement-add-ons';
+import { ANNOUNCEMENTS_HELP_SPOTS } from '../announcements-help-copy';
 import {
   ADD_ADD_ON_LABEL,
   ADD_ONS_SECTION_TITLE,
@@ -58,7 +59,7 @@ export const AnnouncementAddOnsSection: FC<AnnouncementAddOnsSectionProps> = ({
   );
 
   return (
-    <KkFormSection title={ADD_ONS_SECTION_TITLE}>
+    <KkFormSection title={ADD_ONS_SECTION_TITLE} landing={ANNOUNCEMENTS_HELP_SPOTS.editorAddOns}>
       {attached}
       {addButton}
       <AnnouncementBorrowSheet borrowing={borrowing} />

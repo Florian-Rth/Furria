@@ -6,6 +6,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write/landing-target';
 import { ADD_MEMBERSHIP_ACTION_LABEL, PERSON_SECTION_TITLES } from '../manage-persons-labels';
+import { PERSON_HELP_SPOTS } from '../person-help-copy';
 import { toSectionLandingKey } from '../person-identity';
 import type { PersonDetails } from '../schemas';
 import { PersonMembershipRow } from './PersonMembershipRow';
@@ -51,7 +52,11 @@ export const PersonMembershipsPanel: FC<PersonMembershipsPanelProps> = ({
   );
 
   return (
-    <KkPanelSection title={PERSON_SECTION_TITLES.memberships} action={action}>
+    <KkPanelSection
+      title={PERSON_SECTION_TITLES.memberships}
+      action={action}
+      landing={PERSON_HELP_SPOTS.memberships}
+    >
       <KkPanel
         variant={isEmpty ? 'block' : 'list'}
         highlight={highlightedKey === landingKey}

@@ -8,6 +8,7 @@ import { BeerBookingUndo } from './BeerBookingUndo';
 
 interface BeerBookingControlProps {
   booking: BeerBooking;
+  landing?: string;
 }
 
 const controlOf = (booking: BeerBooking): ReactNode => {
@@ -21,11 +22,11 @@ const controlOf = (booking: BeerBooking): ReactNode => {
   }
 };
 
-export const BeerBookingControl: FC<BeerBookingControlProps> = ({ booking }) => {
+export const BeerBookingControl: FC<BeerBookingControlProps> = ({ booking, landing }) => {
   const control = controlOf(booking);
 
   return (
-    <Stack sx={{ gap: 1, minWidth: 0 }}>
+    <Stack data-kk-landing={landing} sx={{ gap: 1, minWidth: 0 }}>
       {control}
       <BeerBookingFailure booking={booking} />
     </Stack>

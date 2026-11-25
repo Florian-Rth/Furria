@@ -1,12 +1,15 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { InPersonInvitationScreen } from '@/features/account-access/components/InPersonInvitationScreen';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { parsePositiveId } from '@/lib/positive-id';
 import { usePersonEditorGate } from '../hooks/use-person-editor-gate';
 import { toPersonOrigin } from '../manage-persons-labels';
 import { PersonEditorFallback } from './PersonEditorFallback';
+import { PersonInPersonHelp } from './PersonInPersonHelp';
 
 const ROUTE_ID = '/_app/manage/persons_/$personId_/invitations/in-person';
+const HELP = toScreenHelp(<PersonInPersonHelp purpose="onboarding" />);
 const TITLE = 'Vor Ort zeigen';
 
 export const PersonInPersonInvitationScreen: FC = () => {
@@ -23,6 +26,7 @@ export const PersonInPersonInvitationScreen: FC = () => {
       purpose="onboarding"
       subject={gate.person}
       origin={toPersonOrigin(gate.person)}
+      help={HELP}
     />
   );
 };

@@ -26,12 +26,14 @@ const cardPaint = (theme: Theme): CSSObject => {
 interface KkCalendarStripRootProps extends PropsWithChildren {
   label: string;
   expanded: boolean;
+  landing?: string;
   sx?: KkSx;
 }
 
 export const KkCalendarStripRoot: FC<KkCalendarStripRootProps> = ({
   label,
   expanded,
+  landing,
   sx,
   children,
 }) => (
@@ -39,6 +41,7 @@ export const KkCalendarStripRoot: FC<KkCalendarStripRootProps> = ({
     component="section"
     aria-label={label}
     data-kk-calendar-strip={expanded ? 'open' : 'closed'}
+    data-kk-landing={landing}
     sx={[
       {
         position: 'sticky',

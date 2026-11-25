@@ -1,6 +1,7 @@
 import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
 import { KkFilterChips } from '@furria/ui/KkFilterChips';
 import type { FC } from 'react';
+import { ROLES_HELP_SPOTS } from '../roles-help-copy';
 import { VIEW_LABEL, VIEW_OPTIONS } from '../roles-hub-copy';
 import type { RolesView } from '../schemas';
 
@@ -15,5 +16,11 @@ interface RolesViewSwitchProps {
 }
 
 export const RolesViewSwitch: FC<RolesViewSwitchProps> = ({ view, onChoose }) => (
-  <KkFilterChips label={VIEW_LABEL} options={OPTIONS} value={view} onChange={onChoose} />
+  <KkFilterChips
+    label={VIEW_LABEL}
+    options={OPTIONS}
+    value={view}
+    onChange={onChoose}
+    landing={ROLES_HELP_SPOTS.view}
+  />
 );

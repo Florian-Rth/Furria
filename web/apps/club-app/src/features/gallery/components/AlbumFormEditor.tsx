@@ -3,8 +3,10 @@ import { KkTextArea } from '@furria/ui/KkTextArea';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { KkScreenActionBar, KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { GALLERY_ORIGIN } from '@/features/session/app-sections';
 import { WriteScreen } from '@/features/write/WriteScreen';
+import { ALBUM_FORM_HELP_SPOTS } from '../album-form-help-copy';
 import { EDIT_ALBUM_TITLE, NEW_ALBUM_TITLE } from '../gallery-copy';
 import { useAlbumForm } from '../hooks/use-album-form';
 import { useAlbumFormEntries } from '../hooks/use-album-form-entries';
@@ -13,6 +15,7 @@ import { ALBUM_DESCRIPTION_MAX_LENGTH } from '../schemas';
 import { AlbumFormCoverField } from './AlbumFormCoverField';
 import { AlbumFormCoverSheet } from './AlbumFormCoverSheet';
 import { AlbumFormDeletionLine } from './AlbumFormDeletionLine';
+import { AlbumFormHelp } from './AlbumFormHelp';
 import { AlbumFormLinkSection } from './AlbumFormLinkSection';
 
 const CREATE_LABEL = 'Anlegen';
@@ -48,7 +51,7 @@ export const AlbumFormEditor: FC<AlbumFormEditorProps> = ({ album, presetEntryId
   const origin = originOf(album);
   const coverSection =
     album === null ? null : (
-      <KkFormSection title={COVER_SECTION_TITLE}>
+      <KkFormSection title={COVER_SECTION_TITLE} landing={ALBUM_FORM_HELP_SPOTS.cover}>
         <AlbumFormCoverField album={album} control={control} />
       </KkFormSection>
     );
@@ -56,6 +59,7 @@ export const AlbumFormEditor: FC<AlbumFormEditorProps> = ({ album, presetEntryId
     album === null ? null : <AlbumFormCoverSheet items={album.items} control={control} />;
   const deletionLine = album === null ? null : <AlbumFormDeletionLine album={album} />;
   const rejection = control.rejection ?? undefined;
+  const help = toScreenHelp(<AlbumFormHelp isEditing={control.isEditing} />);
   const action: KkScreenActionBar = {
     primary: {
       label: actionLabel,
@@ -73,8 +77,9 @@ export const AlbumFormEditor: FC<AlbumFormEditorProps> = ({ album, presetEntryId
         rejection={rejection}
         isDirty={control.isDirty}
         action={action}
+        help={help}
       >
-        <KkFormSection title={ALBUM_SECTION_TITLE}>
+        <KkFormSection title={ALBUM_SECTION_TITLE} landing={ALBUM_FORM_HELP_SPOTS.album}>
           <KkTextField
             name={titleField.name}
             label={TITLE_LABEL}

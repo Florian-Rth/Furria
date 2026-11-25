@@ -1,11 +1,15 @@
 import type { KkScreenActionContext } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { useIntakeReview } from '../hooks/use-intake-review';
 import { RESOLVE_LABEL, REVIEW_TITLE, toIntakeOrigin } from '../intake-labels';
 import type { IntakeReview, IntakeSummary } from '../schemas';
 import { IntakeCandidateChoice } from './IntakeCandidateChoice';
 import { IntakeNewcomerPanel } from './IntakeNewcomerPanel';
+import { IntakeReviewHelp } from './IntakeReviewHelp';
+
+const HELP = toScreenHelp(<IntakeReviewHelp />);
 
 interface IntakeReviewEditorProps {
   intake: IntakeSummary;
@@ -25,6 +29,7 @@ export const IntakeReviewEditor: FC<IntakeReviewEditorProps> = ({ intake, review
       title={REVIEW_TITLE}
       rejection={rejection}
       isDirty={false}
+      help={HELP}
       action={{
         context,
         primary: {

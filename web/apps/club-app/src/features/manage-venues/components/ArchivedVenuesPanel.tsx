@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { VENUE_SECTION_TITLES } from '../manage-venues-labels';
 import type { ManagedVenue } from '../schemas';
+import { VENUES_HELP_SPOTS } from '../venues-help-copy';
 import { ArchivedVenueCard } from './ArchivedVenueCard';
 
 const LIST_GAP = 1.5;
@@ -17,7 +18,7 @@ export const ArchivedVenuesPanel: FC<ArchivedVenuesPanelProps> = ({ venues }) =>
   }
 
   return (
-    <KkPanelSection title={VENUE_SECTION_TITLES.archived}>
+    <KkPanelSection title={VENUE_SECTION_TITLES.archived} landing={VENUES_HELP_SPOTS.archived}>
       <Stack sx={{ gap: LIST_GAP, minWidth: 0 }}>
         {venues.map((venue) => (
           <ArchivedVenueCard key={venue.venueId} venue={venue} />

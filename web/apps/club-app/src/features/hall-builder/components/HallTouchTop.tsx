@@ -10,6 +10,7 @@ import {
   SIZE_COUNT_LABEL,
   UNDO_LABEL,
 } from '../hall-builder-copy';
+import { HALL_BUILDER_HELP_SPOTS } from '../hall-builder-help-copy';
 import { hallSizeLabel } from '../hall-builder-view';
 import { saveToneOf } from '../hall-status';
 
@@ -21,7 +22,7 @@ export const HallTouchTop: FC = () => {
   const saveTone = saveToneOf(builder.saveState);
 
   return (
-    <KkPlanStatusStrip label={HALL_STATUS_LABEL}>
+    <KkPlanStatusStrip label={HALL_STATUS_LABEL} landing={HALL_BUILDER_HELP_SPOTS.status}>
       <KkPlanStatusStrip.Action
         id="undo"
         label={UNDO_LABEL}

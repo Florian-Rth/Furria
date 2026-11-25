@@ -15,6 +15,7 @@ import {
   stockLinesOf,
   tileEuroOf,
 } from '../beer-hub-copy';
+import { BEER_HUB_HELP_SPOTS } from '../beer-hub-help-copy';
 
 interface BeerHubHeadProps {
   summary: BeerHubSummary;
@@ -33,7 +34,7 @@ export const BeerHubHead: FC<BeerHubHeadProps> = ({ summary }) => {
   const spark = <KkPourStockLines lines={lines} labels={chartLabels} />;
 
   return (
-    <KkPourHead label={HEAD_LABEL}>
+    <KkPourHead label={HEAD_LABEL} landing={BEER_HUB_HELP_SPOTS.head}>
       <KkPourHead.Stock
         label={STOCK_LABEL}
         value={stockValue}

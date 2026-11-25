@@ -8,6 +8,7 @@ import type { FC } from 'react';
 import { toLandingKey } from '@/features/write/landing-target';
 import type { MePerson } from '@/lib/api/schemas';
 import { formatAddress } from '@/lib/membership-labels';
+import { PROFILE_HELP_SPOTS } from '../profile-help-copy';
 import {
   CONTACT_DETAILS_EDIT_TITLE,
   CONTACT_DETAILS_LANDING,
@@ -44,7 +45,11 @@ export const ProfileContactPanel: FC<ProfileContactPanelProps> = ({ person, high
   const isHighlighted = highlightedKey === LANDING_KEY;
 
   return (
-    <KkPanelSection title={PROFILE_SECTION_TITLES.contact} action={EDIT_ACTION}>
+    <KkPanelSection
+      title={PROFILE_SECTION_TITLES.contact}
+      action={EDIT_ACTION}
+      landing={PROFILE_HELP_SPOTS.contact}
+    >
       {changeNote}
       <KkPanel highlight={isHighlighted} landing={LANDING_KEY}>
         <KkFieldRow label={PHONE_LABEL} value={person.phone ?? MISSING_VALUE} />

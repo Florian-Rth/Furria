@@ -7,12 +7,20 @@ import { kkTokens } from './tokens';
 interface KkDropZoneProps extends PropsWithChildren {
   active: boolean;
   roomy?: boolean;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkDropZone: FC<KkDropZoneProps> = ({ active, roomy = false, sx, children }) => (
+export const KkDropZone: FC<KkDropZoneProps> = ({
+  active,
+  roomy = false,
+  landing,
+  sx,
+  children,
+}) => (
   <Stack
     data-kk-drop-zone={active ? 'active' : 'rest'}
+    data-kk-landing={landing}
     sx={[
       (theme) => ({
         rowGap: 1.5,

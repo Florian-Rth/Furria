@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';
 import { SECTION_TITLES, TABLES_LABEL } from '../system-copy';
+import { SYSTEM_HELP_SPOTS } from '../system-help-copy';
 import { databaseViewOf } from '../system-view';
 
 interface SystemDatabaseSectionProps {
@@ -31,7 +32,7 @@ export const SystemDatabaseSection: FC<SystemDatabaseSectionProps> = ({ status, 
   const tables = database.tables.length === 0 ? null : tablesShown;
 
   return (
-    <KkReadout label={SECTION_TITLES.database} dimmed={dimmed}>
+    <KkReadout landing={SYSTEM_HELP_SPOTS.area} label={SECTION_TITLES.database} dimmed={dimmed}>
       <KkReadout.Facts>{facts}</KkReadout.Facts>
       {tables}
     </KkReadout>

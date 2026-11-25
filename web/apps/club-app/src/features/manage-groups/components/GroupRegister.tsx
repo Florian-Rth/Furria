@@ -6,6 +6,7 @@ import type { KkPanelAction } from '@furria/ui/panel-action';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { GROUPS_HELP_SPOTS } from '../manage-groups-help-copy';
 import { MANAGED_GROUPS_EMPTY, REGISTER_TITLE } from '../manage-groups-labels';
 import type { GroupRegisterBands } from '../manage-groups-work';
 import { countBandedGroups } from '../manage-groups-work';
@@ -57,7 +58,7 @@ export const GroupRegister: FC<GroupRegisterProps> = ({ bands, isFiltered, highl
   };
 
   return (
-    <KkPanelSection title={REGISTER_TITLE} action={action}>
+    <KkPanelSection title={REGISTER_TITLE} action={action} landing={GROUPS_HELP_SPOTS.register}>
       {body}
     </KkPanelSection>
   );

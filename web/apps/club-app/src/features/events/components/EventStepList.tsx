@@ -2,6 +2,7 @@ import { KkStepList } from '@furria/ui/KkStepList';
 import type { FC } from 'react';
 import type { BoardCell } from '../event-board';
 import { LATER_EYEBROW, LATER_ITEMS, STEPS_LABEL } from '../event-board-copy';
+import { EVENT_HELP_SPOTS } from '../event-help-copy';
 import type { EventDetails, EventPaneKey } from '../schemas';
 import { EventStepRow } from './EventStepRow';
 
@@ -24,7 +25,7 @@ export const EventStepList: FC<EventStepListProps> = ({ event, cells, pane, onCh
   ));
 
   return (
-    <KkStepList label={STEPS_LABEL}>
+    <KkStepList label={STEPS_LABEL} landing={EVENT_HELP_SPOTS.steps}>
       {steps}
       <KkStepList.Later eyebrow={LATER_EYEBROW} items={LATER_ITEMS} />
     </KkStepList>

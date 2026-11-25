@@ -18,12 +18,14 @@ interface GroupHistoryPanelProps {
   pastMembers: readonly GroupDetailMember[];
   pastAdmins: readonly GroupDetailAdmin[];
   groupTone?: KkGroupTone;
+  landing?: string;
 }
 
 export const GroupHistoryPanel: FC<GroupHistoryPanelProps> = ({
   pastMembers,
   pastAdmins,
   groupTone,
+  landing,
 }) => {
   const entries = toGroupHistoryEntries(pastMembers, pastAdmins);
 
@@ -55,7 +57,7 @@ export const GroupHistoryPanel: FC<GroupHistoryPanelProps> = ({
   );
 
   return (
-    <KkPanelSection title={GROUP_SECTION_TITLES.history} groupTone={groupTone}>
+    <KkPanelSection title={GROUP_SECTION_TITLES.history} groupTone={groupTone} landing={landing}>
       <KkPanel variant={variant}>{body}</KkPanel>
     </KkPanelSection>
   );

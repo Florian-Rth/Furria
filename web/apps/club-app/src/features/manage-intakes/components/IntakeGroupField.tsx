@@ -3,6 +3,7 @@ import { KkNote } from '@furria/ui/KkNote';
 import { KkToggleChips } from '@furria/ui/KkToggleChips';
 import type { FC } from 'react';
 import type { IntakeEditorControl } from '../hooks/use-intake-editor';
+import { INTAKE_EDITOR_HELP_SPOTS } from '../intake-editor-help-copy';
 import {
   GROUPS_LABEL,
   GROUPS_SECTION,
@@ -36,7 +37,7 @@ export const IntakeGroupField: FC<IntakeGroupFieldProps> = ({ control }) => {
     );
 
   return (
-    <KkFormSection title={GROUPS_SECTION}>
+    <KkFormSection title={GROUPS_SECTION} landing={INTAKE_EDITOR_HELP_SPOTS.groups}>
       {picker}
       {lockedNote}
       {error}

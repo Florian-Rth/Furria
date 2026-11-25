@@ -3,6 +3,7 @@ import { KkReadout } from '@furria/ui/KkReadout';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';
 import { punctualFoldOf, SECTION_TITLES } from '../system-copy';
+import { SYSTEM_HELP_SPOTS } from '../system-help-copy';
 import { servicesViewOf } from '../system-view';
 import { SystemServiceRows } from './SystemServiceRows';
 
@@ -30,7 +31,7 @@ export const SystemServicesSection: FC<SystemServicesSectionProps> = ({
     );
 
   return (
-    <KkReadout label={SECTION_TITLES.services} dimmed={dimmed}>
+    <KkReadout landing={SYSTEM_HELP_SPOTS.area} label={SECTION_TITLES.services} dimmed={dimmed}>
       {attention}
       {punctual}
     </KkReadout>

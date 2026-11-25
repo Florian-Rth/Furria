@@ -14,6 +14,7 @@ import {
   PHONE_FACT,
   toAddressLine,
 } from '../intake-labels';
+import { INTAKE_REVIEW_HELP_SPOTS } from '../intake-review-help-copy';
 import type { IntakeNewcomer } from '../schemas';
 
 interface IntakeNewcomerPanelProps {
@@ -30,7 +31,7 @@ export const IntakeNewcomerPanel: FC<IntakeNewcomerPanelProps> = ({ newcomer }) 
   const email = newcomer.email ?? NOT_GIVEN;
 
   return (
-    <KkFormSection title={NEWCOMER_SECTION}>
+    <KkFormSection title={NEWCOMER_SECTION} landing={INTAKE_REVIEW_HELP_SPOTS.newcomer}>
       <KkPanel>
         <KkPersonRow initials={initials} portrait={portrait} name={name} meta={birthDate} />
         <KkFieldRow label={ADDRESS_FACT} value={address} />

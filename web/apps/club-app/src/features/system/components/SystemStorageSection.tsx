@@ -3,6 +3,7 @@ import { KkReadout } from '@furria/ui/KkReadout';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';
 import { SECTION_TITLES, STORAGE_LABEL, STORAGE_UNMEASURED } from '../system-copy';
+import { SYSTEM_HELP_SPOTS } from '../system-help-copy';
 import { storageViewOf } from '../system-view';
 
 interface SystemStorageSectionProps {
@@ -27,7 +28,12 @@ export const SystemStorageSection: FC<SystemStorageSectionProps> = ({ status, no
   );
 
   return (
-    <KkReadout label={SECTION_TITLES.storage} aside={storage.measured} dimmed={dimmed}>
+    <KkReadout
+      landing={SYSTEM_HELP_SPOTS.area}
+      label={SECTION_TITLES.storage}
+      aside={storage.measured}
+      dimmed={dimmed}
+    >
       {gauge}
     </KkReadout>
   );

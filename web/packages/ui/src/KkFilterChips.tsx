@@ -43,10 +43,18 @@ interface KkFilterChipsProps {
   options: readonly KkFilterOption[];
   value: string;
   onChange: (id: string) => void;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, onChange, sx }) => {
+export const KkFilterChips: FC<KkFilterChipsProps> = ({
+  label,
+  options,
+  value,
+  onChange,
+  landing,
+  sx,
+}) => {
   const entries = toFilterChipEntries(options, value);
   const stripRef = useRef<HTMLDivElement>(null);
   const ids = entries.map((entry) => entry.id);
@@ -95,6 +103,7 @@ export const KkFilterChips: FC<KkFilterChipsProps> = ({ label, options, value, o
         aria-label={label}
         onKeyDown={moveSelection}
         data-kk-filter-chips
+        data-kk-landing={landing}
         sx={{ alignItems: 'center', gap: 0.875 }}
       >
         {entries.map((entry) => (

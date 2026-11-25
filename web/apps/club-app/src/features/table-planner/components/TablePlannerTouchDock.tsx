@@ -1,6 +1,7 @@
 import { KkPlanDock } from '@furria/ui/KkPlanDock';
 import type { FC } from 'react';
 import { placesTables, TOOL_ICONS } from '../planner-tools';
+import { TABLE_PLAN_HELP_SPOTS } from '../table-plan-help-copy';
 import { useTablePlannerContext } from '../table-planner-context';
 import { ADD_LABEL, DOCK_LABEL, TOUCH_TOOL_LABELS, VIEW_LABELS } from '../table-planner-copy';
 
@@ -18,7 +19,7 @@ export const TablePlannerTouchDock: FC = () => {
   };
 
   return (
-    <KkPlanDock label={DOCK_LABEL}>
+    <KkPlanDock label={DOCK_LABEL} landing={TABLE_PLAN_HELP_SPOTS.tools}>
       <KkPlanDock.Button
         id="select"
         label={TOUCH_TOOL_LABELS.select}

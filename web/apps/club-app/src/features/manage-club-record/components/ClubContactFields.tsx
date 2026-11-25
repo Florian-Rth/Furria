@@ -3,6 +3,7 @@ import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
+import { CLUB_EDITOR_HELP_SPOTS } from '../club-record-help-copy';
 import type { ClubContactForm } from '../schemas';
 
 const STREET_LABEL = 'Straße und Hausnummer';
@@ -44,7 +45,7 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
 
   return (
     <>
-      <KkFormSection title={ADDRESS_SECTION_TITLE}>
+      <KkFormSection title={ADDRESS_SECTION_TITLE} landing={CLUB_EDITOR_HELP_SPOTS.address}>
         <KkTextField
           name={street.name}
           label={STREET_LABEL}
@@ -84,7 +85,7 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
           }
         />
       </KkFormSection>
-      <KkFormSection title={REACH_SECTION_TITLE}>
+      <KkFormSection title={REACH_SECTION_TITLE} landing={CLUB_EDITOR_HELP_SPOTS.reach}>
         <KkTextField
           name={email.name}
           label={EMAIL_LABEL}
@@ -110,7 +111,7 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
           inputRef={phone.ref}
         />
       </KkFormSection>
-      <KkFormSection title={WEB_SECTION_TITLE}>
+      <KkFormSection title={WEB_SECTION_TITLE} landing={CLUB_EDITOR_HELP_SPOTS.web}>
         <KkTextField
           name={websiteUrl.name}
           label={WEBSITE_LABEL}

@@ -12,6 +12,7 @@ import {
   ADD_PERSON_LABEL,
   PERSON_DIRECTORY_TITLE,
 } from '../manage-persons-labels';
+import { PERSONS_HELP_SPOTS } from '../persons-help-copy';
 import { PersonsAccessNote } from './PersonsAccessNote';
 import { PersonsColdEmpty } from './PersonsColdEmpty';
 import { PersonsEmpty } from './PersonsEmpty';
@@ -44,7 +45,11 @@ export const PersonsView: FC<PersonsViewProps> = ({ search, access, canCreate, c
 
   if (search.isRegisterEmpty && access.filter === null && !search.isArchivedView) {
     return (
-      <KkPanelSection title={PERSON_DIRECTORY_TITLE} action={action}>
+      <KkPanelSection
+        title={PERSON_DIRECTORY_TITLE}
+        action={action}
+        landing={PERSONS_HELP_SPOTS.register}
+      >
         {intakes}
         <KkPanel variant="block">
           <PersonsColdEmpty />
@@ -80,7 +85,11 @@ export const PersonsView: FC<PersonsViewProps> = ({ search, access, canCreate, c
 
   return (
     <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
-      <KkPanelSection title={PERSON_DIRECTORY_TITLE} action={action}>
+      <KkPanelSection
+        title={PERSON_DIRECTORY_TITLE}
+        action={action}
+        landing={PERSONS_HELP_SPOTS.register}
+      >
         {intakes}
         {rounds}
         {accessNote}

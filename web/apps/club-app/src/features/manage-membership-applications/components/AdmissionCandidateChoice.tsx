@@ -10,6 +10,7 @@ import {
   toNewPersonDescription,
   toNoCandidatesNote,
 } from '../admission-labels';
+import { ADMISSION_HELP_SPOTS } from '../applications-help-copy';
 import type { MembershipApplicationDetails } from '../schemas';
 import { AdmissionCandidateOption } from './AdmissionCandidateOption';
 
@@ -41,7 +42,7 @@ export const AdmissionCandidateChoice: FC<AdmissionCandidateChoiceProps> = ({
   ));
 
   return (
-    <KkFormSection title={CANDIDATES_SECTION_TITLE}>
+    <KkFormSection title={CANDIDATES_SECTION_TITLE} landing={ADMISSION_HELP_SPOTS.candidates}>
       <KkRadioGroup
         name={CHOICE_NAME}
         label={CANDIDATE_CHOICE_LABEL}

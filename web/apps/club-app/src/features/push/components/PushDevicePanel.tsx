@@ -8,7 +8,11 @@ import { PushDeviceSwitch } from './PushDeviceSwitch';
 import { PushTopicsRow } from './PushTopicsRow';
 import { PushTopicsSheet } from './PushTopicsSheet';
 
-export const PushDevicePanel: FC = () => {
+interface PushDevicePanelProps {
+  landing?: string;
+}
+
+export const PushDevicePanel: FC<PushDevicePanelProps> = ({ landing }) => {
   const topics = usePushTopics();
   const sheets = useKkSheetCommands();
   if (topics.hearsNothing) {
@@ -25,7 +29,7 @@ export const PushDevicePanel: FC = () => {
     );
 
   return (
-    <KkPanelSection title={PUSH_SECTION_TITLE}>
+    <KkPanelSection title={PUSH_SECTION_TITLE} landing={landing}>
       <KkPanel variant="block">
         <PushDeviceSwitch />
         {topicsRow}

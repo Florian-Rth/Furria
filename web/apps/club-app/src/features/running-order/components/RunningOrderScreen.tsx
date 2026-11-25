@@ -2,6 +2,7 @@ import { KkScreen } from '@furria/ui/KkScreen';
 import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { KkScreenActions } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { usePlannerAction } from '../hooks/use-planner-action';
 import { useRunningOrderPlanner } from '../hooks/use-running-order-planner';
 import { PlannerContext } from '../planner-context';
@@ -13,6 +14,9 @@ import { PlannerModeSwitch } from './PlannerModeSwitch';
 import { PlannerPersonDrawer } from './PlannerPersonDrawer';
 import { PlannerRowDrawer } from './PlannerRowDrawer';
 import { PlannerWishesDrawer } from './PlannerWishesDrawer';
+import { RunningOrderHelp } from './RunningOrderHelp';
+
+const HELP = toScreenHelp(<RunningOrderHelp />);
 
 interface RunningOrderScreenProps {
   eventId: number;
@@ -38,6 +42,7 @@ export const RunningOrderScreen: FC<RunningOrderScreenProps> = ({ eventId }) => 
         actions={actions}
         tools={tools}
         foot={foot}
+        help={HELP}
       >
         <KkVisuallyHidden component="h1">{PAGE_TITLE}</KkVisuallyHidden>
         <PlannerBody />

@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { useAnnouncementsTile } from '../hooks/use-announcements-tile';
 import type { StartBoard } from '../hooks/use-start-view';
 import type { StartPanelOf } from '../start-board';
+import { START_HELP_SPOTS } from '../start-help-copy';
 import { AnnouncementAuthor } from './AnnouncementAuthor';
 
 const TILE_LABEL = 'Aushänge';
@@ -39,7 +40,7 @@ export const AnnouncementsTile: FC<AnnouncementsTileProps> = ({ panel, board, or
   const further = tile.further === null ? null : <KkMeta>{tile.further}</KkMeta>;
 
   return (
-    <KkStartTile label={TILE_LABEL} order={order}>
+    <KkStartTile label={TILE_LABEL} order={order} landing={START_HELP_SPOTS.announcements}>
       <KkStartTile.Head icon="campaign" label={HEAD_LABEL} reach={tile.reach} />
       {blocks}
       {further}
