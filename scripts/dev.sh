@@ -9,6 +9,7 @@
 #   scripts/dev.sh logs [api|website|club-app]
 #
 # Env overrides: WEBSITE_PORT (3010), CLUB_APP_PORT (3011), DEV_MEDIA (~/furria-dev-media).
+# The club assistant needs the model key in the API's environment: export ClubAssistant__ApiKey=… before `up`.
 # The vite proxies target the API on :5100, so the API port is fixed.
 # The dev database is shared by all worktrees, so media files are too: API and the one
 # media worker use DEV_MEDIA (not under ~/.herdr — snap docker cannot mount hidden dirs).
@@ -109,7 +110,7 @@ start_waha() { # the session volume keeps the linked device across restarts
     -e WAHA_API_KEY=furria-development-waha-api-key \
     -e WAHA_DASHBOARD_USERNAME=furria -e WAHA_DASHBOARD_PASSWORD=furria \
     -e "WHATSAPP_HOOK_URL=http://host.docker.internal:$API_PORT/api/whatsapp/webhook" \
-    -e WHATSAPP_HOOK_EVENTS=session.status,poll.vote,poll.vote.failed,event.response,group.v2.participants \
+    -e WHATSAPP_HOOK_EVENTS=session.status,poll.vote,poll.vote.failed,event.response,group.v2.participants,message \
     -e WHATSAPP_HOOK_HMAC_KEY=furria-development-whatsapp-webhook-key \
     -v furria-dev-waha-sessions:/app/.sessions "$WAHA_IMAGE"
 }
