@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Furria.Application.Club;
 using Furria.Application.ClubApp;
+using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Groups;
@@ -26,6 +27,9 @@ public sealed partial class ClubAssistantTools
     public const string Groups = "groups";
     public const string Announcements = "announcements";
     public const string News = "news";
+    public const string AddOns = "add_ons";
+    public const string MyThings = "my_things";
+    public const string BeerList = "beer_list";
 
     private readonly ClubService _clubService;
     private readonly CalendarService _calendarService;
@@ -36,6 +40,8 @@ public sealed partial class ClubAssistantTools
     private readonly GroupService _groupService;
     private readonly AnnouncementService _announcementService;
     private readonly NewsService _newsService;
+    private readonly BeerListService _beerListService;
+    private readonly BeerTabService _beerTabService;
     private readonly IOptions<ClubAppOptions> _clubApp;
     private readonly TimeProvider _timeProvider;
 
@@ -51,6 +57,8 @@ public sealed partial class ClubAssistantTools
         GroupService groupService,
         AnnouncementService announcementService,
         NewsService newsService,
+        BeerListService beerListService,
+        BeerTabService beerTabService,
         IOptions<ClubAppOptions> clubApp,
         TimeProvider timeProvider
     )
@@ -64,6 +72,8 @@ public sealed partial class ClubAssistantTools
         _groupService = groupService;
         _announcementService = announcementService;
         _newsService = newsService;
+        _beerListService = beerListService;
+        _beerTabService = beerTabService;
         _clubApp = clubApp;
         _timeProvider = timeProvider;
     }
@@ -74,6 +84,7 @@ public sealed partial class ClubAssistantTools
             .. VenueToolsFor(asker),
             .. EventToolsFor(asker),
             .. ClubToolsFor(asker),
+            .. PersonalToolsFor(asker),
         ];
 
     private IEnumerable<AIFunction> CalendarToolsFor(ClubAssistantAsker asker) =>
@@ -91,9 +102,10 @@ public sealed partial class ClubAssistantTools
                     CancellationToken ct
                 ) => CalendarEntriesAsync(asker, ClubAssistantWindow.Of(from, to), ct),
                 CalendarEntries,
-                "Kalendereinträge, die die fragende Person sieht: geplante Trainings, Termine, "
-                    + "Ausflüge und Veranstaltungen mit Zeit, Ort, Veranstalter, Zielgruppe und "
-                    + $"Link. Höchstens {ClubAssistantWindow.MostDays} Tage auf einmal."
+                "Kalendereinträge, die die fragende Person sieht: calendarEntryId, geplante "
+                    + "Trainings, Termine, Ausflüge und Veranstaltungen mit Zeit, Ort, Veranstalter, "
+                    + "Zielgruppe, angehängten Funktionen (addOns) und Link. Höchstens "
+                    + $"{ClubAssistantWindow.MostDays} Tage auf einmal."
             ),
             AIFunctionFactory.Create(
                 (

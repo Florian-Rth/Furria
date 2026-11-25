@@ -58,24 +58,32 @@ public sealed partial class AnnouncementService
     public async Task<IReadOnlyList<AnnouncementSummary>> GetAnnouncementsAsync(
         AnnouncementReader reader,
         CancellationToken ct
+    ) =>
+        await SummariesAsync(
+            await _dbContext
+                .Announcements.AsNoTracking()
+                .OrderByDescending(announcement => announcement.PublishedAt)
+                .ThenByDescending(announcement => announcement.Id)
+                .Select(AnnouncementRows.Projection)
+                .ToListAsync(ct),
+            new SummariesReader(reader.Mentions, AddOnsReader.Of(reader)),
+            ct
+        );
+
+    private async Task<IReadOnlyList<AnnouncementSummary>> SummariesAsync(
+        IReadOnlyList<AnnouncementRow> rows,
+        SummariesReader reader,
+        CancellationToken ct
     )
     {
         var today = ClubClock.Today(_timeProvider);
-
-        var rows = await _dbContext
-            .Announcements.AsNoTracking()
-            .OrderByDescending(announcement => announcement.PublishedAt)
-            .ThenByDescending(announcement => announcement.Id)
-            .Select(AnnouncementRows.Projection)
-            .ToListAsync(ct);
-
         var officeNames = await _runningBoardSeats.OfficeNamesAsync(today, ct);
         var mentions = await _mentionTargets.OfAnnouncementsAsync(
             [.. rows.Select(row => row.AnnouncementId)],
             reader.Mentions,
             ct
         );
-        var addOns = await AddOnsOfAsync(rows, reader, ct);
+        var addOns = await AddOnsOfAsync(rows, reader.AddOns, ct);
 
         return
         [

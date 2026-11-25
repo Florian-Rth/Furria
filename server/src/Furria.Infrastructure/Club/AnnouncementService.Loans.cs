@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Core.Club;
@@ -99,10 +100,6 @@ public sealed partial class AnnouncementService
         new(loan.AnnouncementId, KeyOf(loan), loan.Position);
 
     [Pure]
-    private static LoanRow RowOf(AnnouncementBorrowedAddOn loan) =>
-        new(loan.AnnouncementId, KeyOf(loan), loan.Position);
-
-    [Pure]
     private static AnnouncementBorrowedAddOn RowOf(WantedLoan loan) =>
         new()
         {
@@ -130,7 +127,7 @@ public sealed partial class AnnouncementService
 
     private async Task<ILookup<int, PlacedLoan>> LoansOfAsync(
         IReadOnlyList<int> announcementIds,
-        int readerAccountId,
+        AddOnsReader reader,
         CancellationToken ct
     )
     {
@@ -143,8 +140,8 @@ public sealed partial class AnnouncementService
         if (rows.Count == 0)
             return NoLoans;
 
-        var entries = await _calendarService.GetLendingEntriesAsync(
-            readerAccountId,
+        var entries = await LendingEntriesOfAsync(
+            reader,
             [.. rows.Select(row => row.Key.CalendarEntryId)],
             ct
         );
@@ -186,4 +183,28 @@ public sealed partial class AnnouncementService
     private sealed record LoanRow(int AnnouncementId, LoanKey Key, int Position);
 
     private sealed record PlacedLoan(int Position, AnnouncementAddOnDetails AddOn);
+
+    private async Task<IReadOnlyDictionary<int, CalendarEntrySummary>> LendingEntriesOfAsync(
+        AddOnsReader reader,
+        IReadOnlyList<int> calendarEntryIds,
+        CancellationToken ct
+    ) =>
+        reader.Lender switch
+        {
+            AccountLender account => await _calendarService.GetLendingEntriesAsync(
+                account.AccountId,
+                calendarEntryIds,
+                ct
+            ),
+            PersonLender person => await _calendarService.GetLendingEntriesSeenByAsync(
+                new CalendarEntriesSightQuery
+                {
+                    PersonId = person.PersonId,
+                    Rights = person.Rights,
+                    CalendarEntryIds = calendarEntryIds,
+                },
+                ct
+            ),
+            _ => throw new UnreachableException(),
+        };
 }

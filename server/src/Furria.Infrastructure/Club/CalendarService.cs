@@ -117,21 +117,7 @@ public sealed partial class CalendarService
 
         var now = _timeProvider.GetUtcNow();
         var today = ClubClock.Today(_timeProvider);
-        var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
-
-        var row = await _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(entry => entry.Id == calendarEntryId)
-            .Where(VisibleTo(viewer.PersonId, viewer.Rights, today))
-            .Where(PublishedEvents.IsListedEntry)
-            .Select(RowProjection(now, openEndedCutoff))
-            .SingleOrDefaultAsync(ct);
-
-        if (row is null)
-            return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
-
-        var ties = await _dbContext.CalendarTiesOfAsync(viewer.PersonId, today, ct);
-        if (!ties.Sees(FactsOf(row), viewer.Rights))
+        if (await SeenRowAsync(viewer, calendarEntryId, ct) is not var (row, ties))
             return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
 
         var extras = await ExtrasOfAsync(viewer.PersonId, [row], now, ct);

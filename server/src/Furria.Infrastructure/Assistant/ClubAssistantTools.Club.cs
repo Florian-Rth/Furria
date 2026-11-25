@@ -1,3 +1,4 @@
+using Furria.Application.Club;
 using Microsoft.Extensions.AI;
 
 namespace Furria.Infrastructure.Assistant;
@@ -14,9 +15,10 @@ public sealed partial class ClubAssistantTools
                     + "Person dazugehört. Keine Namen."
             ),
             AIFunctionFactory.Create(
-                AnnouncementsAsync,
+                (CancellationToken ct) => AnnouncementsAsync(asker, ct),
                 Announcements,
-                "Aktuelle Aushänge am Schwarzen Brett: Titel, Text, veröffentlicht, gültig bis, Link."
+                "Aktuelle Aushänge am Schwarzen Brett: announcementId, Titel, Text, veröffentlicht, "
+                    + "gültig bis, angehängte Funktionen (addOns), Link."
             ),
             AIFunctionFactory.Create(
                 NewsAsync,
@@ -35,12 +37,23 @@ public sealed partial class ClubAssistantTools
             await _groupService.GetGroupsAsync(asker.PersonId, ct)
         );
 
-    private async Task<IReadOnlyList<AnnouncementFact>> AnnouncementsAsync(CancellationToken ct) =>
+    private async Task<IReadOnlyList<AnnouncementFact>> AnnouncementsAsync(
+        ClubAssistantAsker asker,
+        CancellationToken ct
+    ) =>
         [
-            .. (await _announcementService.GetCurrentAnnouncementsAsync(ct)).Select(announcement =>
+            .. (await CurrentAnnouncementsAsync(asker, ct)).Select(announcement =>
                 ClubAssistantClubFacts.AnnouncementOf(announcement, AppUrl)
             ),
         ];
+
+    private Task<IReadOnlyList<AnnouncementSummary>> CurrentAnnouncementsAsync(
+        ClubAssistantAsker asker,
+        CancellationToken ct
+    ) => _announcementService.GetCurrentAnnouncementsSeenByAsync(SightOf(asker), ct);
+
+    private static AnnouncementSightQuery SightOf(ClubAssistantAsker asker) =>
+        new() { PersonId = asker.PersonId, Rights = asker.CalendarRights };
 
     private async Task<IReadOnlyList<NewsFact>> NewsAsync(CancellationToken ct) =>
         ClubAssistantClubFacts.NewestNewsOf(await _newsService.GetPublicNewsAsync(ct), AppUrl);

@@ -34,6 +34,7 @@ public static class ClubAssistantFacts
     [Pure]
     public static CalendarEntryFact EntryOf(CalendarEntrySummary entry, string appUrl) =>
         new(
+            entry.CalendarEntryId,
             entry.Title,
             KindOf(entry.Kind),
             MomentOf(entry.StartsAt),
@@ -42,6 +43,7 @@ public static class ClubAssistantFacts
             entry.OwnerGroupName ?? WholeClub,
             AudienceOf(entry),
             entry.IsRunning,
+            ClubAssistantAddOnFacts.KindsOf(entry.AddOns.Select(addOn => addOn.Kind)),
             WhatsAppHostLinks.CalendarEntryOf(appUrl, entry.CalendarEntryId)
         );
 

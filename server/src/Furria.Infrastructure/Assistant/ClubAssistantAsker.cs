@@ -1,4 +1,5 @@
 using Furria.Application.Authorization;
+using Furria.Application.BeerList;
 using Furria.Core.Club;
 
 namespace Furria.Infrastructure.Assistant;
@@ -15,4 +16,6 @@ public sealed record ClubAssistantAsker(
             HoldsClubRead: GrantedKeys.Contains(FurriaPermissions.ClubRead),
             ManagesClubCalendar: GrantedKeys.Contains(FurriaPermissions.CalendarManageClub)
         );
+
+    public bool TakesFromBeerList => BeerListKeys.Readers.Any(GrantedKeys.Contains);
 }

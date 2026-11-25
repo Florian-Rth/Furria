@@ -14,12 +14,37 @@ public sealed partial class CalendarService
         int viewerAccountId,
         IReadOnlyCollection<int> calendarEntryIds,
         CancellationToken ct
+    ) =>
+        calendarEntryIds.Count == 0 || await ViewerOfAsync(viewerAccountId, ct) is not { } viewer
+            ? NoLendingEntries
+            : await LendingEntriesAsync(
+                new LendingSight(viewer, viewerAccountId, calendarEntryIds),
+                ct
+            );
+
+    public Task<IReadOnlyDictionary<int, CalendarEntrySummary>> GetLendingEntriesSeenByAsync(
+        CalendarEntriesSightQuery query,
+        CancellationToken ct
+    ) =>
+        LendingEntriesAsync(
+            new LendingSight(
+                new CalendarViewer(query.PersonId, query.Rights),
+                ViewerAccountId: null,
+                query.CalendarEntryIds
+            ),
+            ct
+        );
+
+    private async Task<IReadOnlyDictionary<int, CalendarEntrySummary>> LendingEntriesAsync(
+        LendingSight sight,
+        CancellationToken ct
     )
     {
-        var ids = calendarEntryIds.Distinct().ToList();
-        if (ids.Count == 0 || await ViewerOfAsync(viewerAccountId, ct) is not { } viewer)
+        var ids = sight.CalendarEntryIds.Distinct().ToList();
+        if (ids.Count == 0)
             return NoLendingEntries;
 
+        var viewer = sight.Viewer;
         var now = _timeProvider.GetUtcNow();
         var today = ClubClock.Today(_timeProvider);
         var rows = await _dbContext
@@ -37,6 +62,12 @@ public sealed partial class CalendarService
         rows = [.. rows.Where(row => ties.Sees(FactsOf(row), viewer.Rights))];
 
         var extras = await ExtrasOfAsync(viewer.PersonId, rows, now, ct);
+        if (sight.ViewerAccountId is not { } viewerAccountId)
+            return rows.ToDictionary(
+                row => row.CalendarEntryId,
+                row => ToSummary(row, extras, now, MayAnswer(row, ties, OrganisedOwners.Nobody))
+            );
+
         var organised = await OwnersRunByAsync(viewerAccountId, rows, ct);
         var entries = new Dictionary<int, CalendarEntrySummary>();
         foreach (var row in rows)
@@ -104,4 +135,10 @@ public sealed partial class CalendarService
         Attendance,
         Everything,
     }
+
+    private sealed record LendingSight(
+        CalendarViewer Viewer,
+        int? ViewerAccountId,
+        IReadOnlyCollection<int> CalendarEntryIds
+    );
 }

@@ -1,6 +1,7 @@
 namespace Furria.Infrastructure.Assistant;
 
 public sealed record CalendarEntryFact(
+    int CalendarEntryId,
     string Title,
     string Kind,
     ClubMomentFact Starts,
@@ -9,5 +10,6 @@ public sealed record CalendarEntryFact(
     string Organiser,
     string Audience,
     bool IsRunningNow,
+    IReadOnlyList<string> AddOns,
     string Link
 );

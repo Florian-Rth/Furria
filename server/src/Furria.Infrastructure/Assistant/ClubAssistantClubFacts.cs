@@ -33,14 +33,16 @@ public static class ClubAssistantClubFacts
 
     [Pure]
     public static AnnouncementFact AnnouncementOf(
-        CurrentAnnouncementSummary announcement,
+        AnnouncementSummary announcement,
         string appUrl
     ) =>
         new(
+            announcement.AnnouncementId,
             announcement.Title,
             ClubAssistantText.PlainOf(announcement.Body),
             ClubAssistantFacts.MomentOf(announcement.PublishedAt),
             announcement.ValidUntil is { } validUntil ? ClubAssistantFacts.DayOf(validUntil) : null,
+            ClubAssistantAddOnFacts.KindsOf(announcement.AddOns.Select(addOn => addOn.Kind)),
             WhatsAppHostLinks.AnnouncementOf(appUrl, announcement.AnnouncementId)
         );
 

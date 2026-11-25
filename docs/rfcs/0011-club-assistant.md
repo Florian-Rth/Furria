@@ -129,10 +129,11 @@ Goal: the everyday club questions are covered.
 
 ### Phase 5 — Add-ons, my things, beer list
 Goal: everything attached to an entry or announcement is answerable, without names.
-- [ ] Add-ons tool: Zu-/Absage, polls (named and anonymous), sign-up list, day schedule — counts and line texts, no names, the asker's own answer
-- [ ] My things tool: my groups, open answers, own Zu-/Absagen
-- [ ] Beer list tool: stock per drink, own balance
-- [ ] Tests: no person name in any add-on output, own answer present
+- [x] Add-ons tool: Zu-/Absage, polls (named and anonymous), sign-up list, day schedule — counts and line texts, no names, the asker's own answer
+- [x] My things tool: my groups, open answers, own Zu-/Absagen
+- [x] Beer list tool: stock per drink, own balance
+- [x] Tests: no person name in any add-on output, own answer present
+- Built 2026-11-25: *add_ons* takes exactly one `calendarEntryId` or `announcementId` (both now carried, with the attached add-on kinds, by *calendar_entries* and *announcements*); hidden entries and expired announcements read „gibt es nicht". Output: attendance counts + own answer, polls as votes per option + `chosenByYou`, sign-up lists as line count + other lines' texts + `yourLine`, day schedule steps as dated wall-clock times, participating groups; add-ons an announcement took over from an entry carry `takenFrom` and count for `youMayAnswer`. Per-person reads without an account: `CalendarService.GetEntrySeenByAsync` / `GetLendingEntriesSeenByAsync` (no organiser rolls) and `AnnouncementService.GetCurrentAnnouncement(s)SeenByAsync`; `GetEntriesSeenByAsync` now sets `MayAnswer` from the asker's ties. *my_things* = groups, open answers (the next 62 days' entries and current announcements' own add-ons the asker may still answer) and own Zu-/Absagen. *beer_list*: drinks with crate price and in-stock only for beer-list takers (as in the app; crate counts stay with managers), own open crates/euros in total and per pot with its payment link.
 
 ### Phase 6 — Management knowledge
 Goal: permission holders get their extra knowledge, still without names.
