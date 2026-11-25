@@ -122,9 +122,10 @@ Goal: matched members get real answers about the calendar and training.
 
 ### Phase 4 — Venues, events, groups, announcements, news
 Goal: the everyday club questions are covered.
-- [ ] Tools: venues, venue occupancy (reusing the venue collision rule), events, running order (positions only)
-- [ ] Tools: groups and counts, announcements, news
-- [ ] Tests: occupancy answers, running order never carries times, unpublished events stay hidden
+- [x] Tools: venues, venue occupancy (reusing the venue collision rule), events, running order (positions only)
+- [x] Tools: groups and counts, announcements, news
+- [x] Tests: occupancy answers, running order never carries times, unpublished events stay hidden
+- Built 2026-11-25: *Venue occupancy* takes a venue name (folded match), a day and a from/to wall-clock time (no end = that minute only; a bare hour like „9" reads 09:00; a venue name matching several venues is refused with the list); it applies the collision overlap to **all** entries at the venue, lists those the asker sees and counts the rest as `otherBookings` (busy, no details), and also counts usual trainings at that venue. *Events* = the website's published, not yet over events with presale places shown as on the website; *running order* only for such an event, acts as `Nr.` positions (asker's own marked), `mayStillChange` until confirmed; no placed act yet reads „noch kein Auftritt". *Groups* = the app's group list with member counts plus the club's member count, no names. *Announcements* = unexpired ones; person mentions read *ein Mitglied*. *News* = the 5 newest published posts (title, teaser, rubric, app link).
 
 ### Phase 5 — Add-ons, my things, beer list
 Goal: everything attached to an entry or announcement is answerable, without names.

@@ -50,9 +50,7 @@ public static class ClubAssistantFacts
         new(
             training.GroupName,
             MomentOf(training.StartsAt),
-            ClubClock
-                .WallClockOf(training.EndsAt)
-                .ToString(TimeFormat, CultureInfo.InvariantCulture),
+            TimeOf(ClubClock.TimeOf(training.EndsAt)),
             (int)(training.EndsAt - training.StartsAt).TotalMinutes,
             training.VenueName
         );
@@ -63,10 +61,37 @@ public static class ClubAssistantFacts
         var wallClock = ClubClock.WallClockOf(instant);
         return new ClubMomentFact(
             wallClock.ToString(DateFormat, CultureInfo.InvariantCulture),
-            Weekdays[wallClock.DayOfWeek],
+            WeekdayOf(wallClock.DayOfWeek),
             wallClock.ToString(TimeFormat, CultureInfo.InvariantCulture)
         );
     }
+
+    [Pure]
+    public static string WeekdayOf(DayOfWeek weekday) => Weekdays[weekday];
+
+    [Pure]
+    public static string TimeOf(TimeOnly time) =>
+        time.ToString(TimeFormat, CultureInfo.InvariantCulture);
+
+    [Pure]
+    public static string DayOf(DateOnly day) =>
+        day.ToString(DateFormat, CultureInfo.InvariantCulture);
+
+    [Pure]
+    public static string AddressOf(string street, string zip, string city) =>
+        $"{street}, {zip} {city}";
+
+    [Pure]
+    public static IReadOnlyList<OpeningHoursFact> OpeningHoursOf(
+        IReadOnlyList<VenueOpeningSlotDetails> slots
+    ) =>
+        [
+            .. slots.Select(slot => new OpeningHoursFact(
+                WeekdayOf(slot.Weekday),
+                TimeOf(slot.Opens),
+                TimeOf(slot.Closes)
+            )),
+        ];
 
     [Pure]
     private static string KindOf(CalendarEntryKind kind) =>

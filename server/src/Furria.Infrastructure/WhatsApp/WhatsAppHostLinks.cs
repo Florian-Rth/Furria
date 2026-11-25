@@ -7,6 +7,7 @@ public static class WhatsAppHostLinks
 {
     private const string AnnouncementPath = "/announcements";
     private const string CalendarPath = "/calendar";
+    private const string NewsPath = "/club/news";
 
     [Pure]
     public static string AnnouncementOf(string baseUrl, int announcementId) =>
@@ -15,6 +16,10 @@ public static class WhatsAppHostLinks
     [Pure]
     public static string CalendarEntryOf(string baseUrl, int calendarEntryId) =>
         Of(baseUrl, CalendarPath, calendarEntryId);
+
+    [Pure]
+    public static string NewsPostOf(string baseUrl, string slug) =>
+        $"{baseUrl.TrimEnd('/')}{NewsPath}/{Uri.EscapeDataString(slug)}";
 
     [Pure]
     public static string HostOf(string baseUrl, WhatsAppHostKind kind, int hostId) =>

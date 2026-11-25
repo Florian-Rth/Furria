@@ -2,30 +2,55 @@ using System.ComponentModel;
 using Furria.Application.Club;
 using Furria.Application.ClubApp;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Events;
+using Furria.Infrastructure.Groups;
+using Furria.Infrastructure.News;
+using Furria.Infrastructure.RunningOrders;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
 
 namespace Furria.Infrastructure.Assistant;
 
-public sealed class ClubAssistantTools
+public sealed partial class ClubAssistantTools
 {
+    private const string FromDescription = "Erster Tag (yyyy-MM-dd), Vereinszeit.";
+    private const string ToDescription = "Letzter Tag (yyyy-MM-dd), einschließlich.";
+
     public const string ClubBasics = "club_basics";
     public const string CalendarEntries = "calendar_entries";
     public const string UsualTrainings = "usual_trainings";
-
-    private const string FromDescription = "Erster Tag (yyyy-MM-dd), Vereinszeit.";
-    private const string ToDescription = "Letzter Tag (yyyy-MM-dd), einschließlich.";
+    public const string Venues = "venues";
+    public const string VenueOccupancy = "venue_occupancy";
+    public const string Events = "events";
+    public const string RunningOrder = "running_order";
+    public const string Groups = "groups";
+    public const string Announcements = "announcements";
+    public const string News = "news";
 
     private readonly ClubService _clubService;
     private readonly CalendarService _calendarService;
     private readonly UsualTrainingService _usualTrainingService;
+    private readonly VenueService _venueService;
+    private readonly EventService _eventService;
+    private readonly RunningOrderService _runningOrderService;
+    private readonly GroupService _groupService;
+    private readonly AnnouncementService _announcementService;
+    private readonly NewsService _newsService;
     private readonly IOptions<ClubAppOptions> _clubApp;
     private readonly TimeProvider _timeProvider;
+
+    private string AppUrl => _clubApp.Value.BaseUrl;
 
     public ClubAssistantTools(
         ClubService clubService,
         CalendarService calendarService,
         UsualTrainingService usualTrainingService,
+        VenueService venueService,
+        EventService eventService,
+        RunningOrderService runningOrderService,
+        GroupService groupService,
+        AnnouncementService announcementService,
+        NewsService newsService,
         IOptions<ClubAppOptions> clubApp,
         TimeProvider timeProvider
     )
@@ -33,11 +58,25 @@ public sealed class ClubAssistantTools
         _clubService = clubService;
         _calendarService = calendarService;
         _usualTrainingService = usualTrainingService;
+        _venueService = venueService;
+        _eventService = eventService;
+        _runningOrderService = runningOrderService;
+        _groupService = groupService;
+        _announcementService = announcementService;
+        _newsService = newsService;
         _clubApp = clubApp;
         _timeProvider = timeProvider;
     }
 
     public IReadOnlyList<AIFunction> For(ClubAssistantAsker asker) =>
+        [
+            .. CalendarToolsFor(asker),
+            .. VenueToolsFor(asker),
+            .. EventToolsFor(asker),
+            .. ClubToolsFor(asker),
+        ];
+
+    private IEnumerable<AIFunction> CalendarToolsFor(ClubAssistantAsker asker) =>
         [
             AIFunctionFactory.Create(
                 ClubBasicsAsync,
@@ -91,10 +130,7 @@ public sealed class ClubAssistantTools
             },
             ct
         );
-        return
-        [
-            .. entries.Select(entry => ClubAssistantFacts.EntryOf(entry, _clubApp.Value.BaseUrl)),
-        ];
+        return [.. entries.Select(entry => ClubAssistantFacts.EntryOf(entry, AppUrl))];
     }
 
     private async Task<IReadOnlyList<UsualTrainingFact>> UsualTrainingsAsync(

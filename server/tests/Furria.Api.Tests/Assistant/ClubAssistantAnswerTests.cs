@@ -1,13 +1,10 @@
-using System.Net;
-using FastEndpoints;
-using Furria.Api.Endpoints.WhatsApp;
 using Furria.Core.Club;
 using Furria.Infrastructure.Assistant;
 using Furria.Tests.Common.Assistant;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
-using static Furria.Api.Tests.WhatsApp.WebhookDeliveries;
+using static Furria.Api.Tests.Assistant.ClubAssistantSteps;
 
 namespace Furria.Api.Tests.Assistant;
 
@@ -208,37 +205,8 @@ public sealed class ClubAssistantAnswerTests : IClassFixture<ApiTestFixture>
 
     private object TodayAndTomorrow() => new { from = Iso(Today), to = Iso(Today.AddDays(1)) };
 
-    private static string Iso(DateOnly day) => day.ToString("yyyy-MM-dd");
-
-    private async Task AskAsync(string text, CancellationToken ct)
-    {
-        var client = _fixture.CreateClient();
-        var received = await DeliverAsync(
-            client,
-            Message(AlicesChatId, text, Now.AddSeconds(-20)),
-            $"message-{Guid.NewGuid():N}",
-            ct
-        );
-        Assert.Equal(HttpStatusCode.OK, received.StatusCode);
-        await _fixture.WhatsAppInboxDrainedAsync(ct);
-        await _fixture.ClubAssistantAnsweredAsync(ct);
-        await _fixture.WhatsAppOutboxDrainedAsync(ct);
-        _fixture.TimeProvider.SetUtcNow(Now.AddMinutes(1));
-    }
-
-    private static async Task SwitchOnAsync(SeededContext ctx, CancellationToken ct)
-    {
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await client.PUTAsync<PutClubAssistant, PutClubAssistantRequest>(
-            new()
-            {
-                IsEnabled = true,
-                MonthlyBudgetEuros = 10m,
-                QuestionsPerPersonPerDay = 30,
-            }
-        );
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-    }
+    private Task AskAsync(string text, CancellationToken ct) =>
+        ClubAssistantSteps.AskAsync(_fixture, AlicesChatId, text, ct);
 
     private Task<SeededContext> BuildClubAsync(
         Action<ClubSeedBuilder> club,
