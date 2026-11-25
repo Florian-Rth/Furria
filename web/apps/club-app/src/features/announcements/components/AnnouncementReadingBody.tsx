@@ -5,6 +5,7 @@ import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toAnnouncementAddOnMarks } from '../announcement-add-ons';
+import { ANNOUNCEMENTS_HELP_SPOTS } from '../announcements-help-copy';
 import { ANNOUNCEMENT_EXPIRED_LABEL, toAnnouncementMetaLabel } from '../announcements-labels';
 import { useAnswerJump } from '../hooks/use-answer-jump';
 import type { Announcement } from '../schemas';
@@ -33,7 +34,7 @@ export const AnnouncementReadingBody: FC<AnnouncementReadingBodyProps> = ({
   ) : null;
 
   return (
-    <KkPanel variant="block">
+    <KkPanel variant="block" landing={ANNOUNCEMENTS_HELP_SPOTS.text}>
       <Stack sx={{ gap: 2, minWidth: 0 }}>
         <KkBulletin.Head>
           <Stack sx={{ minWidth: 0, flex: 1, gap: 0.5 }}>

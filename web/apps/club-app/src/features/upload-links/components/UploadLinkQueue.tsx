@@ -8,12 +8,19 @@ import { OPEN_ROW_LABEL, SHARE_LABEL } from '../upload-link-copy';
 
 interface UploadLinkQueueProps {
   label: string;
+  landing?: string;
   rows: readonly UploadLinkRowView[];
   onOpen: (uploadLinkId: number) => void;
   onShare: (uploadLinkId: number) => void;
 }
 
-export const UploadLinkQueue: FC<UploadLinkQueueProps> = ({ label, rows, onOpen, onShare }) => {
+export const UploadLinkQueue: FC<UploadLinkQueueProps> = ({
+  label,
+  landing,
+  rows,
+  onOpen,
+  onShare,
+}) => {
   const items = rows.map((row) => {
     const open = (): void => onOpen(row.uploadLinkId);
     const share = (): void => onShare(row.uploadLinkId);
@@ -39,7 +46,7 @@ export const UploadLinkQueue: FC<UploadLinkQueueProps> = ({ label, rows, onOpen,
   });
 
   return (
-    <Stack component="section" sx={{ rowGap: 0.75, minWidth: 0 }}>
+    <Stack component="section" data-kk-landing={landing} sx={{ rowGap: 0.75, minWidth: 0 }}>
       <KkEyebrow tone="muted">{label}</KkEyebrow>
       <KkWorkQueue label={label}>{items}</KkWorkQueue>
     </Stack>

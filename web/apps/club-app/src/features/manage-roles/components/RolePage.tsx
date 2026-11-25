@@ -1,6 +1,7 @@
 import { KkScreen } from '@furria/ui/KkScreen';
 import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
@@ -9,9 +10,11 @@ import { ROLES_ORIGIN } from '../manage-roles-labels';
 import { ROLES_TITLE } from '../roles-hub-copy';
 import { RoleBody } from './RoleBody';
 import { RoleHeader } from './RoleHeader';
+import { RoleHelp } from './RoleHelp';
 
 export const RolePage: FC = () => {
   const page = useRolePage();
+  const help = toScreenHelp(<RoleHelp />);
   const title = page.role?.name ?? ROLES_TITLE;
   const pendingHeader = page.query.isPending ? <KkScreenHeaderSkeleton /> : null;
   const header =
@@ -28,6 +31,7 @@ export const RolePage: FC = () => {
       origin={ROLES_ORIGIN}
       header={header}
       handover={AREA_HANDOVERS.manage}
+      help={help}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.rolesManage}>
         <RoleBody page={page} />

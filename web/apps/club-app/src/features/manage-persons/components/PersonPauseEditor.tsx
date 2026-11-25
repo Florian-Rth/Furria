@@ -5,6 +5,7 @@ import { KkNote } from '@furria/ui/KkNote';
 import { KkSessionField } from '@furria/ui/KkSessionField';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { usePersonPauseEditor } from '../hooks/use-person-pause-editor';
 import {
@@ -14,7 +15,9 @@ import {
   toMembershipSpan,
   toPauseChainRows,
 } from '../manage-persons-labels';
+import { PAUSE_HELP_SPOTS } from '../person-pause-help-copy';
 import type { PersonDetails, PersonMembership, PersonPause } from '../schemas';
+import { PersonPauseHelp } from './PersonPauseHelp';
 
 const SPAN_SECTION_TITLE = 'Ruhezeit';
 const FIRST_LABEL = 'Von Session';
@@ -35,6 +38,8 @@ export const PersonPauseEditor: FC<PersonPauseEditorProps> = ({ person, membersh
     pause,
   });
 
+  const isEditing = pause !== null;
+  const help = toScreenHelp(<PersonPauseHelp isEditing={isEditing} />);
   const containingMembershipNote = toContainingMembershipNote(toMembershipSpan(membership));
   const chainRows = toPauseChainRows(membership, pause?.pauseId ?? null);
   const chain =
@@ -52,6 +57,7 @@ export const PersonPauseEditor: FC<PersonPauseEditorProps> = ({ person, membersh
       title={control.actionLabel}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         context:
           control.consequence === null
@@ -67,7 +73,7 @@ export const PersonPauseEditor: FC<PersonPauseEditorProps> = ({ person, membersh
     >
       <KkNote>{containingMembershipNote}</KkNote>
       {chain}
-      <KkFormSection title={SPAN_SECTION_TITLE}>
+      <KkFormSection title={SPAN_SECTION_TITLE} landing={PAUSE_HELP_SPOTS.span}>
         <KkFormPair
           start={
             <KkSessionField

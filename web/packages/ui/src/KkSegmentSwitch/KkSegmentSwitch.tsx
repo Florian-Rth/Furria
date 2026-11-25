@@ -100,6 +100,7 @@ interface KkSegmentSwitchProps {
   items: readonly KkSegmentSwitchItem[];
   value: string;
   onChange: (id: string) => void;
+  landing?: string;
   sx?: KkSx;
 }
 
@@ -108,6 +109,7 @@ export const KkSegmentSwitch: FC<KkSegmentSwitchProps> = ({
   items,
   value,
   onChange,
+  landing,
   sx,
 }) => {
   const ids = items.map((item) => item.id);
@@ -166,7 +168,7 @@ export const KkSegmentSwitch: FC<KkSegmentSwitchProps> = ({
   });
 
   return (
-    <Box sx={[FRAME, ...(Array.isArray(sx) ? sx : [sx])]}>
+    <Box data-kk-landing={landing} sx={[FRAME, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box role="radiogroup" aria-label={label} onKeyDown={move} data-kk-segment-switch sx={ROW}>
         {segments}
       </Box>

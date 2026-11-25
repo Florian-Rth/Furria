@@ -5,6 +5,7 @@ import { AccessPanel } from '@/features/account-access/components/AccessPanel';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { PERSON_HELP_SPOTS } from '../person-help-copy';
 import { toPersonGaps } from '../person-identity';
 import type { PersonDetails } from '../schemas';
 import { PersonAccessView } from './PersonAccessView';
@@ -76,7 +77,11 @@ export const PersonEditView: FC<PersonEditViewProps> = ({ person }) => {
       </Grid>
       <Grid size={ACCESS_SIZE} sx={ACCESS_CELL_SX}>
         <KkPanelStack>
-          <AccessPanel subject={person} highlightedKey={highlightedKey} />
+          <AccessPanel
+            subject={person}
+            highlightedKey={highlightedKey}
+            landing={PERSON_HELP_SPOTS.app}
+          />
           <PersonMasterDataPanel person={person} highlightedKey={highlightedKey} />
         </KkPanelStack>
       </Grid>

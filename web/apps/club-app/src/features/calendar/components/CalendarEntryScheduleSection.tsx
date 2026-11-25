@@ -2,6 +2,7 @@ import { KkFormSection } from '@furria/ui/KkFormSection';
 import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import type { FC } from 'react';
+import { ENTRY_HELP_SPOTS } from '../calendar-entry-help-copy';
 import { toStartDayQuickChoices } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import { CalendarEntryEndField } from './CalendarEntryEndField';
@@ -30,7 +31,7 @@ export const CalendarEntryScheduleSection: FC<CalendarEntryScheduleSectionProps>
   );
 
   return (
-    <KkFormSection title={SECTION_TITLE}>
+    <KkFormSection title={SECTION_TITLE} landing={ENTRY_HELP_SPOTS.schedule}>
       <CalendarEntryStartField control={control} quickDays={startDayQuickChoices} />
       {end}
       <KkSelectField

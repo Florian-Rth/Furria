@@ -6,12 +6,14 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
 import { NOTIFY_LABEL, toNotifyReachLine } from '@/features/calendar/calendar-labels';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { RichTextLinkSheet } from '@/features/rich-text/components/RichTextLinkSheet';
 import { RichTextMentionLayer } from '@/features/rich-text/components/RichTextMentionLayer';
 import { FORMAT_RAIL_LABEL } from '@/features/rich-text/rich-text-copy';
 import { useClubGroupReach } from '@/features/whatsapp/hooks/use-club-group-reach';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { ANNOUNCEMENT_LINK_SHEET_ID } from '../announcement-mention-copy';
+import { ANNOUNCEMENTS_HELP_SPOTS } from '../announcements-help-copy';
 import {
   ANNOUNCEMENT_ADD_LABEL,
   ANNOUNCEMENT_BODY_FIELD_LABEL,
@@ -28,9 +30,11 @@ import {
   WITHDRAW_ANNOUNCEMENT_DANGER_LABEL,
 } from '../announcements-labels';
 import { useAnnouncementEditor } from '../hooks/use-announcement-editor';
+import { useAnnouncementEditorHelpViewer } from '../hooks/use-announcement-editor-help-viewer';
 import { useAnnouncementWithdrawal } from '../hooks/use-announcement-withdrawal';
 import type { Announcement } from '../schemas';
 import { AnnouncementAddOnsSection } from './AnnouncementAddOnsSection';
+import { AnnouncementEditorHelp } from './AnnouncementEditorHelp';
 import { WithdrawAnnouncementDialog } from './WithdrawAnnouncementDialog';
 
 interface AnnouncementEditorProps {
@@ -50,6 +54,11 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
   const bodyHelper = errors.body?.message;
   const clubGroupLinked = useClubGroupReach(control.notify !== null);
   const notifyReachLine = toNotifyReachLine(ANNOUNCEMENT_NOTIFY_REACH, null, clubGroupLinked);
+  const helpViewer = useAnnouncementEditorHelpViewer(
+    announcement !== null,
+    control.notify !== null,
+  );
+  const help = toScreenHelp(<AnnouncementEditorHelp viewer={helpViewer} />);
 
   const notifySwitch =
     control.notify === null ? null : (
@@ -80,6 +89,7 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
       title={title}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: actionLabel,
@@ -89,7 +99,10 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
         },
       }}
     >
-      <KkFormSection title={ANNOUNCEMENT_CONTENT_SECTION_TITLE}>
+      <KkFormSection
+        title={ANNOUNCEMENT_CONTENT_SECTION_TITLE}
+        landing={ANNOUNCEMENTS_HELP_SPOTS.content}
+      >
         <KkTextField
           name={titleField.name}
           label={ANNOUNCEMENT_TITLE_FIELD_LABEL}

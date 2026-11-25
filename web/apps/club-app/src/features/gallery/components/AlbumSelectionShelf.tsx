@@ -9,6 +9,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toAlbumErrorMessage } from '../album-form-messages';
 import { selectionOf } from '../album-frames';
+import { ALBUM_HELP_SPOTS } from '../album-help-copy';
 import {
   SELECTION_EDIT_LABEL,
   SELECTION_EMPTY_NOTE,
@@ -74,7 +75,12 @@ export const AlbumSelectionShelf: FC<AlbumSelectionShelfProps> = ({ albumId, alb
     );
 
   return (
-    <Stack component="section" aria-label={lead} sx={{ rowGap: 0.75 }}>
+    <Stack
+      component="section"
+      aria-label={lead}
+      data-kk-landing={ALBUM_HELP_SPOTS.shelf}
+      sx={{ rowGap: 0.75 }}
+    >
       <Stack direction="row" sx={{ alignItems: 'center', columnGap: 1 }}>
         <KkFilmEdge lead={lead} meta={state} tone={tone} level="h2" sx={{ flex: 1, minWidth: 0 }} />
         <KkButton

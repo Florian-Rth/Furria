@@ -1,6 +1,7 @@
 import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkTextArea } from '@furria/ui/KkTextArea';
 import type { FC } from 'react';
+import { EVENT_EDITOR_HELP_SPOTS } from '../event-editor-help-copy';
 import type { EventEditorControl } from '../hooks/use-event-editor';
 import { EVENT_DESCRIPTION_MAX_LENGTH, EVENT_TEASER_MAX_LENGTH } from '../schemas';
 
@@ -25,7 +26,7 @@ export const EventWebsiteTextsSection: FC<EventWebsiteTextsSectionProps> = ({ co
   const descriptionErrorText = errors.description?.message;
 
   return (
-    <KkFormSection title={SECTION_TITLE}>
+    <KkFormSection title={SECTION_TITLE} landing={EVENT_EDITOR_HELP_SPOTS.texts}>
       <KkTextArea
         name="teaser"
         label={TEASER_LABEL}

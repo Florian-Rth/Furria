@@ -6,6 +6,7 @@ import type { KkPanelAction } from '@furria/ui/panel-action';
 import type { FC } from 'react';
 import type { MePasskey } from '@/lib/api/schemas';
 import { usePasskeyAddition } from '../hooks/use-passkey-addition';
+import { SECURITY_HELP_SPOTS } from '../security-help-copy';
 import { PasskeyRow } from './PasskeyRow';
 
 const TITLE = 'Passkeys';
@@ -39,7 +40,7 @@ export const PasskeysPanel: FC<PasskeysPanelProps> = ({ passkeys, highlightedKey
   const list = passkeys.length === 0 ? <KkNote>{NONE_YET}</KkNote> : <KkPanel>{rows}</KkPanel>;
 
   return (
-    <KkPanelSection title={TITLE} action={action}>
+    <KkPanelSection title={TITLE} action={action} landing={SECURITY_HELP_SPOTS.passkeys}>
       {rejection}
       {list}
       {unavailableNote}

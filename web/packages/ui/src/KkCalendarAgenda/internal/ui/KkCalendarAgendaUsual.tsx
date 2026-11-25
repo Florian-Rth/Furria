@@ -66,6 +66,7 @@ interface KkCalendarAgendaUsualProps {
   venue: string | null;
   accessibleLabel: string;
   actionLabel?: string;
+  landing?: string;
   onSelect?: () => void;
 }
 
@@ -78,6 +79,7 @@ export const KkCalendarAgendaUsual: FC<KkCalendarAgendaUsualProps> = ({
   venue,
   accessibleLabel,
   actionLabel,
+  landing,
   onSelect,
 }) => {
   const venueMark =
@@ -151,7 +153,13 @@ export const KkCalendarAgendaUsual: FC<KkCalendarAgendaUsualProps> = ({
 
   if (onSelect === undefined) {
     return (
-      <Box role="note" aria-label={accessibleLabel} data-kk-calendar-usual sx={rowPaint}>
+      <Box
+        role="note"
+        aria-label={accessibleLabel}
+        data-kk-calendar-usual
+        data-kk-landing={landing}
+        sx={rowPaint}
+      >
         {content}
       </Box>
     );
@@ -161,6 +169,7 @@ export const KkCalendarAgendaUsual: FC<KkCalendarAgendaUsualProps> = ({
     <ButtonBase
       aria-label={accessibleLabel}
       data-kk-calendar-usual
+      data-kk-landing={landing}
       onClick={onSelect}
       sx={actionablePaint}
     >

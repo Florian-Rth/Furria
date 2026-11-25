@@ -4,6 +4,7 @@ import { KkStatusLine } from '@furria/ui/KkStatusLine';
 import type { FC } from 'react';
 import { toWindowOpenState, WINDOW_CLOSED_STATE, WINDOW_STATE_TITLE } from '../claim-window-copy';
 import { formatWindowMoment } from '../claim-window-format';
+import { CLAIM_WINDOW_HELP_SPOTS } from '../claim-window-help-copy';
 import type { ClaimWindowSpan } from '../schemas';
 
 interface ClaimWindowStatePanelProps {
@@ -19,7 +20,7 @@ export const ClaimWindowStatePanel: FC<ClaimWindowStatePanelProps> = ({ window }
     );
 
   return (
-    <KkPanelSection title={WINDOW_STATE_TITLE}>
+    <KkPanelSection title={WINDOW_STATE_TITLE} landing={CLAIM_WINDOW_HELP_SPOTS.state}>
       <KkPanel>{line}</KkPanel>
     </KkPanelSection>
   );

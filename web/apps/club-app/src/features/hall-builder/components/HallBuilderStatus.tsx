@@ -12,6 +12,7 @@ import {
   SIZE_COUNT_LABEL,
   toMeasureChipLabel,
 } from '../hall-builder-copy';
+import { HALL_BUILDER_HELP_SPOTS } from '../hall-builder-help-copy';
 import { hallSizeLabel } from '../hall-builder-view';
 import { saveToneOf } from '../hall-status';
 
@@ -59,7 +60,7 @@ export const HallBuilderStatus: FC = () => {
   const saveTone = saveToneOf(builder.saveState);
 
   return (
-    <KkPlanStatusStrip label={HALL_STATUS_LABEL}>
+    <KkPlanStatusStrip label={HALL_STATUS_LABEL} landing={HALL_BUILDER_HELP_SPOTS.status}>
       <KkPlanStatusStrip.Count value={size} label={SIZE_COUNT_LABEL} />
       <KkPlanStatusStrip.Count value={elementCount} label={ELEMENT_COUNT_LABEL} />
       <KkPlanStatusStrip.Chip label={saveLabel} tone={saveTone} />

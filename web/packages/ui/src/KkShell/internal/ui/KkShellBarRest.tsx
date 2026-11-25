@@ -13,11 +13,18 @@ const REST_STYLE: CSSProperties = { display: 'flex', flex: 1, minWidth: 0 };
 interface KkShellBarRestProps {
   actions?: readonly KkScreenAction[];
   search?: KkScreenSearch;
+  helpLabel?: string;
   scene: KkBarScene;
   divided: boolean;
 }
 
-export const KkShellBarRest: FC<KkShellBarRestProps> = ({ actions, search, scene, divided }) => {
+export const KkShellBarRest: FC<KkShellBarRestProps> = ({
+  actions,
+  search,
+  helpLabel,
+  scene,
+  divided,
+}) => {
   const debut = useBarDebut(scene);
   const entrance = debut ? false : REST_WAITING;
 
@@ -28,7 +35,12 @@ export const KkShellBarRest: FC<KkShellBarRestProps> = ({ actions, search, scene
         sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, flex: 1, minWidth: 0 }}
       >
         <BroomSweepLeading scene={scene} debut={debut} />
-        <KkShellBarTrailing search={search} actions={actions} divided={divided} />
+        <KkShellBarTrailing
+          search={search}
+          actions={actions}
+          helpLabel={helpLabel}
+          divided={divided}
+        />
       </Stack>
     </motion.div>
   );

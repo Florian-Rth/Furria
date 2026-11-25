@@ -8,6 +8,7 @@ const radius = {
 } as const;
 
 const rowHighlightSeconds = 1.6;
+const helpSpotSeconds = 2.6;
 
 const tracking = {
   tight: '0.01em',
@@ -267,6 +268,8 @@ export const kkTokens = {
     label: 'opacity 180ms ease-out, transform 180ms ease-out, color 180ms ease-out',
     rowHighlightSeconds,
     rowHighlight: `kk-row-highlight ${rowHighlightSeconds}s ease-out forwards`,
+    helpSpotSeconds,
+    helpSpot: `kk-help-spot ${helpSpotSeconds}s ease-out forwards`,
     flap: {
       faceMs: 110,
       finalMs: 230,

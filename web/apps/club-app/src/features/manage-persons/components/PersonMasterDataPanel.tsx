@@ -12,6 +12,7 @@ import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import { useClubGroupConsentSwitch } from '../hooks/use-club-group-consent-switch';
 import { useContactVisibilitySwitch } from '../hooks/use-contact-visibility-switch';
 import { PERSON_SECTION_TITLES, toContactChangeNote } from '../manage-persons-labels';
+import { PERSON_HELP_SPOTS } from '../person-help-copy';
 import type { PersonDetails } from '../schemas';
 
 const EDIT_LABEL = 'Bearbeiten';
@@ -73,7 +74,11 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
   };
 
   return (
-    <KkPanelSection title={PERSON_SECTION_TITLES.masterData} action={action}>
+    <KkPanelSection
+      title={PERSON_SECTION_TITLES.masterData}
+      action={action}
+      landing={PERSON_HELP_SPOTS.masterData}
+    >
       {contactChangeNote}
       <KkPanel highlight={highlightedKey === landingKey} landing={landingKey}>
         <KkFieldRow label={NAME_LABEL} value={`${person.firstName} ${person.lastName}`} />

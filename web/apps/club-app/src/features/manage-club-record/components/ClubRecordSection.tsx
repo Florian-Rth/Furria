@@ -3,6 +3,7 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
+import { CLUB_RECORD_HELP_SPOTS } from '../club-record-help-copy';
 import type { ClubRecordSection as Section } from '../club-record-labels';
 import { CLUB_RECORD_SECTION_TITLES, toSectionLandingKey } from '../club-record-labels';
 
@@ -37,7 +38,7 @@ export const ClubRecordSection: FC<ClubRecordSectionProps> = ({
   };
 
   return (
-    <KkPanelSection title={title} action={action}>
+    <KkPanelSection title={title} action={action} landing={CLUB_RECORD_HELP_SPOTS[section]}>
       <KkPanel highlight={highlightedKey === landingKey} landing={landingKey}>
         {children}
       </KkPanel>

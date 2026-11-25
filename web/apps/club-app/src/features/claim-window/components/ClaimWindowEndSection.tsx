@@ -9,6 +9,7 @@ import {
   WINDOW_END_TITLE,
 } from '../claim-window-copy';
 import type { WindowEndFields } from '../claim-window-format';
+import { CLAIM_WINDOW_HELP_SPOTS } from '../claim-window-help-copy';
 
 interface ClaimWindowEndSectionProps {
   end: WindowEndFields;
@@ -21,7 +22,7 @@ export const ClaimWindowEndSection: FC<ClaimWindowEndSectionProps> = ({
   onDayChange,
   onTimeChange,
 }) => (
-  <KkFormSection title={WINDOW_END_TITLE}>
+  <KkFormSection title={WINDOW_END_TITLE} landing={CLAIM_WINDOW_HELP_SPOTS.end}>
     <KkDateField
       name="closesOn"
       label={WINDOW_END_DAY_LABEL}

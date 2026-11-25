@@ -6,6 +6,7 @@ import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { AccessDenied } from '@/features/session/components/AccessDenied';
 import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
@@ -14,6 +15,7 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { isForbiddenError } from '@/lib/query-error';
 import { useManagedVenuesQuery } from '../api';
+import { useVenueHelpViewer } from '../hooks/use-venue-help-viewer';
 import {
   findManagedVenue,
   VENUE_EDITOR_DENIED_MESSAGE,
@@ -25,6 +27,7 @@ import { toManagedVenuesErrorMessage } from '../manage-venues-messages';
 import { ManagedVenuesError } from './ManagedVenuesError';
 import { VenueDetailPanel } from './VenueDetailPanel';
 import { VenueHeader } from './VenueHeader';
+import { VenueHelp } from './VenueHelp';
 
 const ROUTE_ID = '/_app/manage/venues_/$venueId';
 const LOADING_LABEL = 'Wird geladen';
@@ -36,6 +39,7 @@ export const VenueScreen: FC = () => {
   const { venueId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(venueId);
   const permissions = usePermissions();
+  const helpViewer = useVenueHelpViewer(id ?? 0);
   const canManage = permissions.has(PERMISSION_KEYS.clubManage);
   const venues = useManagedVenuesQuery(canManage);
   const errorMessage = toManagedVenuesErrorMessage(venues.error);
@@ -92,6 +96,7 @@ export const VenueScreen: FC = () => {
   }
 
   const header = <VenueHeader venue={venue} />;
+  const help = toScreenHelp(<VenueHelp viewer={helpViewer} />);
 
   return (
     <KkScreen
@@ -100,6 +105,7 @@ export const VenueScreen: FC = () => {
       origin={VENUES_ORIGIN}
       header={header}
       handover={HANDOVER}
+      help={help}
     >
       <VenueDetailPanel venue={venue} />
     </KkScreen>

@@ -5,6 +5,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';
 import { AREAS_TITLE } from '../system-copy';
+import { SYSTEM_HELP_SPOTS } from '../system-help-copy';
 import type { SystemMoment } from '../system-view';
 import { areaRowsOf } from '../system-view';
 
@@ -28,7 +29,7 @@ export const SystemAreaList: FC<SystemAreaListProps> = ({ status, moment }) => {
   ));
 
   return (
-    <KkPanelSection title={AREAS_TITLE}>
+    <KkPanelSection title={AREAS_TITLE} landing={SYSTEM_HELP_SPOTS.areas}>
       <KkPanel>{rows}</KkPanel>
     </KkPanelSection>
   );

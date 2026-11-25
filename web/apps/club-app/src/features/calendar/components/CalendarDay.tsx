@@ -3,6 +3,7 @@ import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
 import type { FC } from 'react';
 import type { CalendarDayItem } from '../calendar-agenda';
 import { toDayHeadView } from '../calendar-agenda-view';
+import { CALENDAR_HELP_SPOTS } from '../calendar-help-copy';
 import type { CalendarBoard } from '../hooks/use-calendar-board';
 import { CalendarLine } from './CalendarLine';
 import { CalendarUsual } from './CalendarUsual';
@@ -29,7 +30,9 @@ export const CalendarDay: FC<CalendarDayProps> = ({ item, board, under, orders, 
     />
   ));
   const panel =
-    lines.length === 0 ? null : <KkCalendarAgenda.Panel>{lines}</KkCalendarAgenda.Panel>;
+    lines.length === 0 ? null : (
+      <KkCalendarAgenda.Panel landing={CALENDAR_HELP_SPOTS.day}>{lines}</KkCalendarAgenda.Panel>
+    );
   const usuals = item.usuals.map((usual) => (
     <CalendarUsual
       key={`${usual.usualTrainingTimeId}-${usual.startsAt}`}

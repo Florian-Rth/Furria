@@ -5,6 +5,7 @@ import { deniedMessageOf } from '@/features/session/permission-denials';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { isForbiddenError, isNotFoundError } from '@/lib/query-error';
 import { useEventQuery } from '../api';
+import { EVENT_MANAGE_HELP_SPOTS } from '../event-manage-help-copy';
 import { toEventErrorMessage } from '../events-messages';
 import { EventCancellationLine } from './EventCancellationLine';
 import { EventDeletionLine } from './EventDeletionLine';
@@ -29,7 +30,7 @@ export const EventManageBody: FC<EventManageBodyProps> = ({ eventId }) => {
   if (event.data !== undefined) {
     return (
       <KkPanelStack>
-        <EventPicturePanel event={event.data} />
+        <EventPicturePanel event={event.data} landing={EVENT_MANAGE_HELP_SPOTS.picture} />
         <EventCancellationLine event={event.data} />
         <EventDeletionLine event={event.data} />
       </KkPanelStack>

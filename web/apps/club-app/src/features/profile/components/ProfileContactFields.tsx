@@ -4,6 +4,7 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { PHONE_WHATSAPP_HINT } from '@/features/whatsapp/whatsapp-copy';
+import { PROFILE_HELP_SPOTS } from '../profile-help-copy';
 import type { ContactDetailsForm } from '../schemas';
 
 const CONTACT_SECTION_TITLE = 'Kontakt';
@@ -35,7 +36,7 @@ export const ProfileContactFields: FC<ProfileContactFieldsProps> = ({ form, erro
 
   return (
     <>
-      <KkFormSection title={CONTACT_SECTION_TITLE}>
+      <KkFormSection title={CONTACT_SECTION_TITLE} landing={PROFILE_HELP_SPOTS.contactFields}>
         <KkFormPair
           balance="leading"
           start={

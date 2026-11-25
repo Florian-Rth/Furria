@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { UploadLinksHubEntry } from '@/features/upload-links/components/UploadLinksHubEntry';
 import { WebsiteHubEntry } from '@/features/website-pictures/components/WebsiteHubEntry';
+import { GALLERY_HUB_HELP_SPOTS } from '../gallery-hub-help-copy';
 import type { GalleryHubState } from '../hooks/use-gallery-hub';
 import { HUB_ERROR_TITLE, HUB_RETRY_LABEL, NEW_ALBUM_LABEL, toHubErrorMessage } from '../hub-copy';
 import { inboxKeyOf, inboxOwnerOf } from '../hub-view';
@@ -39,7 +40,14 @@ export const GalleryHubBody: FC<GalleryHubBodyProps> = ({ state }) => {
 
   const rolls = state.inboxes.map((inbox) => {
     const key = inboxKeyOf(inboxOwnerOf(inbox));
-    return <GalleryInboxRoll key={key} inbox={inbox} onOpen={state.openInbox} />;
+    return (
+      <GalleryInboxRoll
+        key={key}
+        inbox={inbox}
+        landing={GALLERY_HUB_HELP_SPOTS.inbox}
+        onOpen={state.openInbox}
+      />
+    );
   });
   const newAlbum = state.sorts ? (
     <KkButton
@@ -58,6 +66,7 @@ export const GalleryHubBody: FC<GalleryHubBodyProps> = ({ state }) => {
       order={order}
       marks={state.marks}
       now={state.now}
+      landing={GALLERY_HUB_HELP_SPOTS.albums}
       onOpen={state.openAlbum}
     />
   ));

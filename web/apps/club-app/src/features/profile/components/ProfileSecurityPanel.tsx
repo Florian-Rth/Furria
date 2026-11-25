@@ -4,6 +4,7 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { SECURITY_PATH, SECURITY_TITLE } from '@/features/account-security/account-security-labels';
+import { PROFILE_HELP_SPOTS } from '../profile-help-copy';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 
 interface ProfileSecurityPanelProps {
@@ -11,7 +12,7 @@ interface ProfileSecurityPanelProps {
 }
 
 export const ProfileSecurityPanel: FC<ProfileSecurityPanelProps> = ({ loginEmail }) => (
-  <KkPanelSection title={PROFILE_SECTION_TITLES.signIn}>
+  <KkPanelSection title={PROFILE_SECTION_TITLES.signIn} landing={PROFILE_HELP_SPOTS.signIn}>
     <KkPanel>
       <KkHubRow
         label={SECURITY_TITLE}

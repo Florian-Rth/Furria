@@ -4,6 +4,7 @@ import type { KkSeverity } from '@furria/ui/KkSeverityGlyph';
 import type { FC } from 'react';
 import { usePlanner } from '../planner-context';
 import { MODE_ICONS, MODE_LABELS, MODE_SWITCH_LABEL, toModeCountLabel } from '../planner-copy';
+import { RUNNING_ORDER_HELP_SPOTS } from '../running-order-help-copy';
 import type { PlannerMode } from '../schemas';
 import { PLANNER_MODES, PlannerModeSchema } from '../schemas';
 
@@ -42,6 +43,7 @@ export const PlannerModeSwitch: FC = () => {
       items={items}
       value={planner.mode}
       onChange={choose}
+      landing={RUNNING_ORDER_HELP_SPOTS.modes}
     />
   );
 };

@@ -2,7 +2,7 @@ import { KkFactRow } from '@furria/ui/KkFactRow';
 import { KkFieldRow } from '@furria/ui/KkFieldRow';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
-import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import type { KkScreenHelp, KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import {
@@ -19,9 +19,10 @@ const MISSING_VALUE = 'nicht hinterlegt';
 interface MailInvitationEditorProps {
   subject: AccessSubject;
   origin: KkScreenOrigin;
+  help?: KkScreenHelp;
 }
 
-export const MailInvitationEditor: FC<MailInvitationEditorProps> = ({ subject, origin }) => {
+export const MailInvitationEditor: FC<MailInvitationEditorProps> = ({ subject, origin, help }) => {
   const control = useMailInvitationEditor({ subject });
   const { invitation } = subject.access;
 
@@ -38,6 +39,7 @@ export const MailInvitationEditor: FC<MailInvitationEditorProps> = ({ subject, o
       title={control.actionLabel}
       rejection={control.rejection ?? undefined}
       isDirty={false}
+      help={help}
       action={{
         context: { text: control.consequence, tone: 'consequence' },
         primary: {

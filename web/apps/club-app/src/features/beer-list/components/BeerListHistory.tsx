@@ -3,6 +3,7 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkTabLedger } from '@furria/ui/KkTabLedger';
 import type { FC, ReactNode } from 'react';
 import { HISTORY_LABEL, HISTORY_TITLE, OLDER_PAYMENTS } from '../beer-list-copy';
+import { BEER_LIST_HELP_SPOTS } from '../beer-list-help-copy';
 import type { BeerHistoryGroup } from '../beer-tab';
 import { BeerListHistoryGroup } from './BeerListHistoryGroup';
 
@@ -43,7 +44,7 @@ export const BeerListHistory: FC<BeerListHistoryProps> = ({
     );
 
   return (
-    <KkPanelSection title={HISTORY_TITLE}>
+    <KkPanelSection title={HISTORY_TITLE} landing={BEER_LIST_HELP_SPOTS.history}>
       <KkTabLedger label={HISTORY_LABEL}>{shown.map(renderGroup)}</KkTabLedger>
       {olderFold}
     </KkPanelSection>

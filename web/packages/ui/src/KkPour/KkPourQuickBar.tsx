@@ -90,6 +90,7 @@ interface KkPourQuickBarProps {
   items: readonly KkPourQuickItem[];
   placement: KkPourQuickPlacement;
   onSelect: (id: string) => void;
+  landing?: string;
   sx?: KkSx;
 }
 
@@ -98,6 +99,7 @@ export const KkPourQuickBar: FC<KkPourQuickBarProps> = ({
   items,
   placement,
   onSelect,
+  landing,
   sx,
 }) => {
   const choose = (event: MouseEvent<HTMLButtonElement>): void => {
@@ -134,6 +136,7 @@ export const KkPourQuickBar: FC<KkPourQuickBarProps> = ({
       role="toolbar"
       aria-label={label}
       data-kk-pour-quick-bar={placement}
+      data-kk-landing={landing}
       sx={[barPaint(placement), ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {buttons}

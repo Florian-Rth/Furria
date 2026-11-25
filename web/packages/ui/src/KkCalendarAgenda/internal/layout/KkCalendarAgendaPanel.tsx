@@ -5,13 +5,19 @@ import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
 
 interface KkCalendarAgendaPanelProps extends PropsWithChildren {
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkCalendarAgendaPanel: FC<KkCalendarAgendaPanelProps> = ({ sx, children }) => (
+export const KkCalendarAgendaPanel: FC<KkCalendarAgendaPanelProps> = ({
+  landing,
+  sx,
+  children,
+}) => (
   <Stack
     component="ol"
     data-kk-calendar-panel
+    data-kk-landing={landing}
     sx={[
       (theme) => ({
         ...calendarSurface(),

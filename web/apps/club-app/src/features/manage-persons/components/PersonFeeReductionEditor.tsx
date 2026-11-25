@@ -5,6 +5,7 @@ import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkSessionField } from '@furria/ui/KkSessionField';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { usePersonFeeReductionEditor } from '../hooks/use-person-fee-reduction-editor';
 import {
@@ -13,7 +14,9 @@ import {
   toFeeReductionChainRows,
   toPersonOrigin,
 } from '../manage-persons-labels';
+import { FEE_REDUCTION_HELP_SPOTS } from '../person-fee-reduction-help-copy';
 import type { PersonDetails, PersonFeeReduction } from '../schemas';
+import { PersonFeeReductionHelp } from './PersonFeeReductionHelp';
 
 const SECTION_TITLE = 'Ermäßigung';
 const BASIS_LABEL = 'Grundlage';
@@ -31,6 +34,8 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
 }) => {
   const control = usePersonFeeReductionEditor({ personId: person.personId, reduction });
 
+  const isEditing = reduction !== null;
+  const help = toScreenHelp(<PersonFeeReductionHelp isEditing={isEditing} />);
   const chainRows = toFeeReductionChainRows(person, reduction?.feeReductionId ?? null);
   const chain =
     chainRows.length === 0 ? null : (
@@ -47,6 +52,7 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
       title={control.actionLabel}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         context:
           control.consequence === null
@@ -61,7 +67,7 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
       }}
     >
       {chain}
-      <KkFormSection title={SECTION_TITLE}>
+      <KkFormSection title={SECTION_TITLE} landing={FEE_REDUCTION_HELP_SPOTS.basis}>
         <KkSelectField
           name="basis"
           label={BASIS_LABEL}

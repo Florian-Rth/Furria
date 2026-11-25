@@ -10,6 +10,7 @@ import {
   PASSWORD_EDIT_TITLE,
   SECURITY_LANDINGS,
 } from '../account-security-labels';
+import { SECURITY_HELP_SPOTS } from '../security-help-copy';
 
 const TITLE = 'Passwort';
 const PASSWORD_LABEL = 'Passwort';
@@ -34,7 +35,7 @@ export const PasswordPanel: FC<PasswordPanelProps> = ({ highlightedKey }) => {
   const isHighlighted = highlightedKey === LANDING_KEY;
 
   return (
-    <KkPanelSection title={TITLE} action={EDIT_ACTION}>
+    <KkPanelSection title={TITLE} action={EDIT_ACTION} landing={SECURITY_HELP_SPOTS.password}>
       <KkPanel highlight={isHighlighted} landing={LANDING_KEY}>
         <KkFieldRow label={PASSWORD_LABEL} value={HIDDEN_PASSWORD} />
       </KkPanel>

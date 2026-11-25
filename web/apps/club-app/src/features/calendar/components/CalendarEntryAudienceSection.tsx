@@ -8,6 +8,7 @@ import type { CalendarAudienceReach } from '../calendar-audience-reach';
 import { toOfferedAudiences, toReachablePool } from '../calendar-audience-reach';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import { toAudienceGroupOptions, toParticipantsEmptyLabel } from '../calendar-authoring';
+import { ENTRY_HELP_SPOTS } from '../calendar-entry-help-copy';
 import {
   AUDIENCE_HINTS,
   NOTIFY_LABEL,
@@ -113,7 +114,7 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
     );
 
   return (
-    <KkFormSection title={SECTION_TITLE}>
+    <KkFormSection title={SECTION_TITLE} landing={ENTRY_HELP_SPOTS.audience}>
       <KkSelectField
         name="audience"
         label={AUDIENCE_LABEL}

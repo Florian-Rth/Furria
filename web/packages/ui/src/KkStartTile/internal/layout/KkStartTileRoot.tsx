@@ -48,6 +48,7 @@ interface KkStartTileRootProps extends PropsWithChildren {
   label: string;
   order: number;
   attention?: boolean;
+  landing?: string;
   sx?: KkSx;
 }
 
@@ -55,6 +56,7 @@ export const KkStartTileRoot: FC<KkStartTileRootProps> = ({
   label,
   order,
   attention = false,
+  landing,
   sx,
   children,
 }) => {
@@ -67,6 +69,7 @@ export const KkStartTileRoot: FC<KkStartTileRootProps> = ({
         component="section"
         aria-label={label}
         data-kk-start-tile
+        data-kk-landing={landing}
         {...pane}
         sx={[
           framePaint(order, settled),

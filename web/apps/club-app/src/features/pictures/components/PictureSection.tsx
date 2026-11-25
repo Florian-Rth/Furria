@@ -16,6 +16,7 @@ interface PictureSectionProps {
   title?: string;
   stampLabel?: string | null;
   children?: ReactNode;
+  landing?: string;
   sx?: KkSx;
 }
 
@@ -27,13 +28,14 @@ export const PictureSection: FC<PictureSectionProps> = ({
   title,
   stampLabel = null,
   children,
+  landing,
   sx,
 }) => {
   const { banner, kind } = desk;
   const copy = PICTURE_COPY[kind];
 
   return (
-    <KkPanelSection title={title ?? copy.title} sx={sx}>
+    <KkPanelSection title={title ?? copy.title} landing={landing} sx={sx}>
       <KkBannerDesk
         id={PICTURE_DESK_IDS[kind]}
         aspect={PICTURE_ASPECTS[kind]}

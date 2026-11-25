@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { usePlanner } from '../planner-context';
 import { CATALOGUE_EMPTY, CATALOGUE_TITLE, POINTS_TITLE } from '../planner-copy';
+import { RUNNING_ORDER_HELP_SPOTS } from '../running-order-help-copy';
 import { PlannerActsLinks } from './PlannerActsLinks';
 import { PlannerCatalogueRow } from './PlannerCatalogueRow';
 import { PlannerPrevious } from './PlannerPrevious';
@@ -28,7 +29,7 @@ export const PlannerCatalogue: FC = () => {
   return (
     <Stack sx={{ gap: 1, minWidth: 0 }}>
       <PlannerPrevious />
-      <KkNumberedList label={CATALOGUE_TITLE}>
+      <KkNumberedList label={CATALOGUE_TITLE} landing={RUNNING_ORDER_HELP_SPOTS.list}>
         {sections}
         {empty}
       </KkNumberedList>

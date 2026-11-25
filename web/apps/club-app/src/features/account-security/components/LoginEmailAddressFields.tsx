@@ -5,6 +5,7 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { UseControllerReturn, UseFormReturn } from 'react-hook-form';
 import type { LoginEmailForm } from '../schemas';
+import { SECURITY_HELP_SPOTS } from '../security-help-copy';
 
 const ADDRESS_SECTION = 'Neue E-Mail-Adresse';
 const CONTACT_SECTION = 'Kontakt-E-Mail';
@@ -32,7 +33,7 @@ export const LoginEmailAddressFields: FC<LoginEmailAddressFieldsProps> = ({
 
   return (
     <>
-      <KkFormSection title={ADDRESS_SECTION}>
+      <KkFormSection title={ADDRESS_SECTION} landing={SECURITY_HELP_SPOTS.newAddress}>
         <KkFieldRow label={CURRENT_LABEL} value={currentLoginEmail} />
         <KkTextField
           name={loginEmail.name}

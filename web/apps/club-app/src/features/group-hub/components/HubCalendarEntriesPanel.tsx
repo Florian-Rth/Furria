@@ -23,6 +23,7 @@ import {
   toMoreEntriesMeta,
   toMoreOwedHint,
 } from '../group-calendar-entry-labels';
+import { HUB_HELP_SPOTS } from '../group-hub-help-copy';
 import { useGroupCalendarEntries } from '../hooks/use-group-calendar-entries';
 import { useTrainingPlanSearch } from '../hooks/use-training-plan-search';
 import type { UsualTrainingTime } from '../schemas';
@@ -66,7 +67,12 @@ export const HubCalendarEntriesPanel: FC<HubCalendarEntriesPanelProps> = ({
     );
 
     return (
-      <KkPanelSection title={GROUP_SECTION_TITLES.events} groupTone={tone} action={action}>
+      <KkPanelSection
+        landing={HUB_HELP_SPOTS.calendar}
+        title={GROUP_SECTION_TITLES.events}
+        groupTone={tone}
+        action={action}
+      >
         <KkPanel variant="block">
           <KkErrorState
             title={CALENDAR_ENTRY_ERROR_TITLE}
@@ -80,7 +86,12 @@ export const HubCalendarEntriesPanel: FC<HubCalendarEntriesPanelProps> = ({
 
   if (calendarEntries.isLoading) {
     return (
-      <KkPanelSection title={GROUP_SECTION_TITLES.events} groupTone={tone} action={action}>
+      <KkPanelSection
+        landing={HUB_HELP_SPOTS.calendar}
+        title={GROUP_SECTION_TITLES.events}
+        groupTone={tone}
+        action={action}
+      >
         <KkPanel variant="block">
           <KkSkeletonRow count={SKELETON_ROWS} shape="select" />
         </KkPanel>
@@ -119,7 +130,12 @@ export const HubCalendarEntriesPanel: FC<HubCalendarEntriesPanelProps> = ({
     );
 
   return (
-    <KkPanelSection title={GROUP_SECTION_TITLES.events} groupTone={tone} action={action}>
+    <KkPanelSection
+      landing={HUB_HELP_SPOTS.calendar}
+      title={GROUP_SECTION_TITLES.events}
+      groupTone={tone}
+      action={action}
+    >
       <Stack sx={{ gap: 1.5, minWidth: 0 }}>
         <KkPanel variant={isEmpty ? 'block' : 'list'}>{body}</KkPanel>
         {more}

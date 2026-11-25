@@ -4,8 +4,10 @@ import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
 import { PersonPicker } from '@/features/group-hub/components/PersonPicker';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { useKeyHoldingEditor } from '../hooks/use-key-holding-editor';
+import { KEY_EDITOR_HELP_SPOTS } from '../keys-help-copy';
 import {
   toHandoutQuickChoices,
   toKeyEditorOrigin,
@@ -13,6 +15,7 @@ import {
   toReturnQuickChoices,
 } from '../manage-keys-labels';
 import type { KeyHolding, KeyVenue } from '../schemas';
+import { KeyHoldingHelp } from './KeyHoldingHelp';
 
 const CHAIN_TITLE = 'Bisherige Schlüsselübergaben';
 const PERSON_SECTION = 'Person';
@@ -33,6 +36,9 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
   const returnQuickChoices = toReturnQuickChoices(today);
 
   const chainRows = toKeyHoldingChainRows(venue, holding?.keyHoldingId ?? null);
+  const help = toScreenHelp(
+    <KeyHoldingHelp isReturning={holding !== null} hasChain={chainRows.length > 0} />,
+  );
   const chain =
     chainRows.length === 0 ? null : (
       <KkWriteScreen.Chain title={CHAIN_TITLE}>
@@ -45,7 +51,7 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
   const fields =
     holding === null ? (
       <>
-        <KkFormSection title={PERSON_SECTION}>
+        <KkFormSection title={PERSON_SECTION} landing={KEY_EDITOR_HELP_SPOTS.person}>
           <PersonPicker
             selected={control.person}
             onSelect={control.select}
@@ -53,7 +59,7 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
           />
         </KkFormSection>
         {chain}
-        <KkFormSection title={HANDOUT_SECTION}>
+        <KkFormSection title={HANDOUT_SECTION} landing={KEY_EDITOR_HELP_SPOTS.handout}>
           <KkDateField
             name="sinceOn"
             label={SINCE_LABEL}
@@ -69,7 +75,7 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
     ) : (
       <>
         {chain}
-        <KkFormSection title={RETURN_SECTION}>
+        <KkFormSection title={RETURN_SECTION} landing={KEY_EDITOR_HELP_SPOTS.return}>
           <KkDateField
             name="untilOn"
             label={UNTIL_LABEL}
@@ -90,6 +96,7 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
       title={control.actionLabel}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         context:
           control.consequence === null

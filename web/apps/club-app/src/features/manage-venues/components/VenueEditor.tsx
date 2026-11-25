@@ -3,11 +3,14 @@ import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkTextArea } from '@furria/ui/KkTextArea';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { useVenueEditor } from '../hooks/use-venue-editor';
 import { VENUES_ORIGIN } from '../manage-venues-labels';
 import type { ManagedVenue } from '../schemas';
 import { VENUE_HINT_MAX_LENGTH } from '../schemas';
+import { VENUE_EDITOR_HELP_SPOTS } from '../venues-help-copy';
+import { VenueEditorHelp } from './VenueEditorHelp';
 import { VenueOpeningHoursSection } from './VenueOpeningHoursSection';
 
 const CREATE_TITLE = 'Ort hinzufügen';
@@ -47,6 +50,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
   const hintErrorText = errors.hint?.message;
 
   const isEditing = venue !== null;
+  const help = toScreenHelp(<VenueEditorHelp isEditing={isEditing} />);
   const title = isEditing ? EDIT_TITLE : CREATE_TITLE;
   const actionLabel = isEditing ? SAVE_LABEL : ADD_LABEL;
   const origin = isEditing
@@ -63,6 +67,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
       title={title}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: actionLabel,
@@ -72,7 +77,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
         },
       }}
     >
-      <KkFormSection title={PLACE_SECTION_TITLE}>
+      <KkFormSection title={PLACE_SECTION_TITLE} landing={VENUE_EDITOR_HELP_SPOTS.place}>
         <KkTextField
           name={nameField.name}
           label={NAME_LABEL}
@@ -85,7 +90,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
           inputRef={nameField.ref}
         />
       </KkFormSection>
-      <KkFormSection title={ADDRESS_SECTION_TITLE}>
+      <KkFormSection title={ADDRESS_SECTION_TITLE} landing={VENUE_EDITOR_HELP_SPOTS.address}>
         <KkTextField
           name={streetField.name}
           label={STREET_LABEL}

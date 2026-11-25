@@ -9,6 +9,7 @@ import {
 } from '../intake-labels';
 import type { ReviewChoice } from '../intake-review';
 import { NEW_PERSON_CHOICE } from '../intake-review';
+import { INTAKE_REVIEW_HELP_SPOTS } from '../intake-review-help-copy';
 import type { IntakeReview } from '../schemas';
 import { IntakeCandidateOption } from './IntakeCandidateOption';
 
@@ -31,7 +32,7 @@ export const IntakeCandidateChoice: FC<IntakeCandidateChoiceProps> = ({
   ));
 
   return (
-    <KkFormSection title={CANDIDATES_SECTION}>
+    <KkFormSection title={CANDIDATES_SECTION} landing={INTAKE_REVIEW_HELP_SPOTS.candidates}>
       <KkRadioGroup
         name={CHOICE_NAME}
         label={CANDIDATE_CHOICE_LABEL}

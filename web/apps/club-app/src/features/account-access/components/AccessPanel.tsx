@@ -32,9 +32,10 @@ import { AccountLockAction } from './AccountLockAction';
 interface AccessPanelProps {
   subject: AccessSubject;
   highlightedKey: string | null;
+  landing?: string;
 }
 
-export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) => {
+export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey, landing }) => {
   const { access } = subject;
   const {
     mailInvitation,
@@ -134,7 +135,7 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) =
   const lockAction = lock === null ? null : <AccountLockAction subject={subject} act={lock} />;
 
   return (
-    <KkPanelSection title={ACCESS_SECTION_TITLE}>
+    <KkPanelSection title={ACCESS_SECTION_TITLE} landing={landing}>
       <Stack sx={{ gap: 1.25, minWidth: 0 }}>
         {actsPanel}
         {invitationPanel}

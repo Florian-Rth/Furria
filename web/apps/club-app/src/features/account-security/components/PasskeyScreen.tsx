@@ -1,6 +1,7 @@
 import { KkScreen } from '@furria/ui/KkScreen';
 import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { useMeQuery } from '@/features/session/api';
 import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { ScreenNotFound } from '@/features/session/components/ScreenNotFound';
@@ -9,7 +10,10 @@ import { toSecurityErrorMessage } from '../account-security-messages';
 import { AccountSecurityError } from './AccountSecurityError';
 import { AccountSecuritySkeleton } from './AccountSecuritySkeleton';
 import { PasskeyHeader } from './PasskeyHeader';
+import { PasskeyHelp } from './PasskeyHelp';
 import { PasskeyPanels } from './PasskeyPanels';
+
+const PASSKEY_HELP = toScreenHelp(<PasskeyHelp />);
 
 interface PasskeyScreenProps {
   passkeyId: string;
@@ -33,6 +37,7 @@ export const PasskeyScreen: FC<PasskeyScreenProps> = ({ passkeyId }) => {
         kind="detail"
         title={passkey.name}
         origin={SECURITY_ORIGIN}
+        help={PASSKEY_HELP}
         header={<PasskeyHeader passkey={passkey} />}
         handover={AREA_HANDOVERS.profile}
       >

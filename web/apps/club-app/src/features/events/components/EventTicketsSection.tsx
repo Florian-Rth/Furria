@@ -13,6 +13,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { EVENT_EDITOR_HELP_SPOTS } from '../event-editor-help-copy';
 import type { EventEditorControl } from '../hooks/use-event-editor';
 import { EVENT_AGE_HINT_MAX_LENGTH } from '../schemas';
 
@@ -65,7 +66,7 @@ export const EventTicketsSection: FC<EventTicketsSectionProps> = ({
   ) : null;
 
   return (
-    <KkFormSection title={SECTION_TITLE}>
+    <KkFormSection title={SECTION_TITLE} landing={EVENT_EDITOR_HELP_SPOTS.tickets}>
       <KkPriceField
         name="price"
         label={PRICE_LABEL}

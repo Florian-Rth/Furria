@@ -5,6 +5,7 @@ import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { purgeCountdownOf } from '../bin-countdown';
+import { BIN_HELP_SPOTS } from '../bin-help-copy';
 import { countLabel } from '../gallery-view';
 import type { GalleryBinControl } from '../hooks/use-gallery-bin';
 import type { GalleryBin } from '../schemas';
@@ -50,7 +51,7 @@ export const GalleryBinBody: FC<GalleryBinBodyProps> = ({ bin, control }) => {
   const albumsLead = `${ALBUMS_LEAD} · ${countLabel(bin.albums.length)}`;
   const albums =
     bin.albums.length === 0 ? null : (
-      <Stack component="section" sx={{ rowGap: 1.5 }}>
+      <Stack component="section" data-kk-landing={BIN_HELP_SPOTS.albums} sx={{ rowGap: 1.5 }}>
         <KkFilmEdge lead={albumsLead} tone="red" size="title" level="h2" />
         <Grid container spacing={2}>
           {albumCards}
@@ -69,7 +70,7 @@ export const GalleryBinBody: FC<GalleryBinBodyProps> = ({ bin, control }) => {
   const itemsLead = `${ITEMS_LEAD} · ${countLabel(bin.items.length)}`;
   const items =
     bin.items.length === 0 ? null : (
-      <Stack component="section" sx={{ rowGap: 2 }}>
+      <Stack component="section" data-kk-landing={BIN_HELP_SPOTS.items} sx={{ rowGap: 2 }}>
         <KkFilmEdge lead={itemsLead} tone="red" size="title" level="h2" />
         {groups}
       </Stack>

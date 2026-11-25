@@ -1,6 +1,7 @@
 import { KkPlanStatusStrip } from '@furria/ui/KkPlanStatusStrip';
 import type { FC } from 'react';
 import { findingsToneOf } from '../planner-status';
+import { TABLE_PLAN_HELP_SPOTS } from '../table-plan-help-copy';
 import { useTablePlannerContext } from '../table-planner-context';
 import {
   CHAIRS_COUNT_LABEL,
@@ -19,7 +20,7 @@ export const TablePlannerTouchTop: FC = () => {
   };
 
   return (
-    <KkPlanStatusStrip label={STATUS_LABEL}>
+    <KkPlanStatusStrip label={STATUS_LABEL} landing={TABLE_PLAN_HELP_SPOTS.status}>
       <KkPlanStatusStrip.Action
         id="undo"
         label={UNDO_LABEL}

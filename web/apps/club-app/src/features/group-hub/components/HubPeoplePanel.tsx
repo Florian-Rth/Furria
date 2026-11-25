@@ -15,6 +15,7 @@ import {
 import type { GroupTone } from '@/features/groups/group-identity';
 import { GroupIntakes } from '@/features/manage-intakes/components/GroupIntakes';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
+import { HUB_HELP_SPOTS } from '../group-hub-help-copy';
 import type { HubPerson } from '../hub-people';
 import { HubPersonTile } from './HubPersonTile';
 
@@ -81,7 +82,12 @@ export const HubPeoplePanel: FC<HubPeoplePanelProps> = ({
   const intakes = canStartIntake ? <GroupIntakes groupId={groupId} /> : null;
 
   return (
-    <KkPanelSection title={GROUP_SECTION_TITLES.members} groupTone={tone} action={action}>
+    <KkPanelSection
+      landing={HUB_HELP_SPOTS.people}
+      title={GROUP_SECTION_TITLES.members}
+      groupTone={tone}
+      action={action}
+    >
       <Stack sx={PANEL_STACK_SX}>
         <KkPanel variant="block">{body}</KkPanel>
         {intakes}

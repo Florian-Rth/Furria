@@ -1,5 +1,6 @@
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { CALENDAR_ORIGIN } from '@/features/session/app-sections';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import type { CalendarAudienceReach } from '../calendar-audience-reach';
@@ -14,11 +15,13 @@ import type { CalendarOwnerOption } from '../calendar-owner';
 import { useCalendarEntryEditor } from '../hooks/use-calendar-entry-editor';
 import { useCalendarEntryRemoval } from '../hooks/use-calendar-entry-removal';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
+import { useEntryHelpViewer } from '../hooks/use-entry-help-viewer';
 import type { AudienceGroup, AudiencePerson, CalendarEntry, RunningVenue } from '../schemas';
 import { CalendarEntryAddOnsSection } from './CalendarEntryAddOnsSection';
 import { CalendarEntryAudienceSection } from './CalendarEntryAudienceSection';
 import { CalendarEntryBasicsSection } from './CalendarEntryBasicsSection';
 import { CalendarEntryDescriptionSection } from './CalendarEntryDescriptionSection';
+import { CalendarEntryHelp } from './CalendarEntryHelp';
 import { CalendarEntryScheduleSection } from './CalendarEntryScheduleSection';
 import { DeleteCalendarEntryDialog } from './DeleteCalendarEntryDialog';
 
@@ -47,6 +50,8 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
 }) => {
   const control = useCalendarEntryEditor({ entry, ownerOptions });
   const danger = useCalendarEntryRemoval(entry);
+  const helpViewer = useEntryHelpViewer(control.isEditing, control.notify !== null);
+  const help = toScreenHelp(<CalendarEntryHelp viewer={helpViewer} />);
 
   const title = control.isEditing ? CALENDAR_ENTRY_EDIT_TITLE : CALENDAR_ENTRY_CREATE_TITLE;
   const actionLabel = control.isEditing ? SAVE_LABEL : ADD_LABEL;
@@ -70,6 +75,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
       title={title}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: actionLabel,

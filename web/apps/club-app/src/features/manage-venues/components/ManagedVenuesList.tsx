@@ -11,6 +11,7 @@ import {
   VENUE_SECTION_TITLES,
 } from '../manage-venues-labels';
 import type { ManagedVenue } from '../schemas';
+import { VENUES_HELP_SPOTS } from '../venues-help-copy';
 import { ManagedVenueCard } from './ManagedVenueCard';
 
 const CREATE_ROUTE = '/manage/venues/new';
@@ -32,7 +33,11 @@ export const ManagedVenuesList: FC<ManagedVenuesListProps> = ({ venues }) => {
 
   if (venues.length === 0) {
     return (
-      <KkPanelSection title={VENUE_SECTION_TITLES.running} action={action}>
+      <KkPanelSection
+        title={VENUE_SECTION_TITLES.running}
+        action={action}
+        landing={VENUES_HELP_SPOTS.list}
+      >
         <KkPanel variant="block">
           <KkEmptyState
             title={MANAGED_VENUES_EMPTY.title}
@@ -44,7 +49,11 @@ export const ManagedVenuesList: FC<ManagedVenuesListProps> = ({ venues }) => {
   }
 
   return (
-    <KkPanelSection title={VENUE_SECTION_TITLES.running} action={action}>
+    <KkPanelSection
+      title={VENUE_SECTION_TITLES.running}
+      action={action}
+      landing={VENUES_HELP_SPOTS.list}
+    >
       <Stack sx={{ gap: LIST_GAP, minWidth: 0 }}>
         {venues.map((venue) => (
           <ManagedVenueCard key={venue.venueId} venue={venue} />

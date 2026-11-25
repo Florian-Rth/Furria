@@ -1,11 +1,14 @@
 import { KkDateField } from '@furria/ui/KkDateField';
 import { KkFormSection } from '@furria/ui/KkFormSection';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { usePersonEditor } from '../hooks/use-person-editor';
 import { PERSONS_ORIGIN, toPersonOrigin } from '../manage-persons-labels';
+import { PERSON_EDITOR_HELP_SPOTS } from '../person-editor-help-copy';
 import type { PersonDetails } from '../schemas';
 import { PersonAdoptionSuggestion } from './PersonAdoptionSuggestion';
+import { PersonEditorHelp } from './PersonEditorHelp';
 import { PersonFormFields } from './PersonFormFields';
 import { PersonPortraitSection } from './PersonPortraitSection';
 
@@ -22,6 +25,7 @@ interface PersonEditorProps {
 export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
   const control = usePersonEditor({ person });
   const isEdit = person !== null;
+  const help = toScreenHelp(<PersonEditorHelp isEditing={isEdit} />);
   const origin = person === null ? PERSONS_ORIGIN : toPersonOrigin(person);
   const portrait = person === null ? null : <PersonPortraitSection person={person} />;
   const adoptionCandidate = control.adoption.candidate;
@@ -36,6 +40,7 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
       title={isEdit ? EDIT_TITLE : CREATE_TITLE}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: control.actionLabel,
@@ -50,7 +55,7 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
         errors={control.errors}
         emailSuggestion={emailSuggestion}
       />
-      <KkFormSection title={PERSONAL_SECTION_TITLE}>
+      <KkFormSection title={PERSONAL_SECTION_TITLE} landing={PERSON_EDITOR_HELP_SPOTS.personal}>
         <KkDateField
           name="birthDate"
           label={BIRTH_DATE_LABEL}

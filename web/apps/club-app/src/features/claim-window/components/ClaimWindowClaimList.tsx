@@ -6,6 +6,7 @@ import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { toClaimMeta, WINDOW_CLAIMS_TITLE, WINDOW_NO_CLAIMS } from '../claim-window-copy';
 import { formatWindowMoment } from '../claim-window-format';
+import { CLAIM_WINDOW_HELP_SPOTS } from '../claim-window-help-copy';
 import type { WindowClaimSummary } from '../schemas';
 
 interface ClaimWindowClaimListProps {
@@ -25,7 +26,7 @@ export const ClaimWindowClaimList: FC<ClaimWindowClaimListProps> = ({ claims }) 
   const body = claims.length === 0 ? <KkNote tone="muted">{WINDOW_NO_CLAIMS}</KkNote> : rows;
 
   return (
-    <KkPanelSection title={WINDOW_CLAIMS_TITLE}>
+    <KkPanelSection title={WINDOW_CLAIMS_TITLE} landing={CLAIM_WINDOW_HELP_SPOTS.claims}>
       <KkPanel>{body}</KkPanel>
     </KkPanelSection>
   );

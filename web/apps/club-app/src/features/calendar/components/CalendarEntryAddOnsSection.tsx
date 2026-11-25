@@ -3,6 +3,7 @@ import { KkIcon } from '@furria/ui/KkIcon';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { CalendarParticipantPool } from '../calendar-authoring';
+import { ENTRY_HELP_SPOTS } from '../calendar-entry-help-copy';
 import { useCalendarEntryAddOns } from '../hooks/use-calendar-entry-add-ons';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
@@ -56,7 +57,7 @@ export const CalendarEntryAddOnsSection: FC<CalendarEntryAddOnsSectionProps> = (
     );
 
   return (
-    <KkPanelSection title={SECTION_TITLE}>
+    <KkPanelSection title={SECTION_TITLE} landing={ENTRY_HELP_SPOTS.addOns}>
       {cards}
       {addButton}
       <CalendarAddOnSheet

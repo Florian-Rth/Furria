@@ -369,7 +369,7 @@ export const CODE_SHEET_TITLE = 'Kiste genommen?';
 export const PRINT_LABEL = 'Drucken';
 
 export const HANDOVER_TITLE = 'Übergabe';
-export const SUCCESSOR_LABEL = 'Neue Inhaberin';
+export const SUCCESSOR_LABEL = 'Neuer Inhaber';
 export const HANDOVER_LABEL = 'Bierliste übergeben';
 export const handoverConfirmOf = (name: string, stock: number): KkHoldConfirm => ({
   eyebrow: HANDOVER_TITLE,
@@ -394,7 +394,7 @@ export const potFactsOf = (openTabs: number, openCents: number): string =>
   openTabs === 0 ? 'alles bezahlt' : `${personsOf(openTabs)} offen · ${euroOf(openCents)}`;
 
 export const EMPTY_TITLE = 'Bierliste eröffnen';
-export const OWNER_LABEL = 'Inhaberin';
+export const OWNER_LABEL = 'Inhaber';
 export const OPEN_POT_LABEL = 'Bierliste eröffnen';
 
 export const ownerContextOf = (owner: PersonRef | null, paymentLink: string | null): string =>
@@ -458,8 +458,8 @@ export const DRINKS_MISSING = 'Mindestens ein Getränk angeben.';
 export const DRINK_NAME_MISSING = 'Bitte einen Namen eingeben.';
 export const DRINK_NAME_TOO_LONG = `Höchstens ${DRINK_NAME_MAX} Zeichen.`;
 export const DRINK_NAME_TWICE = 'Dieses Getränk steht schon in der Liste.';
-export const OWNER_MISSING = 'Wähle die Inhaberin der Bierliste.';
-export const SUCCESSOR_MISSING = 'Wähle die neue Inhaberin.';
+export const OWNER_MISSING = 'Wähle den Inhaber der Bierliste.';
+export const SUCCESSOR_MISSING = 'Wähle den neuen Inhaber.';
 export const PAYMENT_EMPTY = 'Wähle mindestens eine bezahlte Kiste.';
 
 export const countRangeOf = (max: number): string =>

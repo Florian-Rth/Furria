@@ -2,6 +2,7 @@ import { KkExposureSweep } from '@furria/ui/KkExposureSweep';
 import { KkTimeRail } from '@furria/ui/KkTimeRail';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { ALBUM_HELP_SPOTS } from '../album-help-copy';
 import { RAIL_LABEL } from '../album-labels';
 import type { AlbumScreen } from '../hooks/use-album';
 import { useAlbumBulk } from '../hooks/use-album-bulk';
@@ -68,6 +69,7 @@ export const AlbumView: FC<AlbumViewProps> = ({ albumId, album, screen }) => {
         onPointerUp={selecting.stroke.onPointerUp}
         onPointerCancel={selecting.stroke.onPointerCancel}
         onContextMenu={selecting.stroke.onContextMenu}
+        data-kk-landing={ALBUM_HELP_SPOTS.scenes}
         sx={{
           rowGap: 2.5,
           touchAction: 'pan-y',

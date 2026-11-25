@@ -9,6 +9,7 @@ import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { KkPanelAction } from '@furria/ui/panel-action';
 import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import { toLandingKey } from '@/features/write/landing-target';
 import { WriteScreen } from '@/features/write/WriteScreen';
@@ -24,7 +25,9 @@ import {
   toPersonOrigin,
 } from '../manage-persons-labels';
 import { toClosedHistoryLine } from '../person-archive';
+import { MEMBERSHIP_HELP_SPOTS } from '../person-membership-help-copy';
 import type { PersonDetails, PersonMembership } from '../schemas';
+import { PersonMembershipHelp } from './PersonMembershipHelp';
 import { PersonPauseRow } from './PersonPauseRow';
 
 const SPAN_SECTION_TITLE = 'Zeitraum';
@@ -47,6 +50,8 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
   const startQuickChoices = toMembershipQuickChoices(today);
   const endQuickChoices = toMembershipEndQuickChoices(today);
   const isArchived = person.archive !== null;
+  const isEditing = membership !== null;
+  const help = toScreenHelp(<PersonMembershipHelp isEditing={isEditing} isArchived={isArchived} />);
   const closedPausesNote = isArchived ? (
     <KkNote>{toClosedHistoryLine(person.firstName, 'Ruhezeiten')}</KkNote>
   ) : null;
@@ -101,7 +106,11 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
 
   const pausesSection =
     membership === null ? null : (
-      <KkPanelSection title={MEMBERSHIP_PAUSES_TITLE} action={pausesSectionAction}>
+      <KkPanelSection
+        title={MEMBERSHIP_PAUSES_TITLE}
+        action={pausesSectionAction}
+        landing={MEMBERSHIP_HELP_SPOTS.pauses}
+      >
         {closedPausesNote}
         {pausesBody}
       </KkPanelSection>
@@ -113,6 +122,7 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
       title={control.actionLabel}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         context:
           control.consequence === null
@@ -128,7 +138,7 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
       }}
     >
       {chain}
-      <KkFormSection title={SPAN_SECTION_TITLE}>
+      <KkFormSection title={SPAN_SECTION_TITLE} landing={MEMBERSHIP_HELP_SPOTS.span}>
         <KkFormPair
           start={
             <KkDateField

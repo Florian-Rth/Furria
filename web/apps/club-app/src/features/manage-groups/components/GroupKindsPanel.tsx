@@ -5,6 +5,7 @@ import Grid from '@mui/material/Grid';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write/landing-target';
+import { GROUPS_HELP_SPOTS } from '../manage-groups-help-copy';
 import {
   CREATE_GROUP_KIND_LABEL,
   CREATE_GROUP_KIND_PILL_LABEL,
@@ -58,7 +59,11 @@ export const GroupKindsPanel: FC<GroupKindsPanelProps> = ({ kinds, highlightedKe
   };
 
   return (
-    <KkPanelSection title={GROUP_KINDS_PANEL_TITLE} action={action}>
+    <KkPanelSection
+      title={GROUP_KINDS_PANEL_TITLE}
+      action={action}
+      landing={GROUPS_HELP_SPOTS.kinds}
+    >
       {body}
     </KkPanelSection>
   );

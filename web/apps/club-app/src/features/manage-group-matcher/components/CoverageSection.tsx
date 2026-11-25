@@ -3,6 +3,7 @@ import { KkNote } from '@furria/ui/KkNote';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { GROUP_MATCHER_HELP_SPOTS } from '../group-matcher-help-copy';
 import { useGroupMatcherHubContext } from '../group-matcher-hub-context';
 import {
   COVERAGE_EMPTY,
@@ -56,5 +57,9 @@ export const CoverageSection: FC = () => {
       </Stack>
     );
 
-  return <KkPanelSection title={COVERAGE_TITLE}>{grid}</KkPanelSection>;
+  return (
+    <KkPanelSection title={COVERAGE_TITLE} landing={GROUP_MATCHER_HELP_SPOTS.coverage}>
+      {grid}
+    </KkPanelSection>
+  );
 };

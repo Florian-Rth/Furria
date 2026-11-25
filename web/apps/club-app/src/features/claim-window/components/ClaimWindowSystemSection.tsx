@@ -3,6 +3,7 @@ import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { SYSTEM_HELP_SPOTS } from '@/features/system/system-help-copy';
 import { CLAIM_WINDOW_TITLE } from '../claim-window-copy';
 import { useClaimWindowEntry } from '../hooks/use-claim-window-entry';
 
@@ -17,7 +18,7 @@ export const ClaimWindowSystemSection: FC = () => {
   }
 
   return (
-    <KkPanelSection title={SECTION_TITLE}>
+    <KkPanelSection title={SECTION_TITLE} landing={SYSTEM_HELP_SPOTS.claimWindow}>
       <KkPanel>
         <KkHubRow
           label={CLAIM_WINDOW_TITLE}

@@ -1,6 +1,7 @@
 import { KkScreen } from '@furria/ui/KkScreen';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { EVENTS_KEYS } from '@/features/session/app-sections';
 import { RequireAnyPermission } from '@/features/session/components/RequireAnyPermission';
 import { parsePositiveId } from '@/lib/positive-id';
@@ -8,6 +9,9 @@ import { useEventQuery } from '../api';
 import { EVENT_FALLBACK_TITLE } from '../event-board-copy';
 import { EVENT_MANAGE_TITLE } from '../events-labels';
 import { EventManageBody } from './EventManageBody';
+import { EventManageHelp } from './EventManageHelp';
+
+const HELP = toScreenHelp(<EventManageHelp />);
 
 interface EventManagePageProps {
   eventId: string;
@@ -23,7 +27,7 @@ export const EventManagePage: FC<EventManagePageProps> = ({ eventId }) => {
   };
 
   return (
-    <KkScreen kind="detail" title={EVENT_MANAGE_TITLE} origin={origin}>
+    <KkScreen kind="detail" title={EVENT_MANAGE_TITLE} origin={origin} help={HELP}>
       <RequireAnyPermission permissionKeys={EVENTS_KEYS}>
         <EventManageBody eventId={id} />
       </RequireAnyPermission>

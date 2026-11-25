@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { findingsToneOf } from '../planner-status';
 import { placesTables } from '../planner-tools';
+import { TABLE_PLAN_HELP_SPOTS } from '../table-plan-help-copy';
 import { useTablePlannerContext } from '../table-planner-context';
 import {
   CHAIRS_COUNT_LABEL,
@@ -51,7 +52,7 @@ export const TablePlannerStatus: FC = () => {
 
   return (
     <Stack sx={{ rowGap: 1 }}>
-      <KkPlanStatusStrip label={STATUS_LABEL}>
+      <KkPlanStatusStrip label={STATUS_LABEL} landing={TABLE_PLAN_HELP_SPOTS.status}>
         <KkPlanStatusStrip.Count value={String(planner.counts.tables)} label={TABLES_COUNT_LABEL} />
         <KkPlanStatusStrip.Count value={String(planner.counts.chairs)} label={CHAIRS_COUNT_LABEL} />
         <KkPlanStatusStrip.Chip

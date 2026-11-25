@@ -1,6 +1,10 @@
 import { KkPublishCeremony } from '@furria/ui/KkPublishCeremony';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
-import type { KkScreenActionBar, KkScreenOrigin } from '@furria/ui/screen-declaration';
+import type {
+  KkScreenActionBar,
+  KkScreenHelp,
+  KkScreenOrigin,
+} from '@furria/ui/screen-declaration';
 import type { KkPublishCeremonyStage } from '@furria/ui/use-publish-ceremony';
 import type { FC, PropsWithChildren } from 'react';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
@@ -14,6 +18,7 @@ interface WriteScreenProps extends PropsWithChildren {
   action: KkScreenActionBar;
   isDirty: boolean;
   ceremony?: KkPublishCeremonyStage;
+  help?: KkScreenHelp;
 }
 
 export const WriteScreen: FC<WriteScreenProps> = ({
@@ -23,6 +28,7 @@ export const WriteScreen: FC<WriteScreenProps> = ({
   action,
   isDirty,
   ceremony,
+  help,
   children,
 }) => {
   const { guard } = useWriteScreen({ origin, isDirty });
@@ -38,7 +44,7 @@ export const WriteScreen: FC<WriteScreenProps> = ({
 
   return (
     <>
-      <KkWriteScreen origin={origin} title={title} action={action}>
+      <KkWriteScreen origin={origin} title={title} action={action} help={help}>
         {content}
       </KkWriteScreen>
       <WriteLeaveDialog guard={guard} />

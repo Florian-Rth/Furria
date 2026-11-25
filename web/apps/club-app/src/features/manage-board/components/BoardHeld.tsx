@@ -2,6 +2,7 @@ import { KkMeta } from '@furria/ui/KkMeta';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkRoster } from '@furria/ui/KkRoster';
 import type { FC } from 'react';
+import { BOARD_HELP_SPOTS } from '../board-help-copy';
 import { FILTER_EMPTY, HELD_TITLE, ROSTER_LABEL } from '../board-hub-copy';
 import type { BoardOffice } from '../schemas';
 import { BoardRosterLine } from './BoardRosterLine';
@@ -43,5 +44,9 @@ export const BoardHeld: FC<BoardHeldProps> = ({
       </KkRoster>
     );
 
-  return <KkPanelSection title={HELD_TITLE}>{list}</KkPanelSection>;
+  return (
+    <KkPanelSection title={HELD_TITLE} landing={BOARD_HELP_SPOTS.held}>
+      {list}
+    </KkPanelSection>
+  );
 };

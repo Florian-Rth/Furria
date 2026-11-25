@@ -4,11 +4,14 @@ import { KkMeta } from '@furria/ui/KkMeta';
 import { KkNote } from '@furria/ui/KkNote';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
+import { CLUB_EDITOR_HELP_SPOTS } from '../club-record-help-copy';
 import { CLUB_RECORD_ORIGIN, CLUB_RECORD_SECTION_TITLES } from '../club-record-labels';
 import { useClubStageEditor } from '../hooks/use-club-stage-editor';
 import type { ClubRecord } from '../schemas';
 import { ClubStageArtworkField } from './ClubStageArtworkField';
+import { ClubStageHelp } from './ClubStageHelp';
 import { ClubStagePreview } from './ClubStagePreview';
 
 const SAVE_LABEL = 'Speichern';
@@ -30,6 +33,7 @@ interface ClubStageEditorProps {
 }
 
 export const ClubStageEditor: FC<ClubStageEditorProps> = ({ record }) => {
+  const help = toScreenHelp(<ClubStageHelp />);
   const control = useClubStageEditor(record);
   const width = control.form.register('widthMetres');
   const depth = control.form.register('depthMetres');
@@ -90,6 +94,7 @@ export const ClubStageEditor: FC<ClubStageEditorProps> = ({ record }) => {
       title={CLUB_RECORD_SECTION_TITLES.stage}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: SAVE_LABEL,
@@ -99,10 +104,10 @@ export const ClubStageEditor: FC<ClubStageEditorProps> = ({ record }) => {
         },
       }}
     >
-      <KkFormSection title={SIZE_SECTION_TITLE}>
+      <KkFormSection title={SIZE_SECTION_TITLE} landing={CLUB_EDITOR_HELP_SPOTS.stageSize}>
         <KkFormPair start={widthField} end={depthField} phone="side" />
       </KkFormSection>
-      <KkFormSection title={ARTWORK_SECTION_TITLE}>
+      <KkFormSection title={ARTWORK_SECTION_TITLE} landing={CLUB_EDITOR_HELP_SPOTS.stageArtwork}>
         <ClubStageArtworkField
           hasArtwork={hasArtwork}
           rejection={control.artworkRejection}

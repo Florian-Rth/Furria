@@ -2,10 +2,13 @@ import { KkConfettiGlobe } from '@furria/ui/KkConfettiGlobe';
 import { KkPosterBackdrop } from '@furria/ui/KkPosterBackdrop';
 import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS, START_SECTION, START_TITLE } from '@/features/session/app-sections';
+import { useStartHelpViewer } from '../hooks/use-start-help-viewer';
 import { useStartScreen } from '../hooks/use-start-screen';
 import { StartBody } from './StartBody';
 import { StartHeader } from './StartHeader';
+import { StartHelp } from './StartHelp';
 import { WeekStrip } from './WeekStrip';
 
 const STAYING_HEADER = 'banner';
@@ -13,6 +16,8 @@ const STAYING_HEADER = 'banner';
 export const StartScreen: FC = () => {
   const { view, focus, cells, look, globe, loading, showsBoard } = useStartScreen();
   const strip = cells === null ? null : <WeekStrip cells={cells} />;
+  const helpViewer = useStartHelpViewer(view, globe, cells !== null);
+  const help = toScreenHelp(<StartHelp viewer={helpViewer} />);
   const foot = showsBoard ? (
     <KkPosterBackdrop.Foot phase={look.phase} runUp={look.runUp} evening={look.evening} />
   ) : null;
@@ -29,6 +34,7 @@ export const StartScreen: FC = () => {
         kind="overview"
         section={START_SECTION}
         title={START_TITLE}
+        help={help}
         header={<StartHeader strip={strip} onCountPress={globe.requestMotion} />}
         headerKind={STAYING_HEADER}
         handover={AREA_HANDOVERS.start}

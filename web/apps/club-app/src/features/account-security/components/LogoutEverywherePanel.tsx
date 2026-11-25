@@ -4,6 +4,7 @@ import { KkIcon } from '@furria/ui/KkIcon';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { useLogoutEverywhere } from '../hooks/use-logout-everywhere';
+import { SECURITY_HELP_SPOTS } from '../security-help-copy';
 
 const TITLE = 'Geräte';
 const LOGOUT_EVERYWHERE_LABEL = 'Überall abmelden';
@@ -19,7 +20,7 @@ export const LogoutEverywherePanel: FC = () => {
   const logoutIcon = <KkIcon name="logout" size="small" />;
 
   return (
-    <KkPanelSection title={TITLE}>
+    <KkPanelSection title={TITLE} landing={SECURITY_HELP_SPOTS.devices}>
       <KkButton variant="outlined" fullWidth startIcon={logoutIcon} onClick={control.open}>
         {LOGOUT_EVERYWHERE_LABEL}
       </KkButton>

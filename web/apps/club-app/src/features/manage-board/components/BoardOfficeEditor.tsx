@@ -7,8 +7,10 @@ import { KkNumberField } from '@furria/ui/KkNumberField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { ClubIconField } from '@/features/write/components/ClubIconField';
 import { WriteScreen } from '@/features/write/WriteScreen';
+import { BOARD_HELP_SPOTS } from '../board-help-copy';
 import type { EditorReturn } from '../board-hub';
 import { useBoardOfficeEditor } from '../hooks/use-board-office-editor';
 import type { BoardOfficeEntry } from '../manage-board-labels';
@@ -18,6 +20,7 @@ import {
   IMPLIED_ROLE_READ_ONLY_HINT,
   toOfficeOrigin,
 } from '../manage-board-labels';
+import { BoardOfficeEditorHelp } from './BoardOfficeEditorHelp';
 
 const CREATE_TITLE = 'Vorstandsfunktion hinzufügen';
 const EDIT_TITLE = 'Vorstandsfunktion bearbeiten';
@@ -50,6 +53,9 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry, returnTo 
   const origin = entry === null ? BOARD_ORIGIN : toOfficeOrigin(entry, returnTo);
 
   const nameField = control.form.register('name');
+  const help = toScreenHelp(
+    <BoardOfficeEditorHelp isEditing={entry !== null} canChangeRole={control.canChangeRole} />,
+  );
 
   const impliedRoleError = control.impliedRoleChoicesError ?? undefined;
 
@@ -85,7 +91,7 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry, returnTo 
     );
   const roleSection =
     entry === null ? null : (
-      <KkFormSection title={ROLE_SECTION}>
+      <KkFormSection title={ROLE_SECTION} landing={BOARD_HELP_SPOTS.role}>
         {impliedRoleControl}
         {impliedRoleRetry}
       </KkFormSection>
@@ -97,6 +103,7 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry, returnTo 
       title={title}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: actionLabel,
@@ -106,7 +113,7 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry, returnTo 
         },
       }}
     >
-      <KkFormSection title={OFFICE_SECTION}>
+      <KkFormSection title={OFFICE_SECTION} landing={BOARD_HELP_SPOTS.office}>
         <KkFormPair
           balance="leading"
           start={

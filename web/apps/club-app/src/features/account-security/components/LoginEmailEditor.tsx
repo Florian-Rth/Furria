@@ -1,14 +1,17 @@
 import type { KkScreenActionBar } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { LOGIN_EMAIL_EDIT_TITLE, SECURITY_ORIGIN } from '../account-security-labels';
 import { useLoginEmailEditor } from '../hooks/use-login-email-editor';
 import { LoginEmailAddressFields } from './LoginEmailAddressFields';
 import { LoginEmailCodeFields } from './LoginEmailCodeFields';
+import { LoginEmailHelp } from './LoginEmailHelp';
 
 const SEND_CODE_LABEL = 'Code senden';
 const SAVE_LABEL = 'Speichern';
 const RESEND_LABEL = 'Neuen Code senden';
+const LOGIN_EMAIL_HELP = toScreenHelp(<LoginEmailHelp />);
 
 interface LoginEmailEditorProps {
   currentLoginEmail: string;
@@ -66,6 +69,7 @@ export const LoginEmailEditor: FC<LoginEmailEditorProps> = ({ currentLoginEmail 
       title={LOGIN_EMAIL_EDIT_TITLE}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={LOGIN_EMAIL_HELP}
       action={action}
     >
       {fields}

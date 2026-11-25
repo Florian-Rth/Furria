@@ -16,9 +16,11 @@ import { KkConfettiBurst } from '../KkConfettiBurst';
 import { KkFilmEdge } from '../KkFilmEdge';
 import { KkFlapCount } from '../KkFlapCount';
 import { KkGreaseMark } from '../KkGreaseMark';
+import { HELP_SHEET_ID } from '../KkHelp/help-sheet-id';
 import { KkIcon } from '../KkIcon';
 import { KkIconButton } from '../KkIconButton';
 import { KkImage } from '../KkImage';
+import { useKkSheetCommands } from '../KkSheet/sheet-store';
 import { KK_DARK_SCHEME_ATTRIBUTE } from '../theme';
 import { kkTokens } from '../tokens';
 import type { KkLightTableIntents } from './use-light-table-stage';
@@ -81,6 +83,7 @@ export interface KkLightTableLabels {
   confirm: string;
   cancel: string;
   settings?: string;
+  help?: string;
 }
 
 export interface KkLightTableCommit {
@@ -180,6 +183,10 @@ export const KkLightTable: FC<KkLightTableProps> = ({
   ...intents
 }) => {
   const reducedMotion = useReducedMotion();
+  const sheets = useKkSheetCommands();
+  const openHelp = (): void => {
+    sheets.open(HELP_SHEET_ID);
+  };
   const shownPrevious = frame === null ? null : previous;
   const shownNext = frame === null ? null : next;
   const stage = useLightTableStage({
@@ -365,6 +372,9 @@ export const KkLightTable: FC<KkLightTableProps> = ({
             {tally}
           </Typography>
         </Stack>
+        {labels.help === undefined ? null : (
+          <KkIconButton label={labels.help} icon="help" onClick={openHelp} />
+        )}
         {onSettings === undefined || labels.settings === undefined ? null : (
           <KkIconButton label={labels.settings} icon="settings" onClick={onSettings} />
         )}

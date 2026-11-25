@@ -5,15 +5,22 @@ import { kkTokens } from '../../../tokens';
 
 interface KkPlanStatusStripRootProps extends PropsWithChildren {
   label: string;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkPlanStatusStripRoot: FC<KkPlanStatusStripRootProps> = ({ label, sx, children }) => (
+export const KkPlanStatusStripRoot: FC<KkPlanStatusStripRootProps> = ({
+  label,
+  landing,
+  sx,
+  children,
+}) => (
   <Stack
     component="section"
     direction="row"
     aria-label={label}
     data-kk-plan-status-strip
+    data-kk-landing={landing}
     sx={[
       {
         minWidth: 0,

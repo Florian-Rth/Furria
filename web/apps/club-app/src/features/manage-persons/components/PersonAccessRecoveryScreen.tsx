@@ -1,13 +1,16 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { InPersonInvitationScreen } from '@/features/account-access/components/InPersonInvitationScreen';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { usePersonEditorGate } from '../hooks/use-person-editor-gate';
 import { RECOVERY_DENIED_MESSAGE, toPersonOrigin } from '../manage-persons-labels';
 import { PersonEditorFallback } from './PersonEditorFallback';
+import { PersonInPersonHelp } from './PersonInPersonHelp';
 
 const ROUTE_ID = '/_app/manage/persons_/$personId_/access-recovery';
+const HELP = toScreenHelp(<PersonInPersonHelp purpose="recovery" />);
 const TITLE = 'Zugang wiederherstellen';
 
 export const PersonAccessRecoveryScreen: FC = () => {
@@ -31,6 +34,7 @@ export const PersonAccessRecoveryScreen: FC = () => {
       purpose="recovery"
       subject={gate.person}
       origin={toPersonOrigin(gate.person)}
+      help={HELP}
     />
   );
 };

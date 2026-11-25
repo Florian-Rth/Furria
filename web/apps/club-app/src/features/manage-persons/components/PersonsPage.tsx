@@ -3,6 +3,7 @@ import { KkSkeletonToolbar } from '@furria/ui/KkSkeletonToolbar';
 import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { KkScreenIndex } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
 import { RequireAnyPermission } from '@/features/session/components/RequireAnyPermission';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
@@ -16,6 +17,7 @@ import { toAppFilterValue } from '../person-app-state';
 import { PERSON_READ_KEYS } from '../person-read-keys';
 import type { PersonSummary } from '../schemas';
 import { PersonsBody } from './PersonsBody';
+import { PersonsHelp } from './PersonsHelp';
 import { PersonsToolbar } from './PersonsToolbar';
 
 const SEARCH_PLACEHOLDER = 'Name, Adresse, E-Mail';
@@ -43,6 +45,7 @@ export const PersonsPage: FC = () => {
   const isListSettled = listed.data !== undefined || listed.error !== null;
   const isToolbarPending = !isListSettled || !isArchiveSettled || isUndecided;
   const appFilter = toAppFilterValue(access.filter);
+  const help = toScreenHelp(<PersonsHelp managesPersons={canCreate} />);
 
   const index: KkScreenIndex | undefined =
     !canRead || search.letters.length === 0
@@ -77,6 +80,7 @@ export const PersonsPage: FC = () => {
       origin={MANAGE_ORIGIN}
       header={<KkTitleHeader title={PERSONS_TITLE} />}
       handover={AREA_HANDOVERS.manage}
+      help={help}
     >
       <RequireAnyPermission permissionKeys={PERSON_READ_KEYS}>
         <PersonsBody search={search} canCreate={canCreate} canInvite={canCreate} />

@@ -3,16 +3,19 @@ import { KkErrorState } from '@furria/ui/KkErrorState';
 import { KkScreen } from '@furria/ui/KkScreen';
 import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session/app-sections';
 import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { toAlbumErrorMessage } from '../album-form-messages';
 import { BIN_TITLE } from '../gallery-copy';
 import { useGalleryBin } from '../hooks/use-gallery-bin';
 import { GalleryBinBody } from './GalleryBinBody';
+import { GalleryBinHelp } from './GalleryBinHelp';
 
 const FAILURE_TITLE = 'PAPIERKORB NICHT GELADEN';
 const RETRY_LABEL = 'Erneut laden';
 const LOADING_LABEL = 'Papierkorb wird geladen';
+const BIN_HELP = toScreenHelp(<GalleryBinHelp />);
 
 export const GalleryBinPage: FC = () => {
   const control = useGalleryBin();
@@ -40,6 +43,7 @@ export const GalleryBinPage: FC = () => {
       origin={GALLERY_ORIGIN}
       action={control.action}
       header={<KkTitleHeader title={BIN_TITLE} />}
+      help={BIN_HELP}
       handover={AREA_HANDOVERS.gallery}
     >
       {content}
