@@ -1,0 +1,18 @@
+# The nightly backup (backup.example.sh, ADR-0044), started by furria-backup.timer. Install as root:
+#   cp systemd/furria-backup.* /etc/systemd/system/   # then set the two paths below
+#   systemctl daemon-reload && systemctl enable --now furria-backup.timer
+# Log: journalctl -u furria-backup. Setup and restore: docs/ops/PRODUCTION.md, "Backup and restore".
+
+[Unit]
+Description=Furria nightly backup (restic, off-site)
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+# The deployment's directory: docker-compose.yml, .env and backup.sh.
+WorkingDirectory=/home/USER/furria
+ExecStart=/home/USER/furria/backup.sh
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

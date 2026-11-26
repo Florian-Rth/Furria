@@ -1,7 +1,7 @@
 ---
 rfc: 0012
 title: Production backups off-site with restic
-status: draft
+status: in-progress
 github_issue: 107
 branch: feat/rfc-107-production-backups
 created: 2026-11-26
@@ -43,7 +43,7 @@ stop lasts seconds to a minute; the website and club app keep serving pages.
   a staging directory and an SSH key mounted.
 - **Target**: an SFTP repository; host, user, path, key file and password come from the
   deployment's `.env` — nothing about the target lives in the repo.
-- **Schedule**: systemd timers (`Persistent=true`, so a missed run catches up after boot) —
+- **Schedule**: systemd timers (examples in `systemd/`) (`Persistent=true`, so a missed run catches up after boot) —
   nightly backup at 03:30 Europe/Berlin, weekly check Sunday after the backup. Unit files ship as
   examples beside the script.
 - **Retention**: `forget --prune` with 7 daily, 5 weekly, 12 monthly.
@@ -70,12 +70,12 @@ erased after the snapshot come back and are not re-erased (ADR-0044).
 ### Phase 1 — Nightly backup
 Goal: the repo ships a working restic backup script, its timer units and docs; nothing on the host
 changes yet.
-- [ ] Rewrite `backup.example.sh` as the restic backup (staged dump + sessions + config + originals from one point)
-- [ ] Retention (`forget --prune` 7/5/12), capacity report with 80% warning, optional push URL on success/failure
-- [ ] systemd service + timer examples for the nightly run (03:30 Europe/Berlin, `Persistent=true`)
-- [ ] Backup settings in `.env.example` (target, password, key file, push URL) with generic placeholders
-- [ ] Rewrite "Backup and restore" in `docs/ops/PRODUCTION.md` (setup, what's in a snapshot, restore from restic)
-- [ ] Try the script end to end against a local scratch SFTP target and a scratch compose project
+- [x] Rewrite `backup.example.sh` as the restic backup (staged dump + sessions + config + originals from one point)
+- [x] Retention (`forget --prune` 7/5/12), capacity report with 80% warning, optional push URL on success/failure
+- [x] systemd service + timer examples for the nightly run (03:30 Europe/Berlin, `Persistent=true`)
+- [x] Backup settings in `.env.example` (target, password, key file, push URL) with generic placeholders
+- [x] Rewrite "Backup and restore" in `docs/ops/PRODUCTION.md` (setup, what's in a snapshot, restore from restic)
+- [x] Try the script end to end against a local scratch SFTP target and a scratch compose project
 
 ### Phase 2 — Weekly restore check
 Goal: the repo ships the weekly check and its timer; a broken backup is noticed within a week.
