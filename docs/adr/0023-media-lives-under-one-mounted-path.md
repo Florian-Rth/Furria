@@ -21,6 +21,7 @@ knows a path, never a storage product. Postgres holds the metadata; the path hol
 
 - **Every byte passes the edge and the homelab uplink** — uploads and downloads. Large uploads must
   be chunked and resumable, and the edge's body-size limits and timeouts must allow the chunks.
-- **Backups of the media path are the operator's**, beside the database's. A database restore
+- **The media originals are backed up with the database**, from one point and off-site
+  ([ADR-0044](0044-backups-go-off-site-encrypted-from-one-point.md), 2026-11-26). A database restore
   without the matching media path (or vice versa) leaves dangling items; the restore runbook must
   restore both from the same point.
