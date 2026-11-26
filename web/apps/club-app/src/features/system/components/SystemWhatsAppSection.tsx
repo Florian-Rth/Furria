@@ -2,6 +2,7 @@ import { KkReadout } from '@furria/ui/KkReadout';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';
 import { SECTION_TITLES, WHATSAPP_OUTBOX_FACT_LABELS } from '../system-copy';
+import { SYSTEM_HELP_SPOTS } from '../system-help-copy';
 import { whatsAppOutboxViewOf } from '../system-view';
 
 interface SystemWhatsAppSectionProps {
@@ -18,7 +19,7 @@ export const SystemWhatsAppSection: FC<SystemWhatsAppSectionProps> = ({
   const outbox = whatsAppOutboxViewOf(status, nowMs);
 
   return (
-    <KkReadout label={SECTION_TITLES.whatsApp} dimmed={dimmed}>
+    <KkReadout landing={SYSTEM_HELP_SPOTS.area} label={SECTION_TITLES.whatsApp} dimmed={dimmed}>
       <KkReadout.Facts>
         <KkReadout.Fact label={WHATSAPP_OUTBOX_FACT_LABELS.waiting} value={outbox.waiting} />
         <KkReadout.Fact label={WHATSAPP_OUTBOX_FACT_LABELS.retrying} value={outbox.retrying} />

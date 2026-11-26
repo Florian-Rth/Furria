@@ -11,6 +11,7 @@ import { toLandingKey } from '@/features/write/landing-target';
 import { toIsoDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { useGroupKindArchive } from '../hooks/use-group-kind-archive';
+import { GROUPS_HELP_SPOTS } from '../manage-groups-help-copy';
 import type { GroupKindEntry } from '../manage-groups-labels';
 import {
   ARCHIVE_GROUP_KIND_EXPLANATION,
@@ -77,7 +78,11 @@ export const GroupKindPage: FC<GroupKindPageProps> = ({ entry, highlight }) => {
   );
 
   return (
-    <KkPanelSection title={GROUP_KIND_SECTION_TITLE} action={action}>
+    <KkPanelSection
+      title={GROUP_KIND_SECTION_TITLE}
+      action={action}
+      landing={GROUPS_HELP_SPOTS.kind}
+    >
       <KkPanel highlight={highlight} landing={toLandingKey('group-kind', entry.groupKindId)}>
         <KkFieldRow label={NAME_LABEL} value={entry.name} />
         <KkFieldRow label={USAGE_LABEL} value={toGroupKindUsageLine(entry.groupCount)} />

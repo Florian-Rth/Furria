@@ -12,6 +12,7 @@ import {
   SECTION_TITLES,
   WORKERS_EMPTY,
 } from '../system-copy';
+import { SYSTEM_HELP_SPOTS } from '../system-help-copy';
 import { mediaViewOf } from '../system-view';
 
 interface SystemMediaSectionProps {
@@ -53,7 +54,12 @@ export const SystemMediaSection: FC<SystemMediaSectionProps> = ({ status, nowMs,
     );
 
   return (
-    <KkReadout label={SECTION_TITLES.media} aside={media.totalBytes} dimmed={dimmed}>
+    <KkReadout
+      landing={SYSTEM_HELP_SPOTS.area}
+      label={SECTION_TITLES.media}
+      aside={media.totalBytes}
+      dimmed={dimmed}
+    >
       <KkSlotStrip
         label={QUEUE_LABEL}
         running={media.queue.running}

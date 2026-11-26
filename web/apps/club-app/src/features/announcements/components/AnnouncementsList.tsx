@@ -6,6 +6,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toIsoDay } from '@/lib/day';
 import { toAnnouncementShelves } from '../announcement-bulletin';
+import { ANNOUNCEMENTS_HELP_SPOTS } from '../announcements-help-copy';
 import {
   ADD_ANNOUNCEMENT_ACTION_LABEL,
   ADD_ANNOUNCEMENT_PILL_LABEL,
@@ -76,7 +77,11 @@ export const AnnouncementsList: FC<AnnouncementsListProps> = ({
 
   return (
     <KkPanelStack>
-      <KkPanelSection title={ANNOUNCEMENTS_SECTION_TITLE} action={action}>
+      <KkPanelSection
+        title={ANNOUNCEMENTS_SECTION_TITLE}
+        action={action}
+        landing={ANNOUNCEMENTS_HELP_SPOTS.current}
+      >
         {current}
       </KkPanelSection>
       {expired}

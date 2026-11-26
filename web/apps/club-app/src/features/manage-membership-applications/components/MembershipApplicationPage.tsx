@@ -3,6 +3,7 @@ import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import type { KkScreenActionBar } from '@furria/ui/screen-declaration';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
@@ -10,11 +11,14 @@ import { parsePositiveId } from '@/lib/positive-id';
 import { ADMIT_LABEL, toCandidatesContext } from '../admission-labels';
 import { useMembershipApplicationQuery } from '../api';
 import { APPLICATIONS_ORIGIN, toApplicationTitle } from '../manage-membership-applications-labels';
+import { ApplicationHelp } from './ApplicationHelp';
 import { MembershipApplicationBody } from './MembershipApplicationBody';
 import { MembershipApplicationHeader } from './MembershipApplicationHeader';
 
 const APPLICATION_ROUTE_ID = '/_app/manage/applications_/$membershipApplicationId';
 const ADMISSION_ROUTE = '/manage/applications/$membershipApplicationId/admission';
+
+const HELP = toScreenHelp(<ApplicationHelp />);
 
 export const MembershipApplicationPage: FC = () => {
   const { membershipApplicationId } = useParams({ from: APPLICATION_ROUTE_ID });
@@ -52,6 +56,7 @@ export const MembershipApplicationPage: FC = () => {
       header={header}
       action={action}
       handover={AREA_HANDOVERS.manage}
+      help={HELP}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.membershipApplicationsDecide}>
         <MembershipApplicationBody membershipApplicationId={id} />

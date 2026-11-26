@@ -4,6 +4,7 @@ import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkSessionField } from '@furria/ui/KkSessionField';
 import type { FC } from 'react';
 import { currentSessionYear } from '@/lib/club';
+import { ALBUM_FORM_HELP_SPOTS } from '../album-form-help-copy';
 import type { AlbumFormControl } from '../hooks/use-album-form';
 import type { AlbumFormEntries } from '../hooks/use-album-form-entries';
 
@@ -69,7 +70,7 @@ export const AlbumFormLinkSection: FC<AlbumFormLinkSectionProps> = ({ control, e
   const linkedField = { entry: entryField, session: sessionField, none: null }[control.values.link];
 
   return (
-    <KkFormSection title={SECTION_TITLE}>
+    <KkFormSection title={SECTION_TITLE} landing={ALBUM_FORM_HELP_SPOTS.link}>
       <KkSelectField
         name="link"
         label={LINK_LABEL}

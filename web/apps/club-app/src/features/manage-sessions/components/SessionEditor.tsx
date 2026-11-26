@@ -7,6 +7,7 @@ import { KkSessionField } from '@furria/ui/KkSessionField';
 import { KkTextField } from '@furria/ui/KkTextField';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { useSessionEditor } from '../hooks/use-session-editor';
 import { useSessionRemoval } from '../hooks/use-session-removal';
@@ -22,6 +23,8 @@ import {
   toSessionSeasonLabel,
 } from '../manage-sessions-labels';
 import type { SessionRecordSummary } from '../schemas';
+import { SESSION_EDITOR_HELP_SPOTS } from '../sessions-help-copy';
+import { SessionEditorHelp } from './SessionEditorHelp';
 import { SessionLogoField } from './SessionLogoField';
 
 const CREATE_TITLE = 'Session hinzufügen';
@@ -61,6 +64,7 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null
   const mottoErrorText = errors.motto?.message;
 
   const isEditing = record !== null;
+  const help = toScreenHelp(<SessionEditorHelp isEditing={isEditing} />);
   const title = isEditing ? EDIT_TITLE : CREATE_TITLE;
   const actionLabel = isEditing ? SAVE_LABEL : ADD_LABEL;
   const logoLabel =
@@ -97,6 +101,7 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null
       title={title}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: actionLabel,
@@ -106,7 +111,7 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null
         },
       }}
     >
-      <KkFormSection title={SESSION_SECTION_TITLE}>
+      <KkFormSection title={SESSION_SECTION_TITLE} landing={SESSION_EDITOR_HELP_SPOTS.session}>
         <KkFormPair
           balance="leading"
           start={
@@ -136,7 +141,7 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null
           }
         />
       </KkFormSection>
-      <KkFormSection title={MOTTO_SECTION_TITLE}>
+      <KkFormSection title={MOTTO_SECTION_TITLE} landing={SESSION_EDITOR_HELP_SPOTS.motto}>
         <KkTextField
           name={mottoField.name}
           label={MOTTO_LABEL}

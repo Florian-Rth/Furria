@@ -4,6 +4,7 @@ import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { ALBUM_HELP_SPOTS } from '../album-help-copy';
 import { EDIT_LABEL, photographersLine, UPLOAD_HERE_LABEL } from '../album-labels';
 import { ALBUM_EDIT_ROUTE, GALLERY_UPLOAD_PATH } from '../gallery-copy';
 import type { AlbumRights } from '../hooks/use-album';
@@ -60,7 +61,11 @@ export const AlbumHeadline: FC<AlbumHeadlineProps> = ({ albumId, album, rights }
   ) : null;
   const tools =
     upload === null && edit === null ? null : (
-      <Stack direction="row" sx={{ columnGap: 1, flexWrap: 'wrap', rowGap: 1 }}>
+      <Stack
+        direction="row"
+        data-kk-landing={ALBUM_HELP_SPOTS.tools}
+        sx={{ columnGap: 1, flexWrap: 'wrap', rowGap: 1 }}
+      >
         {upload}
         {edit}
       </Stack>

@@ -1,6 +1,7 @@
 import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
 import type { FC } from 'react';
 import { toUsualView } from '../calendar-agenda-view';
+import { CALENDAR_HELP_SPOTS } from '../calendar-help-copy';
 import type { UsualTraining } from '../schemas';
 
 interface CalendarUsualProps {
@@ -26,6 +27,7 @@ export const CalendarUsual: FC<CalendarUsualProps> = ({ usual, mayPlan, onPlan }
       venue={view.venue}
       accessibleLabel={view.spoken}
       actionLabel={view.actionLabel}
+      landing={CALENDAR_HELP_SPOTS.usual}
       onSelect={select}
     />
   );

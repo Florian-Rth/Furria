@@ -8,6 +8,7 @@ import type { FC } from 'react';
 import { toLandingKey } from '@/features/write/landing-target';
 import { ADD_FEE_REDUCTION_ACTION_LABEL, PERSON_SECTION_TITLES } from '../manage-persons-labels';
 import { toClosedHistoryLine } from '../person-archive';
+import { PERSON_HELP_SPOTS } from '../person-help-copy';
 import { toSectionLandingKey } from '../person-identity';
 import type { PersonDetails } from '../schemas';
 import { PersonFeeReductionRow } from './PersonFeeReductionRow';
@@ -61,7 +62,11 @@ export const PersonFeeReductionsPanel: FC<PersonFeeReductionsPanelProps> = ({
   );
 
   return (
-    <KkPanelSection title={PERSON_SECTION_TITLES.feeReductions} action={action}>
+    <KkPanelSection
+      title={PERSON_SECTION_TITLES.feeReductions}
+      action={action}
+      landing={PERSON_HELP_SPOTS.feeReductions}
+    >
       {closedNote}
       <KkPanel
         variant={isEmpty ? 'block' : 'list'}

@@ -26,6 +26,7 @@ import {
   VENUE_WITHOUT_ADDRESS,
 } from '../manage-venues-labels';
 import type { ManagedVenue } from '../schemas';
+import { VENUE_HELP_SPOTS } from '../venues-help-copy';
 
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
@@ -67,12 +68,12 @@ export const VenueDetailPanel: FC<VenueDetailPanelProps> = ({ venue }) => {
 
   return (
     <>
-      <KkPanelSection title={ADDRESS_LABEL} action={action}>
+      <KkPanelSection title={ADDRESS_LABEL} action={action} landing={VENUE_HELP_SPOTS.address}>
         <KkPanel highlight={highlightedKey === landingKey} landing={landingKey}>
           <KkFieldRow label={ADDRESS_LABEL} value={addressLine} hint={venue.hint ?? undefined} />
         </KkPanel>
       </KkPanelSection>
-      <KkPanelSection title={OPENING_HOURS_LABEL}>
+      <KkPanelSection title={OPENING_HOURS_LABEL} landing={VENUE_HELP_SPOTS.openingHours}>
         <KkPanel>{openingHours}</KkPanel>
       </KkPanelSection>
       <VenueHallsPanel venueId={venue.venueId} />

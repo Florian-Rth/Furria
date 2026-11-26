@@ -1,8 +1,11 @@
 import type { CSSProperties, PaletteOptions } from '@mui/material/styles';
 import { createTheme } from '@mui/material/styles';
+import { HELP_SPOT_ATTRIBUTE } from './internal/help-spot';
 import { redInk } from './internal/red-ink';
 import type { KkColorTokens } from './tokens';
 import { kkTokens } from './tokens';
+
+const HELP_SPOT_INK = 'var(--mui-palette-info-main)';
 
 export interface KkFilmPalette {
   base: string;
@@ -194,12 +197,27 @@ export const kkTheme = createTheme({
           from: { opacity: 1 },
           to: { opacity: 0 },
         },
+        '@keyframes kk-help-spot': {
+          '0%': { outlineColor: 'transparent', outlineOffset: '14px' },
+          '18%, 70%': { outlineColor: HELP_SPOT_INK, outlineOffset: '6px' },
+          '100%': { outlineColor: 'transparent', outlineOffset: '6px' },
+        },
+        [`[${HELP_SPOT_ATTRIBUTE}]`]: {
+          outline: '3px solid transparent',
+          borderRadius: `${kkTokens.radius.base}px`,
+          animation: `${kkTokens.motion.helpSpot} !important`,
+        },
         '@media (prefers-reduced-motion: reduce)': {
           '*, *::before, *::after': {
             animationDuration: '0.01ms !important',
             animationIterationCount: '1 !important',
             transitionDuration: '0.01ms !important',
             scrollBehavior: 'auto !important',
+          },
+          [`[${HELP_SPOT_ATTRIBUTE}]`]: {
+            animation: 'none !important',
+            outlineColor: HELP_SPOT_INK,
+            outlineOffset: '6px',
           },
         },
       },

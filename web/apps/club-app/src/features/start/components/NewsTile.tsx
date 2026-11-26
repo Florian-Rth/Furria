@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { useNewsTile } from '../hooks/use-news-tile';
 import type { StartBoard } from '../hooks/use-start-view';
 import type { StartPanelOf } from '../start-board';
+import { START_HELP_SPOTS } from '../start-help-copy';
 
 const TILE_LABEL = 'Aktuelles';
 const HEAD_LABEL = 'AKTUELLES';
@@ -33,7 +34,7 @@ export const NewsTile: FC<NewsTileProps> = ({ panel, board, order }) => {
     );
 
   return (
-    <KkStartTile label={TILE_LABEL} order={order}>
+    <KkStartTile label={TILE_LABEL} order={order} landing={START_HELP_SPOTS.news}>
       <KkStartTile.Head icon="news" label={HEAD_LABEL} reach={tile.reach} />
       {line}
     </KkStartTile>

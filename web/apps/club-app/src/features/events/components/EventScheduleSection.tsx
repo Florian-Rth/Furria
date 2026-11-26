@@ -5,6 +5,7 @@ import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkTimeField } from '@furria/ui/KkTimeField';
 import type { FC } from 'react';
+import { EVENT_EDITOR_HELP_SPOTS } from '../event-editor-help-copy';
 import type { EventEditorControl } from '../hooks/use-event-editor';
 
 const SECTION_TITLE = 'Wann & wo';
@@ -28,7 +29,7 @@ export const EventScheduleSection: FC<EventScheduleSectionProps> = ({ control, v
   const venueIdErrorText = errors.venueId?.message;
 
   return (
-    <KkFormSection title={SECTION_TITLE}>
+    <KkFormSection title={SECTION_TITLE} landing={EVENT_EDITOR_HELP_SPOTS.schedule}>
       <KkDateField
         name="startDay"
         label={DAY_LABEL}

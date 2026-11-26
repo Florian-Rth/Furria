@@ -2,6 +2,7 @@ import { KkPlanDock } from '@furria/ui/KkPlanDock';
 import type { FC } from 'react';
 import { useHallBuilderContext } from '../hall-builder-context';
 import { ADD_LABEL, DOCK_LABEL, TOUCH_TOOL_LABELS } from '../hall-builder-copy';
+import { HALL_BUILDER_HELP_SPOTS } from '../hall-builder-help-copy';
 import { HALL_TOOL_ICONS } from '../hall-builder-tools';
 
 export const HallTouchDock: FC = () => {
@@ -15,7 +16,7 @@ export const HallTouchDock: FC = () => {
   };
 
   return (
-    <KkPlanDock label={DOCK_LABEL}>
+    <KkPlanDock label={DOCK_LABEL} landing={HALL_BUILDER_HELP_SPOTS.tools}>
       <KkPlanDock.Button
         id="select"
         label={TOUCH_TOOL_LABELS.select}

@@ -2,6 +2,7 @@ import { KkFieldRow } from '@furria/ui/KkFieldRow';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
+import { INTAKE_HELP_SPOTS } from '../intake-help-copy';
 import {
   DECISION_SECTION,
   GROUPS_FACT,
@@ -29,7 +30,7 @@ export const IntakeDecisionPanel: FC<IntakeDecisionPanelProps> = ({ intake }) =>
   const person = personId === null ? null : <IntakePersonRow personId={personId} />;
 
   return (
-    <KkPanelSection title={DECISION_SECTION}>
+    <KkPanelSection title={DECISION_SECTION} landing={INTAKE_HELP_SPOTS.decision}>
       <KkPanel>
         <KkFieldRow label={MEMBER_FROM_FACT} value={memberFrom} />
         <KkFieldRow label={GROUPS_FACT} value={groups} />

@@ -1,13 +1,16 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { MailInvitationEditor } from '@/features/account-access/components/MailInvitationEditor';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { parsePositiveId } from '@/lib/positive-id';
 import { usePersonEditorGate } from '../hooks/use-person-editor-gate';
 import { toPersonOrigin } from '../manage-persons-labels';
 import { PersonEditorFallback } from './PersonEditorFallback';
+import { PersonMailInvitationHelp } from './PersonMailInvitationHelp';
 
 const ROUTE_ID = '/_app/manage/persons_/$personId_/invitations/new';
 const TITLE = 'Per Mail einladen';
+const HELP = toScreenHelp(<PersonMailInvitationHelp />);
 
 export const PersonInvitationNewScreen: FC = () => {
   const { personId } = useParams({ from: ROUTE_ID });
@@ -18,5 +21,7 @@ export const PersonInvitationNewScreen: FC = () => {
     return <PersonEditorFallback hold={gate} title={TITLE} onRetry={retry} />;
   }
 
-  return <MailInvitationEditor subject={gate.person} origin={toPersonOrigin(gate.person)} />;
+  return (
+    <MailInvitationEditor subject={gate.person} origin={toPersonOrigin(gate.person)} help={HELP} />
+  );
 };

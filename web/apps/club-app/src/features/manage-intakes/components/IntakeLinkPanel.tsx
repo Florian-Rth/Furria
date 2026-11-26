@@ -5,6 +5,7 @@ import { KkQrCode } from '@furria/ui/KkQrCode';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { IntakeShare } from '../hooks/use-intake-share';
+import { INTAKE_HELP_SPOTS } from '../intake-help-copy';
 import { LINK_SECTION, toExpiryLine, toQrLabel } from '../intake-labels';
 import type { IntakeSummary } from '../schemas';
 
@@ -20,7 +21,7 @@ export const IntakeLinkPanel: FC<IntakeLinkPanelProps> = ({ intake, share }) => 
   const expiryLine = toExpiryLine(intake.expiresAt, new Date());
 
   return (
-    <KkPanelSection title={LINK_SECTION}>
+    <KkPanelSection title={LINK_SECTION} landing={INTAKE_HELP_SPOTS.link}>
       <KkPanel variant="block">
         <Stack sx={LINK_STACK_SX}>
           <KkQrCode value={share.url} label={qrLabel} />

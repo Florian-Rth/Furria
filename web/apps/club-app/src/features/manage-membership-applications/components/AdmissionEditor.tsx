@@ -3,6 +3,7 @@ import { KkDateField } from '@furria/ui/KkDateField';
 import { KkFormSection } from '@furria/ui/KkFormSection';
 import type { KkScreenActionContext } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import {
   ADMISSION_ACTION_LABEL,
@@ -13,10 +14,12 @@ import {
   toGapNote,
   toGuardianConsentDescription,
 } from '../admission-labels';
+import { ADMISSION_HELP_SPOTS } from '../applications-help-copy';
 import { useAdmissionEditor } from '../hooks/use-admission-editor';
 import { toApplicationOrigin } from '../manage-membership-applications-labels';
 import type { MembershipApplicationDetails } from '../schemas';
 import { AdmissionCandidateChoice } from './AdmissionCandidateChoice';
+import { AdmissionHelp } from './AdmissionHelp';
 
 const ADMISSION_SECTION = 'Aufnahme';
 
@@ -26,6 +29,8 @@ interface AdmissionEditorProps {
 
 export const AdmissionEditor: FC<AdmissionEditorProps> = ({ application }) => {
   const control = useAdmissionEditor(application);
+  const hasCandidates = application.candidates.length > 0;
+  const help = toScreenHelp(<AdmissionHelp hasCandidates={hasCandidates} />);
   const quickChoices = toAdmissionQuickChoices(new Date());
   const admittedOnHint = toAdmittedOnHint(application.appliedOn);
   const origin = toApplicationOrigin(application);
@@ -54,6 +59,7 @@ export const AdmissionEditor: FC<AdmissionEditorProps> = ({ application }) => {
       title={ADMISSION_ACTION_LABEL}
       rejection={rejection}
       isDirty={control.isDirty}
+      help={help}
       action={{
         context,
         primary: {
@@ -70,7 +76,7 @@ export const AdmissionEditor: FC<AdmissionEditorProps> = ({ application }) => {
         gapLine={gapLine}
         onChoose={control.setChoice}
       />
-      <KkFormSection title={ADMISSION_SECTION}>
+      <KkFormSection title={ADMISSION_SECTION} landing={ADMISSION_HELP_SPOTS.admission}>
         <KkDateField
           name="admittedOn"
           label={ADMITTED_ON_LABEL}

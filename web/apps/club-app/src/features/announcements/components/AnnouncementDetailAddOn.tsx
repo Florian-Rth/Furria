@@ -7,6 +7,7 @@ import {
 } from '@/features/calendar/calendar-add-ons';
 import { CalendarDetailPoll } from '@/features/calendar/components/CalendarDetailPoll';
 import { CalendarDetailSignUpList } from '@/features/calendar/components/CalendarDetailSignUpList';
+import { ANNOUNCEMENTS_HELP_SPOTS } from '../announcements-help-copy';
 import type { Announcement, AnnouncementAddOn } from '../schemas';
 import { AnnouncementDetailAttendance } from './AnnouncementDetailAttendance';
 import { AnnouncementDetailBorrowedAddOn } from './AnnouncementDetailBorrowedAddOn';
@@ -27,7 +28,13 @@ export const AnnouncementDetailAddOn: FC<AnnouncementDetailAddOnProps> = ({
   anchorId,
 }) => {
   if (addOn.kind === 'borrowed') {
-    return <AnnouncementDetailBorrowedAddOn addOn={addOn} anchorId={anchorId} />;
+    return (
+      <AnnouncementDetailBorrowedAddOn
+        addOn={addOn}
+        anchorId={anchorId}
+        landing={ANNOUNCEMENTS_HELP_SPOTS.addOns}
+      />
+    );
   }
 
   const mayModerate = announcement.viewerMayEdit;
@@ -54,6 +61,7 @@ export const AnnouncementDetailAddOn: FC<AnnouncementDetailAddOnProps> = ({
       icon={CALENDAR_ADD_ON_ICONS[addOn.kind]}
       title={CALENDAR_ADD_ON_LABELS[addOn.kind]}
       id={anchorId}
+      landing={ANNOUNCEMENTS_HELP_SPOTS.addOns}
     >
       {content}
     </KkCalendarDetail.Section>

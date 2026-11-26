@@ -6,6 +6,7 @@ import type { KkPanelAction } from '@furria/ui/panel-action';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { KEYS_HELP_SPOTS } from '../keys-help-copy';
 import {
   partitionKeyHoldings,
   toArchivedVenueNote,
@@ -60,7 +61,7 @@ export const KeyVenuePanel: FC<KeyVenuePanelProps> = ({ venue, highlightedKey })
     );
 
   return (
-    <KkPanelSection title={venue.name} action={action}>
+    <KkPanelSection title={venue.name} action={action} landing={KEYS_HELP_SPOTS.venue}>
       <Stack sx={{ gap: PANEL_GAP, minWidth: 0 }}>
         {archivedNote}
         {runningPanel}

@@ -4,11 +4,14 @@ import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
 import type { HallDetails } from '@/features/hall-plan/schemas';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { HallBuilderContext } from '../hall-builder-context';
 import { HALL_BUILDER_DESK_LABEL, HALL_FALLBACK_NAME } from '../hall-builder-copy';
 import { useHallBuilder } from '../hooks/use-hall-builder';
+import { useHallBuilderHelpViewer } from '../hooks/use-hall-builder-help-viewer';
 import { HallAddSheet } from './HallAddSheet';
 import { HallBuilderCanvas } from './HallBuilderCanvas';
+import { HallBuilderHelp } from './HallBuilderHelp';
 import { HallBuilderRail } from './HallBuilderRail';
 import { HallBuilderStatus } from './HallBuilderStatus';
 import { HallInspector } from './HallInspector';
@@ -24,6 +27,8 @@ interface HallBuilderScreenProps {
 export const HallBuilderScreen: FC<HallBuilderScreenProps> = ({ hall, origin, onConflict }) => {
   const builder = useHallBuilder(hall, origin, onConflict);
   const title = builder.name.trim() === '' ? HALL_FALLBACK_NAME : builder.name;
+  const helpViewer = useHallBuilderHelpViewer();
+  const help = toScreenHelp(<HallBuilderHelp viewer={helpViewer} />);
   const desk = builder.isTouch ? (
     <HallTouchDesk />
   ) : (
@@ -45,7 +50,7 @@ export const HallBuilderScreen: FC<HallBuilderScreenProps> = ({ hall, origin, on
 
   return (
     <HallBuilderContext.Provider value={builder}>
-      <KkScreen kind="fullscreen" title={title} origin={origin}>
+      <KkScreen kind="fullscreen" title={title} origin={origin} help={help}>
         <KkVisuallyHidden component="h1">{title}</KkVisuallyHidden>
         {desk}
         <HallInspectorDrawer />

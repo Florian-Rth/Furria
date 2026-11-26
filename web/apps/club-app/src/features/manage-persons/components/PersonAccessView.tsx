@@ -2,6 +2,7 @@ import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC, ReactNode } from 'react';
 import { AccessPanel } from '@/features/account-access/components/AccessPanel';
 import { useLanding } from '@/features/write/hooks/use-landing';
+import { PERSON_HELP_SPOTS } from '../person-help-copy';
 import type { PersonDetails } from '../schemas';
 import { PersonStateRail } from './PersonStateRail';
 
@@ -16,7 +17,11 @@ export const PersonAccessView: FC<PersonAccessViewProps> = ({ person, deletionLi
   return (
     <KkPanelStack>
       <PersonStateRail person={person} />
-      <AccessPanel subject={person} highlightedKey={highlightedKey} />
+      <AccessPanel
+        subject={person}
+        highlightedKey={highlightedKey}
+        landing={PERSON_HELP_SPOTS.app}
+      />
       {deletionLine}
     </KkPanelStack>
   );

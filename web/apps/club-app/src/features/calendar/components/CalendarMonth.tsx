@@ -7,6 +7,7 @@ import {
   TODAY,
   WEEKDAY_HEADERS,
 } from '../calendar-agenda-copy';
+import { CALENDAR_HELP_SPOTS } from '../calendar-help-copy';
 import type { CalendarPager } from '../hooks/use-calendar-pager';
 
 interface CalendarMonthProps {
@@ -20,7 +21,7 @@ export const CalendarMonth: FC<CalendarMonthProps> = ({ pager }) => {
   const onToday = pager.showsToday ? pager.today : undefined;
 
   return (
-    <KkCalendarMonth label={MONTH_LABEL}>
+    <KkCalendarMonth label={MONTH_LABEL} landing={CALENDAR_HELP_SPOTS.month}>
       <KkCalendarMonth.Bar>
         <KkCalendarMonth.Title
           title={pager.title}

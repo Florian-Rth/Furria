@@ -5,14 +5,21 @@ import { kkTokens } from '../../../tokens';
 
 interface KkNumberedListRootProps extends PropsWithChildren {
   label: string;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkNumberedListRoot: FC<KkNumberedListRootProps> = ({ label, sx, children }) => (
+export const KkNumberedListRoot: FC<KkNumberedListRootProps> = ({
+  label,
+  landing,
+  sx,
+  children,
+}) => (
   <Box
     component="ul"
     aria-label={label}
     data-kk-numbered-list
+    data-kk-landing={landing}
     sx={[
       {
         listStyle: 'none',

@@ -10,15 +10,16 @@ interface IntakesSectionProps {
   section: IntakeSection;
   now: Date;
   action: KkPanelAction | undefined;
+  landing?: string;
 }
 
-export const IntakesSection: FC<IntakesSectionProps> = ({ section, now, action }) => {
+export const IntakesSection: FC<IntakesSectionProps> = ({ section, now, action, landing }) => {
   const rows = section.intakes.map((intake) => (
     <IntakeRow key={intake.intakeId} intake={intake} now={now} />
   ));
 
   return (
-    <KkPanelSection title={SECTION_TITLES[section.id]} action={action}>
+    <KkPanelSection title={SECTION_TITLES[section.id]} action={action} landing={landing}>
       <KkPanel variant="list">{rows}</KkPanel>
     </KkPanelSection>
   );

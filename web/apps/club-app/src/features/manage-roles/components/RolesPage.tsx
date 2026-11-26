@@ -3,16 +3,19 @@ import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { KkScreenActions } from '@furria/ui/screen-declaration';
 import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
 import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { NEW_ROLE_LABEL, NEW_ROLE_PATH, ROLES_TITLE } from '../roles-hub-copy';
 import { RolesBody } from './RolesBody';
+import { RolesHelp } from './RolesHelp';
 
 const header = <KkTitleHeader title={ROLES_TITLE} />;
 
 export const RolesPage: FC = () => {
   const navigate = useNavigate();
+  const help = toScreenHelp(<RolesHelp />);
   const actions: KkScreenActions = [
     {
       id: 'new-role',
@@ -32,6 +35,7 @@ export const RolesPage: FC = () => {
       header={header}
       handover={AREA_HANDOVERS.manage}
       actions={actions}
+      help={help}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.rolesManage}>
         <RolesBody />

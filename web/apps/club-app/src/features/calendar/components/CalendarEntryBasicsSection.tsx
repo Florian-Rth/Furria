@@ -2,6 +2,7 @@ import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
+import { ENTRY_HELP_SPOTS } from '../calendar-entry-help-copy';
 import { CALENDAR_KIND_OPTIONS } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 
@@ -19,7 +20,7 @@ export const CalendarEntryBasicsSection: FC<CalendarEntryBasicsSectionProps> = (
   const titleErrorText = errors.title?.message;
 
   return (
-    <KkFormSection title={SECTION_TITLE}>
+    <KkFormSection title={SECTION_TITLE} landing={ENTRY_HELP_SPOTS.basics}>
       <KkTextField
         name={titleField.name}
         label={TITLE_LABEL}

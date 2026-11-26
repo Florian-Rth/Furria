@@ -6,6 +6,7 @@ import { mayStartIntakeForGroup } from '@/features/manage-intakes/intake-rules';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { HUB_HELP_SPOTS } from '../group-hub-help-copy';
 import { useHubActsAccess } from '../hooks/use-hub-acts-access';
 import { toHubPeople } from '../hub-people';
 import type { GroupHub } from '../schemas';
@@ -51,6 +52,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         pastMembers={hub.pastMembers}
         pastAdmins={hub.pastAdmins}
         groupTone={tone}
+        landing={HUB_HELP_SPOTS.history}
       />
     ) : null;
 

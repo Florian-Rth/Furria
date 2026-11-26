@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import type { MePerson } from '@/lib/api/schemas';
 import { SWITCH_STATE_LABELS } from '@/lib/state-chips';
 import { useContactVisibility } from '../hooks/use-contact-visibility';
+import { PROFILE_HELP_SPOTS } from '../profile-help-copy';
 import { PROFILE_SECTION_TITLES, VISIBILITY_SWITCH_LABEL } from '../profile-labels';
 
 interface ProfileVisibilityPanelProps {
@@ -15,7 +16,10 @@ export const ProfileVisibilityPanel: FC<ProfileVisibilityPanelProps> = ({ person
   const visibility = useContactVisibility(person.contactVisibleToMembers);
 
   return (
-    <KkPanelSection title={PROFILE_SECTION_TITLES.visibility}>
+    <KkPanelSection
+      title={PROFILE_SECTION_TITLES.visibility}
+      landing={PROFILE_HELP_SPOTS.visibility}
+    >
       <KkPanel variant="block" sx={{ gap: 1.75 }}>
         <KkSwitchRow
           label={VISIBILITY_SWITCH_LABEL}

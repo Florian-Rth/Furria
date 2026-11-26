@@ -3,6 +3,7 @@ import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { MANAGE_HELP_SPOTS } from '../manage-help-copy';
 import type { ManageBankModel } from '../manage-hub-labels';
 
 interface ManageBankProps {
@@ -24,7 +25,7 @@ export const ManageBank: FC<ManageBankProps> = ({ bank }) => {
   ));
 
   return (
-    <KkPanelSection title={bank.title}>
+    <KkPanelSection title={bank.title} landing={MANAGE_HELP_SPOTS[bank.id]}>
       <KkPanel>{rows}</KkPanel>
     </KkPanelSection>
   );

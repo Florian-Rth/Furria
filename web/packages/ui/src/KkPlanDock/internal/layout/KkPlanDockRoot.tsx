@@ -5,15 +5,17 @@ import type { KkSx } from '../../../kk-sx';
 
 interface KkPlanDockRootProps extends PropsWithChildren {
   label: string;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkPlanDockRoot: FC<KkPlanDockRootProps> = ({ label, sx, children }) => (
+export const KkPlanDockRoot: FC<KkPlanDockRootProps> = ({ label, landing, sx, children }) => (
   <Stack
     role="toolbar"
     aria-label={label}
     direction="row"
     data-kk-plan-dock
+    data-kk-landing={landing}
     sx={[
       (theme) => ({
         ...planRaisedSurface(theme),

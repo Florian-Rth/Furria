@@ -3,6 +3,7 @@ import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { APPLICATIONS_HELP_SPOTS } from '../applications-help-copy';
 import {
   APPLICATIONS_EMPTY,
   APPLICATIONS_SECTION_TITLE,
@@ -41,7 +42,7 @@ export const MembershipApplicationsView: FC<MembershipApplicationsViewProps> = (
 
   return (
     <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
-      <KkPanelSection title={APPLICATIONS_SECTION_TITLE}>
+      <KkPanelSection title={APPLICATIONS_SECTION_TITLE} landing={APPLICATIONS_HELP_SPOTS.list}>
         <KkPanel variant={panelVariant}>{body}</KkPanel>
       </KkPanelSection>
     </Stack>

@@ -1,5 +1,6 @@
 import { KkTallyStrip } from '@furria/ui/KkTallyStrip';
 import type { FC } from 'react';
+import { BOARD_HELP_SPOTS } from '../board-help-copy';
 import type { BoardSummary, QueueCounts } from '../board-hub';
 import { formatQueueDay } from '../board-hub';
 import {
@@ -42,7 +43,7 @@ export const BoardStrip: FC<BoardStripProps> = ({ summary, counts, filter, today
   const caption = toRingCaption(summary.active);
 
   return (
-    <KkTallyStrip label={STRIP_LABEL}>
+    <KkTallyStrip label={STRIP_LABEL} landing={BOARD_HELP_SPOTS.strip}>
       <KkTallyStrip.Bar>
         <KkTallyStrip.Summary
           ringLabel={ringLabel}

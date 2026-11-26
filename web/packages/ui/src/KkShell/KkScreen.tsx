@@ -48,6 +48,7 @@ export const KkScreen: FC<KkScreenProps> = ({
   tools,
   index,
   thread,
+  help,
   handover,
   children,
 }) => {
@@ -91,6 +92,7 @@ export const KkScreen: FC<KkScreenProps> = ({
               origin={barOrigin}
               actions={actions}
               search={search}
+              helpLabel={help?.label}
               thread={thread}
             />
             <KkShellToolRow open={showsTools}>{tools}</KkShellToolRow>
@@ -122,6 +124,8 @@ export const KkScreen: FC<KkScreenProps> = ({
           indexHost,
         );
 
+  const helpSheet = help?.sheet;
+
   const stage = handover === undefined ? null : HANDOVER_STAGES[handover];
   const Header = stage?.Header ?? KkShellHeader;
 
@@ -131,6 +135,7 @@ export const KkScreen: FC<KkScreenProps> = ({
       {actionBar}
       {customFoot}
       {letterIndex}
+      {helpSheet}
       <ScreenArrivalContext.Provider value={gate.arrival}>
         <KkShellEntrance path={sceneKey ?? path} move={move} bodyHeld={gate.held}>
           <Header kind={headerKind}>{header}</Header>

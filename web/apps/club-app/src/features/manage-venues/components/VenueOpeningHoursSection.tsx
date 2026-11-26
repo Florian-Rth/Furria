@@ -4,6 +4,7 @@ import { KkIcon } from '@furria/ui/KkIcon';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { VenueEditorControl } from '../hooks/use-venue-editor';
+import { VENUE_EDITOR_HELP_SPOTS } from '../venues-help-copy';
 import { VenueOpeningSlotFields } from './VenueOpeningSlotFields';
 
 const SECTION_TITLE = 'Öffnungszeiten';
@@ -20,7 +21,7 @@ export const VenueOpeningHoursSection: FC<VenueOpeningHoursSectionProps> = ({ co
   ));
 
   return (
-    <KkFormSection title={SECTION_TITLE}>
+    <KkFormSection title={SECTION_TITLE} landing={VENUE_EDITOR_HELP_SPOTS.openingHours}>
       {slots}
       <Stack direction="row">
         <KkButton

@@ -2,10 +2,14 @@ import { KkScreen } from '@furria/ui/KkScreen';
 import type { KkScreenActions } from '@furria/ui/screen-declaration';
 import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { EVENTS_TITLE, MORE_SECTION } from '@/features/session/app-sections';
 import { ACTS_ACTION_LABEL, NEW_EVENT_ACTION_LABEL } from '../event-board-copy';
 import { useEventsWorkbench } from '../hooks/use-events-workbench';
 import { EventsBody } from './EventsBody';
+import { EventsHelp } from './EventsHelp';
+
+const HELP = toScreenHelp(<EventsHelp />);
 
 export const EventsPage: FC = () => {
   const navigate = useNavigate();
@@ -29,7 +33,13 @@ export const EventsPage: FC = () => {
   const actions: KkScreenActions = plansRunningOrder ? [acts, newEvent] : [newEvent];
 
   return (
-    <KkScreen kind="overview" section={MORE_SECTION} title={EVENTS_TITLE} actions={actions}>
+    <KkScreen
+      kind="overview"
+      section={MORE_SECTION}
+      title={EVENTS_TITLE}
+      actions={actions}
+      help={HELP}
+    >
       <EventsBody />
     </KkScreen>
   );

@@ -13,6 +13,7 @@ import {
   STRIP_LABEL,
   TODAY,
 } from '../calendar-agenda-copy';
+import { CALENDAR_HELP_SPOTS } from '../calendar-help-copy';
 import type { CalendarBoard } from '../hooks/use-calendar-board';
 import { useCalendarFold } from '../hooks/use-calendar-fold';
 import type { CalendarScroll } from '../hooks/use-calendar-scroll';
@@ -32,7 +33,11 @@ export const CalendarStrip: FC<CalendarStripProps> = ({ board, scroll }) => {
   const gripLabel = fold.view === 'hours' ? CLOSE_HOURS_LABEL : expandLabel;
 
   return (
-    <KkCalendarStrip label={STRIP_LABEL} expanded={fold.expanded}>
+    <KkCalendarStrip
+      label={STRIP_LABEL}
+      expanded={fold.expanded}
+      landing={CALENDAR_HELP_SPOTS.week}
+    >
       <KkCalendarStrip.Bar>
         <KkCalendarStrip.Title
           title={fold.title}

@@ -4,6 +4,7 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { WhatsAppRefusedAdd } from '../schemas';
 import { REFUSED_ADDS_EMPTY, REFUSED_ADDS_HINT, REFUSED_ADDS_TITLE } from '../whatsapp-copy';
+import { WHATSAPP_HELP_SPOTS } from '../whatsapp-help-copy';
 import { WhatsAppRefusedAddRow } from './WhatsAppRefusedAddRow';
 
 interface WhatsAppRefusedAddsPanelProps {
@@ -24,5 +25,9 @@ export const WhatsAppRefusedAddsPanel: FC<WhatsAppRefusedAddsPanelProps> = ({ re
       </>
     );
 
-  return <KkPanelSection title={REFUSED_ADDS_TITLE}>{body}</KkPanelSection>;
+  return (
+    <KkPanelSection title={REFUSED_ADDS_TITLE} landing={WHATSAPP_HELP_SPOTS.refused}>
+      {body}
+    </KkPanelSection>
+  );
 };

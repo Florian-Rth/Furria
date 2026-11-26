@@ -9,6 +9,7 @@ import { AppSignOutButton } from '@/features/session/components/AppSignOutButton
 import { useLanding } from '@/features/write/hooks/use-landing';
 import type { PersonalMe } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
+import { PROFILE_HELP_SPOTS } from '../profile-help-copy';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfileAppearancePanel } from './ProfileAppearancePanel';
 import { ProfileBeerListPanel } from './ProfileBeerListPanel';
@@ -54,7 +55,7 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
           <ProfileGroupsPanel />
           {beerListPanel}
           <ProfileAppearancePanel />
-          <PushDevicePanel />
+          <PushDevicePanel landing={PROFILE_HELP_SPOTS.push} />
           <AppSignOutButton />
         </KkPanelStack>
       </Grid>

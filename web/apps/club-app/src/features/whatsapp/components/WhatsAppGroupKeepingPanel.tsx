@@ -11,6 +11,7 @@ import {
   GROUP_KEEPING_TITLE,
   INVITE_LINK_LABEL,
 } from '../whatsapp-copy';
+import { WHATSAPP_HELP_SPOTS } from '../whatsapp-help-copy';
 
 interface WhatsAppGroupKeepingPanelProps {
   keepsClubGroup: boolean;
@@ -26,7 +27,7 @@ export const WhatsAppGroupKeepingPanel: FC<WhatsAppGroupKeepingPanelProps> = ({
     inviteLink === null ? null : <KkFieldRow label={INVITE_LINK_LABEL} value={inviteLink} />;
 
   return (
-    <KkPanelSection title={GROUP_KEEPING_TITLE}>
+    <KkPanelSection title={GROUP_KEEPING_TITLE} landing={WHATSAPP_HELP_SPOTS.keeping}>
       <KkPanel variant="block" sx={{ gap: 1.75 }}>
         <KkSwitchRow
           label={GROUP_KEEPING_LABEL}

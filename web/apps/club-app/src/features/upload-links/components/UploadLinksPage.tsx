@@ -6,6 +6,7 @@ import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session/app-sections';
 import { useUploadLinksPage } from '../hooks/use-upload-links-page';
 import {
@@ -16,10 +17,14 @@ import {
   OPEN_SECTION,
   RETRY_LABEL,
 } from '../upload-link-copy';
+import { UPLOAD_LINKS_HELP_SPOTS } from '../upload-links-help-copy';
 import { UploadLinkCreateForm } from './UploadLinkCreateForm';
 import { UploadLinkQueue } from './UploadLinkQueue';
 import { UploadLinkRevokeDialog } from './UploadLinkRevokeDialog';
 import { UploadLinkSheet } from './UploadLinkSheet';
+import { UploadLinksHelp } from './UploadLinksHelp';
+
+const LINKS_HELP = toScreenHelp(<UploadLinksHelp />);
 
 export const UploadLinksPage: FC = () => {
   const page = useUploadLinksPage();
@@ -39,6 +44,7 @@ export const UploadLinksPage: FC = () => {
     page.open.length === 0 ? null : (
       <UploadLinkQueue
         label={OPEN_SECTION}
+        landing={UPLOAD_LINKS_HELP_SPOTS.open}
         rows={page.open}
         onOpen={page.onOpenRow}
         onShare={page.onShareRow}
@@ -60,10 +66,12 @@ export const UploadLinksPage: FC = () => {
       title={LINKS_TITLE}
       origin={GALLERY_ORIGIN}
       header={<KkTitleHeader title={LINKS_TITLE} />}
+      help={LINKS_HELP}
       handover={AREA_HANDOVERS.gallery}
     >
       <Stack sx={{ rowGap: 3, minWidth: 0 }}>
         <UploadLinkCreateForm
+          landing={UPLOAD_LINKS_HELP_SPOTS.create}
           title={page.title}
           creating={page.creating}
           canCreate={page.canCreate}

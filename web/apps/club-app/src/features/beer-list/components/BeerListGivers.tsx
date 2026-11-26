@@ -4,6 +4,7 @@ import { KkTabLedger } from '@furria/ui/KkTabLedger';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { GIVERS_LABEL, GIVERS_TITLE, giverCountOf, NO_GIVERS } from '../beer-list-copy';
+import { BEER_LIST_HELP_SPOTS } from '../beer-list-help-copy';
 import type { BeerGiver } from '../schemas';
 
 interface BeerListGiversProps {
@@ -35,5 +36,9 @@ export const BeerListGivers: FC<BeerListGiversProps> = ({ givers, myPersonId }) 
       <KkTabLedger label={GIVERS_LABEL}>{rows}</KkTabLedger>
     );
 
-  return <KkPanelSection title={GIVERS_TITLE}>{list}</KkPanelSection>;
+  return (
+    <KkPanelSection title={GIVERS_TITLE} landing={BEER_LIST_HELP_SPOTS.givers}>
+      {list}
+    </KkPanelSection>
+  );
 };

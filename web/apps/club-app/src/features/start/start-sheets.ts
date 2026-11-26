@@ -1,3 +1,4 @@
+import { HELP_SHEET_ID } from '@furria/ui/help-sheet-id';
 import { toPeekedId } from '@/lib/peek';
 import type {
   Start,
@@ -28,6 +29,7 @@ export type StartSheet =
   | { kind: 'owed' }
   | { kind: 'practice' }
   | { kind: 'beerCrates' }
+  | { kind: 'help' }
   | { kind: 'foreign' };
 
 const FIXED_SHEETS: Readonly<Record<string, StartSheet>> = {
@@ -38,6 +40,7 @@ const FIXED_SHEETS: Readonly<Record<string, StartSheet>> = {
   [START_OWED_SHEET]: { kind: 'owed' },
   [START_PRACTICE_SHEET]: { kind: 'practice' },
   [START_BEER_CRATES_SHEET]: { kind: 'beerCrates' },
+  [HELP_SHEET_ID]: { kind: 'help' },
 };
 
 const FOREIGN: StartSheet = { kind: 'foreign' };
@@ -117,7 +120,7 @@ const opensOn = (sheet: StartSheet, start: Start): boolean => {
   if (sheet.kind === 'groups') {
     return groupMomentsOf(start).length > 0;
   }
-  if (sheet.kind === 'practice' || sheet.kind === 'beerCrates') {
+  if (sheet.kind === 'practice' || sheet.kind === 'beerCrates' || sheet.kind === 'help') {
     return true;
   }
 

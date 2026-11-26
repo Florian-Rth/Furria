@@ -8,6 +8,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { GroupTone } from '@/features/groups/group-identity';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
+import { HUB_HELP_SPOTS } from '../group-hub-help-copy';
 import { useUsualTrainingTimesInfo } from '../hooks/use-usual-training-times-info';
 import type { UsualTrainingTime } from '../schemas';
 import {
@@ -94,6 +95,7 @@ export const HubUsualTrainingTimesPanel: FC<HubUsualTrainingTimesPanelProps> = (
 
   return (
     <KkPanelSection
+      landing={HUB_HELP_SPOTS.usualTimes}
       title={GROUP_SECTION_TITLES.usualTrainingTimes}
       groupTone={tone}
       action={action}

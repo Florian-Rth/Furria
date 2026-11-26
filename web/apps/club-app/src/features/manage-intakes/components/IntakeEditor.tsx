@@ -3,9 +3,11 @@ import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import type { IntakeEditorInput } from '../hooks/use-intake-editor';
 import { useIntakeEditor } from '../hooks/use-intake-editor';
+import { INTAKE_EDITOR_HELP_SPOTS } from '../intake-editor-help-copy';
 import {
   EDIT_INTAKE_TITLE,
   IS_MEMBER_LABEL,
@@ -20,14 +22,19 @@ import {
   toMemberFromQuickChoices,
 } from '../intake-labels';
 import { INTAKE_LABEL_MAX_LENGTH } from '../schemas';
+import { IntakeEditorHelp } from './IntakeEditorHelp';
 import { IntakeGroupField } from './IntakeGroupField';
 
 export const IntakeEditor: FC<IntakeEditorInput> = (input) => {
   const control = useIntakeEditor(input);
   const isNew = input.intake === null;
+  const isEditing = !isNew;
   const title = isNew ? NEW_INTAKE_LABEL : EDIT_INTAKE_TITLE;
   const actionLabel = isNew ? NEW_INTAKE_LABEL : SAVE_LABEL;
   const rejection = control.rejection ?? undefined;
+  const help = toScreenHelp(
+    <IntakeEditorHelp isEditing={isEditing} decidesMembership={control.decidesMembership} />,
+  );
   const quickChoices = toMemberFromQuickChoices(new Date());
 
   const memberFrom = control.isMember ? (
@@ -44,7 +51,7 @@ export const IntakeEditor: FC<IntakeEditorInput> = (input) => {
   ) : null;
 
   const membership = control.decidesMembership ? (
-    <KkFormSection title={MEMBERSHIP_SECTION}>
+    <KkFormSection title={MEMBERSHIP_SECTION} landing={INTAKE_EDITOR_HELP_SPOTS.membership}>
       <KkSwitchRow
         label={IS_MEMBER_LABEL}
         checked={control.isMember}
@@ -61,6 +68,7 @@ export const IntakeEditor: FC<IntakeEditorInput> = (input) => {
       title={title}
       rejection={rejection}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: actionLabel,
@@ -72,7 +80,7 @@ export const IntakeEditor: FC<IntakeEditorInput> = (input) => {
     >
       <IntakeGroupField control={control} />
       {membership}
-      <KkFormSection title={LABEL_SECTION}>
+      <KkFormSection title={LABEL_SECTION} landing={INTAKE_EDITOR_HELP_SPOTS.label}>
         <KkTextField
           name={control.labelField.name}
           label={LABEL_FIELD}

@@ -7,10 +7,13 @@ import {
   toGroupKindOptions,
 } from '@/features/group-kinds/group-kinds-labels';
 import type { RunningGroupKind } from '@/features/group-kinds/schemas';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { ClubIconField } from '@/features/write/components/ClubIconField';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { useGroupCreateEditor } from '../hooks/use-group-create-editor';
+import { GROUPS_HELP_SPOTS } from '../manage-groups-help-copy';
 import { MANAGE_GROUPS_ORIGIN } from '../manage-groups-labels';
+import { GroupCreateHelp } from './GroupCreateHelp';
 
 const TITLE = 'Gruppe hinzufügen';
 const ADD_LABEL = 'Hinzufügen';
@@ -25,6 +28,7 @@ export const GroupCreateEditor: FC<GroupCreateEditorProps> = ({ kinds }) => {
   const control = useGroupCreateEditor();
   const kindOptions = toGroupKindOptions(kinds, null);
   const nameField = control.form.register('name');
+  const help = toScreenHelp(<GroupCreateHelp />);
   const nameErrorText = control.form.formState.errors.name?.message;
 
   return (
@@ -33,6 +37,7 @@ export const GroupCreateEditor: FC<GroupCreateEditorProps> = ({ kinds }) => {
       title={TITLE}
       rejection={control.rejection ?? undefined}
       isDirty={control.isDirty}
+      help={help}
       action={{
         primary: {
           label: ADD_LABEL,
@@ -42,7 +47,7 @@ export const GroupCreateEditor: FC<GroupCreateEditorProps> = ({ kinds }) => {
         },
       }}
     >
-      <KkFormSection title={SECTION_TITLE}>
+      <KkFormSection title={SECTION_TITLE} landing={GROUPS_HELP_SPOTS.createForm}>
         <KkTextField
           name={nameField.name}
           label={NAME_LABEL}

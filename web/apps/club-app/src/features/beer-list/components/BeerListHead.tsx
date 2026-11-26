@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { openDetail, openSinceLabel, settledDetail } from '../beer-list-copy';
 import { shortDayOf } from '../beer-list-format';
+import { BEER_LIST_HELP_SPOTS } from '../beer-list-help-copy';
 import type { BeerTabTotals } from '../beer-tab';
 import { openDaysOf, REMINDER_AFTER_DAYS } from '../beer-tab';
 import { BeerOpenTotal } from '../booking/components/BeerOpenTotal';
@@ -36,7 +37,11 @@ export const BeerListHead: FC<BeerListHeadProps> = ({ totals, strokes, celebrati
   const attention = attentionOf(totals.oldestOpenAt, now);
 
   return (
-    <Stack direction="row" sx={{ alignItems: 'center', gap: 2, minWidth: 0 }}>
+    <Stack
+      direction="row"
+      data-kk-landing={BEER_LIST_HELP_SPOTS.tab}
+      sx={{ alignItems: 'center', gap: 2, minWidth: 0 }}
+    >
       <BeerTallyDisc strokes={strokes} totals={totals} drawKey={celebration.spin} />
       <BeerOpenTotal
         openCents={totals.openCents}

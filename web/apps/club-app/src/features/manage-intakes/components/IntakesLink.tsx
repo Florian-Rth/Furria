@@ -2,6 +2,7 @@ import { KkHubRow } from '@furria/ui/KkHubRow';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { PERSONS_HELP_SPOTS } from '@/features/manage-persons/persons-help-copy';
 import { useIntakesQuery } from '../api';
 import {
   INTAKES_PATH,
@@ -30,6 +31,7 @@ export const IntakesLink: FC = () => {
         hintTone="gold"
         component={Link}
         to={INTAKES_PATH}
+        landing={PERSONS_HELP_SPOTS.intakes}
       />
     </KkPanel>
   );

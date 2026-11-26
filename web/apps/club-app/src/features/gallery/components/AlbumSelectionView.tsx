@@ -6,9 +6,11 @@ import { KkShowcase } from '@furria/ui/KkShowcase';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
 import { bulkCountLine } from '../album-labels';
+import { SELECTION_HELP_SPOTS } from '../album-selection-help-copy';
 import { SELECTION_TITLE } from '../gallery-copy';
 import { useAlbumPhotoPicker } from '../hooks/use-album-photo-picker';
 import { useAlbumSelection } from '../hooks/use-album-selection';
@@ -19,7 +21,9 @@ import { pickableItemsOf, selectionSlotsOf } from '../selection-draft';
 import { selectionPiecesOf } from '../selection-pieces';
 import { AlbumPhotoPickerSheet } from './AlbumPhotoPickerSheet';
 import { AlbumSelectionHeader } from './AlbumSelectionHeader';
+import { AlbumSelectionHelp } from './AlbumSelectionHelp';
 
+const SELECTION_HELP = toScreenHelp(<AlbumSelectionHelp />);
 const PICKER_SHEET_ID = 'gallery-selection-picker';
 const SHOWCASE_LABELS: KkShowcaseLabels = {
   list: 'Auswahl für die Website',
@@ -65,10 +69,14 @@ export const AlbumSelectionView: FC<AlbumSelectionViewProps> = ({ album }) => {
       origin={origin}
       action={bar}
       header={header}
+      help={SELECTION_HELP}
       handover={AREA_HANDOVERS.gallery}
     >
       <KkPublishCeremony stage={selection.ceremony} announcements={PUBLISH_ANNOUNCEMENTS}>
-        <Stack sx={{ rowGap: 2, pb: 4, minWidth: 0 }}>
+        <Stack
+          data-kk-landing={SELECTION_HELP_SPOTS.showcase}
+          sx={{ rowGap: 2, pb: 4, minWidth: 0 }}
+        >
           {rejection}
           <KkShowcase
             pieces={pieces}

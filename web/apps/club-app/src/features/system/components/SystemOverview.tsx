@@ -4,6 +4,7 @@ import { ClaimWindowSystemSection } from '@/features/claim-window/components/Cla
 import { TestPushSection } from '@/features/push/components/TestPushSection';
 import { WhatsAppSystemSection } from '@/features/whatsapp/components/WhatsAppSystemSection';
 import type { SystemStatus } from '../schemas';
+import { SYSTEM_HELP_SPOTS } from '../system-help-copy';
 import type { SystemMoment } from '../system-view';
 import { SystemAreaList } from './SystemAreaList';
 import { SystemBoard } from './SystemBoard';
@@ -24,6 +25,6 @@ export const SystemOverview: FC<SystemOverviewProps> = ({ status, moment, offlin
     <ClaimWindowSystemSection />
     <WhatsAppSystemSection />
     <SystemProgramSection status={status} moment={moment} />
-    <TestPushSection />
+    <TestPushSection landing={SYSTEM_HELP_SPOTS.testPush} />
   </Stack>
 );

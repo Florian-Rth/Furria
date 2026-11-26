@@ -4,6 +4,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';
 import { EMPTY_TITLE, OPEN_POT_LABEL, OWNER_LABEL } from '../beer-hub-copy';
+import { BEER_HUB_HELP_SPOTS } from '../beer-hub-help-copy';
 import { useOpenPotForm } from '../hooks/use-open-pot-form';
 import { BeerNewDrinkRows } from './BeerNewDrinkRows';
 import { BeerPaymentLinkField } from './BeerPaymentLinkField';
@@ -18,7 +19,7 @@ export const BeerOpenPotForm: FC<BeerOpenPotFormProps> = ({ owner }) => {
   const form = useOpenPotForm(owner);
 
   return (
-    <KkPanelSection title={EMPTY_TITLE}>
+    <KkPanelSection title={EMPTY_TITLE} landing={BEER_HUB_HELP_SPOTS.openPot}>
       <Stack sx={{ gap: 2, minWidth: 0 }}>
         <BeerPotPersonField label={OWNER_LABEL} fields={form.fields} />
         <BeerNewDrinkRows drinks={form.drinks} />

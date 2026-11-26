@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { usePasswordVisibility } from '@/features/login/hooks/use-password-visibility';
 import type { PasswordForm } from '../schemas';
+import { SECURITY_HELP_SPOTS } from '../security-help-copy';
 
 const CURRENT_SECTION = 'Anmeldung';
 const NEW_SECTION = 'Neues Passwort';
@@ -46,7 +47,7 @@ export const PasswordFields: FC<PasswordFieldsProps> = ({ form, errors, loginEma
 
   return (
     <>
-      <KkFormSection title={CURRENT_SECTION}>
+      <KkFormSection title={CURRENT_SECTION} landing={SECURITY_HELP_SPOTS.newPassword}>
         <KkTextField
           name={USERNAME_NAME}
           label={USERNAME_LABEL}

@@ -34,6 +34,7 @@ interface KkContactStripProps {
   tone?: KkFilmEdgeTone;
   frames: readonly KkContactStripFrame[];
   onOpen: () => void;
+  landing?: string;
   sx?: KkSx;
 }
 
@@ -53,6 +54,7 @@ export const KkContactStrip: FC<KkContactStripProps> = ({
   tone = 'ink',
   frames,
   onOpen,
+  landing,
   sx,
 }) => {
   const columns = columnsOf(frames.length);
@@ -78,6 +80,7 @@ export const KkContactStrip: FC<KkContactStripProps> = ({
     <Stack
       component="article"
       data-kk-contact-strip
+      data-kk-landing={landing}
       sx={[{ minWidth: 0, rowGap: 0.75 }, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       <ButtonBase

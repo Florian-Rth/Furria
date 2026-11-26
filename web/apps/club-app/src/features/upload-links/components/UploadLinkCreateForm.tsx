@@ -8,6 +8,7 @@ const TITLE_LENGTH = 80;
 
 interface UploadLinkCreateFormProps {
   title: string;
+  landing?: string;
   creating: boolean;
   canCreate: boolean;
   onTitle: (event: ChangeEvent<HTMLInputElement>) => void;
@@ -16,6 +17,7 @@ interface UploadLinkCreateFormProps {
 
 export const UploadLinkCreateForm: FC<UploadLinkCreateFormProps> = ({
   title,
+  landing,
   creating,
   canCreate,
   onTitle,
@@ -24,6 +26,7 @@ export const UploadLinkCreateForm: FC<UploadLinkCreateFormProps> = ({
   <Stack
     component="form"
     onSubmit={onCreate}
+    data-kk-landing={landing}
     direction="row"
     sx={{ columnGap: 1, alignItems: 'flex-start', minWidth: 0 }}
   >

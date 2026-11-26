@@ -1,6 +1,7 @@
 import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
 import { KkFilterChips } from '@furria/ui/KkFilterChips';
 import type { FC } from 'react';
+import { GROUPS_HELP_SPOTS } from '../manage-groups-help-copy';
 
 const FILTER_LABEL = 'Die Arbeit filtern';
 
@@ -15,5 +16,11 @@ export const ManagedGroupsToolbar: FC<ManagedGroupsToolbarProps> = ({
   options,
   onFilterChange,
 }) => (
-  <KkFilterChips label={FILTER_LABEL} options={options} value={filter} onChange={onFilterChange} />
+  <KkFilterChips
+    label={FILTER_LABEL}
+    options={options}
+    value={filter}
+    onChange={onFilterChange}
+    landing={GROUPS_HELP_SPOTS.filters}
+  />
 );

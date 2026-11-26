@@ -17,6 +17,7 @@ import type { InboxOwner } from '../types';
 
 interface GalleryInboxRollProps {
   inbox: InboxSummary;
+  landing?: string;
   onOpen: (owner: InboxOwner) => void;
 }
 
@@ -26,7 +27,7 @@ const metaOf = (inbox: InboxSummary): string =>
 const titleOf = (inbox: InboxSummary): string =>
   `${INBOX_TITLE} · ${inbox.uploader === null ? OWNERLESS_INBOX : personNameOf(inbox.uploader)}`;
 
-export const GalleryInboxRoll: FC<GalleryInboxRollProps> = ({ inbox, onOpen }) => {
+export const GalleryInboxRoll: FC<GalleryInboxRollProps> = ({ inbox, landing, onOpen }) => {
   const owner = inboxOwnerOf(inbox);
   const frames: KkContactStripFrame[] = inbox.samples.map((item, position) => ({
     id: String(item.mediaItemId),
@@ -49,6 +50,7 @@ export const GalleryInboxRoll: FC<GalleryInboxRollProps> = ({ inbox, onOpen }) =
       tone="red"
       frames={frames}
       onOpen={open}
+      landing={landing}
     />
   );
 };

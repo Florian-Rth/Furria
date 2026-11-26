@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { useCalendarTile } from '../hooks/use-calendar-tile';
 import type { StartBoard } from '../hooks/use-start-view';
 import type { StartPanelOf } from '../start-board';
+import { START_HELP_SPOTS } from '../start-help-copy';
 import { CalendarLead } from './CalendarLead';
 import { EntryMark } from './EntryMark';
 
@@ -50,7 +51,7 @@ export const CalendarTile: FC<CalendarTileProps> = ({ panel, board, order }) => 
   const emptyLine = tile.isEmpty ? <KkMeta tone="faint">{NO_ENTRIES_LINE}</KkMeta> : null;
 
   return (
-    <KkStartTile label={TILE_LABEL} order={order}>
+    <KkStartTile label={TILE_LABEL} order={order} landing={START_HELP_SPOTS.calendar}>
       <KkStartTile.Head icon="calendar" label={HEAD_LABEL} reach={tile.reach} />
       <Stack direction="row" sx={{ gap: 1.5, alignItems: 'flex-start', minWidth: 0 }}>
         {lead}

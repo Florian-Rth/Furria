@@ -103,8 +103,14 @@ export interface KkScreenSearch {
   onClose: () => void;
 }
 
+export interface KkScreenHelp {
+  label: string;
+  sheet: ReactNode;
+}
+
 interface KkScreenShared {
   title: string;
+  help?: KkScreenHelp;
   sceneKey?: string;
   thread?: KkScreenThread;
   children?: ReactNode;

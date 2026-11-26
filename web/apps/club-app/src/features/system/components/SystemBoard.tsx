@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { useBrokenStamp } from '../hooks/use-broken-stamp';
 import type { SystemStatus } from '../schemas';
 import { BOARD_LABEL, STAMP_LABEL } from '../system-copy';
+import { SYSTEM_HELP_SPOTS } from '../system-help-copy';
 import type { SystemMoment } from '../system-view';
 import { boardViewOf } from '../system-view';
 
@@ -34,7 +35,7 @@ export const SystemBoard: FC<SystemBoardProps> = ({ status, moment, offline }) =
 
   return (
     <>
-      <KkFlapBoard label={BOARD_LABEL}>
+      <KkFlapBoard label={BOARD_LABEL} landing={SYSTEM_HELP_SPOTS.board}>
         <KkFlapBoard.Masthead facts={board.facts} />
         {notice}
         <KkFlapBoard.Rows dimmed={!moment.isConnected}>{rows}</KkFlapBoard.Rows>

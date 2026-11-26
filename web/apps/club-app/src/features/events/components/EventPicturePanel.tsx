@@ -10,10 +10,11 @@ import { EventGallerySheet } from './EventGallerySheet';
 
 interface EventPicturePanelProps {
   event: EventDetails;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const EventPicturePanel: FC<EventPicturePanelProps> = ({ event, sx }) => {
+export const EventPicturePanel: FC<EventPicturePanelProps> = ({ event, landing, sx }) => {
   const desk = useEventPictureDesk(event);
   const stampLabel = event.cancelledAt === null ? null : EVENT_CANCELLED_STAMP;
   const tone = eventToneOf(event.eventId);
@@ -25,6 +26,7 @@ export const EventPicturePanel: FC<EventPicturePanelProps> = ({ event, sx }) => 
       alt=""
       title={EVENT_SECTION_TITLES.picture}
       stampLabel={stampLabel}
+      landing={landing}
       sx={sx}
     >
       <EventGallerySheet onPick={desk.pickPhoto} />

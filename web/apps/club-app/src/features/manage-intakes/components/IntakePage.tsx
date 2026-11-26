@@ -2,11 +2,13 @@ import { KkScreen } from '@furria/ui/KkScreen';
 import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useIntakePage } from '../hooks/use-intake-page';
 import { INTAKE_EYEBROW, toIntakeName } from '../intake-labels';
 import { IntakeHeader } from './IntakeHeader';
+import { IntakeHelp } from './IntakeHelp';
 import { IntakeHold } from './IntakeHold';
 import { IntakeView } from './IntakeView';
 
@@ -19,6 +21,8 @@ export const IntakePage: FC = () => {
   const details = page.intake.data;
   const hasFailed = id === null || page.intake.error !== null;
   const title = details === undefined ? INTAKE_EYEBROW : toIntakeName(details.intake);
+  const help =
+    page.actions === null ? undefined : toScreenHelp(<IntakeHelp actions={page.actions} />);
   const pendingHeader = hasFailed ? null : <KkScreenHeaderSkeleton />;
   const header = details === undefined ? pendingHeader : <IntakeHeader intake={details.intake} />;
   const body =
@@ -43,6 +47,7 @@ export const IntakePage: FC = () => {
       action={page.actionBar}
       actions={page.headerActions}
       handover={AREA_HANDOVERS.manage}
+      help={help}
     >
       {body}
     </KkScreen>

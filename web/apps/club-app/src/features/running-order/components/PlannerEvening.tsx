@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { usePlanner } from '../planner-context';
 import { EVENING_EMPTY, LIST_LABEL } from '../planner-copy';
 import type { PlannerEntry } from '../planner-rows';
+import { RUNNING_ORDER_HELP_SPOTS } from '../running-order-help-copy';
 import { PlannerLineRow } from './PlannerLineRow';
 import { PlannerRailRow } from './PlannerRailRow';
 import { PlannerUnplaced } from './PlannerUnplaced';
@@ -24,7 +25,7 @@ export const PlannerEvening: FC = () => {
 
   return (
     <Box ref={planner.drag.listRef} sx={{ minWidth: 0 }}>
-      <KkNumberedList label={LIST_LABEL}>
+      <KkNumberedList label={LIST_LABEL} landing={RUNNING_ORDER_HELP_SPOTS.list}>
         {rows}
         {empty}
         <PlannerUnplaced />

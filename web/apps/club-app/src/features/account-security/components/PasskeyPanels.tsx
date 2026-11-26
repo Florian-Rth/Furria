@@ -5,6 +5,7 @@ import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
 import type { MePasskey } from '@/lib/api/schemas';
 import { formatPasskeyDay } from '../account-security-labels';
+import { SECURITY_HELP_SPOTS } from '../security-help-copy';
 import { PasskeyRemovalPanel } from './PasskeyRemovalPanel';
 
 const TITLE = 'Passkey';
@@ -20,7 +21,7 @@ export const PasskeyPanels: FC<PasskeyPanelsProps> = ({ passkey }) => {
 
   return (
     <KkPanelStack>
-      <KkPanelSection title={TITLE}>
+      <KkPanelSection title={TITLE} landing={SECURITY_HELP_SPOTS.passkey}>
         <KkPanel>
           <KkFieldRow label={NAME_LABEL} value={passkey.name} />
           <KkFieldRow label={ADDED_LABEL} value={addedOn} />

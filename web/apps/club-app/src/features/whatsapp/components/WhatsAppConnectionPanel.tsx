@@ -6,6 +6,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { WhatsAppState } from '../schemas';
 import { BOT_PHONE_LABEL, CONNECTION_TITLE, STATE_COPY } from '../whatsapp-copy';
+import { WHATSAPP_HELP_SPOTS } from '../whatsapp-help-copy';
 
 interface WhatsAppConnectionPanelProps {
   state: WhatsAppState;
@@ -18,7 +19,7 @@ export const WhatsAppConnectionPanel: FC<WhatsAppConnectionPanelProps> = ({ stat
     botPhone === null ? null : <KkFieldRow label={BOT_PHONE_LABEL} value={botPhone} />;
 
   return (
-    <KkPanelSection title={CONNECTION_TITLE}>
+    <KkPanelSection title={CONNECTION_TITLE} landing={WHATSAPP_HELP_SPOTS.connection}>
       <KkPanel>
         <Stack sx={{ gap: 1, minWidth: 0 }}>
           <KkStatusLine tone={tone} text={text} />

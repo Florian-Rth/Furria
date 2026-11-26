@@ -5,14 +5,16 @@ import { kkTokens } from '../../../tokens';
 
 interface KkStepListRootProps extends PropsWithChildren {
   label: string;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkStepListRoot: FC<KkStepListRootProps> = ({ label, sx, children }) => (
+export const KkStepListRoot: FC<KkStepListRootProps> = ({ label, landing, sx, children }) => (
   <Stack
     component="nav"
     aria-label={label}
     data-kk-step-list
+    data-kk-landing={landing}
     sx={[
       {
         minWidth: 0,

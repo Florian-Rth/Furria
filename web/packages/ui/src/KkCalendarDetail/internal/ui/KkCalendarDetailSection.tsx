@@ -9,18 +9,21 @@ interface KkCalendarDetailSectionProps extends PropsWithChildren {
   icon: KkIconName;
   title: string;
   id?: string;
+  landing?: string;
 }
 
 export const KkCalendarDetailSection: FC<KkCalendarDetailSectionProps> = ({
   icon,
   title,
   id,
+  landing,
   children,
 }) => (
   <Stack
     component="section"
     id={id}
     data-kk-calendar-detail-section
+    data-kk-landing={landing}
     sx={(theme) => ({
       gap: 1,
       minWidth: 0,

@@ -13,6 +13,7 @@ import {
   NEW_INTAKE_LABEL,
 } from '../intake-labels';
 import { toIntakeSections } from '../intake-rules';
+import { INTAKES_HELP_SPOTS } from '../intakes-help-copy';
 import type { IntakeSummary } from '../schemas';
 import { IntakesSection } from './IntakesSection';
 
@@ -36,7 +37,7 @@ export const IntakesView: FC<IntakesViewProps> = ({ intakes }) => {
 
   if (sections.length === 0) {
     return (
-      <KkPanelSection title={INTAKES_TITLE} action={NEW_ACTION}>
+      <KkPanelSection title={INTAKES_TITLE} action={NEW_ACTION} landing={INTAKES_HELP_SPOTS.list}>
         <KkPanel variant="block">
           <KkEmptyState
             size="panel"
@@ -51,8 +52,16 @@ export const IntakesView: FC<IntakesViewProps> = ({ intakes }) => {
 
   const actionOf = (index: number): KkPanelAction | undefined =>
     index === 0 ? NEW_ACTION : undefined;
+  const landingOf = (index: number): string | undefined =>
+    index === 0 ? INTAKES_HELP_SPOTS.list : undefined;
   const panels = sections.map((section, index) => (
-    <IntakesSection key={section.id} section={section} now={now} action={actionOf(index)} />
+    <IntakesSection
+      key={section.id}
+      section={section}
+      now={now}
+      action={actionOf(index)}
+      landing={landingOf(index)}
+    />
   ));
 
   return <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>{panels}</Stack>;

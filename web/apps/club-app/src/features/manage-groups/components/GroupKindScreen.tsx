@@ -3,6 +3,7 @@ import { KkScreen } from '@furria/ui/KkScreen';
 import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import { useParams } from '@tanstack/react-router';
 import type { FC, ReactNode } from 'react';
+import { toScreenHelp } from '@/features/help/screen-help';
 import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { AccessDenied } from '@/features/session/components/AccessDenied';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
@@ -19,6 +20,7 @@ import {
 } from '../manage-groups-labels';
 import { toManagedGroupsErrorMessage } from '../manage-groups-messages';
 import { GroupKindHeader } from './GroupKindHeader';
+import { GroupKindHelp } from './GroupKindHelp';
 import { GroupKindPage } from './GroupKindPage';
 import { GroupKindSkeleton } from './GroupKindSkeleton';
 import { ManagedGroupsError } from './ManagedGroupsError';
@@ -34,6 +36,7 @@ export const GroupKindScreen: FC = () => {
   const permissions = usePermissions();
   const groups = useManagedGroupsQuery(permissions.has(PERMISSION_KEYS.groupsManage));
   const { highlightedKey } = useLanding();
+  const help = toScreenHelp(<GroupKindHelp />);
   const errorMessage = toManagedGroupsErrorMessage(groups.error);
   const canManage = permissions.isUndecided || permissions.has(PERMISSION_KEYS.groupsManage);
   const isReady = groups.data !== undefined && !permissions.isUndecided;
@@ -75,6 +78,7 @@ export const GroupKindScreen: FC = () => {
       origin={MANAGE_GROUPS_ORIGIN}
       header={header}
       handover={AREA_HANDOVERS.manage}
+      help={help}
     >
       {body}
     </KkScreen>

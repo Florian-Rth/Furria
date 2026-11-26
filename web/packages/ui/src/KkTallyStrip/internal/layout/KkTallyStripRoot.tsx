@@ -5,14 +5,16 @@ import { kkTokens } from '../../../tokens';
 
 interface KkTallyStripRootProps extends PropsWithChildren {
   label: string;
+  landing?: string;
   sx?: KkSx;
 }
 
-export const KkTallyStripRoot: FC<KkTallyStripRootProps> = ({ label, sx, children }) => (
+export const KkTallyStripRoot: FC<KkTallyStripRootProps> = ({ label, landing, sx, children }) => (
   <Stack
     component="section"
     aria-label={label}
     data-kk-tally-strip
+    data-kk-landing={landing}
     sx={[
       {
         minWidth: 0,
