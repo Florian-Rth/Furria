@@ -1,6 +1,7 @@
 using System.Collections.Frozen;
 using System.Diagnostics.Contracts;
 using Furria.Application.Changes;
+using Furria.Core.Assistant;
 using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
@@ -133,6 +134,8 @@ public static class ChangedTables
         [typeof(WhatsAppSession)] = [DomainChange.WhatsApp],
         [typeof(LinkedWhatsAppGroup)] = [DomainChange.WhatsApp],
         [typeof(WhatsAppGroupAdd)] = [DomainChange.WhatsApp],
+        [typeof(ClubAssistantSettings)] = [DomainChange.WhatsApp],
+        [typeof(ClubAssistantModelCall)] = [DomainChange.WhatsApp],
         [typeof(WhatsAppAnswer)] =
         [
             DomainChange.CalendarPollVote,
@@ -157,6 +160,9 @@ public static class ChangedTables
         typeof(OutboxWhatsApp),
         typeof(WhatsAppMessage),
         typeof(WhatsAppLateAnswer),
+        typeof(ClubAssistantQuestion),
+        typeof(ClubAssistantNotice),
+        typeof(ClubAssistantAcquaintance),
         typeof(LogEntry),
         typeof(MediaJob),
         typeof(MediaFileTombstone),

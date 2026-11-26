@@ -10,12 +10,14 @@ using Furria.Application.Operations;
 using Furria.Application.Push;
 using Furria.Application.Results;
 using Furria.Application.Website;
+using Furria.Core.Assistant;
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.RunningOrders;
+using Furria.Infrastructure.Assistant;
 using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Changes;
 using Furria.Infrastructure.Club;
@@ -33,6 +35,7 @@ using Furria.Infrastructure.WhatsApp;
 using Furria.MediaWorker;
 using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
+using Furria.Tests.Common.Assistant;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
 using Furria.Tests.Common.Push;
@@ -127,10 +130,15 @@ public sealed class ApiTestFixture : IAsyncLifetime
     internal const string WahaApiKey = "furria-test-waha-api-key";
     public const string WhatsAppWebhookHmacKey = "furria-test-whatsapp-webhook-hmac-key";
     public const string WhatsAppSession = "furria";
+    internal const string ClubAssistantApiKey = "furria-test-assistant-key";
+    internal const decimal ClubAssistantInputEurosPerMillion = 1m;
+    internal const decimal ClubAssistantCachedInputEurosPerMillion = 0.1m;
+    internal const decimal ClubAssistantOutputEurosPerMillion = 4m;
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
-    private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan ChangeListenerTimeout = TimeSpan.FromSeconds(20);
+
+    public static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
 
     private readonly ApiTestInfrastructure _infrastructure;
 
@@ -152,6 +160,8 @@ public sealed class ApiTestFixture : IAsyncLifetime
     public FakePushService PushService => Host.PushService;
 
     public FakeWahaService Waha => Host.Waha;
+
+    public FakeModelService Model => Host.Model;
 
     public IServiceProvider Services => Host.Services;
 
@@ -197,6 +207,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
         TimeProvider.SetUtcNow(WholeSecondNow());
         PushService.Forget();
         Waha.Forget();
+        Model.Forget();
         EmptyMediaRoot();
 
         await using var scope = Services.CreateAsyncScope();
@@ -458,6 +469,65 @@ public sealed class ApiTestFixture : IAsyncLifetime
         );
     }
 
+    public async Task BookClubAssistantCallAsync(
+        ClubAssistantTokens tokens,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<ClubAssistantBudget>().BookAsync(tokens, ct);
+    }
+
+    public async Task<IReadOnlyList<ClubAssistantQuestion>> ClubAssistantQuestionsAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return await db
+            .ClubAssistantQuestions.AsNoTracking()
+            .OrderBy(question => question.Id)
+            .ToListAsync(ct);
+    }
+
+    public Task ClubAssistantAnsweredAsync(CancellationToken ct = default) =>
+        ClubAssistantAnsweredAsync(OutboxDrainTimeout, ct);
+
+    public Task ClubAssistantAnsweredAsync(TimeSpan timeout, CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var settledBefore =
+                    TimeProvider.GetUtcNow() - ClubAssistantConversation.MergeWindow;
+                return await db.ClubAssistantQuestions.AnyAsync(
+                    question =>
+                        question.AnsweredAt == null && question.LastMessageAt <= settledBefore,
+                    token
+                )
+                    ? null
+                    : db;
+            },
+            timeout,
+            "The club assistant still owes answers",
+            ct
+        );
+
+    public async Task PurgeClubAssistantConversationsAsync(CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<ClubAssistantReception>().PurgeAsync(ct);
+    }
+
+    public async Task<bool> ClubAssistantHasBudgetLeftAsync(CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        return await scope
+            .ServiceProvider.GetRequiredService<ClubAssistantBudget>()
+            .HasBudgetLeftAsync(ct);
+    }
+
     public async Task StageWhatsAppGroupAddsAsync(CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();
@@ -562,6 +632,7 @@ public sealed class ApiTestFixture : IAsyncLifetime
     {
         await ResetDatabaseAsync(ct);
         Waha.Forget();
+        Model.Forget();
 
         var recorded = new SeedContextBuilder();
         configure(recorded);

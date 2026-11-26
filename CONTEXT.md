@@ -1532,6 +1532,28 @@ new phone number counts as a new try. The bot adds at most three people every te
 2026-11-21, RFC 0010 phase 7).
 _Avoid_: opt-in, subscription
 
+**Club assistant** (*Vereinsassistent*):
+The bot answering a person's private WhatsApp message from the club's data. It answers only a
+sender matched to an affiliated person, and only with what that person may see in the app; any
+other sender is told once a day that it answers only members whose number is on record (ruled
+2026-11-24). It only answers and never changes anything — where acting would be the next step it
+links to the app screen (ruled 2026-11-24). It knows club matters and counts but nothing about
+other persons — no names, contact details, birthdays or who answered what; about the asker herself
+it may answer (ruled 2026-11-24). It knows an entry's or announcement's add-ons in full but with
+counts instead of names — a sign-up list's lines without who wrote them — and an event's **running
+order** as positions, like the app (ruled 2026-11-24). A person holding a **permission** also gets
+what it lets her see — events in preparation and their **event steps**, a running order's planning
+state, the table plan, her **to-dos** — still as counts, never other persons' names (ruled
+2026-11-24). It says once to each person that it is an AI. It remembers a
+conversation while the messages are at most 30 minutes apart, keeps what was asked and answered
+for 7 days, and nobody reads it in the app (ruled 2026-11-24). The club switches it on in the
+system settings (off by default) and gives it a **monthly budget** in euros; a person may ask a
+limited number of questions a day; once either is used up it says so instead of answering
+(ruled 2026-11-24). It speaks German with *du*, short and with plenty of carnival humour — the
+facts stay exact and come first; what Furria does not hold it says it does not know (ruled
+2026-11-24). It reads text only. See [ADR-0043](docs/adr/0043-the-club-assistant-reads-club-data-through-an-outside-llm.md).
+_Avoid_: chatbot, AI, agent, "the bot" (that is the club's WhatsApp number as a whole)
+
 ### Photos and videos
 
 **Media store**:

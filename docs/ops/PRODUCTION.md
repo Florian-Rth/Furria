@@ -100,6 +100,8 @@ every variable. The ones that matter most:
 - **`EDGE_PROXY_ADDRESS`** — the API refuses to start in production without trusted proxies.
 - **`WAHA_API_KEY` / `WHATSAPP_WEBHOOK_HMAC_KEY`** — the key the API calls the bot with and the
   key the bot signs its webhooks with (`openssl rand -base64 48` each). See [WhatsApp](#whatsapp).
+- **`CLUB_ASSISTANT_API_KEY`** — optional; the model provider's key for the club assistant.
+  Empty keeps the assistant unswitchable. See [Club assistant](#club-assistant).
 - **`ANDROID_CERT_FINGERPRINTS`** — feeds both `assetlinks.json` files and the API's accepted
   passkey origins.
 
@@ -336,8 +338,10 @@ challenge solved in the 10 minutes before a restart can be spent once more.
 The club's WhatsApp group is reached through a bot ([ADR-0042](../adr/0042-the-club-reaches-whatsapp-through-a-self-hosted-waha-bot.md)):
 the club's own number, linked as a device to the `waha` container (WAHA, GOWS engine). The API
 calls it at `http://waha:3000` with `WAHA_API_KEY`; WAHA posts `session.status`, `poll.vote`,
-`poll.vote.failed`, `event.response` and `group.v2.participants` to
-`http://api:8080/api/whatsapp/webhook`, signed with `WHATSAPP_WEBHOOK_HMAC_KEY`. Neither has a
+`poll.vote.failed`, `event.response`, `group.v2.participants` and `message` (private messages
+for the club assistant) to `http://api:8080/api/whatsapp/webhook`, signed with
+`WHATSAPP_WEBHOOK_HMAC_KEY`. A host whose compose file still lacks `message` in
+`WHATSAPP_HOOK_EVENTS` simply never hears private messages. Neither has a
 port on the host, and both app nginx answer the webhook route with 404. The image is pinned in
 the compose file and never moved by Watchtower: update it by hand, after reading WAHA's changelog
 for the GOWS engine, and check a vote flows back afterwards.
@@ -380,6 +384,70 @@ The trail:
 docker compose logs api | grep -E 'WhatsApp'
 docker compose logs waha --since 1h
 ```
+
+## Club assistant
+
+Members DM the bot and the **club assistant** answers from Furria's data through a hosted LLM
+([ADR-0043](../adr/0043-the-club-assistant-reads-club-data-through-an-outside-llm.md), RFC 0011):
+Mistral's EU platform, reached with an OpenAI-compatible client. Only private chats from a
+**WhatsApp match** to one affiliated person are answered; tools only read, as that person.
+
+**Configuration** — the section `ClubAssistant`; only the key comes from `.env`, the rest keeps
+its code defaults unless set in the compose file (`ClubAssistant__<Key>`):
+
+| Key | Default | Meaning |
+|---|---|---|
+| `ApiKey` | empty | The provider's key (`CLUB_ASSISTANT_API_KEY`). Empty: no model client, the switch stays disabled with a note — a deploy never breaks a host without it. |
+| `Endpoint` | `https://api.mistral.ai/v1` | OpenAI-compatible base URL. |
+| `Model` | `mistral-small-2603` | Model id (Mistral Small 4, pinned). |
+| `ReasoningEffort` | `none` | Sent as `reasoning_effort`: `none`, `low`, `medium`, `high`, or empty to send nothing. |
+| `InputEurosPerMillion` | `0.15` | € per 1M uncached input tokens. |
+| `CachedInputEurosPerMillion` | `0.015` | € per 1M cached input tokens. |
+| `OutputEurosPerMillion` | `0.60` | € per 1M output tokens. |
+
+The API refuses to start when a key is set but the endpoint is no absolute URL, the model id is
+empty, the reasoning effort is unknown or a price is negative. **Prices** only meter the budget:
+the defaults are Small 4's dollar list prices taken as euros (a little above the real cost); check
+them against Mistral's price list whenever the model changes, or the budget lies.
+
+**Model and thinking go together**: Small 4 accepts `none` and then answers without thinking.
+Mistral Large 4 (`mistral-large-4`, 0.70 / 0.07 / 2.10) always thinks and takes only `low`,
+`medium` or `high` — any other value makes every call fail with 400. Answers that still carry
+thinking parts are read anyway; only the text goes out.
+
+**Switching on**, once:
+
+1. Create a key in Mistral's console (*La Plateforme*, EU), on an account with a spending limit
+   a little above the monthly budget — a second fuse behind Furria's own.
+2. Put it into `.env` as `CLUB_ASSISTANT_API_KEY`, make sure the compose file passes
+   `ClubAssistant__ApiKey` to `api` and `message` is in waha's `WHATSAPP_HOOK_EVENTS` (see the
+   example compose), then `docker compose up -d api waha`.
+3. *Mehr → Verwaltung → System → WhatsApp → Vereinsassistent*: switch on, set the **monthly
+   budget** (default 10 €) and the **questions per person and day** (default 30).
+4. DM the bot from a member's phone (one whose number is in Furria) and from an unknown phone:
+   the member gets an answer opened by the AI disclosure, the unknown phone the „nur
+   Vereinsmitgliedern" line.
+
+**Running it** — the budget is checked before every model call and the used amount shows in the
+same panel; used up, members get a „this month I am done" line until the 1st. A provider failure
+answers with a short apology and is never retried. Questions and answers are purged after 7 days;
+nobody reads them in the app. The answers go out through *System → WhatsApp-Versand* in their own
+lane (*Private WhatsApp-Antworten senden*), the questions are worked by *Fragen an den
+Vereinsassistenten beantworten*. Switching off takes effect with the next message.
+
+**Before a model or prompt change** run the eval: about 35 real German questions against a seeded
+club, through the real model (a few cents), from `server/` after `dotnet build`:
+
+```bash
+CLUB_ASSISTANT_EVAL_API_KEY=<key> dotnet run --project tests/Furria.Api.Tests --no-build -- \
+  -class Furria.Api.Tests.Assistant.ClubAssistantEvalTests -explicit only
+```
+
+Each failure prints the question, the expected facts and the answer. It never runs in CI.
+
+**Owed on the live host** (hand-kept compose, needs approval): add `ClubAssistant__ApiKey` to
+`api`'s environment and `message` to `WHATSAPP_HOOK_EVENTS`, put the key into `.env`, then the
+device check above.
 
 ## Moving the live host onto the example compose
 

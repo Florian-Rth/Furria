@@ -23,6 +23,186 @@ namespace Furria.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantAcquaintance", b =>
+                {
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("IntroducedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("introduced_at");
+
+                    b.HasKey("PersonId")
+                        .HasName("pk_club_assistant_acquaintance");
+
+                    b.ToTable("club_assistant_acquaintance", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantModelCall", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("CachedInputTokens")
+                        .HasColumnType("integer")
+                        .HasColumnName("cached_input_tokens");
+
+                    b.Property<DateTimeOffset>("CalledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("called_at");
+
+                    b.Property<decimal>("CostEuros")
+                        .HasPrecision(12, 6)
+                        .HasColumnType("numeric(12,6)")
+                        .HasColumnName("cost_euros");
+
+                    b.Property<int>("InputTokens")
+                        .HasColumnType("integer")
+                        .HasColumnName("input_tokens");
+
+                    b.Property<int>("OutputTokens")
+                        .HasColumnType("integer")
+                        .HasColumnName("output_tokens");
+
+                    b.HasKey("Id")
+                        .HasName("pk_club_assistant_model_call");
+
+                    b.HasIndex("CalledAt")
+                        .HasDatabaseName("ix_club_assistant_model_call_called_at");
+
+                    b.ToTable("club_assistant_model_call", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_club_assistant_model_call_counts", "input_tokens >= 0 AND cached_input_tokens >= 0 AND output_tokens >= 0 AND cost_euros >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantNotice", b =>
+                {
+                    b.Property<string>("ChatId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("chat_id");
+
+                    b.Property<string>("Kind")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<DateTimeOffset>("ToldAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("told_at");
+
+                    b.HasKey("ChatId", "Kind")
+                        .HasName("pk_club_assistant_notice");
+
+                    b.ToTable("club_assistant_notice", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_club_assistant_notice_kind", "kind IN ('UnknownSender', 'SwitchedOff', 'NotText', 'DailyLimitReached', 'BudgetUsedUp')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantQuestion", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Answer")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)")
+                        .HasColumnName("answer");
+
+                    b.Property<DateTimeOffset?>("AnsweredAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("answered_at");
+
+                    b.Property<DateTimeOffset>("AskedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("asked_at");
+
+                    b.Property<string>("ChatId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)")
+                        .HasColumnName("chat_id");
+
+                    b.Property<DateTimeOffset>("LastMessageAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_message_at");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_club_assistant_question");
+
+                    b.HasIndex("AskedAt")
+                        .HasDatabaseName("ix_club_assistant_question_asked_at");
+
+                    b.HasIndex("LastMessageAt")
+                        .HasDatabaseName("ix_club_assistant_question_unanswered_last_message_at")
+                        .HasFilter("answered_at IS NULL");
+
+                    b.HasIndex("PersonId", "AskedAt")
+                        .HasDatabaseName("ix_club_assistant_question_person_id_asked_at");
+
+                    b.ToTable("club_assistant_question", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_club_assistant_question_answer", "(answer IS NULL) = (answered_at IS NULL)");
+
+                            t.HasCheckConstraint("ck_club_assistant_question_last_message", "last_message_at >= asked_at");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantSettings", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("IsEnabled")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_enabled");
+
+                    b.Property<decimal>("MonthlyBudgetEuros")
+                        .HasPrecision(8, 2)
+                        .HasColumnType("numeric(8,2)")
+                        .HasColumnName("monthly_budget_euros");
+
+                    b.Property<int>("QuestionsPerPersonPerDay")
+                        .HasColumnType("integer")
+                        .HasColumnName("questions_per_person_per_day");
+
+                    b.HasKey("Id")
+                        .HasName("pk_club_assistant_settings");
+
+                    b.ToTable("club_assistant_settings", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_club_assistant_settings_monthly_budget", "monthly_budget_euros BETWEEN 0 AND 1000");
+
+                            t.HasCheckConstraint("ck_club_assistant_settings_questions_per_person_per_day", "questions_per_person_per_day BETWEEN 1 AND 500");
+
+                            t.HasCheckConstraint("ck_club_assistant_settings_single", "id = 1");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.BeerList.BeerCrate", b =>
                 {
                     b.Property<int>("Id")
@@ -6241,15 +6421,15 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_add_on_kind", "add_on_kind IN ('Attendance', 'Poll', 'SignUpList')");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation IN ('PostText', 'EditText', 'Reply', 'Delete', 'AddParticipant', 'DirectText') OR add_on_kind IS NOT NULL");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_add_on_operation", "operation IN ('PostText', 'EditText', 'Reply', 'Delete', 'AddParticipant', 'DirectText', 'PrivateReply') OR add_on_kind IS NOT NULL");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_attempt", "attempt >= 1");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_event", "CASE WHEN operation = 'SendEvent' THEN event_starts_at IS NOT NULL AND (event_ends_at IS NULL OR event_ends_at >= event_starts_at) ELSE event_starts_at IS NULL AND event_ends_at IS NULL AND event_place IS NULL END");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_host_kind", "host_kind IN ('Announcement', 'CalendarEntry', 'Person')");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_host_kind", "host_kind IN ('Announcement', 'CalendarEntry', 'Person', 'ClubAssistant')");
 
-                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent', 'EditText', 'Reply', 'Delete', 'AddParticipant', 'DirectText')");
+                            t.HasCheckConstraint("ck_outbox_whatsapp_operation", "operation IN ('PostText', 'SendPoll', 'SendEvent', 'EditText', 'Reply', 'Delete', 'AddParticipant', 'DirectText', 'PrivateReply')");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_person_add", "(operation = 'AddParticipant') = (host_kind = 'Person')");
 
@@ -6258,6 +6438,8 @@ namespace Furria.Infrastructure.Migrations
                             t.HasCheckConstraint("ck_outbox_whatsapp_poll_option_ids", "cardinality(poll_option_ids) = 0 OR cardinality(poll_option_ids) = cardinality(poll_options)");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_poll_options", "cardinality(poll_options) = 0 OR add_on_kind IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_outbox_whatsapp_private_reply", "(operation = 'PrivateReply') = (host_kind = 'ClubAssistant')");
 
                             t.HasCheckConstraint("ck_outbox_whatsapp_target_message", "(operation IN ('EditText', 'Reply', 'Delete')) = (target_message_id IS NOT NULL)");
                         });
@@ -6687,6 +6869,30 @@ namespace Furria.Infrastructure.Migrations
                         .HasName("pk_account_token");
 
                     b.ToTable("account_token", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantAcquaintance", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_club_assistant_acquaintance_person_person_id");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.Assistant.ClubAssistantQuestion", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_club_assistant_question_person_person_id");
+
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Furria.Core.BeerList.BeerCrate", b =>

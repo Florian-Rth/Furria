@@ -4,6 +4,7 @@ export const WHATSAPP_HELP_SPOTS = {
   clubGroup: 'help-whatsapp-club-group',
   keeping: 'help-whatsapp-keeping',
   refused: 'help-whatsapp-refused',
+  assistant: 'help-whatsapp-assistant',
 } as const;
 
 export const WHATSAPP_HELP_COPY = {
@@ -33,5 +34,11 @@ export const WHATSAPP_HELP_COPY = {
   refused: {
     title: 'Hinzufügen blockiert',
     text: 'Lässt WhatsApp das Hinzufügen einer Person nicht zu, steht sie unter „Hinzufügen blockiert“. Gib ihr den Einladungslink persönlich weiter.',
+  },
+  assistant: {
+    title: 'Vereinsassistent',
+    text: 'Eingeschaltet beantwortet der Bot private WhatsApp-Nachrichten von Mitgliedern, deren Handynummer hinterlegt ist – mit dem, was sie auch in der App sehen dürfen. Er kann nichts ändern oder eintragen.',
+    limits:
+      'Ist das Budget pro Monat verbraucht oder sind die Fragen einer Person für heute aufgebraucht, antwortet er nur noch mit einem Hinweis.',
   },
 } as const;

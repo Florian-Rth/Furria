@@ -38,11 +38,23 @@ public sealed class ToDoService
         _timeProvider = timeProvider;
     }
 
-    public async Task<IReadOnlyList<ToDoSummary>> ForAsync(int accountId, CancellationToken ct)
-    {
-        var granted = (await _authorizer.GrantedKeysAsync(accountId, ct)).ToHashSet(
-            StringComparer.Ordinal
+    public async Task<IReadOnlyList<ToDoSummary>> ForAsync(int accountId, CancellationToken ct) =>
+        await ForViewerAsync(
+            new ToDoViewer(
+                (await _authorizer.GrantedKeysAsync(accountId, ct)).ToHashSet(
+                    StringComparer.Ordinal
+                ),
+                await _authorizer.AdministeredGroupIdsAsync(accountId, ct)
+            ),
+            ct
         );
+
+    public async Task<IReadOnlyList<ToDoSummary>> ForViewerAsync(
+        ToDoViewer viewer,
+        CancellationToken ct
+    )
+    {
+        var granted = viewer.GrantedKeys;
         var today = ClubClock.Today(_timeProvider);
         var toDos = new List<ToDoSummary>();
 
@@ -62,7 +74,7 @@ public sealed class ToDoService
             toDos.Add(await WaitingApplicationsAsync(ct));
 
         if (ToDoKeys.Shows(ToDoKind.GroupMatcherStatementsOpen, granted))
-            toDos.AddRange(await GroupMatcherStatementToDosAsync(accountId, ct));
+            toDos.AddRange(await GroupMatcherStatementToDosAsync(viewer.AdministeredGroupIds, ct));
 
         return
         [
@@ -119,11 +131,10 @@ public sealed class ToDoService
         );
 
     private async Task<IReadOnlyList<ToDoSummary>> GroupMatcherStatementToDosAsync(
-        int accountId,
+        IReadOnlyCollection<int> groupIds,
         CancellationToken ct
     )
     {
-        var groupIds = await _authorizer.AdministeredGroupIdsAsync(accountId, ct);
         if (groupIds.Count == 0)
             return [];
 

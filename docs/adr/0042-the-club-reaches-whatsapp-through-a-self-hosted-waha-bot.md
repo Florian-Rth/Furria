@@ -12,6 +12,9 @@ why the number is dedicated and the bot only posts into the one existing group, 
 never writes to anyone directly — with one exception (amended 2026-11-22): a person who answers an
 add-on after it closed is told so in a private message, once per add-on, because saying it in the
 group would expose her to everyone. It only ever answers her own late vote, never starts a chat.
+A second exception (amended 2026-11-24): the **club assistant** answers private messages a person
+sent to the bot first — only there, never in a group, even when mentioned — because an answer in
+the group would show everyone what only the asker may see. Still, the bot never starts a chat.
 
 ## Consequences
 

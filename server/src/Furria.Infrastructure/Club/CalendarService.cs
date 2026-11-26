@@ -91,31 +91,12 @@ public sealed partial class CalendarService
             return Result<IReadOnlyList<CalendarEntrySummary>>.Forbidden(NoPersonMessage);
 
         var now = _timeProvider.GetUtcNow();
-        var today = ClubClock.Today(_timeProvider);
-        var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
-        var windowStart = ClubClock.StartOfDay(query.From);
-        var windowEnd = ClubClock.StartOfDay(query.To.AddDays(1));
-
-        var rows = await _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(entry =>
-                entry.StartsAt < windowEnd
-                && (
-                    entry.EndsAt == null
-                        ? entry.StartsAt >= windowStart
-                        : entry.EndsAt > windowStart
-                )
-            )
-            .Where(entry => !query.ClubOwnedOnly || entry.OwnerGroupId == null)
-            .Where(entry => query.OwnerGroupId == null || entry.OwnerGroupId == query.OwnerGroupId)
-            .Where(VisibleTo(viewer.PersonId, viewer.Rights, today))
-            .Where(PublishedEvents.IsListedEntry)
-            .OrderBy(entry => entry.StartsAt)
-            .ThenBy(entry => entry.Id)
-            .Select(RowProjection(now, openEndedCutoff))
-            .ToListAsync(ct);
-        var ties = await _dbContext.CalendarTiesOfAsync(viewer.PersonId, today, ct);
-        rows = [.. rows.Where(row => ties.Sees(FactsOf(row), viewer.Rights))];
+        var (rows, ties) = await SeenRowsAsync(
+            viewer,
+            new SeenWindow(query.From, query.To, query.ClubOwnedOnly, query.OwnerGroupId),
+            now,
+            ct
+        );
 
         var extras = await ExtrasOfAsync(viewer.PersonId, rows, now, ct);
         var organised = await OrganisedOwnersAsync(query.ViewerAccountId, rows, ties, ct);
@@ -136,21 +117,7 @@ public sealed partial class CalendarService
 
         var now = _timeProvider.GetUtcNow();
         var today = ClubClock.Today(_timeProvider);
-        var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
-
-        var row = await _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(entry => entry.Id == calendarEntryId)
-            .Where(VisibleTo(viewer.PersonId, viewer.Rights, today))
-            .Where(PublishedEvents.IsListedEntry)
-            .Select(RowProjection(now, openEndedCutoff))
-            .SingleOrDefaultAsync(ct);
-
-        if (row is null)
-            return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
-
-        var ties = await _dbContext.CalendarTiesOfAsync(viewer.PersonId, today, ct);
-        if (!ties.Sees(FactsOf(row), viewer.Rights))
+        if (await SeenRowAsync(viewer, calendarEntryId, ct) is not var (row, ties))
             return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
 
         var extras = await ExtrasOfAsync(viewer.PersonId, [row], now, ct);
@@ -1050,6 +1017,43 @@ public sealed partial class CalendarService
     private Task<bool> GroupExistsAsync(int groupId, CancellationToken ct) =>
         _dbContext.Groups.AsNoTracking().AnyAsync(group => group.Id == groupId, ct);
 
+    private async Task<(List<EntryRow> Rows, CalendarTies Ties)> SeenRowsAsync(
+        CalendarViewer viewer,
+        SeenWindow window,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        var today = ClubClock.DayOf(now);
+        var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
+        var windowStart = ClubClock.StartOfDay(window.From);
+        var windowEnd = ClubClock.StartOfDay(window.To.AddDays(1));
+
+        var rows = await _dbContext
+            .CalendarEntries.AsNoTracking()
+            .Where(entry =>
+                entry.StartsAt < windowEnd
+                && (
+                    entry.EndsAt == null
+                        ? entry.StartsAt >= windowStart
+                        : entry.EndsAt > windowStart
+                )
+            )
+            .Where(entry => !window.ClubOwnedOnly || entry.OwnerGroupId == null)
+            .Where(entry =>
+                window.OwnerGroupId == null || entry.OwnerGroupId == window.OwnerGroupId
+            )
+            .Where(VisibleTo(viewer.PersonId, viewer.Rights, today))
+            .Where(PublishedEvents.IsListedEntry)
+            .OrderBy(entry => entry.StartsAt)
+            .ThenBy(entry => entry.Id)
+            .Select(RowProjection(now, openEndedCutoff))
+            .ToListAsync(ct);
+        var ties = await _dbContext.CalendarTiesOfAsync(viewer.PersonId, today, ct);
+
+        return ([.. rows.Where(row => ties.Sees(FactsOf(row), viewer.Rights))], ties);
+    }
+
     private async Task<CalendarViewer?> ViewerOfAsync(int accountId, CancellationToken ct)
     {
         if (await _authorizer.ActivePersonIdAsync(accountId, ct) is not { } personId)
@@ -1214,6 +1218,13 @@ public sealed partial class CalendarService
     );
 
     private readonly record struct CalendarViewer(int PersonId, CalendarRights Rights);
+
+    private readonly record struct SeenWindow(
+        DateOnly From,
+        DateOnly To,
+        bool ClubOwnedOnly,
+        int? OwnerGroupId
+    );
 
     private sealed record GroupStateRow(int GroupId, DateOnly? ArchivedOn);
 

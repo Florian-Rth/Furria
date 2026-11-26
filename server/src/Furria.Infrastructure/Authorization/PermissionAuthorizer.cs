@@ -19,10 +19,10 @@ public sealed class PermissionAuthorizer
 
     private int? _boundAccountId;
     private AccountIdentity? _identity;
-    private HashSet<string>? _grantedKeys;
+    private IReadOnlySet<string>? _grantedKeys;
     private bool? _isAffiliated;
     private bool? _canSearchPersons;
-    private List<int>? _administeredGroupIds;
+    private IReadOnlyList<int>? _administeredGroupIds;
 
     public PermissionAuthorizer(AppDbContext dbContext, TimeProvider timeProvider)
     {
@@ -84,8 +84,16 @@ public sealed class PermissionAuthorizer
             return _grantedKeys = FurriaPermissions.All.ToHashSet(StringComparer.Ordinal);
 
         if (identity.PersonId is not { } personId)
-            return _grantedKeys = [];
+            return _grantedKeys = new HashSet<string>(StringComparer.Ordinal);
 
+        return _grantedKeys = await GrantedKeysOfPersonAsync(personId, ct);
+    }
+
+    public async Task<IReadOnlySet<string>> GrantedKeysOfPersonAsync(
+        int personId,
+        CancellationToken ct
+    )
+    {
         var today = ClubClock.Today(_timeProvider);
         var keys = await _dbContext
             .RoleHoldings.AsNoTracking()
@@ -117,7 +125,7 @@ public sealed class PermissionAuthorizer
 
         keySet.UnionWith(impliedKeys);
 
-        return _grantedKeys = keySet;
+        return keySet;
     }
 
     public async Task<bool> IsAffiliatedAsync(int accountId, CancellationToken ct)
@@ -201,11 +209,19 @@ public sealed class PermissionAuthorizer
         if (personId is null)
             return _administeredGroupIds = [];
 
+        return _administeredGroupIds = await AdministeredGroupIdsOfPersonAsync(personId.Value, ct);
+    }
+
+    public async Task<IReadOnlyList<int>> AdministeredGroupIdsOfPersonAsync(
+        int personId,
+        CancellationToken ct
+    )
+    {
         var today = ClubClock.Today(_timeProvider);
-        return _administeredGroupIds = await _dbContext
+        return await _dbContext
             .GroupAdmins.AsNoTracking()
             .Where(Running.GroupAdmins(today))
-            .Where(admin => admin.PersonId == personId.Value)
+            .Where(admin => admin.PersonId == personId)
             .Select(admin => admin.GroupId)
             .Distinct()
             .ToListAsync(ct);

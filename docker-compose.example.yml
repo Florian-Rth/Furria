@@ -91,6 +91,9 @@ services:
       WhatsApp__BaseUrl: http://waha:3000
       WhatsApp__ApiKey: ${WAHA_API_KEY:?set WAHA_API_KEY (>= 32 chars) in .env}
       WhatsApp__WebhookHmacKey: ${WHATSAPP_WEBHOOK_HMAC_KEY:?set WHATSAPP_WEBHOOK_HMAC_KEY (>= 32 chars) in .env}
+      # The club assistant's model (ADR-0043): optional. Empty leaves the assistant unswitchable;
+      # endpoint, model id and prices keep their defaults unless set here (docs/ops/PRODUCTION.md).
+      ClubAssistant__ApiKey: ${CLUB_ASSISTANT_API_KEY:-}
     volumes:
       # A named volume by default; set MEDIA_PATH to a host path (NAS mount, mounted bucket) to
       # put the media elsewhere - owned by uid 1654, the containers' user. Back it up together
@@ -165,7 +168,7 @@ services:
       WAHA_DASHBOARD_ENABLED: "false"
       WHATSAPP_SWAGGER_ENABLED: "false"
       WHATSAPP_HOOK_URL: http://api:8080/api/whatsapp/webhook
-      WHATSAPP_HOOK_EVENTS: session.status,poll.vote,poll.vote.failed,event.response,group.v2.participants
+      WHATSAPP_HOOK_EVENTS: session.status,poll.vote,poll.vote.failed,event.response,group.v2.participants,message
       WHATSAPP_HOOK_HMAC_KEY: ${WHATSAPP_WEBHOOK_HMAC_KEY:?set WHATSAPP_WEBHOOK_HMAC_KEY (>= 32 chars) in .env}
     volumes:
       # The session keys: losing them unlinks the bot and makes every vote on an earlier poll

@@ -224,11 +224,11 @@ public sealed partial class AnnouncementService
 
     private async Task<IReadOnlyDictionary<int, AnnouncementAddOnsOfReader>> AddOnsOfAsync(
         IReadOnlyList<AnnouncementRow> rows,
-        AnnouncementReader reader,
+        AddOnsReader reader,
         CancellationToken ct
     )
     {
-        var viewerPersonId = reader.Mentions.PersonId;
+        var viewerPersonId = reader.PersonId;
         var now = _timeProvider.GetUtcNow();
         var ids = rows.Select(row => row.AnnouncementId).ToList();
         var polls = await _dbContext.PollsOfAnnouncementsAsync(ids, viewerPersonId, now, ct);
@@ -245,7 +245,7 @@ public sealed partial class AnnouncementService
             ct
         );
         var concern = await ConcernOfAsync(rows, reader, polls.Count + lists.Count > 0, ct);
-        var loans = await LoansOfAsync(ids, reader.AccountId, ct);
+        var loans = await LoansOfAsync(ids, reader, ct);
 
         return rows.ToDictionary(
             row => row.AnnouncementId,
@@ -259,7 +259,7 @@ public sealed partial class AnnouncementService
                         [.. loans[row.AnnouncementId]],
                         [.. unassigned[row.AnnouncementId]]
                     ),
-                    concern.For(ManagedBy(row, reader), reader.Mentions.PersonId),
+                    concern.For(ManagedBy(row, reader), reader.PersonId),
                     now
                 )
         );
@@ -267,7 +267,7 @@ public sealed partial class AnnouncementService
 
     private async Task<ReaderConcern> ConcernOfAsync(
         IReadOnlyList<AnnouncementRow> rows,
-        AnnouncementReader reader,
+        AddOnsReader reader,
         bool holdsPollsOrLists,
         CancellationToken ct
     )
@@ -275,7 +275,7 @@ public sealed partial class AnnouncementService
         if (!holdsPollsOrLists && rows.All(row => row.Attendance.Position is null))
             return ReaderConcern.Nothing;
 
-        var viewerPersonId = reader.Mentions.PersonId;
+        var viewerPersonId = reader.PersonId;
         var concerned = await _dbContext.AnnouncementConcernedIdsAsync(
             ClubClock.Today(_timeProvider),
             ct
@@ -295,9 +295,9 @@ public sealed partial class AnnouncementService
     }
 
     [Pure]
-    private static bool ManagedBy(AnnouncementRow row, AnnouncementReader reader) =>
+    private static bool ManagedBy(AnnouncementRow row, AddOnsReader reader) =>
         reader.MayPostAnnouncements
-        || row.Author is { } author && author.PersonId == reader.Mentions.PersonId;
+        || row.Author is { } author && author.PersonId == reader.PersonId;
 
     private async Task<ILookup<int, CalendarAttendanceAnswerDetails>> AnswersOnAsync(
         IReadOnlyList<int> announcementIds,

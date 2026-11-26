@@ -100,6 +100,34 @@ internal static class WebhookDeliveries
             }
         );
 
+    internal static string Message(
+        string chatId,
+        string text,
+        DateTimeOffset at,
+        bool hasMedia = false,
+        string? participant = null
+    ) =>
+        JsonSerializer.Serialize(
+            new
+            {
+                id = $"evt_{Guid.NewGuid():N}",
+                timestamp = at.ToUnixTimeMilliseconds(),
+                @event = "message",
+                session = ApiTestFixture.WhatsAppSession,
+                engine = "GOWS",
+                payload = new
+                {
+                    id = $"false_{chatId}_{Guid.NewGuid():N}",
+                    timestamp = at.ToUnixTimeSeconds(),
+                    from = chatId,
+                    fromMe = false,
+                    participant,
+                    body = text,
+                    hasMedia,
+                },
+            }
+        );
+
     private static async Task<HttpResponseMessage> SendAsync(
         HttpClient client,
         string body,

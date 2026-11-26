@@ -2,6 +2,7 @@ using Furria.Application.Changes;
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.WhatsApp;
+using Furria.Infrastructure.Assistant;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Changes;
@@ -248,6 +249,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<WhatsAppGroupAddQuery>();
         services.AddSingleton<WhatsAppPacing>();
         services.AddHostedService<WhatsAppDispatcher>();
+        services.AddHostedService<WhatsAppReplyDispatcher>();
+        services.AddClubAssistant(configuration);
         services.AddSingleton<ChangeFeed>();
         services.AddHostedService<ChangeListener>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
@@ -280,6 +283,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<WhatsAppOutboxSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>
             serviceProvider.GetRequiredService<WhatsAppOutboxSignal>()
+        );
+        services.AddSingleton<WhatsAppReplySignal>();
+        services.AddSingleton<OutboxSignal>(serviceProvider =>
+            serviceProvider.GetRequiredService<WhatsAppReplySignal>()
+        );
+        services.AddSingleton<ClubAssistantSignal>();
+        services.AddSingleton<OutboxSignal>(serviceProvider =>
+            serviceProvider.GetRequiredService<ClubAssistantSignal>()
         );
         services.AddSingleton<MediaFileReaperSignal>();
         services.AddSingleton<OutboxSignal>(serviceProvider =>

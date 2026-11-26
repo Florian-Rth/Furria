@@ -1,12 +1,15 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {
+  ClubAssistant,
+  ClubAssistantSettings,
   WhatsAppOverview,
   WhatsAppPairingCode,
   WhatsAppQrCode,
   WhatsAppReach,
 } from './schemas';
 import {
+  ClubAssistantSchema,
   WhatsAppOverviewSchema,
   WhatsAppPairingCodeSchema,
   WhatsAppQrCodeSchema,
@@ -58,6 +61,20 @@ export const requestWhatsAppGroupKeeping = (
   apiFetch(`${API_PATH}/group-keeping`, {
     method: 'PUT',
     body: { keepsMembers },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestClubAssistant = (accessToken: string): Promise<ClubAssistant> =>
+  apiFetch(`${API_PATH}/assistant`, { schema: ClubAssistantSchema, accessToken });
+
+export const requestClubAssistantSettings = (
+  settings: ClubAssistantSettings,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${API_PATH}/assistant`, {
+    method: 'PUT',
+    body: settings,
     schema: NoContentSchema,
     accessToken,
   });

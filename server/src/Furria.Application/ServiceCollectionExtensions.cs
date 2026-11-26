@@ -1,3 +1,4 @@
+using Furria.Application.Assistant;
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.Mail;
@@ -123,6 +124,18 @@ public static class ServiceCollectionExtensions
                 options => options.IsSwitchedOff || options.IsConfigured,
                 $"{WhatsAppOptions.SectionName} needs a BaseUrl, an ApiKey, a WebhookHmacKey and "
                     + "a Session together, or no BaseUrl at all to keep WhatsApp off."
+            )
+            .ValidateOnStart();
+
+        services
+            .AddOptions<ClubAssistantOptions>()
+            .BindConfiguration(ClubAssistantOptions.SectionName)
+            .Validate(
+                options => options.IsUsable,
+                $"{ClubAssistantOptions.SectionName} needs an absolute Endpoint, a Model, a "
+                    + "ReasoningEffort of none, low, medium, high or empty, and prices of zero or "
+                    + "more once an ApiKey is set; without an ApiKey the club "
+                    + "assistant stays off."
             )
             .ValidateOnStart();
 

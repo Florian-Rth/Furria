@@ -5,6 +5,8 @@ import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
+  requestClubAssistant,
+  requestClubAssistantSettings,
   requestWhatsAppClubGroup,
   requestWhatsAppGroupKeeping,
   requestWhatsAppLinking,
@@ -14,12 +16,15 @@ import {
   requestWhatsAppReach,
 } from './requests';
 import type {
+  ClubAssistant,
+  ClubAssistantSettings,
   WhatsAppOverview,
   WhatsAppPairingCode,
   WhatsAppQrCode,
   WhatsAppReach,
 } from './schemas';
 import {
+  CLUB_ASSISTANT_SAVED_NOTICE,
   CLUB_GROUP_PICKED_NOTICE,
   LINKING_STARTED_NOTICE,
   toGroupKeepingNotice,
@@ -81,4 +86,17 @@ export const useWhatsAppGroupKeepingMutation = (): UseMutationResult<void, Error
     request: requestWhatsAppGroupKeeping,
     changes: ['whatsApp'],
     notice: { success: toGroupKeepingNotice, failure: toWriteErrorMessage },
+  });
+
+export const useClubAssistantQuery = (): UseQueryResult<ClubAssistant, Error> =>
+  useQuery({
+    queryKey: queryKeys.clubAssistant,
+    queryFn: () => withFreshAccessToken(requestClubAssistant),
+  });
+
+export const useClubAssistantMutation = (): UseMutationResult<void, Error, ClubAssistantSettings> =>
+  useApiMutation({
+    request: requestClubAssistantSettings,
+    changes: ['whatsApp'],
+    notice: { success: () => CLUB_ASSISTANT_SAVED_NOTICE, failure: toWriteErrorMessage },
   });

@@ -60,6 +60,12 @@ export const WhatsAppHelp: FC<WhatsAppHelpProps> = ({ viewer }) => {
         <KkHelp.Text>{WHATSAPP_HELP_COPY.refused.text}</KkHelp.Text>
         {refusedShow}
       </KkHelp.Hint>
+      <KkHelp.Hint>
+        <KkHelp.Title>{WHATSAPP_HELP_COPY.assistant.title}</KkHelp.Title>
+        <KkHelp.Text>{WHATSAPP_HELP_COPY.assistant.text}</KkHelp.Text>
+        <KkHelp.Text>{WHATSAPP_HELP_COPY.assistant.limits}</KkHelp.Text>
+        <ScreenHelpShow spot={WHATSAPP_HELP_SPOTS.assistant} />
+      </KkHelp.Hint>
     </ScreenHelp>
   );
 };

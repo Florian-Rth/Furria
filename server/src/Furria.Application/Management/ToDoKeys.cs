@@ -26,6 +26,10 @@ public static class ToDoKeys
     }.ToFrozenDictionary();
 
     [Pure]
+    public static bool GrantsAnyByPermission(IReadOnlySet<string> granted) =>
+        RequiredKeys.Values.Any(keys => keys.Length > 0 && keys.All(granted.Contains));
+
+    [Pure]
     public static bool Shows(ToDoKind kind, IReadOnlySet<string> granted) =>
         RequiredKeys[kind].All(granted.Contains);
 }

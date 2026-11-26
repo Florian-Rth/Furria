@@ -1,3 +1,4 @@
+using Furria.Core.Assistant;
 using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
@@ -133,6 +134,17 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<EventPresalePlace> EventPresalePlaces => Set<EventPresalePlace>();
 
     public DbSet<ClubRecord> ClubRecords => Set<ClubRecord>();
+
+    public DbSet<ClubAssistantSettings> ClubAssistantSettingsRows => Set<ClubAssistantSettings>();
+
+    public DbSet<ClubAssistantModelCall> ClubAssistantModelCalls => Set<ClubAssistantModelCall>();
+
+    public DbSet<ClubAssistantQuestion> ClubAssistantQuestions => Set<ClubAssistantQuestion>();
+
+    public DbSet<ClubAssistantNotice> ClubAssistantNotices => Set<ClubAssistantNotice>();
+
+    public DbSet<ClubAssistantAcquaintance> ClubAssistantAcquaintances =>
+        Set<ClubAssistantAcquaintance>();
 
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 

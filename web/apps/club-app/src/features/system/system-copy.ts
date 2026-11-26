@@ -167,6 +167,8 @@ export const SERVICE_NAMES: Readonly<Record<string, string>> = {
   intakeExpirySweep: 'Abgelaufene QR-Anmeldungen bereinigen',
   whatsAppInbox: 'WhatsApp-Ereignisse verarbeiten',
   whatsAppDispatcher: 'In die WhatsApp-Gruppe senden',
+  whatsAppReplies: 'Private WhatsApp-Antworten senden',
+  clubAssistantAnswers: 'Fragen an den Vereinsassistenten beantworten',
 };
 
 export const serviceNameOf = (job: string): string => SERVICE_NAMES[job] ?? job;

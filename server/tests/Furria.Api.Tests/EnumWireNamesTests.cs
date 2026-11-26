@@ -88,7 +88,8 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
             + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings "
-            + "pushDispatcher intakeExpirySweep whatsAppInbox whatsAppDispatcher",
+            + "pushDispatcher intakeExpirySweep whatsAppInbox whatsAppDispatcher whatsAppReplies "
+            + "clubAssistantAnswers",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",

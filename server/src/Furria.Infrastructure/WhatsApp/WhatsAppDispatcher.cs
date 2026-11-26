@@ -110,7 +110,7 @@ public sealed class WhatsAppDispatcher : BackgroundService
 
     private async Task<bool> SendNextPacedAsync(CancellationToken ct)
     {
-        switch (await InScopeAsync(delivery => delivery.SendNextAsync(ct)))
+        switch (await InScopeAsync(delivery => delivery.SendNextAsync(WhatsAppSendLane.Paced, ct)))
         {
             case WhatsAppSendOutcome.Sent:
                 await WaitAsync(_pacing.GapAfterSend(), ct);
