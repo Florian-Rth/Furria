@@ -23,6 +23,7 @@ import {
   CLUB_ASSISTANT_TITLE,
   CLUB_ASSISTANT_USED_LABEL,
 } from '../whatsapp-copy';
+import { WHATSAPP_HELP_SPOTS } from '../whatsapp-help-copy';
 
 const BUDGET_STEP_LABELS: KkNumberStepLabels = { less: 'Ein Euro weniger', more: 'Ein Euro mehr' };
 const QUESTIONS_STEP_LABELS: KkNumberStepLabels = {
@@ -38,7 +39,7 @@ export const WhatsAppAssistantPanel: FC<WhatsAppAssistantPanelProps> = ({ assist
   const panel = useClubAssistantPanel(assistant);
 
   return (
-    <KkPanelSection title={CLUB_ASSISTANT_TITLE}>
+    <KkPanelSection title={CLUB_ASSISTANT_TITLE} landing={WHATSAPP_HELP_SPOTS.assistant}>
       <KkPanel variant="block" sx={{ gap: 1.75 }}>
         <KkSwitchRow
           label={CLUB_ASSISTANT_LABEL}
