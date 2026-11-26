@@ -111,6 +111,25 @@ public sealed class ClubAssistantAnswerTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_MakeTheModelLookFirst_When_ItAnswersAQuestion()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(_ => { }, ct);
+        await SwitchOnAsync(ctx, ct);
+        _fixture.Model.Script(
+            FakeModelReply.Calling(ClubAssistantTools.CalendarEntries, TodayAndTomorrow()),
+            FakeModelReply.Saying("Heute ist nichts los.")
+        );
+
+        await AskAsync("Was gibt's Neues?", ct);
+
+        Assert.Equal(
+            ["required", "auto"],
+            _fixture.Model.Requests.Select(request => request["tool_choice"]?.GetValue<string>())
+        );
+    }
+
+    [Fact]
     public async Task Should_IntroduceItselfOnlyOnce_When_SheAsksAgain()
     {
         var ct = TestContext.Current.CancellationToken;

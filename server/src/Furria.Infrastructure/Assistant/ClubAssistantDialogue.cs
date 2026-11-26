@@ -61,6 +61,7 @@ public sealed class ClubAssistantDialogue
             if (!await _budget.HasBudgetLeftAsync(ct))
                 return ClubAssistantOutcome.BudgetUsedUp;
 
+            options.ToolMode = call == 0 ? ChatToolMode.RequireAny : ChatToolMode.Auto;
             if (await RespondAsync(chat, messages, options, ct) is not { } response)
                 return ClubAssistantOutcome.ProviderFailed;
 
