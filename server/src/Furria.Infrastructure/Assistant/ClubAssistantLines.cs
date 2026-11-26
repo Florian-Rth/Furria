@@ -44,7 +44,11 @@ public static class ClubAssistantLines
 
     [Pure]
     public static string AnswerFor(string reply, bool isIntroduced) =>
-        ClubAssistantConversation.CappedAnswer(isIntroduced ? reply : Introduced(reply));
+        ClubAssistantConversation.CappedAnswer(
+            isIntroduced
+                ? ClubAssistantWhatsAppText.Of(reply)
+                : Introduced(ClubAssistantWhatsAppText.Of(reply))
+        );
 
     [Pure]
     private static string SwitchedOff(string appUrl) =>

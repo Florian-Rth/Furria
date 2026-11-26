@@ -77,6 +77,24 @@ public sealed class ClubAssistantAnswerTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_SendWhatsAppFormatting_When_TheModelWritesMarkdown()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(_ => { }, ct);
+        await SwitchOnAsync(ctx, ct);
+        _fixture.Model.Script(
+            FakeModelReply.Saying("### Vereinsabend\n**Fr, 11.12.** · __pünktlich__")
+        );
+
+        await AskAsync("Was ist los?", ct);
+
+        Assert.Equal(
+            ClubAssistantLines.Introduced("*Vereinsabend*\n*Fr, 11.12.* · _pünktlich_"),
+            Assert.Single(_fixture.Waha.Sent).Text
+        );
+    }
+
+    [Fact]
     public async Task Should_AskTheSmallModelToSkipThinking_When_ItCallsTheModel()
     {
         var ct = TestContext.Current.CancellationToken;
