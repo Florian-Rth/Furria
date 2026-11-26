@@ -16,6 +16,7 @@ public sealed class FakeWahaService : HttpMessageHandler
 
     private readonly ConcurrentDictionary<string, string> _groups = new();
     private readonly ConcurrentDictionary<string, string> _contactNames = new();
+    private readonly ConcurrentDictionary<string, string> _lidPhones = new();
     private readonly ConcurrentQueue<FakeWahaSend> _sent = new();
     private readonly ConcurrentQueue<string> _typedIn = new();
     private readonly ConcurrentDictionary<
@@ -43,6 +44,8 @@ public sealed class FakeWahaService : HttpMessageHandler
     public void KnowContact(string contactId, string pushName) =>
         _contactNames[contactId] = pushName;
 
+    public void KnowLid(string lid, string phoneId) => _lidPhones[lid] = phoneId;
+
     public void RefuseSends(HttpStatusCode status, string body)
     {
         lock (_sessionLock)
@@ -62,6 +65,7 @@ public sealed class FakeWahaService : HttpMessageHandler
     {
         _groups.Clear();
         _contactNames.Clear();
+        _lidPhones.Clear();
         _sent.Clear();
         _typedIn.Clear();
         _participants.Clear();
@@ -95,7 +99,7 @@ public sealed class FakeWahaService : HttpMessageHandler
             : ContactOf(ContactIdOf(query));
 
     private HttpResponseMessage PhoneOfLid(string lid) =>
-        Json(JsonSerializer.Serialize(new { lid, pn = (string?)null }));
+        Json(JsonSerializer.Serialize(new { lid, pn = _lidPhones.GetValueOrDefault(lid) }));
 
     private HttpResponseMessage ContactOf(string contactId) =>
         _contactNames.TryGetValue(contactId, out var pushName)

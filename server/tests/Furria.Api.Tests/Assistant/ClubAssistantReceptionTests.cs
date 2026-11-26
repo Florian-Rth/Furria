@@ -13,6 +13,7 @@ namespace Furria.Api.Tests.Assistant;
 public sealed class ClubAssistantReceptionTests : IClassFixture<ApiTestFixture>
 {
     private const string AlicesChatId = "491701234567@c.us";
+    private const string AlicesLinkedChatId = "273666793320622@lid";
     private const string CarlasChatId = "491705555555@c.us";
     private const string StrangersChatId = "491609999999@c.us";
     private const string ClubGroupChatId = "120363000000000001@g.us";
@@ -40,6 +41,24 @@ public sealed class ClubAssistantReceptionTests : IClassFixture<ApiTestFixture>
         Assert.Equal(
             (ctx.Identity.People.IdOf("alice"), AlicesChatId, "Hat heute jemand Training?"),
             (question.PersonId, question.ChatId, question.Text)
+        );
+        Assert.Empty(_fixture.Waha.Sent);
+    }
+
+    [Fact]
+    public async Task Should_KnowTheMember_When_WhatsAppHidesHerNumberBehindALinkedId()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        await SwitchOnAsync(ctx, 30, ct);
+        _fixture.Waha.KnowLid(AlicesLinkedChatId, AlicesChatId);
+
+        await ReceiveAsync(ct, Message(AlicesLinkedChatId, "Wann ist Training?", Now));
+
+        var question = Assert.Single(await _fixture.ClubAssistantQuestionsAsync(ct));
+        Assert.Equal(
+            (ctx.Identity.People.IdOf("alice"), AlicesLinkedChatId),
+            (question.PersonId, question.ChatId)
         );
         Assert.Empty(_fixture.Waha.Sent);
     }
