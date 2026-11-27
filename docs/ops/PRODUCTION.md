@@ -279,7 +279,9 @@ fills (media grows 0.2–0.3 TB per season).
 
 ### Setup
 
-On the host, as root, in the deployment's directory (`~/furria`); needs `docker`, `curl`, `flock`:
+On the host, as root, in the deployment's directory (`~/furria`); needs `docker`, `curl`, `flock`.
+Docker installed as a snap only bind-mounts paths under `/home` (not hidden ones): then put the
+key and `BACKUP_STATE_DIR` there too, e.g. `~/furria-backup/key` and `~/furria-backup/state`.
 
 1. A key for the target, registered with it (the provider says how — for a storage box usually
    its `authorized_keys`):
