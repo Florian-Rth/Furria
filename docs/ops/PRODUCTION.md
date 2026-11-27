@@ -261,7 +261,7 @@ the host itself: a backup there dies with the host.
 |---|---|
 | `/backup/staged/database.dump` | `pg_dump -Fc` (uncompressed — restic compresses and deduplicates) |
 | `/backup/staged/waha-sessions.tar` | the bot's session keys (volume `waha-sessions`, see [WhatsApp](#whatsapp)) |
-| `/backup/staged/.env`, `docker-compose.yml` | the deployment: without `.env`'s signing, push and passkey keys a rebuilt system breaks every signed media link and push subscription |
+| `/backup/staged/.env`, the compose file | the deployment: without `.env`'s signing, push and passkey keys a rebuilt system breaks every signed media link and push subscription |
 | `/backup/originals/` | the media originals; renditions and staging are left out ([Media](#the-media-path)) |
 
 The database and the originals come **from the same point** (ADR-0023): a database without its
@@ -315,7 +315,7 @@ Every **Sunday at 05:00** Berlin time `./backup.sh check` (`furria-backup-check.
 latest nightly snapshot restorable — there is no manual restore drill:
 
 1. `restic check --read-data-subset=5%`: the repository's integrity and a rotating 5% of its data.
-2. The snapshot holds a non-empty `database.dump`, `.env`, `docker-compose.yml` and a readable
+2. The snapshot holds a non-empty `database.dump`, `.env`, the compose file and a readable
    `waha-sessions.tar`.
 3. The dump is restored into a throwaway Postgres (the live image, no network, removed afterwards)
    with `pg_restore --exit-on-error`; `__EFMigrationsHistory`, `account`, `person` and `group`
@@ -342,7 +342,7 @@ S=/var/lib/furria-backup/restore/backup                        # BACKUP_STATE_DI
 On a new host, first put Docker, the repo's `backup.example.sh` as `backup.sh` and a `.env`
 holding only the `BACKUP_*` lines (password and target from the paper copy) into the
 deployment's directory and restore as above; then copy the snapshot's `.env` and
-`docker-compose.yml` (`$S/staged/`) over them and `docker compose up -d postgres waha` so the
+compose file (`$S/staged/`, under its own name) over them and `docker compose up -d postgres waha` so the
 volumes exist. Then:
 
 ```bash

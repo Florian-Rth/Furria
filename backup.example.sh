@@ -4,7 +4,7 @@
 # .env and compose file - all from one point. Renditions and upload staging are left out:
 # renditions are cache the media worker rebuilds (ADR-0024).
 #
-# Runs on the host beside docker-compose.yml and .env, as root (it reads the media path and writes
+# Runs on the host beside the compose file and .env, as root (it reads the media path and writes
 # the staging directory); needs docker, curl and flock. Settings are the BACKUP_* lines of .env
 # (.env.example); systemd/furria-backup.timer runs it nightly. Setup and restore:
 # docs/ops/PRODUCTION.md, "Backup and restore".
@@ -151,6 +151,9 @@ find_media_root() {
 
 check_dir="$state_dir/check"
 
+# The names docker compose looks for, in its own order; the snapshot keeps the file's name.
+compose_file_names=(compose.yaml compose.yml docker-compose.yaml docker-compose.yml)
+
 # The size of a file in a snapshot, empty when the snapshot lacks it.
 snapshot_file_size() {
   restic ls --json "$1" "$(dirname "$2")" |
@@ -179,10 +182,16 @@ run_check() {
   log "Checking snapshot ${snapshot:0:8} of $snapshot_time"
 
   step="looking for the staged files"
-  for path in database.dump .env docker-compose.yml waha-sessions.tar; do
+  for path in database.dump .env waha-sessions.tar; do
     size="$(snapshot_file_size "$snapshot" "/backup/staged/$path")"
     [ "${size:-0}" -gt 0 ] || fail "snapshot ${snapshot:0:8} lacks $path or it is empty"
   done
+  size=0
+  for path in "${compose_file_names[@]}"; do
+    size="$(snapshot_file_size "$snapshot" "/backup/staged/$path")"
+    [ "${size:-0}" -gt 0 ] && break
+  done
+  [ "${size:-0}" -gt 0 ] || fail "snapshot ${snapshot:0:8} lacks the compose file or it is empty"
   step="reading the session archive"
   restic dump "$snapshot" /backup/staged/waha-sessions.tar | tar -tf - >/dev/null
 
@@ -273,7 +282,12 @@ step="copying the WhatsApp sessions"
 docker run --rm --volumes-from "$(docker compose ps -aq waha)" "$alpine_image" tar -cf - -C /app/.sessions . > "$staging/waha-sessions.tar"
 
 step="copying .env and the compose file"
-cp .env docker-compose.yml "$staging/"
+compose_file=""
+for name in "${compose_file_names[@]}"; do
+  [ -f "$name" ] && compose_file="$name" && break
+done
+[ -n "$compose_file" ] || fail "no compose file beside the script"
+cp .env "$compose_file" "$staging/"
 
 step="taking the snapshot"
 log "Taking the snapshot"

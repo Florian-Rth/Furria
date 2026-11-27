@@ -10,7 +10,7 @@ After=network-online.target docker.service
 
 [Service]
 Type=oneshot
-# The deployment's directory: docker-compose.yml, .env and backup.sh.
+# The deployment's directory: the compose file, .env and backup.sh.
 WorkingDirectory=/home/USER/furria
 ExecStart=/home/USER/furria/backup.sh
 Nice=10
