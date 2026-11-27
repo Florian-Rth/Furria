@@ -1,0 +1,13 @@
+# Starts furria-backup-check.service every Sunday at 05:00 Berlin time, after the night's backup
+# (a backup still running is waited for). Persistent: a Sunday the host was down is caught up right
+# after the next boot.
+
+[Unit]
+Description=Furria weekly backup restore check on Sunday at 05:00 Europe/Berlin
+
+[Timer]
+OnCalendar=Sun *-*-* 05:00:00 Europe/Berlin
+Persistent=true
+
+[Install]
+WantedBy=timers.target

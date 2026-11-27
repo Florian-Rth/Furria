@@ -44,7 +44,7 @@ stop lasts seconds to a minute; the website and club app keep serving pages.
 - **Target**: an SFTP repository; host, user, path, key file and password come from the
   deployment's `.env` — nothing about the target lives in the repo.
 - **Schedule**: systemd timers (examples in `systemd/`) (`Persistent=true`, so a missed run catches up after boot) —
-  nightly backup at 03:30 Europe/Berlin, weekly check Sunday after the backup. Unit files ship as
+  nightly backup at 03:30 Europe/Berlin, weekly check (`backup.sh check`) Sunday 05:00, waiting for a backup still running. Unit files ship as
   examples beside the script.
 - **Retention**: `forget --prune` with 7 daily, 5 weekly, 12 monthly.
 - **Capacity**: after each run the script reads the target's used/total space and reports a
@@ -79,12 +79,12 @@ changes yet.
 
 ### Phase 2 — Weekly restore check
 Goal: the repo ships the weekly check and its timer; a broken backup is noticed within a week.
-- [ ] Check script: `restic check --read-data-subset=5%`
-- [ ] Restore the latest dump into a throwaway Postgres and assert core tables hold rows
-- [ ] Restore a random sample of originals and compare byte for byte with the live files
-- [ ] Assert `.env`, compose file and session archive are in the snapshot; push URL on success/failure
-- [ ] systemd service + timer examples (Sunday, after the backup)
-- [ ] Document the check in `docs/ops/PRODUCTION.md`; try it against the scratch target
+- [x] Check script: `restic check --read-data-subset=5%`
+- [x] Restore the latest dump into a throwaway Postgres and assert core tables hold rows
+- [x] Restore a random sample of originals and compare byte for byte with the live files
+- [x] Assert `.env`, compose file and session archive are in the snapshot; push URL on success/failure
+- [x] systemd service + timer examples (Sunday, after the backup)
+- [x] Document the check in `docs/ops/PRODUCTION.md`; try it against the scratch target
 
 ### Phase 3 — Live installation
 Goal: the live host backs up nightly and checks weekly. Run by Florian (root, approval needed).

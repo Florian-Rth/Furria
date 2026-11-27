@@ -1,0 +1,19 @@
+# The weekly restore check (backup.example.sh check, ADR-0044), started by furria-backup-check.timer.
+# Install as root beside furria-backup.service:
+#   cp systemd/furria-backup-check.* /etc/systemd/system/   # then set the two paths below
+#   systemctl daemon-reload && systemctl enable --now furria-backup-check.timer
+# Log: journalctl -u furria-backup-check. What it checks: docs/ops/PRODUCTION.md, "Weekly check".
+
+[Unit]
+Description=Furria weekly backup restore check
+Wants=network-online.target
+After=network-online.target docker.service
+
+[Service]
+Type=oneshot
+# The deployment's directory: docker-compose.yml, .env and backup.sh.
+WorkingDirectory=/home/USER/furria
+ExecStart=/home/USER/furria/backup.sh check
+Nice=10
+IOSchedulingClass=best-effort
+IOSchedulingPriority=7

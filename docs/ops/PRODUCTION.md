@@ -296,9 +296,10 @@ On the host, as root, in the deployment's directory (`~/furria`); needs `docker`
    ```bash
    cp backup.example.sh backup.sh && chmod +x backup.sh
    ./backup.sh restic init
-   cp systemd/furria-backup.service systemd/furria-backup.timer /etc/systemd/system/
-   systemctl daemon-reload && systemctl enable --now furria-backup.timer
+   cp systemd/furria-backup*.service systemd/furria-backup*.timer /etc/systemd/system/
+   systemctl daemon-reload && systemctl enable --now furria-backup.timer furria-backup-check.timer
    systemctl start furria-backup.service && journalctl -u furria-backup -e
+   systemctl start furria-backup-check.service && journalctl -u furria-backup-check -e
    ```
 
 The timer runs at **03:30 Berlin time**; a night the host was down is caught up after the next
@@ -307,6 +308,25 @@ changed key fails every later run until that line is removed. With `BACKUP_PUSH_
 Uptime Kuma push monitor, URL without its query string) every run reports `status=up`, or
 `status=down` with the failing step — and with a fill level of 80% or more. A monitor with a
 heartbeat of about 25 hours also catches a run that never starts.
+
+### Weekly check
+
+Every **Sunday at 05:00** Berlin time `./backup.sh check` (`furria-backup-check.timer`) proves the
+latest nightly snapshot restorable — there is no manual restore drill:
+
+1. `restic check --read-data-subset=5%`: the repository's integrity and a rotating 5% of its data.
+2. The snapshot holds a non-empty `database.dump`, `.env`, `docker-compose.yml` and a readable
+   `waha-sessions.tar`.
+3. The dump is restored into a throwaway Postgres (the live image, no network, removed afterwards)
+   with `pg_restore --exit-on-error`; `__EFMigrationsHistory`, `account`, `person` and `group`
+   must hold rows.
+4. 20 random originals are restored into `BACKUP_STATE_DIR/check` and compared byte for byte with
+   the live files; ones deleted or changed since the snapshot are skipped.
+
+It stops nothing, waits for a backup still running and reports to `BACKUP_PUSH_URL` like a backup:
+`status=up` with the snapshot it checked, `status=down` with the failing step. A failed check
+means the latest snapshot may not restore: read `journalctl -u furria-backup-check`, fix the
+cause, then run a backup and the check again by hand.
 
 ### Restore
 

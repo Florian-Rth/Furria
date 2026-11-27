@@ -19,6 +19,15 @@
 #   5. the target's fill level is read; at 80% or more the run reports a warning.
 # The stop lasts seconds to a minute; the website and club app keep serving their pages, WhatsApp
 # operations wait in the outbox. BACKUP_PUSH_URL (optional) hears status=up or status=down.
+#
+# `./backup.sh check` is the weekly restore check (systemd/furria-backup-check.timer, Sunday after
+# the backup) and proves the latest nightly snapshot restorable:
+#   1. `restic check --read-data-subset=5%` - the repository's integrity and a rotating 5% of its data;
+#   2. the snapshot holds a non-empty dump, .env, compose file and a readable session archive;
+#   3. the dump is restored into a throwaway Postgres (the live image) and core tables hold rows;
+#   4. a random sample of originals is restored and compared byte for byte with the live files
+#      (files deleted or changed since the snapshot are skipped).
+# It waits for a running backup, never stops anything and reports to BACKUP_PUSH_URL like a backup.
 
 set -Eeuo pipefail
 
@@ -28,6 +37,9 @@ restic_image=restic/restic:0.18.1
 alpine_image=alpine:3.22
 snapshot_host=furria
 capacity_warning_percent=80
+check_sample_size=20
+check_lock_wait_seconds=21600
+check_database=furria-backup-check-db
 
 # A value from the environment, else from .env (docker compose syntax: KEY=value, no expansion).
 setting() {
@@ -55,6 +67,7 @@ state_dir="$(setting BACKUP_STATE_DIR /var/lib/furria-backup)"
 RESTIC_PASSWORD="$(setting BACKUP_RESTIC_PASSWORD)"
 export RESTIC_PASSWORD
 
+job="Backup"
 step="start"
 
 log() { printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*"; }
@@ -67,13 +80,15 @@ push() {
 }
 
 fail() {
-  log "Backup failed: $1"
-  push down "Backup failed: $1"
+  log "$job failed: $1"
+  push down "$job failed: $1"
   exit 1
 }
 
 on_error() { fail "$step (exit $?)"; }
 trap on_error ERR
+
+[ "${1-}" != check ] || job="Check"
 
 for required in BACKUP_SFTP_HOST BACKUP_SFTP_USER BACKUP_RESTIC_PASSWORD; do
   [ -n "$(setting "$required")" ] || fail "set $required in .env"
@@ -124,15 +139,114 @@ if [ "${1-}" = restic ]; then
   exit
 fi
 
+# Wherever the api mounts /media - the named volume or MEDIA_PATH.
+find_media_root() {
+  step="finding the media path"
+  local api_container
+  api_container="$(docker compose ps -aq api)"
+  [ -n "$api_container" ] || fail "no api container in this compose project"
+  media_root="$(docker inspect -f '{{ range .Mounts }}{{ if eq .Destination "/media" }}{{ .Source }}{{ end }}{{ end }}' "$api_container")"
+  [ -d "$media_root/originals" ] || fail "no originals under $media_root"
+}
+
+check_dir="$state_dir/check"
+
+# The size of a file in a snapshot, empty when the snapshot lacks it.
+snapshot_file_size() {
+  restic ls --json "$1" "$(dirname "$2")" |
+    sed -n "s|.*\"type\":\"file\",\"path\":\"$2\".*\"size\":\([0-9]*\).*|\1|p"
+}
+
+run_check() {
+  local snapshot snapshot_time size table rows
+  local sample=() compared=0 skipped=0 path live
+  remove_check_leftovers() {
+    docker rm -f "$check_database" >/dev/null 2>&1 || true
+    rm -rf "$check_dir"
+  }
+  remove_check_leftovers
+  trap remove_check_leftovers EXIT
+
+  step="checking the repository"
+  log "Checking the repository and 5% of its data"
+  restic check --quiet --read-data-subset=5%
+
+  step="finding the latest snapshot"
+  snapshot="$(restic snapshots --json --host "$snapshot_host" --tag nightly --latest 1)"
+  snapshot_time="$(printf '%s' "$snapshot" | sed -n 's/.*"time":"\([^"]*\)".*/\1/p')"
+  snapshot="$(printf '%s' "$snapshot" | sed -n 's/.*"id":"\([0-9a-f]\{64\}\)".*/\1/p')"
+  [ -n "$snapshot" ] || fail "no nightly snapshot"
+  log "Checking snapshot ${snapshot:0:8} of $snapshot_time"
+
+  step="looking for the staged files"
+  for path in database.dump .env docker-compose.yml waha-sessions.tar; do
+    size="$(snapshot_file_size "$snapshot" "/backup/staged/$path")"
+    [ "${size:-0}" -gt 0 ] || fail "snapshot ${snapshot:0:8} lacks $path or it is empty"
+  done
+  step="reading the session archive"
+  restic dump "$snapshot" /backup/staged/waha-sessions.tar | tar -tf - >/dev/null
+
+  step="starting a throwaway database"
+  # The live image, no network, no password; its anonymous volume goes with the container.
+  docker run -d --rm --name "$check_database" --network none \
+    -e POSTGRES_HOST_AUTH_METHOD=trust -e POSTGRES_DB=check \
+    "$(docker inspect -f '{{ .Config.Image }}' "$(docker compose ps -aq postgres)")" >/dev/null
+  # TCP only listens once the image's init is done - its temporary server is socket-only.
+  for _ in $(seq 60); do
+    docker exec "$check_database" pg_isready -q -h 127.0.0.1 -U postgres && break
+    sleep 2
+  done
+  docker exec "$check_database" pg_isready -q -h 127.0.0.1 -U postgres
+
+  step="restoring the dump"
+  log "Restoring the dump into a throwaway database"
+  restic dump "$snapshot" /backup/staged/database.dump |
+    docker exec -i "$check_database" pg_restore -h 127.0.0.1 -U postgres -d check --no-owner --no-privileges --exit-on-error
+  for table in __EFMigrationsHistory account person group; do
+    step="counting $table"
+    rows="$(docker exec "$check_database" psql -h 127.0.0.1 -U postgres -d check -tAc "select count(*) from \"$table\"")"
+    [ "$rows" -gt 0 ] || fail "restored table $table is empty"
+  done
+  docker rm -f "$check_database" >/dev/null
+
+  find_media_root
+  step="sampling the originals"
+  mapfile -t sample < <(restic ls --json --recursive "$snapshot" /backup/originals |
+    sed -n 's/.*"type":"file","path":"\([^"]*\)".*/\1/p' | shuf -n "$check_sample_size")
+  if [ "${#sample[@]}" -gt 0 ]; then
+    step="restoring the sample"
+    log "Restoring ${#sample[@]} originals"
+    restic restore --quiet "$snapshot" --target /state/check "${sample[@]/#/--include=}" >/dev/null
+    step="comparing the sample"
+    for path in "${sample[@]}"; do
+      live="$media_root/originals/${path#/backup/originals/}"
+      # Deleted since, or written after the snapshot: nothing to compare against.
+      if [ ! -f "$live" ] || [ -n "$(find "$live" -newermt "$snapshot_time")" ]; then
+        skipped=$((skipped + 1))
+        continue
+      fi
+      cmp -s "$check_dir$path" "$live" || fail "original ${path#/backup/originals/} differs from the live file"
+      compared=$((compared + 1))
+    done
+  fi
+
+  step="summing up"
+  log "Check done: snapshot ${snapshot:0:8} restorable, $compared originals identical, $skipped skipped"
+  push up "Check done: snapshot ${snapshot:0:8} restorable, $compared originals identical"
+}
+
+if [ "${1-}" = check ]; then
+  exec 9>"$state_dir/backup.lock"
+  step="waiting for a running backup"
+  flock -w "$check_lock_wait_seconds" 9 || fail "a backup or check ran for six hours"
+  run_check
+  exit
+fi
+
 exec 9>"$state_dir/backup.lock"
 flock -n 9 || fail "another backup or check is running"
 
-step="finding the media path"
-# Wherever the api mounts /media - the named volume or MEDIA_PATH.
-api_container="$(docker compose ps -aq api)"
-[ -n "$api_container" ] || fail "no api container in this compose project"
-media_root="$(docker inspect -f '{{ range .Mounts }}{{ if eq .Destination "/media" }}{{ .Source }}{{ end }}{{ end }}' "$api_container")"
-[ -d "$media_root/originals" ] || fail "no originals under $media_root"
+find_media_root
 snapshot_mounts=(-v "$staging:/backup/staged:ro" -v "$media_root/originals:/backup/originals:ro")
 
 step="removing stale locks"
