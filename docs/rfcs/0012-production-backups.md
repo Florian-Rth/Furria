@@ -1,7 +1,7 @@
 ---
 rfc: 0012
 title: Production backups off-site with restic
-status: in-progress
+status: done
 github_issue: 107
 branch: feat/rfc-107-production-backups
 created: 2026-11-26
@@ -90,7 +90,7 @@ Goal: the repo ships the weekly check and its timer; a broken backup is noticed 
 Goal: the live host backs up nightly and checks weekly. Run by Florian (root, approval needed).
 - [x] Host setup script (outside the repo): SSH key for the target, settings in the live `.env`, `restic init`
 - [x] Install and enable both timers; first backup run by hand
-- [ ] First check run by hand; restic password and target credentials stored off the host (incl. paper)
+- [x] First check run by hand; restic password and target credentials stored off the host (incl. paper)
 
 ## Risks & alternatives
 - **Target fills up** as media grows (0.2–0.3 TB per season) — the 80% warning

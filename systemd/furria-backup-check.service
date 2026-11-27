@@ -7,7 +7,8 @@
 [Unit]
 Description=Furria weekly backup restore check
 Wants=network-online.target
-After=network-online.target docker.service
+# snap.docker.dockerd.service: Docker installed as a snap (a missing unit is ignored).
+After=network-online.target docker.service snap.docker.dockerd.service
 
 [Service]
 Type=oneshot
