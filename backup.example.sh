@@ -211,7 +211,7 @@ run_check() {
   log "Restoring the dump into a throwaway database"
   restic dump "$snapshot" /backup/staged/database.dump |
     docker exec -i "$check_database" pg_restore -h 127.0.0.1 -U postgres -d check --no-owner --no-privileges --exit-on-error
-  for table in __EFMigrationsHistory account person group; do
+  for table in __ef_migrations_history account person group; do
     step="counting $table"
     rows="$(docker exec "$check_database" psql -h 127.0.0.1 -U postgres -d check -tAc "select count(*) from \"$table\"")"
     [ "$rows" -gt 0 ] || fail "restored table $table is empty"

@@ -320,7 +320,7 @@ latest nightly snapshot restorable — there is no manual restore drill:
 2. The snapshot holds a non-empty `database.dump`, `.env`, the compose file and a readable
    `waha-sessions.tar`.
 3. The dump is restored into a throwaway Postgres (the live image, no network, removed afterwards)
-   with `pg_restore --exit-on-error`; `__EFMigrationsHistory`, `account`, `person` and `group`
+   with `pg_restore --exit-on-error`; `__ef_migrations_history`, `account`, `person` and `group`
    must hold rows.
 4. 20 random originals are restored into `BACKUP_STATE_DIR/check` and compared byte for byte with
    the live files; ones deleted or changed since the snapshot are skipped.
