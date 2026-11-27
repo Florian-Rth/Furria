@@ -88,8 +88,8 @@ Goal: the repo ships the weekly check and its timer; a broken backup is noticed 
 
 ### Phase 3 — Live installation
 Goal: the live host backs up nightly and checks weekly. Run by Florian (root, approval needed).
-- [ ] Host setup script (outside the repo): SSH key for the target, settings in the live `.env`, `restic init`
-- [ ] Install and enable both timers; first backup run by hand
+- [x] Host setup script (outside the repo): SSH key for the target, settings in the live `.env`, `restic init`
+- [x] Install and enable both timers; first backup run by hand
 - [ ] First check run by hand; restic password and target credentials stored off the host (incl. paper)
 
 ## Risks & alternatives
