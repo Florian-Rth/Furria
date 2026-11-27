@@ -1,0 +1,12 @@
+# Starts furria-backup.service every night at 03:30 Berlin time. Persistent: a night the host was
+# down is caught up right after the next boot.
+
+[Unit]
+Description=Furria nightly backup at 03:30 Europe/Berlin
+
+[Timer]
+OnCalendar=*-*-* 03:30:00 Europe/Berlin
+Persistent=true
+
+[Install]
+WantedBy=timers.target

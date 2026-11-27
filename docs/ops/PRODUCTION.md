@@ -250,41 +250,114 @@ that dies mid-job loses its claim after 5 minutes; another (or its restart) take
 
 ## Backup and restore
 
-The database and the media originals are backed up **together, from the same point**
-(ADR-0023): a database without its originals has items whose files are gone, originals without
-their database rows are dead weight. Renditions and staging are left out.
+Every night the live system is backed up **off the host, encrypted, from one point**
+([ADR-0044](../adr/0044-backups-go-off-site-encrypted-from-one-point.md)) into a
+[restic](https://restic.net) repository on an SFTP target (a storage box). There is no copy on
+the host itself: a backup there dies with the host.
 
-[`backup.example.sh`](../../backup.example.sh) does it, on the host beside the compose file, as
-root (it reads the media path; needs `rsync`):
+### What a snapshot holds
+
+| Path in the snapshot | What |
+|---|---|
+| `/backup/staged/database.dump` | `pg_dump -Fc` (uncompressed — restic compresses and deduplicates) |
+| `/backup/staged/waha-sessions.tar` | the bot's session keys (volume `waha-sessions`, see [WhatsApp](#whatsapp)) |
+| `/backup/staged/.env`, the compose file | the deployment: without `.env`'s signing, push and passkey keys a rebuilt system breaks every signed media link and push subscription |
+| `/backup/originals/` | the media originals; renditions and staging are left out ([Media](#the-media-path)) |
+
+The database and the originals come **from the same point** (ADR-0023): a database without its
+originals has items whose files are gone, originals without their rows are dead weight.
+[`backup.example.sh`](../../backup.example.sh) first uploads the night's new originals while
+everything runs, then **stops `api` and `waha`**, dumps the database, copies the session store at
+rest and takes the snapshot (only what changed since the first pass is read again), then starts
+both again — seconds to a minute. The website and club app keep serving their pages meanwhile, an
+upload in flight resumes afterwards, WhatsApp operations wait in the outbox.
+
+Snapshots are kept **7 daily, 5 weekly, 12 monthly**, then pruned: deleted media and erased
+persons leave the backups after 12 months at the latest. Each run ends with the target's fill
+level in the log; at **80% or more** the run reports a warning — upgrade the target before it
+fills (media grows 0.2–0.3 TB per season).
+
+### Setup
+
+On the host, as root, in the deployment's directory (`~/furria`); needs `docker`, `curl`, `flock`.
+Docker installed as a snap only bind-mounts paths under `/home` (not hidden ones): then put the
+key and `BACKUP_STATE_DIR` there too, e.g. `~/furria-backup/key` and `~/furria-backup/state`.
+
+1. A key for the target, registered with it (the provider says how — for a storage box usually
+   its `authorized_keys`):
+   ```bash
+   ssh-keygen -t ed25519 -N '' -C furria-backup -f /root/.ssh/furria-backup
+   ```
+2. Fill the `BACKUP_*` lines of `.env` ([`.env.example`](../../.env.example)): target host,
+   port, user, path, key file, `BACKUP_RESTIC_PASSWORD` (`openssl rand -base64 48`) and optionally
+   `BACKUP_PUSH_URL`. **Store the password and the target's login off the host, on paper too** —
+   without the password nobody can read the backups.
+3. Install the script, create the repository once and install the timer
+   ([`systemd/`](../../systemd/); set the two paths in the service), then run the first backup by
+   hand and read its log:
+   ```bash
+   cp backup.example.sh backup.sh && chmod +x backup.sh
+   ./backup.sh restic init
+   cp systemd/furria-backup*.service systemd/furria-backup*.timer /etc/systemd/system/
+   systemctl daemon-reload && systemctl enable --now furria-backup.timer furria-backup-check.timer
+   systemctl start furria-backup.service && journalctl -u furria-backup -e
+   systemctl start furria-backup-check.service && journalctl -u furria-backup-check -e
+   ```
+
+The timer runs at **03:30 Berlin time**; a night the host was down is caught up after the next
+boot. The first connection pins the target's host key in `BACKUP_STATE_DIR/known_hosts`; a
+changed key fails every later run until that line is removed. With `BACKUP_PUSH_URL` set (an
+Uptime Kuma push monitor, URL without its query string) every run reports `status=up`, or
+`status=down` with the failing step — and with a fill level of 80% or more. A monitor with a
+heartbeat of about 25 hours also catches a run that never starts.
+
+### Weekly check
+
+Every **Sunday at 05:00** Berlin time `./backup.sh check` (`furria-backup-check.timer`) proves the
+latest nightly snapshot restorable — there is no manual restore drill:
+
+1. `restic check --read-data-subset=5%`: the repository's integrity and a rotating 5% of its data.
+2. The snapshot holds a non-empty `database.dump`, `.env`, the compose file and a readable
+   `waha-sessions.tar`.
+3. The dump is restored into a throwaway Postgres (the live image, no network, removed afterwards)
+   with `pg_restore --exit-on-error`; `__ef_migrations_history`, `account`, `person` and `group`
+   must hold rows.
+4. 20 random originals are restored into `BACKUP_STATE_DIR/check` and compared byte for byte with
+   the live files; ones deleted or changed since the snapshot are skipped.
+
+It stops nothing, waits for a backup still running and reports to `BACKUP_PUSH_URL` like a backup:
+`status=up` with the snapshot it checked, `status=down` with the failing step. A failed check
+means the latest snapshot may not restore: read `journalctl -u furria-backup-check`, fix the
+cause, then run a backup and the check again by hand.
+
+### Restore
+
+With Florian on the host, as root, in the deployment's directory. `./backup.sh restic …` runs
+restic with the script's settings; `/state` is `BACKUP_STATE_DIR`:
 
 ```bash
-cp backup.example.sh backup.sh && chmod +x backup.sh
-BACKUP_DIR=/mnt/backup/furria ./backup.sh
-# root's crontab, nightly:
-30 3 * * * cd /home/<user>/furria && BACKUP_DIR=/mnt/backup/furria ./backup.sh >> backup.log 2>&1
+./backup.sh restic snapshots --tag nightly                     # pick one, or use latest
+./backup.sh restic restore <id> --target /state/restore
+S=/var/lib/furria-backup/restore/backup                        # BACKUP_STATE_DIR/restore/backup
 ```
 
-Each run is a snapshot `$BACKUP_DIR/<UTC time>/` with `database.dump` (`pg_dump -Fc`),
-`originals/` and `waha-sessions.tar.gz` (the bot's session keys, see [WhatsApp](#whatsapp)). It copies the originals while everything runs, then **stops `api`** for the dump
-and a last pass over the originals (only what changed since the first pass), then starts it
-again — the website and club app keep serving their pages meanwhile, an upload in flight resumes
-afterwards. Unchanged originals are hard links into the previous snapshot, so a snapshot costs
-only the night's new uploads. `BACKUP_KEEP` (default 14) snapshots are kept. Put `BACKUP_DIR` on
-another disk than the media path; a copy off the host is the operator's (`rsync -aH` of
-`BACKUP_DIR` keeps the hard links).
-
-**Restore** a snapshot `S`, with Florian on the host:
+On a new host, first put Docker, the repo's `backup.example.sh` as `backup.sh` and a `.env`
+holding only the `BACKUP_*` lines (password and target from the paper copy) into the
+deployment's directory and restore as above; then copy the snapshot's `.env` and
+compose file (`$S/staged/`, under its own name) over them and `docker compose up -d postgres waha` so the
+volumes exist. Then:
 
 ```bash
 docker compose stop api media-worker waha
-docker run --rm --volumes-from "$(docker compose ps -aq waha)" -i alpine:3.22 sh -c 'rm -rf /app/.sessions/* && tar -xzf - -C /app/.sessions' < S/waha-sessions.tar.gz
+docker run --rm --volumes-from "$(docker compose ps -aq waha)" -i alpine:3.22 sh -c 'rm -rf /app/.sessions/* && tar -xf - -C /app/.sessions' < $S/staged/waha-sessions.tar
 docker compose exec -T postgres sh -c 'dropdb -U "$POSTGRES_USER" --force "$POSTGRES_DB" && createdb -U "$POSTGRES_USER" "$POSTGRES_DB"'
-docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --exit-on-error' < S/database.dump
+docker compose exec -T postgres sh -c 'pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --no-owner --exit-on-error' < $S/staged/database.dump
 M=<the media path>   # MEDIA_PATH, or: docker volume inspect -f '{{ .Mountpoint }}' furria_media
-rsync -a --delete S/originals/ "$M/originals/"
+rsync -a --delete $S/originals/ "$M/originals/" && chown -R 1654 "$M/originals"
 rm -rf "$M/renditions" "$M/staging"
 docker compose up -d
 docker compose run --rm media-worker regenerate all
+rm -rf "$S"
 ```
 
 The API restarts on the restored schema and applies any newer migration itself — restore with
@@ -293,9 +366,9 @@ the image that wrote the backup, or newer. Until the worker has rebuilt an item 
 minutes, videos take as long as their transcodes. Media URLs signed before the restore keep
 working (same `MEDIA_SIGNING_KEY`).
 
-Drill it once before launch and after a change to the media path: restore the latest snapshot
-into a scratch compose project (`name: furria-restore`, other ports, its own volumes) and open a
-gallery album.
+**Persons erased after the snapshot come back** and nothing re-erases them — the app keeps no
+list of whom it erased ([ADR-0021](../adr/0021-a-person-is-erased-never-anonymised.md)). Erase
+them again by hand if the erasure is known.
 
 ## Mail
 
@@ -357,7 +430,7 @@ for the GOWS engine, and check a vote flows back afterwards.
 
 **The session volume** `waha-sessions` holds the linked device's keys. Losing it unlinks the
 bot and makes every vote on a poll posted before undecryptable: those polls then count only
-the app's answers. The nightly backup copies it (with `waha` stopped for seconds); restore it
+the app's answers. The nightly backup copies it (with `waha` stopped for seconds) off the host; restore it
 together with the database of the same snapshot, see [Backup and restore](#backup-and-restore).
 
 **When the bot drops** — the System page reads *Getrennt*, and admins get a push. Nothing is
@@ -472,5 +545,5 @@ on `furrscher-carnevals-club.de` covers `app.` and every other subdomain for a y
 ## Not covered yet
 
 - **Backups** — a dump before each migration (a release with a migration is backed up only by
-  the nightly run), the copy off the host, alerting on a failed run.
+  the nightly run); the weekly restore check and the live installation (RFC 0012 phases 2–3).
 - **Uptime monitoring** — nothing alerts when `/api/health` fails.
