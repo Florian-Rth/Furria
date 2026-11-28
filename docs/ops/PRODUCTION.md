@@ -248,6 +248,10 @@ docker compose run --rm media-worker regenerate 42 43     # these media items
 A failing item is retried after 1 and 10 minutes, then marked *failed* with its reason. A worker
 that dies mid-job loses its claim after 5 minutes; another (or its restart) takes the item over.
 
+When a release improves the sound analysis, the new worker queues every ready song once on its
+start (log line "… sounds queued for analysis version …"); songs keep playing meanwhile. A song
+whose new analysis fails keeps its old one — it is never marked *failed* for it.
+
 ## Backup and restore
 
 Every night the live system is backed up **off the host, encrypted, from one point**

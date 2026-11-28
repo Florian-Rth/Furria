@@ -1,3 +1,4 @@
+import { countMarksOf } from '@furria/studio/music-timeline';
 import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
 import { markSecondsOf, newPartOf, partShiftOf } from '@furria/studio/studio-steps';
 import { describe, expect, it } from 'vitest';
@@ -74,5 +75,28 @@ describe('markSecondsOf', () => {
     [9.8, 9.5],
   ])('marks %s on the nearest free count', (seconds, expected) => {
     expect(markSecondsOf({ steps, countMarks }, seconds)).toBe(expected);
+  });
+
+  it.each([
+    [0.4, 1.5],
+    [2.3, 2.5],
+    [5.6, 5.5],
+  ])('marks %s on the beat grid counted from the bar\'s first "1"', (seconds, expected) => {
+    const countMarks = countMarksOf([
+      {
+        songId: 1,
+        mediaItemId: 1,
+        audioUrl: '/a',
+        peaksUrl: '/k',
+        audible: true,
+        sourceStart: 0,
+        sourceEnd: 20,
+        timelineStart: 0,
+        timelineEnd: 20,
+        beats: [{ sourceStart: 0, sourceEnd: 20, firstBeatSeconds: 1.5, tempoBpm: 120 }],
+      },
+    ]);
+
+    expect(markSecondsOf({ steps: [], countMarks }, seconds)).toBe(expected);
   });
 });

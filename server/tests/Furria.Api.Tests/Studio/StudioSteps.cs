@@ -82,16 +82,24 @@ internal static class StudioSteps
         int songId,
         double startSeconds,
         double endSeconds
+    ) => CutSongAsync(client, actId, songId, (startSeconds, endSeconds), (null, null));
+
+    internal static Task<HttpResponseMessage> CutSongAsync(
+        HttpClient client,
+        int actId,
+        int songId,
+        (double Start, double End) cut,
+        (double? FirstBeatSeconds, double? TempoBpm) beat
     ) =>
         client.PUTAsync<PutActSong, PutActSongRequest>(
             new()
             {
                 ActId = actId,
                 SongId = songId,
-                StartSeconds = startSeconds,
-                EndSeconds = endSeconds,
-                FirstBeatSeconds = null,
-                TempoBpm = null,
+                StartSeconds = cut.Start,
+                EndSeconds = cut.End,
+                FirstBeatSeconds = beat.FirstBeatSeconds,
+                TempoBpm = beat.TempoBpm,
             }
         );
 

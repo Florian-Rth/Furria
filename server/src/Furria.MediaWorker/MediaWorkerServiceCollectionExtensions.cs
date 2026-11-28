@@ -48,12 +48,14 @@ public static class MediaWorkerServiceCollectionExtensions
         services.AddSingleton<MediaWorkerActivity>();
         services.AddScoped<MediaWorkerHeartbeats>();
         services.AddSingleton<MediaWorkerBeat>();
+        services.AddSingleton<SoundReanalysis>();
         return services;
     }
 
     public static IServiceCollection AddMediaWorkerLanes(this IServiceCollection services)
     {
         services.AddHostedService(provider => provider.GetRequiredService<MediaWorkerBeat>());
+        services.AddHostedService(provider => provider.GetRequiredService<SoundReanalysis>());
         services.AddSingleton<IHostedService>(provider =>
             ActivatorUtilities.CreateInstance<MediaWorkerLane>(provider, MediaKind.Photo)
         );

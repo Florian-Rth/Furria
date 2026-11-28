@@ -192,6 +192,33 @@ public sealed class MediaJobQueue
         return items.Count;
     }
 
+    public async Task<int> QueueOutdatedSoundAsync(int analysisVersion, CancellationToken ct)
+    {
+        var now = _timeProvider.GetUtcNow();
+        var outdated = await _dbContext
+            .MediaItems.Where(item =>
+                item.Kind == MediaKind.Audio
+                && item.State == MediaItemState.Ready
+                && (item.Audio == null || item.Audio.AnalysisVersion < analysisVersion)
+                && !_dbContext.MediaJobs.Any(job =>
+                    job.MediaItemId == item.Id && job.ClaimedAt == null
+                )
+            )
+            .Select(item => item.Id)
+            .ToListAsync(ct);
+
+        _dbContext.MediaJobs.AddRange(
+            outdated.Select(mediaItemId => new MediaJob
+            {
+                MediaItemId = mediaItemId,
+                EnqueuedAt = now,
+                AvailableAt = now,
+            })
+        );
+        await _dbContext.SaveChangesAsync(ct);
+        return outdated.Count;
+    }
+
     private Task<MediaJob?> ClaimableJobAsync(
         MediaKind kind,
         DateTimeOffset now,
@@ -239,10 +266,10 @@ public sealed class MediaJobQueue
             AbandonedReason,
             ct
         );
+        await abandoned.ExecuteDeleteAsync(ct);
         if (failed == 0)
             return;
 
-        await abandoned.ExecuteDeleteAsync(ct);
         _logger.LogError(
             "{MediaItemCount} {MediaKind} media items failed, their rendering stopped without an answer {AttemptCount} times",
             failed,
@@ -277,13 +304,15 @@ public sealed class MediaJobQueue
     )
     {
         var failureReason = Truncated(reason, MediaItem.FailureReasonLength);
-        return items.ExecuteUpdateAsync(
-            setters =>
-                setters
-                    .SetProperty(item => item.State, MediaItemState.Failed)
-                    .SetProperty(item => item.FailureReason, failureReason),
-            ct
-        );
+        return items
+            .Where(item => item.State != MediaItemState.Ready)
+            .ExecuteUpdateAsync(
+                setters =>
+                    setters
+                        .SetProperty(item => item.State, MediaItemState.Failed)
+                        .SetProperty(item => item.FailureReason, failureReason),
+                ct
+            );
     }
 
     private static void Lease(MediaJob job, DateTimeOffset now)
@@ -331,6 +360,7 @@ public sealed class MediaJobQueue
             LeadingSilenceSeconds = audio.LeadingSilenceSeconds,
             FirstBeatSeconds = audio.FirstBeatSeconds,
             TempoBpm = audio.TempoBpm,
+            AnalysisVersion = audio.AnalysisVersion,
         };
 
     [Pure]

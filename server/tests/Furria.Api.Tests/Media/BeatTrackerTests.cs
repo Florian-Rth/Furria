@@ -29,4 +29,75 @@ public sealed class BeatTrackerTests
         Assert.NotNull(grid);
         Assert.Equal(96, grid.TempoBpm, 0.2);
     }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Should_PutTheFirstBeatOnTheBarsOne_When_TheOneIsAccented(int pickupBeats)
+    {
+        var song = SoundSamples.SongWithAccentedOnes(
+            seed: 3,
+            bpm: 120,
+            seconds: 40,
+            leadingSilenceSeconds: 0.5,
+            pickupBeats
+        );
+
+        var grid = BeatTracker.Of(song);
+
+        Assert.NotNull(grid);
+        Assert.Equal(0.5 + pickupBeats * 0.5, grid.FirstBeatSeconds, 0.05);
+    }
+
+    [Fact]
+    public void Should_KeepTheFirstSoundingBeat_When_TheOneAndTheThreeSoundAlike()
+    {
+        var song = SoundSamples.SongWithBackbeat(
+            seed: 7,
+            bpm: 110,
+            seconds: 40,
+            leadingSilenceSeconds: 0.5
+        );
+
+        var grid = BeatTracker.Of(song);
+
+        Assert.NotNull(grid);
+        Assert.Equal(0.5, grid.FirstBeatSeconds, 0.05);
+    }
+
+    [Fact]
+    public void Should_KeepTheFirstSoundingBeat_When_TheSongIsTooShortToHearEightBars()
+    {
+        var song = SoundSamples.SongWithAccentedOnes(
+            seed: 3,
+            bpm: 120,
+            seconds: 12,
+            leadingSilenceSeconds: 0.5,
+            pickupBeats: 2
+        );
+
+        var grid = BeatTracker.Of(song);
+
+        Assert.NotNull(grid);
+        Assert.Equal(0.5, grid.FirstBeatSeconds, 0.05);
+    }
+
+    [Fact]
+    public void Should_KeepTheFirstSoundingBeat_When_TheLoudestLowBeatIsNotAccented()
+    {
+        var song = SoundSamples.SongWithAnticipatedBass(
+            seed: 3,
+            bpm: 120,
+            seconds: 40,
+            leadingSilenceSeconds: 0.5,
+            pickupBeats: 2
+        );
+
+        var grid = BeatTracker.Of(song);
+
+        Assert.NotNull(grid);
+        Assert.Equal(0.5, grid.FirstBeatSeconds, 0.05);
+    }
 }

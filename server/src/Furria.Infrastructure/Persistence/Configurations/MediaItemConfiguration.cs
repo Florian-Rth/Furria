@@ -53,8 +53,8 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
                 table.HasCheckConstraint(
                     "ck_media_item_audio_facts",
                     $"""
-                    (audio_sample_rate IS NULL AND audio_loudness_lufs IS NULL AND audio_true_peak_dbtp IS NULL AND audio_leading_silence_seconds IS NULL AND audio_first_beat_seconds IS NULL AND audio_tempo_bpm IS NULL)
-                    OR (kind = '{MediaKind.Audio}' AND audio_sample_rate > 0 AND audio_loudness_lufs IS NOT NULL AND audio_true_peak_dbtp IS NOT NULL AND audio_leading_silence_seconds >= 0
+                    (audio_sample_rate IS NULL AND audio_loudness_lufs IS NULL AND audio_true_peak_dbtp IS NULL AND audio_leading_silence_seconds IS NULL AND audio_first_beat_seconds IS NULL AND audio_tempo_bpm IS NULL AND audio_analysis_version IS NULL)
+                    OR (kind = '{MediaKind.Audio}' AND audio_sample_rate > 0 AND audio_loudness_lufs IS NOT NULL AND audio_true_peak_dbtp IS NOT NULL AND audio_leading_silence_seconds >= 0 AND audio_analysis_version >= 1
                         AND (audio_first_beat_seconds IS NULL) = (audio_tempo_bpm IS NULL)
                         AND (audio_first_beat_seconds IS NULL OR audio_first_beat_seconds >= 0)
                         AND (audio_tempo_bpm IS NULL OR audio_tempo_bpm > 0))

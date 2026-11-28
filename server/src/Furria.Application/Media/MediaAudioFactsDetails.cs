@@ -13,4 +13,6 @@ public sealed record MediaAudioFactsDetails
     public required double? FirstBeatSeconds { get; init; }
 
     public required double? TempoBpm { get; init; }
+
+    public required int AnalysisVersion { get; init; }
 }

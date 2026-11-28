@@ -31,10 +31,23 @@ public static class BeatTracker
 
         var (period, phase) = RefinedGridOf(envelope, roughPeriod);
         var firstSound = LeadingSilence.SecondsOf(signal) * FramesPerSecond;
+        var firstBeat = FirstBeatAfter(firstSound - period / 4, period, phase);
         return new BeatGrid(
-            FirstBeatAfter(firstSound - period / 4, period, phase) / FramesPerSecond,
+            FirstBarOneOf(signal, envelope, firstBeat, period) / FramesPerSecond,
             SecondsPerMinute * FramesPerSecond / period
         );
+    }
+
+    [Pure]
+    private static double FirstBarOneOf(
+        SoundSignal signal,
+        double[] envelope,
+        double firstBeat,
+        double period
+    )
+    {
+        var evidence = new BarOneEvidence(envelope, LowBand.EnergiesOf(signal));
+        return firstBeat + (BarOne.BeatOf(evidence, firstBeat, period) ?? 0) * period;
     }
 
     [Pure]

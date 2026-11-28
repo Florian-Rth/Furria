@@ -13,4 +13,6 @@ public sealed class MediaAudioFacts
     public double? FirstBeatSeconds { get; set; }
 
     public double? TempoBpm { get; set; }
+
+    public int AnalysisVersion { get; set; }
 }

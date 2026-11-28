@@ -11,20 +11,61 @@ public static class SoundSamples
     private static readonly double[] NoteBeats = [0.25, 0.5, 0.5, 0.75, 1, 1.5];
     private static readonly double[] CombDelaysSeconds = [0.0297, 0.0371, 0.0411, 0.0437];
     private static readonly double[] AllpassDelaysSeconds = [0.005, 0.0017];
+    private static readonly double[] BassNotes = [55, 62, 65, 73, 82];
 
     public static SoundSignal Song(
         int seed,
         double bpm,
         double seconds,
         double leadingSilenceSeconds = 0
+    ) =>
+        new(
+            Normalised(Mix(seed, bpm, seconds, leadingSilenceSeconds, Groove.KickOnEveryBeat)),
+            Rate
+        );
+
+    public static SoundSignal SongWithAccentedOnes(
+        int seed,
+        double bpm,
+        double seconds,
+        double leadingSilenceSeconds,
+        int pickupBeats
     )
     {
-        var random = new Random(seed);
-        var samples = new float[(int)(seconds * Rate)];
-        AddDrums(samples, random, bpm, leadingSilenceSeconds);
-        AddMelody(samples, random, bpm, leadingSilenceSeconds);
+        var samples = Mix(seed, bpm, seconds, leadingSilenceSeconds, Groove.KickOnEveryBeat);
+        AddBarOnes(
+            samples,
+            new Random(seed + 1),
+            bpm,
+            leadingSilenceSeconds + pickupBeats * 60 / bpm
+        );
         return new SoundSignal(Normalised(samples), Rate);
     }
+
+    public static SoundSignal SongWithAnticipatedBass(
+        int seed,
+        double bpm,
+        double seconds,
+        double leadingSilenceSeconds,
+        int pickupBeats
+    )
+    {
+        var samples = Mix(seed, bpm, seconds, leadingSilenceSeconds, Groove.KickOnEveryBeat);
+        AddAnticipatedBass(
+            samples,
+            new Random(seed + 1),
+            bpm,
+            leadingSilenceSeconds + pickupBeats * 60 / bpm
+        );
+        return new SoundSignal(Normalised(samples), Rate);
+    }
+
+    public static SoundSignal SongWithBackbeat(
+        int seed,
+        double bpm,
+        double seconds,
+        double leadingSilenceSeconds
+    ) => new(Normalised(Mix(seed, bpm, seconds, leadingSilenceSeconds, Groove.Backbeat)), Rate);
 
     public static SoundSignal Excerpt(SoundSignal song, double fromSeconds, double toSeconds) =>
         new(
@@ -63,7 +104,28 @@ public static class SoundSamples
         return new SoundSignal(recorded, Rate);
     }
 
-    private static void AddDrums(float[] samples, Random random, double bpm, double start)
+    private static float[] Mix(
+        int seed,
+        double bpm,
+        double seconds,
+        double leadingSilenceSeconds,
+        Groove groove
+    )
+    {
+        var random = new Random(seed);
+        var samples = new float[(int)(seconds * Rate)];
+        AddDrums(samples, random, bpm, leadingSilenceSeconds, groove);
+        AddMelody(samples, random, bpm, leadingSilenceSeconds);
+        return samples;
+    }
+
+    private static void AddDrums(
+        float[] samples,
+        Random random,
+        double bpm,
+        double start,
+        Groove groove
+    )
     {
         var eighth = 30 / bpm;
         for (
@@ -75,7 +137,11 @@ public static class SoundSamples
             if (random.NextDouble() < 0.05)
                 continue;
             if (count % 2 == 0)
-                AddKick(samples, time, 0.7 + 0.3 * random.NextDouble());
+            {
+                var velocity = 0.7 + 0.3 * random.NextDouble();
+                if (groove == Groove.KickOnEveryBeat || count % 4 == 0)
+                    AddKick(samples, time, velocity);
+            }
             if (count % 4 == 2)
                 AddNoiseBurst(samples, random, time, 0.12, 0.45 + 0.1 * random.NextDouble());
             AddNoiseBurst(samples, random, time, 0.03, 0.12 + 0.08 * random.NextDouble());
@@ -92,6 +158,34 @@ public static class SoundSamples
                 AddNote(samples, time, duration, Scale[random.Next(Scale.Length)], 0.3);
             time += duration;
         }
+    }
+
+    private static void AddBarOnes(float[] samples, Random random, double bpm, double firstOne)
+    {
+        var bar = 4 * 60 / bpm;
+        for (var time = firstOne; time < samples.Length / (double)Rate; time += bar)
+        {
+            AddNote(samples, time, bar / 4, BassNotes[random.Next(BassNotes.Length)], 0.8);
+            AddNoiseBurst(samples, random, time, 0.3, 0.35);
+        }
+    }
+
+    private static void AddAnticipatedBass(
+        float[] samples,
+        Random random,
+        double bpm,
+        double firstOne
+    )
+    {
+        var beat = 60 / bpm;
+        for (var time = firstOne + 4 * beat; time < samples.Length / (double)Rate; time += 4 * beat)
+            AddNote(
+                samples,
+                time - beat / 2,
+                2 * beat,
+                BassNotes[random.Next(BassNotes.Length)],
+                1.2
+            );
     }
 
     private static void AddKick(float[] samples, double start, double velocity)
@@ -207,5 +301,11 @@ public static class SoundSamples
     {
         var peak = samples.Max(Math.Abs);
         return peak <= 0 ? samples : [.. samples.Select(sample => sample / peak * Headroom)];
+    }
+
+    private enum Groove
+    {
+        KickOnEveryBeat,
+        Backbeat,
     }
 }

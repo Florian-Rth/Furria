@@ -105,5 +105,6 @@ public sealed class AudioRenderer
             LeadingSilenceSeconds = LeadingSilence.SecondsOf(signal),
             FirstBeatSeconds = grid?.FirstBeatSeconds,
             TempoBpm = grid?.TempoBpm,
+            AnalysisVersion = SoundAnalysis.Version,
         };
 }

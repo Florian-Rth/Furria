@@ -63,4 +63,42 @@ public sealed class PutActSongTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Should_FollowTheNewAnalysis_When_TheCutSentTheAnalysedBeatBack()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var march = await UploadSongAsync(admin, actId, ct);
+        await _fixture.RenderSongDirectlyAsync(march, 180, ct);
+        await _fixture.AnalyseSongDirectlyAsync(march, 0.5, 120, ct);
+        var songId = await AddSongAsync(admin, actId, march);
+        await CutSongAsync(admin, actId, songId, (10, 170), (0.5, 120));
+
+        await _fixture.AnalyseSongDirectlyAsync(march, 1.5, 121, ct);
+
+        var song = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Songs);
+        Assert.Equal(((double?)1.5, (double?)121), (song.FirstBeatSeconds, song.TempoBpm));
+    }
+
+    [Fact]
+    public async Task Should_KeepTheBeatSetByHand_When_TheSongIsAnalysedAgain()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var march = await UploadSongAsync(admin, actId, ct);
+        await _fixture.RenderSongDirectlyAsync(march, 180, ct);
+        await _fixture.AnalyseSongDirectlyAsync(march, 0.5, 120, ct);
+        var songId = await AddSongAsync(admin, actId, march);
+        await CutSongAsync(admin, actId, songId, (10, 170), (0.62, 118));
+
+        await _fixture.AnalyseSongDirectlyAsync(march, 1.5, 121, ct);
+
+        var song = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Songs);
+        Assert.Equal(((double?)0.62, (double?)118), (song.FirstBeatSeconds, song.TempoBpm));
+    }
 }

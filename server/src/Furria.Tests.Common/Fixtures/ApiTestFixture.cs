@@ -17,6 +17,7 @@ using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
+using Furria.Core.Sound;
 using Furria.Infrastructure.Assistant;
 using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Changes;
@@ -35,6 +36,7 @@ using Furria.Infrastructure.WhatsApp;
 using Furria.MediaWorker;
 using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
+using Furria.MediaWorker.Sound;
 using Furria.Tests.Common.Assistant;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
@@ -884,6 +886,79 @@ public sealed class ApiTestFixture : IAsyncLifetime
         item.RenderedAt = TimeProvider.GetUtcNow();
         db.MediaJobs.RemoveRange(db.MediaJobs.Where(job => job.MediaItemId == mediaItemId));
         await db.SaveChangesAsync(ct);
+    }
+
+    public async Task AnalyseSongDirectlyAsync(
+        int mediaItemId,
+        double firstBeatSeconds,
+        double tempoBpm,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var item = await db.MediaItems.SingleAsync(row => row.Id == mediaItemId, ct);
+        item.Audio = new MediaAudioFacts
+        {
+            SampleRate = 44100,
+            LoudnessLufs = -14,
+            TruePeakDbtp = -1,
+            LeadingSilenceSeconds = 0,
+            FirstBeatSeconds = firstBeatSeconds,
+            TempoBpm = tempoBpm,
+            AnalysisVersion = SoundAnalysis.Version,
+        };
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task OutdateSongAnalysisDirectlyAsync(
+        int mediaItemId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE media_item SET audio_analysis_version = 1 WHERE id = {mediaItemId}",
+            ct
+        );
+    }
+
+    public async Task DeleteOriginalDirectlyAsync(int mediaItemId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var storageKey = await db
+            .MediaItems.Where(item => item.Id == mediaItemId)
+            .Select(item => item.StorageKey)
+            .SingleAsync(ct);
+        File.Delete(Path.Combine(MediaRoot, MediaPaths.OriginalOf(storageKey)));
+    }
+
+    public Task QueueOutdatedSoundAsync(CancellationToken ct = default) =>
+        MediaWorker.GetRequiredService<SoundReanalysis>().QueueOutdatedAsync(ct);
+
+    public async Task SetSongBeatDirectlyAsync(
+        int actId,
+        int mediaItemId,
+        double firstBeatSeconds,
+        double tempoBpm,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"""
+            UPDATE act_song SET first_beat_seconds = {firstBeatSeconds}, tempo_bpm = {tempoBpm}
+            WHERE act_id = {actId} AND media_item_id = {mediaItemId}
+            """,
+            ct
+        );
     }
 
     public async Task<long> WriteLogEntryDirectlyAsync(

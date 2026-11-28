@@ -222,9 +222,17 @@ Decided while building (2026-11-28):
 
 ### Phase 7 — A smarter "1" (helper 4)
 Goal: count marks and step taps sit on the bar's real "1".
-- [ ] `BeatTracker` downbeat phase scoring with a confidence margin; `MediaAudioFacts` keeps the first "1"
-- [ ] One-off re-analysis job for act audio; songs with a hand-set beat keep it
-- [ ] Studio: count marks and tap snapping use the grid; tests for the scoring on synthetic accent patterns (backend) and snapping (studio)
+- [x] `BeatTracker` downbeat phase scoring with a confidence margin; `MediaAudioFacts` keeps the first "1"
+- [x] One-off re-analysis job for act audio; songs with a hand-set beat keep it
+- [x] Studio: count marks and tap snapping use the grid; tests for the scoring on synthetic accent patterns (backend) and snapping (studio)
+
+Decided while building (2026-11-28):
+- The "1" is the beat of the bar (4 beats) with clearly the most low-band energy — mean energy below 150 Hz over 120 ms after the beat, at least 40 % ahead of the next beat — provided it is at least averagely accented (onset strength) and every beat of the bar was heard at least eight times; otherwise the grid keeps the first sounding beat as before. Calibrated on synthetic songs: an accented "1" (bass + crash) leads by ≥ 0,5; kick on every beat, kick on 1 and 3 with a snare backbeat, and hall recordings stay ≤ 0,14 (one clustered-dropout outlier at 0,3). A combined accent × low score was tried and dropped: the snare backbeat let noise reach a 0,24 lead. Real music will often fall back — the conservative side, since a wrong "1" misleads every count. A song the tracker hears at half tempo falls back too (both "1"s of the double bar are alike).
+- "Set by hand" means: the song's stored beat differs from its file's analysed one. The client sends the shown (resolved) beat back on every cut, so `PUT …/songs/{id}` now stores a beat or tempo equal to the analysed value as *none* (follows the analysis); a split tail and a replacement inherit that. Beat and tempo are judged separately.
+- One-off re-analysis is owned by the worker, not a migration: CI ships the API and worker images separately and Watchtower updates them apart, so jobs queued by the API's migration could be used up by a worker still running the old tracker. `MediaAudioFacts` now carries `AnalysisVersion` (`SoundAnalysis.Version` = 2); on start the worker (`SoundReanalysis`) queues every `Ready` audio item with older or missing facts once (all audio is act audio), retrying every 30 s while the database is unreachable. Items stay `Ready` meanwhile, so songs keep playing. Migration `ActAudioFindsTheBarsOne` adds the column, stamps existing facts as version 1 and clears the songs' analysed copies (same rule, 1e-6).
+- A job never takes a `Ready` item out of service: a refresh that fails its last attempt, finds no original or is abandoned is dropped and the item keeps its renditions and facts (`MarkFailedAsync` skips `Ready` items; abandoned jobs are now always deleted). Only refresh jobs meet `Ready` items — uploads, crops and `regenerate` set *processing* first.
+- Accepted: an editor whose studio was loaded before their song's re-analysis finished sends the old analysed beat back with their next cut, and it is kept as set by hand — that song shows the old "1", as before this phase, until the "1" is set again. Closing that window needs a three-way beat in `PUT …/songs/{id}` (keep · set · follow the analysis); not worth it for a minutes-long window after a release.
+- Studio: count marks and every tap path already snap to the marks built from the song's grid, so they follow the new "1" without code changes. Marks stay from the first "1" on: beats before it (≤ 3 at the start of a song) get none — extending the grid backwards would renumber the eights (a pickup would become "Achter 1"), and the automatic opening step covers them.
 
 ### Phase 8 — Trainer videos: filmed latest wins
 Goal: per step the right video is chosen without clip editing.

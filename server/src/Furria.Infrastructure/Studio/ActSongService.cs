@@ -118,10 +118,7 @@ public sealed class ActSongService
         if ((await SiblingCutsOfAsync(song, ct)).Any(cut.Overlaps))
             return Result.Conflict(OverlapMessage);
 
-        song.StartSeconds = command.StartSeconds;
-        song.EndSeconds = command.EndSeconds;
-        song.FirstBeatSeconds = command.FirstBeatSeconds;
-        song.TempoBpm = command.TempoBpm;
+        Recut(song, command, song.MediaItem.Audio);
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
@@ -250,6 +247,17 @@ public sealed class ActSongService
             song.EndSeconds,
             song.MediaItem!.DurationSeconds
         );
+
+    private static void Recut(ActSong song, ActSongCutCommand command, MediaAudioFacts? analysed)
+    {
+        song.StartSeconds = command.StartSeconds;
+        song.EndSeconds = command.EndSeconds;
+        song.FirstBeatSeconds = HandSetBeat.Of(
+            command.FirstBeatSeconds,
+            analysed?.FirstBeatSeconds
+        );
+        song.TempoBpm = HandSetBeat.Of(command.TempoBpm, analysed?.TempoBpm);
+    }
 
     [Pure]
     private static ActSong SecondHalfOf(ActSong song, double atSeconds) =>

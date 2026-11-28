@@ -55,6 +55,17 @@ An item still has exactly one owner.
   loudness, true peak, leading silence and the beat grid are stored on the item; the profile is a
   file beside the renditions (`sound-profile.bin`) and never served. A sound whose loudness cannot
   be measured fails; digital silence is stored at −70 LUFS and left unnormalised.
+- The beat grid starts on the bar's first **"1"**: of the four beats of a bar, the one with clearly
+  the most low-band energy (below 150 Hz, at least 40 % ahead of the next beat) is the "1" if it is
+  at least averagely accented and the sound holds eight bars; otherwise the grid keeps the first
+  sounding beat (RFC 0013 phase 7, 2026-11-28). The rule is deliberately conservative: a wrong "1"
+  misleads every count, while the first sounding beat is set right by hand once.
+- The stored sound facts carry the **analysis version** that made them (`SoundAnalysis.Version`).
+  When the worker starts, it queues every ready sound with older facts once more; the item stays
+  *ready* and keeps playing meanwhile. The worker queues it, not a migration, because the API and
+  the worker update separately: a job queued by the API could be taken by a worker that still runs
+  the old analysis. A job never takes a *ready* item out of service — a refresh that fails or is
+  abandoned is dropped and the item keeps its renditions and facts.
 - An act's **video** also gets a sound profile of its soundtrack, so a trainer video can be matched
   to the music.
 - An act's **video** also gets a **`Compact`** rendition (H.264 within 1280×720, phase 13), which

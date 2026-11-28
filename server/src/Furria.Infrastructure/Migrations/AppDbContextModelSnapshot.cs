@@ -3752,7 +3752,7 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_media_item_album_owner", "album_id IS NULL OR owner_kind = 'Gallery'");
 
-                            t.HasCheckConstraint("ck_media_item_audio_facts", "(audio_sample_rate IS NULL AND audio_loudness_lufs IS NULL AND audio_true_peak_dbtp IS NULL AND audio_leading_silence_seconds IS NULL AND audio_first_beat_seconds IS NULL AND audio_tempo_bpm IS NULL)\nOR (kind = 'Audio' AND audio_sample_rate > 0 AND audio_loudness_lufs IS NOT NULL AND audio_true_peak_dbtp IS NOT NULL AND audio_leading_silence_seconds >= 0\n    AND (audio_first_beat_seconds IS NULL) = (audio_tempo_bpm IS NULL)\n    AND (audio_first_beat_seconds IS NULL OR audio_first_beat_seconds >= 0)\n    AND (audio_tempo_bpm IS NULL OR audio_tempo_bpm > 0))");
+                            t.HasCheckConstraint("ck_media_item_audio_facts", "(audio_sample_rate IS NULL AND audio_loudness_lufs IS NULL AND audio_true_peak_dbtp IS NULL AND audio_leading_silence_seconds IS NULL AND audio_first_beat_seconds IS NULL AND audio_tempo_bpm IS NULL AND audio_analysis_version IS NULL)\nOR (kind = 'Audio' AND audio_sample_rate > 0 AND audio_loudness_lufs IS NOT NULL AND audio_true_peak_dbtp IS NOT NULL AND audio_leading_silence_seconds >= 0 AND audio_analysis_version >= 1\n    AND (audio_first_beat_seconds IS NULL) = (audio_tempo_bpm IS NULL)\n    AND (audio_first_beat_seconds IS NULL OR audio_first_beat_seconds >= 0)\n    AND (audio_tempo_bpm IS NULL OR audio_tempo_bpm > 0))");
 
                             t.HasCheckConstraint("ck_media_item_audio_of_act", "kind <> 'Audio' OR owner_kind = 'Act'");
 
@@ -7800,6 +7800,10 @@ namespace Furria.Infrastructure.Migrations
                             b1.Property<int>("MediaItemId")
                                 .HasColumnType("integer")
                                 .HasColumnName("id");
+
+                            b1.Property<int>("AnalysisVersion")
+                                .HasColumnType("integer")
+                                .HasColumnName("audio_analysis_version");
 
                             b1.Property<double?>("FirstBeatSeconds")
                                 .HasColumnType("double precision")
