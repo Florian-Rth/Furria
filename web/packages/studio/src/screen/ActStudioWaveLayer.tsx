@@ -20,8 +20,6 @@ export const ActStudioWaveLayer: FC<ActStudioWaveLayerProps> = ({ screen }) => {
     counts: playback.countMarks,
     cuts: true,
     regions: wave.regions,
-    trim: wave.trim,
-    handles: wave.handles,
   };
   const steps = { steps: wave.rows.steps, activeKey: practice.step?.stepId ?? null };
 

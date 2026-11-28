@@ -6,19 +6,25 @@ import {
   musicSegmentsOf,
   neighbourCountOf,
   partRangeOf,
-  pieceAlignmentOf,
   segmentAt,
   timelineSecondsOf,
 } from './music-timeline';
-import type { Studio, StudioFinalTrack, StudioPart, StudioStep } from './studio-schemas';
+import type { Studio, StudioPart, StudioStep } from './studio-schemas';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
 
-const song = (mediaItemId: number, position: number, startSeconds: number, endSeconds: number) => ({
-  songId: mediaItemId,
+const song = (
+  songId: number,
+  mediaItemId: number,
+  position: number,
+  startSeconds: number,
+  endSeconds: number,
+) => ({
+  songId,
   mediaItemId,
   position,
-  pieces: [{ startSeconds, endSeconds }],
+  startSeconds,
+  endSeconds,
   firstBeatSeconds: 0.5,
   tempoBpm: 120,
   state: 'ready' as const,
@@ -28,9 +34,8 @@ const song = (mediaItemId: number, position: number, startSeconds: number, endSe
 });
 
 const studio = (patch: Partial<Studio>): Studio => ({
-  music: { lengthSeconds: 0, source: 'workingMix' },
+  music: { lengthSeconds: 0 },
   songs: [],
-  finalTracks: [],
   steps: [],
   parts: [],
   spots: [],
@@ -45,6 +50,7 @@ const gridOf = (firstBeatSeconds: number, tempoBpm: number): BeatSection[] => [
 ];
 
 const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
+  songId: 1,
   mediaItemId: 1,
   audioUrl: '/a',
   peaksUrl: '/k',
@@ -83,69 +89,26 @@ const step = (
 });
 
 describe('musicSegmentsOf', () => {
-  it('plays every kept piece of a song in order and skips the parts cut out between them', () => {
-    const split = {
-      ...song(3, 0, 0, 0),
-      pieces: [
-        { startSeconds: 2, endSeconds: 10 },
-        { startSeconds: 14.5, endSeconds: 20 },
-      ],
-    };
-    const segments = musicSegmentsOf(studio({ songs: [split, song(7, 1, 0, 5)] }));
+  it('plays the songs in their order, each from its own cut, the halves of one file apart', () => {
+    const segments = musicSegmentsOf(
+      studio({
+        songs: [song(12, 3, 2, 14.5, 20), song(11, 3, 0, 2, 10), song(13, 7, 1, 0, 5)],
+      }),
+    );
 
     expect(
       segments.map((placed) => [
+        placed.songId,
         placed.mediaItemId,
         placed.sourceStart,
         placed.timelineStart,
         placed.timelineEnd,
       ]),
     ).toEqual([
-      [3, 2, 0, 8],
-      [3, 14.5, 8, 13.5],
-      [7, 0, 13.5, 18.5],
+      [11, 3, 2, 0, 8],
+      [13, 7, 0, 8, 13],
+      [12, 3, 14.5, 13, 18.5],
     ]);
-  });
-
-  it('plays only the adopted final track once one is adopted', () => {
-    const track = (finalTrackId: number, adopted: boolean) => ({
-      finalTrackId,
-      mediaItemId: 40 + finalTrackId,
-      version: finalTrackId,
-      adopted,
-      state: 'ready' as const,
-      durationSeconds: 180,
-      fileName: 'Endfassung.mp3',
-      firstBeatSeconds: null,
-      tempoBpm: null,
-      alignments: [],
-      urls,
-    });
-    const segments = musicSegmentsOf(
-      studio({
-        music: { lengthSeconds: 180, source: 'finalTrack' },
-        songs: [song(3, 0, 0, 60)],
-        finalTracks: [track(1, false), track(2, true)],
-      }),
-    );
-
-    expect(segments.map((placed) => [placed.mediaItemId, placed.timelineEnd])).toEqual([[42, 180]]);
-  });
-});
-
-describe('pieceAlignmentOf', () => {
-  const entries = [
-    { fromSeconds: 20, offsetSeconds: 2 },
-    { fromSeconds: 0, offsetSeconds: 1 },
-    { fromSeconds: 40, offsetSeconds: 3 },
-  ];
-
-  it.each([
-    [20, 1],
-    [20.5, 2],
-    [-1, 1],
-  ])('places a piece ending at %s with the entry %s', (pieceEnd, offset) => {
-    expect(pieceAlignmentOf(entries, pieceEnd)?.offsetSeconds).toBe(offset);
   });
 });
 
@@ -155,6 +118,21 @@ describe('timelineSecondsOf', () => {
     [{ sourceMediaItemId: 1, seconds: 31 }, null],
   ])('places %o at %s', (anchor, expected) => {
     expect(timelineSecondsOf(mix, anchor)).toBe(expected);
+  });
+
+  const halvesApart = [
+    segment({ songId: 1, sourceStart: 0, sourceEnd: 10, timelineStart: 0, timelineEnd: 10 }),
+    segment({ songId: 3, mediaItemId: 2, timelineStart: 10, timelineEnd: 30 }),
+    segment({ songId: 2, sourceStart: 10, sourceEnd: 25, timelineStart: 30, timelineEnd: 45 }),
+  ];
+
+  it.each([
+    ['the shared border to the later half', 10, 30],
+    ['inside the later half', 12, 32],
+    ['the end of the file in the later half', 25, 45],
+    ['inside the earlier half', 4, 4],
+  ])('places a moment of a file split in halves apart at %s', (_, seconds, expected) => {
+    expect(timelineSecondsOf(halvesApart, { sourceMediaItemId: 1, seconds })).toBe(expected);
   });
 });
 
@@ -186,56 +164,6 @@ describe('countAt', () => {
     ['before the first beat', segment({ sourceStart: 0, sourceEnd: 20, beats: gridOf(2, 120) })],
   ])('has no count %s', (_, unbeaten) => {
     expect(countAt([unbeaten], 1)).toBeNull();
-  });
-});
-
-describe('counts on an adopted final file', () => {
-  const songOf = (
-    mediaItemId: number,
-    startSeconds: number,
-    endSeconds: number,
-    firstBeatSeconds: number,
-    tempoBpm: number,
-  ) => ({ ...song(mediaItemId, 0, startSeconds, endSeconds), firstBeatSeconds, tempoBpm });
-  const finalOf = (alignments: StudioFinalTrack['alignments']): StudioFinalTrack => ({
-    finalTrackId: 1,
-    mediaItemId: 42,
-    version: 1,
-    adopted: true,
-    state: 'ready',
-    durationSeconds: 180,
-    fileName: 'Endfassung.mp3',
-    firstBeatSeconds: 0.2,
-    tempoBpm: 100,
-    alignments,
-    urls,
-  });
-  const liveMix = musicSegmentsOf(
-    studio({
-      music: { lengthSeconds: 180, source: 'finalTrack' },
-      songs: [songOf(3, 0, 60, 0.5, 120), songOf(4, 10, 70, 1, 96)],
-      finalTracks: [
-        finalOf([
-          { sourceMediaItemId: 3, fromSeconds: 0, offsetSeconds: -2, stretch: 1 },
-          { sourceMediaItemId: 4, fromSeconds: 10, offsetSeconds: 80, stretch: 0.98 },
-        ]),
-      ],
-    }),
-  );
-
-  it.each([
-    ['the first song, its intro cut away', 0, { count: 4, eight: 0 }],
-    ['the faster second song on its own first beat', 90.78, { count: 1, eight: 2 }],
-    ['the gap between the songs on the file grid', 60, { count: 4, eight: 12 }],
-  ])('counts %s', (_, seconds, expected) => {
-    expect(countAt(liveMix, seconds)).toEqual(expected);
-  });
-
-  it('marks the beats of the faster song at its own, stretched tempo', () => {
-    const marks = countMarksOf(liveMix).filter((mark) => mark.seconds >= 90 && mark.seconds < 92);
-    const gaps = marks.slice(1).map((mark, index) => mark.seconds - (marks[index]?.seconds ?? 0));
-
-    expect(gaps.map((gap) => Math.round(gap * 10000) / 10000)).toEqual([0.6125, 0.6125]);
   });
 });
 

@@ -53,6 +53,6 @@ export const MUSIC_PAGE_TITLE = STEP_CARDS_MUSIC_PAGE;
 export const MUSIC_PAGE_TABS = 'Musik oder Video';
 export const MUSIC_PAGE_MUSIC = 'Musik';
 export const MUSIC_PAGE_VIDEO = 'Video';
-export const MUSIC_PAGE_LIST = 'Lieder, Endfassung und Videos';
+export const MUSIC_PAGE_LIST = 'Lieder und Videos';
 export const MUSIC_PAGE_DENIED = 'Musik und Videos dieses Auftritts kannst du nicht bearbeiten.';
 export const MUSIC_PAGE_CLOSED = 'Für diesen Auftritt gibt es noch keine Probe.';

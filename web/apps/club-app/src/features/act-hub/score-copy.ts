@@ -35,7 +35,7 @@ export const MUSIC_DOOR = 'Musik & Video';
 export const DETAILS_DOOR = 'Verlauf & Mitbearbeiter';
 export const SETTINGS_DOOR = 'Einstellungen';
 export const STUDIO_DOOR_META = 'Schritte, Plätze, Bewegung';
-export const MUSIC_DOOR_META = 'Lieder, Endfassung, Videos';
+export const MUSIC_DOOR_META = 'Lieder, Videos';
 export const SETTINGS_DOOR_META = 'Name, Besetzung, Wünsche, Archiv';
 
 export const DOOR_COPY: Record<ScoreDoorKey, { label: string; meta?: string }> = {
@@ -45,21 +45,17 @@ export const DOOR_COPY: Record<ScoreDoorKey, { label: string; meta?: string }> =
   settings: { label: SETTINGS_DOOR, meta: SETTINGS_DOOR_META },
 };
 
-const MUSIC_SOURCES = { workingMix: 'Arbeitsmix', finalTrack: 'Endfassung' } as const;
-
 const READINESS_LABELS: Record<ReadinessKey, string> = {
   music: 'Lieder',
   steps: 'Schritte',
   places: 'Aufstellung',
   movement: 'Bewegung',
   video: 'Video',
-  final: 'Endfassung',
 };
 
 const stripDot = (value: string): string => value.replace('.,', '');
 
-export const musicFactOf = (source: keyof typeof MUSIC_SOURCES, length: number): string =>
-  length <= 0 ? NONE : `${MUSIC_SOURCES[source]} · ${clockOf(length)}`;
+export const musicFactOf = (length: number): string => (length <= 0 ? NONE : clockOf(length));
 
 const dayOf = (iso: string): string => stripDot(WEEKDAY_DATE.format(new Date(iso)));
 
@@ -74,13 +70,6 @@ export const introOf = (pieces: readonly (string | null)[]): string =>
 export const readinessLabelOf = (key: ReadinessKey): string => READINESS_LABELS[key];
 
 export const readinessValueOf = (item: ReadinessItem): string => {
-  if (item.key === 'final') {
-    if (item.state === 'done') {
-      return 'da';
-    }
-
-    return item.state === 'open' ? 'nicht übernommen' : NONE;
-  }
   if (item.total === 0) {
     return NONE;
   }

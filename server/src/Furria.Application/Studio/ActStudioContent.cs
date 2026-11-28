@@ -8,8 +8,6 @@ public sealed record ActStudioContent
 
     public required IReadOnlyList<StudioSongDetails> Songs { get; init; }
 
-    public required IReadOnlyList<StudioFinalTrackDetails> FinalTracks { get; init; }
-
     public required IReadOnlyList<StudioStepDetails> Steps { get; init; }
 
     public required IReadOnlyList<StudioPartDetails> Parts { get; init; }

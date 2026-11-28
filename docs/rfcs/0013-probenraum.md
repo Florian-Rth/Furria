@@ -180,13 +180,25 @@ Decided while building (2026-11-28):
 - Nothing moves in a gap: the current formation/movement tools are off while the line is in a gap; an act without any step still places across the whole song. The migration starts the first step with the music (as the old tiling drew it).
 - For phase 5: step ends cascade with their media item like starts, so song replacement re-anchors ends before any media row goes.
 
-### Phase 5 — Music chain: split and replace, no final file
-Goal: songs are split and replaced in place; the final-file concept is gone (per-song offset for now).
-- [ ] Migration: multi-piece songs become one song per piece; one cut per song; an adopted final file becomes the act's one song; pending final files and alignment tables dropped
-- [ ] Song split endpoint (exactly at a moment; halves cannot be cropped into each other)
-- [ ] Replacement: match endpoint (where the song lies in the new file + which neighbouring songs it also holds), apply endpoint (song or run of songs, merged into one; anchors rewritten per song; version kind *music replaced*), one-level undo endpoint while nothing changed since
-- [ ] `FinalTrackMatching`/`FinalTrackAdoption` reshaped into song replacement; final-track endpoints, DTOs and club-app final section removed
-- [ ] Tests: split, replace one song, replace and merge neighbours, no match, undo, migration of adopted/pending final files
+### Phase 5a — Music chain: one cut per song, split, no final file
+Goal: songs are split in place; the final-file concept is gone. (Phase 5 was split on 2026-11-28 —
+it outgrew the ~120k-token cap.)
+- [x] Migration: multi-piece songs become one song per piece; one cut per song; an adopted final file becomes the act's one song; pending final files and alignment tables dropped
+- [x] Song split endpoint (exactly at a moment; halves cannot be cropped into each other)
+- [x] Final-track endpoints, service, DTOs and the club-app/studio final section removed; songs carry one cut on the wire and in the studio document
+- [x] Tests: split, halves cannot overlap, step end kept in the first half, migration of multi-piece songs and adopted/pending final files
+
+Decided while building (2026-11-28):
+- `act_song.start_seconds` + nullable `end_seconds` (null = to the file end); several songs may share one file, their cuts never overlap (PUT refuses with 409); the unique index on the file goes.
+- `POST acts/{id}/songs/{songId}/split {atSeconds}` (seconds in the song's file, ≥ 0,5 s on both sides, else 422) → `{songId}` of the second half, placed right after it with the same beat grid; anchors stay untouched. Song cut and split writes lock the act row.
+- The adopted final file becomes the one song with its own beat grid (the songs' grids placed into it are not carried over); the replaced songs' rows go, their files stay because unmatched anchors still point at them. Never-adopted final files are deleted (files buried by the media trigger). The migration's down path merges split halves back into pieces.
+- `FinalTrackMatching`/`FinalTrackAdoption` stay in Core until 5b reshapes them; the version kind `MusicAdopted` stays until 5b renames it.
+
+### Phase 5b — Music chain: replace in place
+Goal: songs are replaced in place (per-song offset for now; phase 6 goes per border).
+- [ ] Replacement: match endpoint (where the song lies in the new file + which neighbouring songs it also holds), apply endpoint (song or run of songs, merged into one; anchors rewritten per song; version kind *music replaced*, renaming `MusicAdopted` with its stored rows), one-level undo endpoint while nothing changed since
+- [ ] `FinalTrackMatching`/`FinalTrackAdoption` reshaped into song matching/replacement
+- [ ] Tests: replace one song, replace and merge neighbours, no match, undo, undo refused after a later change
 
 ### Phase 6 — Steps follow replaced music (helper 5)
 Goal: on *Ersetzen* every border re-finds its music; unsure ones are flagged.

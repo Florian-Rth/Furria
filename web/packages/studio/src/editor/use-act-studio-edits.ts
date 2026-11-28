@@ -10,7 +10,7 @@ export interface ActStudioEdits {
   keep: RefObject<number | null>;
   setTracks: (tracks: Record<number, readonly TimedKeyframe[]>) => void;
   dropTracks: (tracks: Record<number, readonly TimedKeyframe[]>) => void;
-  keepPosition: (seconds: number) => void;
+  keepPosition: (seconds: number | null) => void;
 }
 
 export const useActStudioEdits = (): ActStudioEdits => {

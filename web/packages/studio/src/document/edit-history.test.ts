@@ -9,6 +9,7 @@ import {
   gestureStarted,
   rebased,
   redone,
+  savedUpTo,
   undone,
 } from './edit-history';
 import type { StudioChange } from './studio-changes';
@@ -27,7 +28,6 @@ const document = (patch: Partial<StudioDocument>): StudioDocument => ({
   spots: {},
   tracks: {},
   videos: { 5: { name: 'Probe', startSeconds: 2, clipStartSeconds: 0, clipEndSeconds: 30 } },
-  finalTracks: {},
   ...patch,
 });
 
@@ -147,6 +147,31 @@ describe('rebased', () => {
     expect([result.droppedUndoSteps, result.skippedChanges, undoCountOf(result.state)]).toEqual([
       2, 1, 0,
     ]);
+  });
+
+  it.each<[string, number, number, number]>([
+    ['drops an undo step that would cut into the half split off meanwhile', 0, 15, 1],
+    ['keeps an undo step that stays clear of the other half', 2, 20, 0],
+  ])('%s', (_, startSeconds, endSeconds, dropped) => {
+    const song = { mediaItemId: 3, firstBeatSeconds: null, tempoBpm: null };
+    const mine = edited(
+      editStateOf(
+        document({ songOrder: [1], songs: { 1: { ...song, startSeconds: 0, endSeconds: 20 } } }),
+      ),
+      { kind: 'songSettings', songId: 1, ...song, startSeconds, endSeconds },
+      0,
+    );
+    const split = document({
+      songOrder: [1, 2],
+      songs: {
+        1: { ...song, startSeconds, endSeconds: 12 },
+        2: { ...song, startSeconds: 12, endSeconds },
+      },
+    });
+
+    expect(
+      rebased(savedUpTo(mine, mine.pending.length), split, 'replayPending').droppedUndoSteps,
+    ).toBe(dropped);
   });
 
   it('keeps spots and songs someone else added in the replayed order', () => {

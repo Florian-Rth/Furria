@@ -1,19 +1,12 @@
 import { isStepOnTimeline } from '@furria/studio/music-timeline';
 import type { Studio } from '@furria/studio/studio-schemas';
 
-export type SetupKey = 'music' | 'steps' | 'spots' | 'formation' | 'video' | 'final';
+export type SetupKey = 'music' | 'steps' | 'spots' | 'formation' | 'video';
 export type SetupState = 'done' | 'next' | 'open';
 
-export const SETUP_ORDER: readonly SetupKey[] = [
-  'music',
-  'steps',
-  'spots',
-  'formation',
-  'video',
-  'final',
-];
+export const SETUP_ORDER: readonly SetupKey[] = ['music', 'steps', 'spots', 'formation', 'video'];
 
-const OPTIONAL_KEYS: ReadonlySet<SetupKey> = new Set<SetupKey>(['video', 'final']);
+const OPTIONAL_KEYS: ReadonlySet<SetupKey> = new Set<SetupKey>(['video']);
 
 export interface SetupRow {
   key: SetupKey;
@@ -47,9 +40,6 @@ interface SetupFacts {
   openSpots: number;
   placedSpots: number;
   videos: number;
-  finals: number;
-  waitingFinals: number;
-  finalAdopted: boolean;
 }
 
 const isReady = (item: { state: string }): boolean => item.state === 'ready';
@@ -61,8 +51,6 @@ const factsOf = (studio: Studio): SetupFacts => {
       .map((track) => track.spotId),
   );
 
-  const finals = studio.finalTracks.filter(isReady);
-
   return {
     songs: studio.songs.filter(isReady).length,
     timedSteps: studio.steps.filter(isStepOnTimeline).length,
@@ -70,14 +58,11 @@ const factsOf = (studio: Studio): SetupFacts => {
     openSpots: studio.spots.filter((spot) => spot.person === null).length,
     placedSpots: studio.spots.filter((spot) => placed.has(spot.spotId)).length,
     videos: studio.videos.filter(isReady).length,
-    finals: finals.length,
-    waitingFinals: finals.filter((track) => !track.adopted).length,
-    finalAdopted: finals.some((track) => track.adopted),
   };
 };
 
 const countOf = (facts: SetupFacts, key: SetupKey): SetupCount => {
-  const audible = facts.songs > 0 || facts.finalAdopted;
+  const audible = facts.songs > 0;
 
   switch (key) {
     case 'music':
@@ -95,13 +80,6 @@ const countOf = (facts: SetupFacts, key: SetupKey): SetupCount => {
       };
     case 'video':
       return { done: facts.videos > 0, ready: audible, amount: facts.videos, open: 0 };
-    case 'final':
-      return {
-        done: facts.finalAdopted,
-        ready: true,
-        amount: facts.finals,
-        open: facts.waitingFinals,
-      };
   }
 };
 

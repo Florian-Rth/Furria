@@ -1,6 +1,7 @@
 import type { Patch } from 'immer';
 import { applyPatches, enablePatches, produceWithPatches } from 'immer';
 import { patchedIfAllFit, patchedWhereFitting } from './document-patches';
+import { hasOverlappingCuts } from './song-cuts';
 import type { StudioChange } from './studio-changes';
 import { applyChange, mergeKeyOf } from './studio-changes';
 import type { StudioDocument } from './studio-document';
@@ -172,7 +173,7 @@ const applicablePastOf = (
 
   for (const entry of [...past].reverse()) {
     const undoneProbe = patchedIfAllFit(probe, entry.inversePatches);
-    if (undoneProbe === null) {
+    if (undoneProbe === null || hasOverlappingCuts(undoneProbe.songs)) {
       break;
     }
     kept.unshift(entry);

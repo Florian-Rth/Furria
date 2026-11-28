@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text.Json;
 using Furria.Api.Altcha;
 using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
@@ -954,6 +955,57 @@ public sealed class ApiTestFixture : IAsyncLifetime
             """,
             ct
         );
+    }
+
+    public async Task CutSongOnOldSchemaDirectlyAsync(
+        int actId,
+        int mediaItemId,
+        IReadOnlyList<(double Start, double End)> pieces,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var json = JsonSerializer.Serialize(
+            pieces.Select(piece => new { startSeconds = piece.Start, endSeconds = piece.End })
+        );
+
+        await db.Database.ExecuteSqlAsync(
+            $"""
+            UPDATE act_song SET pieces = {json}::jsonb
+            WHERE act_id = {actId} AND media_item_id = {mediaItemId}
+            """,
+            ct
+        );
+    }
+
+    public async Task AddFinalTrackOnOldSchemaDirectlyAsync(
+        int actId,
+        int mediaItemId,
+        int version,
+        bool adopted,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        DateTimeOffset? adoptedAt = adopted ? DateTimeOffset.UtcNow : null;
+
+        await db.Database.ExecuteSqlAsync(
+            $"""
+            INSERT INTO act_final_track (act_id, media_item_id, version, adopted_at, tempo_bpm)
+            VALUES ({actId}, {mediaItemId}, {version}, {adoptedAt}, 128)
+            """,
+            ct
+        );
+    }
+
+    public async Task<bool> MediaItemExistsAsync(int mediaItemId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        return await db.MediaItems.AnyAsync(item => item.Id == mediaItemId, ct);
     }
 
     public async Task<int> MarkStepOnOldSchemaDirectlyAsync(

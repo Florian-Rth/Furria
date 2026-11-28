@@ -17,7 +17,6 @@ export type EveningSlot = PlacedSlot | { kind: 'unplaced' } | { kind: 'absent' }
 
 export interface StudioCounts {
   musicSeconds: number;
-  finalTrack: boolean;
   songs: number;
   steps: number;
   placedSteps: number;
@@ -100,7 +99,6 @@ export const musicClockOf = (seconds: number): string => {
 
 export const studioCountsOf = (studio: ActStudio): StudioCounts => ({
   musicSeconds: studio.music.lengthSeconds,
-  finalTrack: studio.music.source === 'finalTrack',
   songs: studio.songs.length,
   steps: studio.steps.length,
   placedSteps: studio.steps.filter(isStepOnTimeline).length,

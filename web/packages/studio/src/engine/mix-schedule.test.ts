@@ -4,6 +4,7 @@ import type { MixRun } from './mix-schedule';
 import { mixPiecesOf, playRangeOf, positionInRuns, stretchSlicesOf } from './mix-schedule';
 
 const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
+  songId: 1,
   mediaItemId: 1,
   audioUrl: '/a',
   peaksUrl: '/k',

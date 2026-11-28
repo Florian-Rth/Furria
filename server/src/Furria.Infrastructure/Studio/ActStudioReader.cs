@@ -32,9 +32,7 @@ public sealed class ActStudioReader
         var actId = act.ActId;
         var owner = MediaOwner.Act(actId);
         var songs = await SongsOfAsync(actId, owner, ct);
-        var finalTracks = await FinalTracksOfAsync(actId, owner, ct);
-        var adopted = finalTracks.FirstOrDefault(track => track.IsAdopted);
-        var music = ActMusic.Of(adopted is null ? null : CutOf(adopted), songs.SelectMany(CutsOf));
+        var music = new ActMusic(songs.Select(CutOf));
         var steps = await _dbContext
             .ActSteps.AsNoTracking()
             .Where(step => step.ActId == actId)
@@ -43,15 +41,8 @@ public sealed class ActStudioReader
 
         return new ActStudioContent
         {
-            Music = new StudioMusicDetails
-            {
-                LengthSeconds = music.LengthSeconds,
-                Source = adopted is null
-                    ? StudioMusicSource.WorkingMix
-                    : StudioMusicSource.FinalTrack,
-            },
+            Music = new StudioMusicDetails { LengthSeconds = music.LengthSeconds },
             Songs = songs,
-            FinalTracks = finalTracks,
             Steps = StepsOf(steps, music, stepTiling),
             Parts = await PartsOfAsync(actId, stepTiling, ct),
             Spots = await SpotsOfAsync(act, ct),
@@ -77,7 +68,8 @@ public sealed class ActStudioReader
                 song.Id,
                 song.MediaItemId,
                 song.Position,
-                song.Pieces,
+                song.StartSeconds,
+                song.EndSeconds,
                 song.FirstBeatSeconds,
                 song.TempoBpm,
                 song.MediaItem!.State,
@@ -97,78 +89,15 @@ public sealed class ActStudioReader
                 SongId = row.Id,
                 MediaItemId = row.MediaItemId,
                 Position = row.Position,
-                Pieces =
-                [
-                    .. MusicCut
-                        .OfSong(row.MediaItemId, row.Pieces, row.DurationSeconds)
-                        .Select(cut => new SongPiece(cut.StartSeconds, cut.EndSeconds)),
-                ],
+                StartSeconds = row.StartSeconds,
+                EndSeconds = MusicCut
+                    .OfSong(row.MediaItemId, row.StartSeconds, row.EndSeconds, row.DurationSeconds)
+                    .EndSeconds,
                 FirstBeatSeconds = row.FirstBeatSeconds ?? row.AnalysedFirstBeat,
                 TempoBpm = row.TempoBpm ?? row.AnalysedTempo,
                 State = row.State,
                 DurationSeconds = row.DurationSeconds,
                 FileName = row.OriginalFileName,
-                Urls = AudioUrlsOf(row.MediaItemId, owner),
-            }),
-        ];
-    }
-
-    private async Task<IReadOnlyList<StudioFinalTrackDetails>> FinalTracksOfAsync(
-        int actId,
-        MediaOwner owner,
-        CancellationToken ct
-    )
-    {
-        var rows = await _dbContext
-            .ActFinalTracks.AsNoTracking()
-            .Where(track => track.ActId == actId)
-            .OrderByDescending(track => track.Version)
-            .Select(track => new
-            {
-                track.Id,
-                track.MediaItemId,
-                track.Version,
-                track.AdoptedAt,
-                track.FirstBeatSeconds,
-                track.TempoBpm,
-                track.MediaItem!.State,
-                track.MediaItem.DurationSeconds,
-                track.MediaItem.OriginalFileName,
-                AnalysedFirstBeat = track.MediaItem.Audio == null
-                    ? null
-                    : track.MediaItem.Audio.FirstBeatSeconds,
-                AnalysedTempo = track.MediaItem.Audio == null
-                    ? null
-                    : track.MediaItem.Audio.TempoBpm,
-                Alignments = track
-                    .Alignments.OrderBy(alignment => alignment.SourceMediaItemId)
-                    .ThenBy(alignment => alignment.FromSeconds)
-                    .Select(alignment => new StudioFinalTrackAlignmentDetails
-                    {
-                        SourceMediaItemId = alignment.SourceMediaItemId,
-                        FromSeconds = alignment.FromSeconds,
-                        OffsetSeconds = alignment.OffsetSeconds,
-                        Stretch = alignment.Stretch,
-                    })
-                    .ToList(),
-            })
-            .ToListAsync(ct);
-        var adoptedId = rows.Where(row => row.AdoptedAt is not null).MaxBy(row => row.Version)?.Id;
-
-        return
-        [
-            .. rows.Select(row => new StudioFinalTrackDetails
-            {
-                FinalTrackId = row.Id,
-                MediaItemId = row.MediaItemId,
-                Version = row.Version,
-                IsAdopted = row.Id == adoptedId,
-                State = row.State,
-                DurationSeconds = row.DurationSeconds,
-                FileName = row.OriginalFileName,
-                FirstBeatSeconds = row.FirstBeatSeconds ?? row.AnalysedFirstBeat,
-                TempoBpm = row.TempoBpm ?? row.AnalysedTempo,
-                Alignments = row.Alignments,
                 Urls = AudioUrlsOf(row.MediaItemId, owner),
             }),
         ];
@@ -361,16 +290,8 @@ public sealed class ActStudioReader
         };
 
     [Pure]
-    private static IEnumerable<MusicCut> CutsOf(StudioSongDetails song) =>
-        song.Pieces.Select(piece => new MusicCut(
-            song.MediaItemId,
-            piece.StartSeconds,
-            piece.EndSeconds
-        ));
-
-    [Pure]
-    private static MusicCut CutOf(StudioFinalTrackDetails track) =>
-        MusicCut.OfFinalTrack(track.MediaItemId, track.DurationSeconds);
+    private static MusicCut CutOf(StudioSongDetails song) =>
+        new(song.MediaItemId, song.StartSeconds, song.EndSeconds);
 
     [Pure]
     private static StepAnchors AnchorsOf(ActStep step) =>

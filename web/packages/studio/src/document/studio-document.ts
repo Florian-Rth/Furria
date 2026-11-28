@@ -1,9 +1,14 @@
-import type { Keyframe, SongPiece, StudioPerson } from '../models/studio-schemas';
+import type { Keyframe, StudioPerson } from '../models/studio-schemas';
 
-export interface DocumentSong {
-  pieces: SongPiece[];
+export interface SongSettings {
+  startSeconds: number;
+  endSeconds: number;
   firstBeatSeconds: number | null;
   tempoBpm: number | null;
+}
+
+export interface DocumentSong extends SongSettings {
+  mediaItemId: number;
 }
 
 export interface DocumentStep {
@@ -30,18 +35,6 @@ export interface DocumentVideo {
   clipEndSeconds: number | null;
 }
 
-export interface DocumentAlignment {
-  fromSeconds: number;
-  offsetSeconds: number;
-  stretch: number;
-}
-
-export interface DocumentFinalTrack {
-  firstBeatSeconds: number | null;
-  tempoBpm: number | null;
-  alignments: Record<number, DocumentAlignment[]>;
-}
-
 export interface StudioDocument {
   songOrder: number[];
   songs: Record<number, DocumentSong>;
@@ -51,17 +44,9 @@ export interface StudioDocument {
   spots: Record<number, DocumentSpot>;
   tracks: Record<number, Keyframe[]>;
   videos: Record<number, DocumentVideo>;
-  finalTracks: Record<number, DocumentFinalTrack>;
 }
 
-export type DocumentCollection =
-  | 'songs'
-  | 'steps'
-  | 'parts'
-  | 'spots'
-  | 'tracks'
-  | 'videos'
-  | 'finalTracks';
+export type DocumentCollection = 'songs' | 'steps' | 'parts' | 'spots' | 'tracks' | 'videos';
 
 export const idsOf = <TItem>(collection: Readonly<Record<number, TItem>>): number[] =>
   Object.keys(collection).map(Number);

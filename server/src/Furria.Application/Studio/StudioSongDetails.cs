@@ -1,5 +1,4 @@
 using Furria.Core.Media;
-using Furria.Core.Studio;
 
 namespace Furria.Application.Studio;
 
@@ -11,7 +10,9 @@ public sealed record StudioSongDetails
 
     public required int Position { get; init; }
 
-    public required IReadOnlyList<SongPiece> Pieces { get; init; }
+    public required double StartSeconds { get; init; }
+
+    public required double EndSeconds { get; init; }
 
     public required double? FirstBeatSeconds { get; init; }
 

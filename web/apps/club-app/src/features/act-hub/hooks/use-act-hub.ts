@@ -123,7 +123,7 @@ export const useActHub = (
     stage: model.stage,
     ownSpotId: model.ownSpotId,
   };
-  const music = model.length > 0 ? musicFactOf(studio.music.source, model.length) : null;
+  const music = model.length > 0 ? musicFactOf(model.length) : null;
 
   const selectRow = (stepId: number): void => {
     route.showStep(stepId);

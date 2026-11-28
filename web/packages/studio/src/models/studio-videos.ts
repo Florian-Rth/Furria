@@ -70,14 +70,10 @@ export const needsAlignment = (video: StudioVideo): boolean =>
   video.state === 'ready' && video.placement === 'unaligned';
 
 export const isDevelopingStudio = (studio: Studio): boolean =>
-  [...studio.songs, ...studio.finalTracks, ...studio.videos].some(
-    (item) => item.state === 'processing',
-  );
+  [...studio.songs, ...studio.videos].some((item) => item.state === 'processing');
 
 export const musicKeyOf = (studio: Studio): string =>
-  [...studio.songs, ...studio.finalTracks]
-    .map((item) => `${item.mediaItemId}:${item.state}`)
-    .join(',');
+  studio.songs.map((song) => `${song.mediaItemId}:${song.state}`).join(',');
 
 export const overlapsRange = (video: StudioVideo, range: TimelineRange): boolean => {
   const span = clipSpanOf(video);

@@ -1,7 +1,7 @@
 import type { ScoreStep } from '@furria/studio/score-steps';
 import type { ActStudio } from '@/features/acts/schemas';
 
-export type ReadinessKey = 'music' | 'steps' | 'places' | 'movement' | 'video' | 'final';
+export type ReadinessKey = 'music' | 'steps' | 'places' | 'movement' | 'video';
 export type ReadinessState = 'done' | 'open' | 'empty';
 export type ReadinessTarget = 'music' | 'editor';
 
@@ -35,25 +35,6 @@ const musicOf = (studio: ActStudio): ReadinessItem => {
   };
 };
 
-const finalOf = (studio: ActStudio): ReadinessItem => {
-  const adopted = studio.finalTracks.some((track) => track.adopted);
-  let state: ReadinessState = 'empty';
-
-  if (adopted) {
-    state = 'done';
-  } else if (studio.finalTracks.length > 0) {
-    state = 'open';
-  }
-
-  return {
-    key: 'final',
-    state,
-    done: Number(adopted),
-    total: 1,
-    target: 'music',
-  };
-};
-
 const shareItem = (
   key: ReadinessKey,
   done: number,
@@ -71,6 +52,5 @@ export const readinessOf = (studio: ActStudio, steps: readonly ScoreStep[]): Rea
     shareItem('places', filled, studio.spots.length, 'editor'),
     shareItem('movement', timed.filter((step) => step.movement).length, timed.length, 'editor'),
     shareItem('video', timed.filter((step) => step.video !== null).length, timed.length, 'music'),
-    finalOf(studio),
   ];
 };

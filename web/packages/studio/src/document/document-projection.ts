@@ -1,35 +1,16 @@
 import { musicLengthOf, musicSegmentsOf } from '../models/music-timeline';
 import type {
   Studio,
-  StudioFinalTrack,
   StudioPart,
   StudioSong,
   StudioSpot,
   StudioStep,
   StudioVideo,
 } from '../models/studio-schemas';
-import type {
-  DocumentFinalTrack,
-  DocumentPart,
-  DocumentStep,
-  StudioDocument,
-} from './studio-document';
+import type { DocumentPart, DocumentStep, StudioDocument } from './studio-document';
 import { idsOf, itemOf } from './studio-document';
 
 const NO_CHOREOGRAPHY_VERSION = 0;
-
-const documentAlignmentsOf = (track: StudioFinalTrack): DocumentFinalTrack['alignments'] => {
-  const alignments: DocumentFinalTrack['alignments'] = {};
-
-  for (const { sourceMediaItemId, fromSeconds, offsetSeconds, stretch } of track.alignments) {
-    alignments[sourceMediaItemId] = [
-      ...(alignments[sourceMediaItemId] ?? []),
-      { fromSeconds, offsetSeconds, stretch },
-    ].sort((left, right) => left.fromSeconds - right.fromSeconds);
-  }
-
-  return alignments;
-};
 
 export const documentOf = (studio: Studio): StudioDocument => ({
   songOrder: [...studio.songs]
@@ -39,7 +20,9 @@ export const documentOf = (studio: Studio): StudioDocument => ({
     studio.songs.map((song) => [
       song.songId,
       {
-        pieces: song.pieces.map((piece) => ({ ...piece })),
+        mediaItemId: song.mediaItemId,
+        startSeconds: song.startSeconds,
+        endSeconds: song.endSeconds,
         firstBeatSeconds: song.firstBeatSeconds,
         tempoBpm: song.tempoBpm,
       },
@@ -77,16 +60,6 @@ export const documentOf = (studio: Studio): StudioDocument => ({
         startSeconds: video.startSeconds,
         clipStartSeconds: video.clipStartSeconds,
         clipEndSeconds: video.clipEndSeconds,
-      },
-    ]),
-  ),
-  finalTracks: Object.fromEntries(
-    studio.finalTracks.map((track) => [
-      track.finalTrackId,
-      {
-        firstBeatSeconds: track.firstBeatSeconds,
-        tempoBpm: track.tempoBpm,
-        alignments: documentAlignmentsOf(track),
       },
     ]),
   ),
@@ -269,43 +242,17 @@ const videosOf = (base: Studio, document: StudioDocument): StudioVideo[] =>
     return [{ ...video, ...edited, placement: moved ? 'onTimeline' : video.placement }];
   });
 
-const finalTracksOf = (base: Studio, document: StudioDocument): StudioFinalTrack[] =>
-  base.finalTracks.flatMap((track) => {
-    const edited = itemOf(document.finalTracks, track.finalTrackId);
-
-    return edited === null
-      ? []
-      : [
-          {
-            ...track,
-            firstBeatSeconds: edited.firstBeatSeconds,
-            tempoBpm: edited.tempoBpm,
-            alignments: idsOf(edited.alignments).flatMap((sourceMediaItemId) =>
-              (itemOf(edited.alignments, sourceMediaItemId) ?? []).map((alignment) => ({
-                sourceMediaItemId,
-                ...alignment,
-              })),
-            ),
-          },
-        ];
-  });
-
 export const studioOf = <TStudio extends Studio>(
   base: TStudio,
   document: StudioDocument,
 ): TStudio => {
   const songs = songsOf(base, document);
-  const finalTracks = finalTracksOf(base, document);
-  const lengthSeconds =
-    base.music.source === 'workingMix'
-      ? musicLengthOf(musicSegmentsOf({ ...base, songs, finalTracks }))
-      : base.music.lengthSeconds;
+  const lengthSeconds = musicLengthOf(musicSegmentsOf({ ...base, songs }));
 
   return {
     ...base,
     music: { ...base.music, lengthSeconds },
     songs,
-    finalTracks,
     steps: stepsOf(base, document, lengthSeconds),
     parts: partsOf(base, document),
     spots: spotsOf(document),

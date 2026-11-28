@@ -4,9 +4,9 @@ import { formatReadoutMetres } from '@furria/studio/drag-readout';
 import type { GesturePrecisionTier } from '@furria/studio/gesture-recogniser';
 import type { CountAt, TimelineRange } from '@furria/studio/music-timeline';
 import { clockOf } from '@furria/studio/practice-step-list';
-import type { CutEdge } from '@furria/studio/studio-cuts';
+import type { CutEdge, CutSpan } from '@furria/studio/studio-cuts';
 import type { OutsideMusic } from '@furria/studio/studio-music';
-import type { SongPiece, StudioVideo } from '@furria/studio/studio-schemas';
+import type { StudioVideo } from '@furria/studio/studio-schemas';
 
 type VideoPlacement = StudioVideo['placement'];
 
@@ -25,22 +25,6 @@ export const STUDIO_TOOLS: readonly { tool: StudioTool; label: string }[] = [
 export const STUDIO_WAVE_LABEL =
   'Musik: wischen zum Spulen, tippen springt hin, mit zwei Fingern zoomen';
 export const STUDIO_SONGS = 'Lieder';
-export const STUDIO_FINAL = 'Endfassung';
-export const STUDIO_FINAL_NONE = 'Noch keine Endfassung';
-export const STUDIO_FINAL_UPLOAD = 'Endfassung hochladen';
-export const STUDIO_FINAL_UPLOAD_NEWER = 'Neue Endfassung hochladen';
-export const STUDIO_FINAL_LEAD = 'E';
-export const STUDIO_FINAL_TRYING = 'Probehören';
-export const STUDIO_FINAL_DESK = 'Lied in der Endfassung';
-export const STUDIO_FINAL_DESK_CLOSE = 'Schließen';
-export const STUDIO_FINAL_GRID_DESK = 'Endfassung bearbeiten';
-export const STUDIO_FINAL_PLACE = 'Lage';
-export const STUDIO_FINAL_START_HERE = 'Beginnt hier';
-export const STUDIO_FINAL_FILE = 'Endfassung';
-export const STUDIO_FINAL_MATCH = 'Automatisch abgleichen';
-export const STUDIO_FINAL_MATCHING = 'Wird abgeglichen …';
-export const STUDIO_FINAL_REMOVE = 'Endfassung entfernen';
-export const STUDIO_FINAL_REMOVE_SURE = 'Wirklich entfernen';
 export const STUDIO_SONG_ADD = 'Lieder hinzufügen';
 export const STUDIO_OUTSIDE_MUSIC = 'Außerhalb der Musik';
 export const STUDIO_SONG_ACCEPT =
@@ -163,16 +147,11 @@ export const songMetaOf = (start: number, end: number, bpm: number | null): stri
     : `${clockOf(start)}–${clockOf(end)} · ${Math.round(bpm)} BPM`;
 
 export const songCardMetaOf = (
-  pieces: readonly SongPiece[],
+  { startSeconds, endSeconds }: CutSpan,
   duration: number | null,
   bpm: number | null,
 ): string => {
-  const [first] = pieces;
-  const kept = pieces.reduce((sum, piece) => sum + piece.endSeconds - piece.startSeconds, 0);
-  const cut =
-    pieces.length === 1 && first !== undefined
-      ? `Schnitt ${clockOf(first.startSeconds)}–${clockOf(first.endSeconds)}`
-      : `${pieces.length} Stücke · ${clockOf(kept)}`;
+  const cut = `Schnitt ${clockOf(startSeconds)}–${clockOf(endSeconds)}`;
   const whole = duration === null ? '' : ` von ${clockOf(duration)}`;
   const tempo = bpm === null ? ' · Takt fehlt' : ` · ${Math.round(bpm)} BPM`;
 
@@ -182,6 +161,12 @@ export const songCardMetaOf = (
 export const songNameOf = (fileName: string): string => fileName.replace(/\.[a-z0-9]+$/i, '');
 
 export const songRowLabelOf = (name: string): string => `${name}: an den Anfang springen`;
+
+export const songSpokenNameOf = (
+  fileName: string,
+  number: number,
+  sharesItsFile: boolean,
+): string => (sharesItsFile ? `${songNameOf(fileName)}, Lied ${number}` : songNameOf(fileName));
 
 const PRECISION_NAMES: Record<GesturePrecisionTier, string | null> = {
   full: null,
@@ -206,8 +191,6 @@ export const STUDIO_CUT_END = 'Ende';
 export const STUDIO_CUT_START_HERE = 'Anfang hier';
 export const STUDIO_CUT_SPLIT = 'Teilen';
 export const STUDIO_CUT_END_HERE = 'Ende hier';
-export const STUDIO_PIECE_REMOVE = 'Stück entfernen';
-export const STUDIO_PIECE_REMOVE_SURE = 'Wirklich entfernen';
 
 const CENTS_PER_SECOND = 100;
 
@@ -327,69 +310,12 @@ export const outsideMusicTextOf = ({ steps, videos, keyframes }: OutsideMusic): 
 
 export const newPartNameOf = (number: number): string => `Teil ${number}`;
 
-export const songDeskTitleOf = (
-  number: number,
-  name: string,
-  piece: number,
-  pieces: number,
-): string =>
-  pieces > 1
-    ? `Lied ${number} · ${name} · Stück ${piece} von ${pieces}`
-    : `Lied ${number} · ${name}`;
+export const songDeskTitleOf = (number: number, name: string): string => `Lied ${number} · ${name}`;
 
 export const STUDIO_SONG_GONE = 'Das Lied gibt es nicht mehr. Sein Fenster ist zu.';
 export const STUDIO_VIDEO_GONE = 'Das Video gibt es nicht mehr. Sein Fenster ist zu.';
 export const videoNameOf = (name: string | null, number: number): string =>
   name ?? `Video ${number}`;
-
-export const finalTitleOf = (version: number): string => `Endfassung ${version}`;
-
-export const finalTrackMetaOf = (
-  state: MediaItemState,
-  found: number,
-  total: number,
-  trying: boolean,
-): string => {
-  const preparing = songStateMetaOf(state);
-
-  if (preparing !== null) {
-    return preparing;
-  }
-
-  const matched = found === 0 ? 'noch nicht abgeglichen' : `${found} von ${total} gefunden`;
-
-  return trying ? `${matched} · so klingt es übernommen` : `${matched} · antippen zum Probehören`;
-};
-
-export const finalTrackLabelOf = (trying: boolean): string =>
-  trying ? 'Probehören beenden' : 'Mit der Endfassung probehören';
-
-export const adoptedMetaOf = (bpm: number | null): string =>
-  bpm === null ? 'spielt · Takt fehlt' : `spielt · ${Math.round(bpm)} BPM`;
-
-export const finalSourceMetaOf = (start: number | null, end: number | null): string =>
-  start === null || end === null
-    ? 'in der Endfassung nicht gefunden'
-    : `in der Endfassung ${fineClockOf(start)}–${fineClockOf(end)}`;
-
-export const finalShiftLabelOf = (name: string): string => `${name} in der Endfassung verschieben`;
-
-export const adoptTextOf = (sure: boolean, matched: boolean, missing: string | null): string => {
-  if (!matched) {
-    return 'Endfassung übernehmen · erst ein Lied anlegen';
-  }
-  if (!sure) {
-    return 'Endfassung übernehmen';
-  }
-
-  return missing === null ? 'Wirklich übernehmen' : `Wirklich übernehmen · ohne Musik: ${missing}`;
-};
-
-export const finalShiftNudgeLabelOf = (delta: number): string =>
-  `Lied in der Endfassung um ${Math.abs(delta).toFixed(2).replace('.', ',')} s ${delta < 0 ? 'früher' : 'später'}`;
-
-export const finalDeskLabelOf = (kind: 'source' | 'grid' | null): string =>
-  kind === 'grid' ? STUDIO_FINAL_GRID_DESK : STUDIO_FINAL_DESK;
 
 export const STUDIO_CHANGED_ELSEWHERE =
   'Das wurde inzwischen woanders geändert. Deine Änderung ist nicht gespeichert.';

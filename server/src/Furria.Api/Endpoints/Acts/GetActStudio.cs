@@ -73,13 +73,8 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
     private static StudioDto ToDto(ActStudioContent content) =>
         new()
         {
-            Music = new StudioMusicDto
-            {
-                LengthSeconds = content.Music.LengthSeconds,
-                Source = content.Music.Source,
-            },
+            Music = new StudioMusicDto { LengthSeconds = content.Music.LengthSeconds },
             Songs = [.. content.Songs.Select(ToDto)],
-            FinalTracks = [.. content.FinalTracks.Select(ToDto)],
             Steps = [.. content.Steps.Select(ToDto)],
             Parts = [.. content.Parts.Select(ToDto)],
             Spots = [.. content.Spots.Select(ToDto)],
@@ -102,45 +97,14 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             SongId = song.SongId,
             MediaItemId = song.MediaItemId,
             Position = song.Position,
-            Pieces =
-            [
-                .. song.Pieces.Select(piece => new StudioSongPieceDto
-                {
-                    StartSeconds = piece.StartSeconds,
-                    EndSeconds = piece.EndSeconds,
-                }),
-            ],
+            StartSeconds = song.StartSeconds,
+            EndSeconds = song.EndSeconds,
             FirstBeatSeconds = song.FirstBeatSeconds,
             TempoBpm = song.TempoBpm,
             State = song.State,
             DurationSeconds = song.DurationSeconds,
             FileName = song.FileName,
             Urls = ToDto(song.Urls),
-        };
-
-    private static StudioFinalTrackDto ToDto(StudioFinalTrackDetails track) =>
-        new()
-        {
-            FinalTrackId = track.FinalTrackId,
-            MediaItemId = track.MediaItemId,
-            Version = track.Version,
-            Adopted = track.IsAdopted,
-            State = track.State,
-            DurationSeconds = track.DurationSeconds,
-            FileName = track.FileName,
-            FirstBeatSeconds = track.FirstBeatSeconds,
-            TempoBpm = track.TempoBpm,
-            Alignments =
-            [
-                .. track.Alignments.Select(alignment => new StudioFinalTrackAlignmentDto
-                {
-                    SourceMediaItemId = alignment.SourceMediaItemId,
-                    FromSeconds = alignment.FromSeconds,
-                    OffsetSeconds = alignment.OffsetSeconds,
-                    Stretch = alignment.Stretch,
-                }),
-            ],
-            Urls = ToDto(track.Urls),
         };
 
     private static StudioAudioUrlsDto ToDto(StudioAudioUrls urls) =>
@@ -286,8 +250,6 @@ public sealed record StudioDto
 
     public required IReadOnlyList<StudioSongDto> Songs { get; init; }
 
-    public required IReadOnlyList<StudioFinalTrackDto> FinalTracks { get; init; }
-
     public required IReadOnlyList<StudioStepDto> Steps { get; init; }
 
     public required IReadOnlyList<StudioPartDto> Parts { get; init; }
@@ -313,8 +275,6 @@ public sealed record StudioStageDto
 public sealed record StudioMusicDto
 {
     public required double LengthSeconds { get; init; }
-
-    public required StudioMusicSource Source { get; init; }
 }
 
 public sealed record StudioAudioUrlsDto
@@ -334,37 +294,13 @@ public sealed record StudioSongDto
 
     public required int Position { get; init; }
 
-    public required IReadOnlyList<StudioSongPieceDto> Pieces { get; init; }
-
-    public required double? FirstBeatSeconds { get; init; }
-
-    public required double? TempoBpm { get; init; }
-
-    public required MediaItemState State { get; init; }
-
-    public required double? DurationSeconds { get; init; }
-
-    public required string FileName { get; init; }
-
-    public required StudioAudioUrlsDto Urls { get; init; }
-}
-
-public sealed record StudioSongPieceDto
-{
     public required double StartSeconds { get; init; }
 
     public required double EndSeconds { get; init; }
-}
 
-public sealed record StudioFinalTrackDto
-{
-    public required int FinalTrackId { get; init; }
+    public required double? FirstBeatSeconds { get; init; }
 
-    public required int MediaItemId { get; init; }
-
-    public required int Version { get; init; }
-
-    public required bool Adopted { get; init; }
+    public required double? TempoBpm { get; init; }
 
     public required MediaItemState State { get; init; }
 
@@ -372,24 +308,7 @@ public sealed record StudioFinalTrackDto
 
     public required string FileName { get; init; }
 
-    public required double? FirstBeatSeconds { get; init; }
-
-    public required double? TempoBpm { get; init; }
-
-    public required IReadOnlyList<StudioFinalTrackAlignmentDto> Alignments { get; init; }
-
     public required StudioAudioUrlsDto Urls { get; init; }
-}
-
-public sealed record StudioFinalTrackAlignmentDto
-{
-    public required int SourceMediaItemId { get; init; }
-
-    public required double FromSeconds { get; init; }
-
-    public required double OffsetSeconds { get; init; }
-
-    public required double Stretch { get; init; }
 }
 
 public sealed record StudioStepDto

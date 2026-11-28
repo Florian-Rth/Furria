@@ -1,26 +1,25 @@
-import type { FinalTrackMatches, VideoAlignment } from '@furria/studio/studio-schemas';
+import type { VideoAlignment } from '@furria/studio/studio-schemas';
+import type { StudioSongSplit } from '@furria/studio/studio-screen';
 import type { VideoSplitInput } from '@furria/studio/studio-videos';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { useStudioWriteFailure } from './hooks/use-studio-write-failure';
 import {
-  requestFinalTrackAdd,
-  requestFinalTrackAdoption,
-  requestFinalTrackMatch,
-  requestFinalTrackRemoval,
   requestSongAdd,
   requestSongRemoval,
+  requestSongSplit,
   requestVideoAdd,
   requestVideoAlignment,
   requestVideoRemoval,
   requestVideoSplit,
 } from './requests';
-import type { AddedFinalTrack, AddedSong, AddedVideo, SplitVideo } from './schemas';
+import type { AddedSong, AddedVideo, SplitSong, SplitVideo } from './schemas';
 import { throughStudioEditor } from './studio-editor-store';
 
 export interface SongMutations {
   add: UseMutationResult<AddedSong, Error, number>;
   remove: UseMutationResult<void, Error, number>;
+  split: UseMutationResult<SplitSong, Error, StudioSongSplit>;
 }
 
 export const useSongMutations = (actId: number): SongMutations => {
@@ -41,8 +40,15 @@ export const useSongMutations = (actId: number): SongMutations => {
     notice: failure,
     key,
   });
+  const split = useApiMutation({
+    request: (input: StudioSongSplit, accessToken) =>
+      throughStudioEditor(actId, () => requestSongSplit(actId, input, accessToken)),
+    changes: ['actMusic'],
+    notice: failure,
+    key,
+  });
 
-  return { add, remove };
+  return { add, remove, split };
 };
 
 export interface VideoMutations {
@@ -92,54 +98,4 @@ export const useVideoMutations = (actId: number): VideoMutations => {
   });
 
   return { add, align, autoAlign, remove, split };
-};
-
-export interface FinalTrackMutations {
-  add: UseMutationResult<AddedFinalTrack, Error, number>;
-  match: UseMutationResult<FinalTrackMatches, Error, number>;
-  autoMatch: UseMutationResult<FinalTrackMatches, Error, number>;
-  adopt: UseMutationResult<void, Error, number>;
-  remove: UseMutationResult<void, Error, number>;
-}
-
-export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
-  const key = ['actSongs', actId];
-  const failure = useStudioWriteFailure(actId);
-
-  const add = useApiMutation({
-    request: (mediaItemId: number, accessToken) =>
-      throughStudioEditor(actId, () => requestFinalTrackAdd(actId, mediaItemId, accessToken)),
-    changes: ['actMusic'],
-    notice: failure,
-    key,
-  });
-  const match = useApiMutation({
-    request: (finalTrackId: number, accessToken) =>
-      requestFinalTrackMatch(actId, finalTrackId, accessToken),
-    changes: ['actMusic'],
-    notice: failure,
-    key,
-  });
-  const autoMatch = useApiMutation({
-    request: (finalTrackId: number, accessToken) =>
-      requestFinalTrackMatch(actId, finalTrackId, accessToken),
-    changes: ['actMusic'],
-    key,
-  });
-  const adopt = useApiMutation({
-    request: (finalTrackId: number, accessToken) =>
-      throughStudioEditor(actId, () => requestFinalTrackAdoption(actId, finalTrackId, accessToken)),
-    changes: ['actMusic'],
-    notice: failure,
-    key,
-  });
-  const remove = useApiMutation({
-    request: (finalTrackId: number, accessToken) =>
-      throughStudioEditor(actId, () => requestFinalTrackRemoval(actId, finalTrackId, accessToken)),
-    changes: ['actMusic'],
-    notice: failure,
-    key,
-  });
-
-  return { add, match, autoMatch, adopt, remove };
 };

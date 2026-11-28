@@ -146,7 +146,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActStepService>();
         services.AddScoped<ActPartService>();
         services.AddScoped<ActVideoService>();
-        services.AddScoped<ActFinalTrackService>();
         services.AddSingleton<SoundProfiles>();
         services.AddScoped<RunningOrderService>();
         services.AddScoped<SeatingService>();

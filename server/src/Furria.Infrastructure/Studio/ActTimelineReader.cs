@@ -38,25 +38,6 @@ public sealed class ActTimelineReader
 
     public async Task<IReadOnlyList<MusicSource>> MusicOfAsync(int actId, CancellationToken ct)
     {
-        var adopted = await _dbContext
-            .ActFinalTracks.Where(track => track.ActId == actId && track.AdoptedAt != null)
-            .OrderByDescending(track => track.Version)
-            .Select(track => new
-            {
-                track.MediaItemId,
-                track.MediaItem!.StorageKey,
-                track.MediaItem.DurationSeconds,
-            })
-            .FirstOrDefaultAsync(ct);
-        if (adopted is not null)
-            return
-            [
-                new MusicSource(
-                    MusicCut.OfFinalTrack(adopted.MediaItemId, adopted.DurationSeconds),
-                    adopted.StorageKey
-                ),
-            ];
-
         var songs = await _dbContext
             .ActSongs.Where(song => song.ActId == actId)
             .OrderBy(song => song.Position)
@@ -64,7 +45,8 @@ public sealed class ActTimelineReader
             .Select(song => new
             {
                 song.MediaItemId,
-                song.Pieces,
+                song.StartSeconds,
+                song.EndSeconds,
                 song.MediaItem!.StorageKey,
                 song.MediaItem.DurationSeconds,
             })
@@ -72,11 +54,15 @@ public sealed class ActTimelineReader
 
         return
         [
-            .. songs.SelectMany(song =>
-                MusicCut
-                    .OfSong(song.MediaItemId, song.Pieces, song.DurationSeconds)
-                    .Select(cut => new MusicSource(cut, song.StorageKey))
-            ),
+            .. songs.Select(song => new MusicSource(
+                MusicCut.OfSong(
+                    song.MediaItemId,
+                    song.StartSeconds,
+                    song.EndSeconds,
+                    song.DurationSeconds
+                ),
+                song.StorageKey
+            )),
         ];
     }
 }

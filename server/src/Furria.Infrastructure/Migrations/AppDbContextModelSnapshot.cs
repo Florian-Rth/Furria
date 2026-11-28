@@ -4642,103 +4642,6 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("act_co_editor", (string)null);
                 });
 
-            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrack", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ActId")
-                        .HasColumnType("integer")
-                        .HasColumnName("act_id");
-
-                    b.Property<DateTimeOffset?>("AdoptedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("adopted_at");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("created_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<double?>("FirstBeatSeconds")
-                        .HasColumnType("double precision")
-                        .HasColumnName("first_beat_seconds");
-
-                    b.Property<int>("MediaItemId")
-                        .HasColumnType("integer")
-                        .HasColumnName("media_item_id");
-
-                    b.Property<double?>("TempoBpm")
-                        .HasColumnType("double precision")
-                        .HasColumnName("tempo_bpm");
-
-                    b.Property<DateTimeOffset>("UpdatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("updated_at")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<int>("Version")
-                        .HasColumnType("integer")
-                        .HasColumnName("version");
-
-                    b.HasKey("Id")
-                        .HasName("pk_act_final_track");
-
-                    b.HasIndex("MediaItemId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_act_final_track_media_item_id");
-
-                    b.HasIndex("ActId", "Version")
-                        .IsUnique()
-                        .HasDatabaseName("ix_act_final_track_act_id_version");
-
-                    b.ToTable("act_final_track", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_act_final_track_beat_grid", "(first_beat_seconds IS NULL OR first_beat_seconds >= 0) AND (tempo_bpm IS NULL OR tempo_bpm > 0)");
-
-                            t.HasCheckConstraint("ck_act_final_track_version", "version >= 1");
-                        });
-                });
-
-            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrackAlignment", b =>
-                {
-                    b.Property<int>("FinalTrackId")
-                        .HasColumnType("integer")
-                        .HasColumnName("final_track_id");
-
-                    b.Property<int>("SourceMediaItemId")
-                        .HasColumnType("integer")
-                        .HasColumnName("source_media_item_id");
-
-                    b.Property<double>("FromSeconds")
-                        .HasColumnType("double precision")
-                        .HasColumnName("from_seconds");
-
-                    b.Property<double>("OffsetSeconds")
-                        .HasColumnType("double precision")
-                        .HasColumnName("offset_seconds");
-
-                    b.Property<double>("Stretch")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("double precision")
-                        .HasDefaultValue(1.0)
-                        .HasColumnName("stretch");
-
-                    b.HasKey("FinalTrackId", "SourceMediaItemId", "FromSeconds")
-                        .HasName("pk_act_final_track_alignment");
-
-                    b.HasIndex("SourceMediaItemId")
-                        .HasDatabaseName("ix_act_final_track_alignment_source_media_item_id");
-
-                    b.ToTable("act_final_track_alignment", (string)null);
-                });
-
             modelBuilder.Entity("Furria.Core.Studio.ActPart", b =>
                 {
                     b.Property<int>("Id")
@@ -4801,6 +4704,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("act_id");
 
+                    b.Property<double?>("EndSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("end_seconds");
+
                     b.Property<double?>("FirstBeatSeconds")
                         .HasColumnType("double precision")
                         .HasColumnName("first_beat_seconds");
@@ -4809,16 +4716,13 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("media_item_id");
 
-                    b.Property<string>("Pieces")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("jsonb")
-                        .HasColumnName("pieces")
-                        .HasDefaultValueSql("'[]'::jsonb");
-
                     b.Property<int>("Position")
                         .HasColumnType("integer")
                         .HasColumnName("position");
+
+                    b.Property<double>("StartSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("start_seconds");
 
                     b.Property<double?>("TempoBpm")
                         .HasColumnType("double precision")
@@ -4831,14 +4735,13 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_act_song_act_id");
 
                     b.HasIndex("MediaItemId")
-                        .IsUnique()
                         .HasDatabaseName("ix_act_song_media_item_id");
 
                     b.ToTable("act_song", null, t =>
                         {
                             t.HasCheckConstraint("ck_act_song_beat_grid", "(first_beat_seconds IS NULL OR first_beat_seconds >= 0) AND (tempo_bpm IS NULL OR tempo_bpm > 0)");
 
-                            t.HasCheckConstraint("ck_act_song_pieces", "jsonb_typeof(pieces) = 'array'");
+                            t.HasCheckConstraint("ck_act_song_cut", "start_seconds >= 0 AND (end_seconds IS NULL OR end_seconds > start_seconds)");
 
                             t.HasCheckConstraint("ck_act_song_position", "position >= 0");
                         });
@@ -8241,48 +8144,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
                 });
 
-            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrack", b =>
-                {
-                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
-                        .WithMany()
-                        .HasForeignKey("ActId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_act_final_track_act_act_id");
-
-                    b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
-                        .WithMany()
-                        .HasForeignKey("MediaItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_act_final_track_media_item_media_item_id");
-
-                    b.Navigation("Act");
-
-                    b.Navigation("MediaItem");
-                });
-
-            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrackAlignment", b =>
-                {
-                    b.HasOne("Furria.Core.Studio.ActFinalTrack", "FinalTrack")
-                        .WithMany("Alignments")
-                        .HasForeignKey("FinalTrackId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_act_final_track_alignment_act_final_track_final_track_id");
-
-                    b.HasOne("Furria.Core.Media.MediaItem", "SourceMediaItem")
-                        .WithMany()
-                        .HasForeignKey("SourceMediaItemId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_act_final_track_alignment_media_item_source_media_item_id");
-
-                    b.Navigation("FinalTrack");
-
-                    b.Navigation("SourceMediaItem");
-                });
-
             modelBuilder.Entity("Furria.Core.Studio.ActPart", b =>
                 {
                     b.HasOne("Furria.Core.RunningOrders.Act", "Act")
@@ -8865,11 +8726,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Rules");
 
                     b.Navigation("SuspendedWishes");
-                });
-
-            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrack", b =>
-                {
-                    b.Navigation("Alignments");
                 });
 #pragma warning restore 612, 618
         }

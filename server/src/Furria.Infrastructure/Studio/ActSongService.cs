@@ -12,13 +12,15 @@ public sealed class ActSongService
 {
     private const string UnknownSongFileMessage = "Diese Musikdatei gehört nicht zum Auftritt.";
     private const string SongTwiceMessage = "Dieses Lied ist schon in der Musik des Auftritts.";
-    private const string FinalTrackMessage =
-        "Diese Datei ist eine Endfassung und kann kein Lied der Musik sein.";
     private const string FullMixMessage = "Mehr Lieder passen nicht in die Musik eines Auftritts.";
     private const string UnknownSongMessage = "Dieses Lied gibt es im Auftritt nicht.";
     private const string StaleOrderMessage =
         "Die Lieder haben sich inzwischen geändert. Lade die Musik neu und ordne sie erneut.";
     private const string CutPastEndMessage = "Das Ende liegt hinter dem Ende des Lieds.";
+    private const string OverlapMessage =
+        "Dieser Ausschnitt reicht in einen anderen Song derselben Datei.";
+    private const string SplitOutsideMessage =
+        "Teilen geht nur mit mindestens einer halben Sekunde Song auf beiden Seiten.";
     private const string FirstBeatPastEndMessage =
         "Die erste Eins liegt hinter dem Ende des Lieds.";
 
@@ -40,12 +42,13 @@ public sealed class ActSongService
         var editable = await _gate.EditableStudioAsync(accountId, command.ActId, ct);
         if (!editable.IsSuccess)
             return Result<int>.Carrying(editable);
+
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.LockStepsOfActAsync(command.ActId, ct);
         if (!await IsSongFileOfAsync(command.ActId, command.MediaItemId, ct))
             return Result<int>.NotFound(UnknownSongFileMessage);
         if (await IsSongAsync(command.MediaItemId, ct))
             return Result<int>.Conflict(SongTwiceMessage);
-        if (await IsFinalTrackAsync(command.MediaItemId, ct))
-            return Result<int>.Conflict(FinalTrackMessage);
         if (await SongCountOfAsync(command.ActId, ct) >= ActSong.MostPerAct)
             return Result<int>.Conflict(FullMixMessage);
 
@@ -57,6 +60,7 @@ public sealed class ActSongService
         };
         _dbContext.ActSongs.Add(song);
         await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         return Result<int>.Success(song.Id);
     }
@@ -94,6 +98,8 @@ public sealed class ActSongService
         if (!editable.IsSuccess)
             return editable;
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.LockStepsOfActAsync(command.ActId, ct);
         var song = await _dbContext
             .ActSongs.Include(song => song.MediaItem)
             .SingleOrDefaultAsync(
@@ -105,12 +111,59 @@ public sealed class ActSongService
         if (BeyondTheSongRefusalOf(command, song.MediaItem!.DurationSeconds) is { } refused)
             return refused;
 
-        song.Pieces = command.Pieces;
+        var cut = new MusicCut(song.MediaItemId, command.StartSeconds, command.EndSeconds);
+        if ((await SiblingCutsOfAsync(song, ct)).Any(cut.Overlaps))
+            return Result.Conflict(OverlapMessage);
+
+        song.StartSeconds = command.StartSeconds;
+        song.EndSeconds = command.EndSeconds;
         song.FirstBeatSeconds = command.FirstBeatSeconds;
         song.TempoBpm = command.TempoBpm;
         await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         return Result.Success();
+    }
+
+    public async Task<Result<int>> SplitAsync(
+        int accountId,
+        SplitActSongCommand command,
+        CancellationToken ct
+    )
+    {
+        var editable = await _gate.EditableStudioAsync(accountId, command.ActId, ct);
+        if (!editable.IsSuccess)
+            return Result<int>.Carrying(editable);
+
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.LockStepsOfActAsync(command.ActId, ct);
+        var song = await _dbContext
+            .ActSongs.Include(song => song.MediaItem)
+            .SingleOrDefaultAsync(
+                song => song.Id == command.SongId && song.ActId == command.ActId,
+                ct
+            );
+        if (song is null)
+            return Result<int>.NotFound(UnknownSongMessage);
+        if (!CutOf(song).CanSplitAt(command.AtSeconds))
+            return Result<int>.Validation(SplitOutsideMessage);
+        if (await SongCountOfAsync(command.ActId, ct) >= ActSong.MostPerAct)
+            return Result<int>.Conflict(FullMixMessage);
+
+        var secondHalf = SecondHalfOf(song, command.AtSeconds);
+        await _dbContext
+            .ActSongs.Where(later => later.ActId == song.ActId && later.Position > song.Position)
+            .ExecuteUpdateAsync(
+                setters =>
+                    setters.SetProperty(later => later.Position, later => later.Position + 1),
+                ct
+            );
+        song.EndSeconds = command.AtSeconds;
+        _dbContext.ActSongs.Add(secondHalf);
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+
+        return Result<int>.Success(secondHalf.Id);
     }
 
     public async Task<Result> RemoveAsync(
@@ -123,9 +176,12 @@ public sealed class ActSongService
         if (!editable.IsSuccess)
             return editable;
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.LockStepsOfActAsync(command.ActId, ct);
         var removed = await _dbContext
             .ActSongs.Where(song => song.Id == command.SongId && song.ActId == command.ActId)
             .ExecuteDeleteAsync(ct);
+        await transaction.CommitAsync(ct);
 
         return removed == 0 ? Result.NotFound(UnknownSongMessage) : Result.Success();
     }
@@ -143,8 +199,30 @@ public sealed class ActSongService
     private Task<bool> IsSongAsync(int mediaItemId, CancellationToken ct) =>
         _dbContext.ActSongs.AnyAsync(song => song.MediaItemId == mediaItemId, ct);
 
-    private Task<bool> IsFinalTrackAsync(int mediaItemId, CancellationToken ct) =>
-        _dbContext.ActFinalTracks.AnyAsync(track => track.MediaItemId == mediaItemId, ct);
+    private async Task<IReadOnlyList<MusicCut>> SiblingCutsOfAsync(
+        ActSong song,
+        CancellationToken ct
+    ) =>
+        [
+            .. (
+                await _dbContext
+                    .ActSongs.AsNoTracking()
+                    .Where(sibling =>
+                        sibling.ActId == song.ActId
+                        && sibling.MediaItemId == song.MediaItemId
+                        && sibling.Id != song.Id
+                    )
+                    .Select(sibling => new { sibling.StartSeconds, sibling.EndSeconds })
+                    .ToListAsync(ct)
+            ).Select(sibling =>
+                MusicCut.OfSong(
+                    song.MediaItemId,
+                    sibling.StartSeconds,
+                    sibling.EndSeconds,
+                    song.MediaItem!.DurationSeconds
+                )
+            ),
+        ];
 
     private Task<int> SongCountOfAsync(int actId, CancellationToken ct) =>
         _dbContext.ActSongs.CountAsync(song => song.ActId == actId, ct);
@@ -162,8 +240,30 @@ public sealed class ActSongService
         songIds.Count == songIds.Distinct().Count() && songIds.ToHashSet().SetEquals(actual);
 
     [Pure]
+    private static MusicCut CutOf(ActSong song) =>
+        MusicCut.OfSong(
+            song.MediaItemId,
+            song.StartSeconds,
+            song.EndSeconds,
+            song.MediaItem!.DurationSeconds
+        );
+
+    [Pure]
+    private static ActSong SecondHalfOf(ActSong song, double atSeconds) =>
+        new()
+        {
+            ActId = song.ActId,
+            MediaItemId = song.MediaItemId,
+            Position = song.Position + 1,
+            StartSeconds = atSeconds,
+            EndSeconds = song.EndSeconds,
+            FirstBeatSeconds = song.FirstBeatSeconds,
+            TempoBpm = song.TempoBpm,
+        };
+
+    [Pure]
     private static Result? BeyondTheSongRefusalOf(ActSongCutCommand cut, double? durationSeconds) =>
-        MusicFile.IsPastTheEnd(cut.Pieces[^1].EndSeconds, durationSeconds)
+        MusicFile.IsPastTheEnd(cut.EndSeconds, durationSeconds)
             ? Result.Validation(CutPastEndMessage)
         : MusicFile.IsPastTheEnd(cut.FirstBeatSeconds, durationSeconds)
             ? Result.Validation(FirstBeatPastEndMessage)

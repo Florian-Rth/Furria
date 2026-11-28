@@ -10,14 +10,13 @@ import {
 } from '@furria/studio/studio-copy';
 import { KkButton } from '@furria/ui/KkButton';
 import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import type { FC, ReactNode } from 'react';
+import type { FC } from 'react';
 
 interface ActStudioCutLinesProps {
   cut: CutDesk;
-  children?: ReactNode;
 }
 
-export const ActStudioCutLines: FC<ActStudioCutLinesProps> = ({ cut, children }) => (
+export const ActStudioCutLines: FC<ActStudioCutLinesProps> = ({ cut }) => (
   <>
     <KkStudioDesk.Line>
       <KkStudioDesk.Title text={STUDIO_CUT} />
@@ -46,7 +45,6 @@ export const ActStudioCutLines: FC<ActStudioCutLinesProps> = ({ cut, children })
         >
           {STUDIO_CUT_END_HERE}
         </KkButton>
-        {children}
       </KkStudioDesk.Controls>
     </KkStudioDesk.Line>
     <ActStudioCutEdgeLine title={STUDIO_CUT_START} line={cut.start} />

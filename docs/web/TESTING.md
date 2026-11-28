@@ -141,8 +141,8 @@ for one kind of change.
 ## The studio
 
 `@furria/studio` ([ADR-0035](../adr/0035-the-studio-is-its-own-package-and-owns-its-domain-components.md))
-follows the same split. Its domain — music timeline and counts, cuts and final-track
-mapping, formation and movement data, the document's patches, history, save plan and run
+follows the same split. Its domain — music timeline and counts, the song chain with its cuts and
+splits, formation and movement data, the document's patches, history, save plan and run
 ([ADR-0036](../adr/0036-the-studio-edits-a-local-document-saved-in-the-background.md)) — is
 tested as pure modules. Gestures, timeline/stage geometry, scrub, zoom, practice controls and
 desk state are UI and are not.

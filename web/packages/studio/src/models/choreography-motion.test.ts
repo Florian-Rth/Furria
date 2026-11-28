@@ -11,6 +11,7 @@ import type { MusicSegment } from './music-timeline';
 import type { Choreography } from './studio-schemas';
 
 const segment: MusicSegment = {
+  songId: 1,
   mediaItemId: 1,
   audioUrl: '/a',
   peaksUrl: '/k',

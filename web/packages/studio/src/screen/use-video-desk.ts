@@ -2,7 +2,7 @@ import type { CutDesk } from '@furria/studio/cut-desk';
 import { cutDeskOf } from '@furria/studio/cut-desk';
 import { partRangeOf } from '@furria/studio/music-timeline';
 import { videoNameOf } from '@furria/studio/studio-copy';
-import type { CutSpan } from '@furria/studio/studio-cuts';
+import type { CutRoom, CutSpan } from '@furria/studio/studio-cuts';
 import { playheadInOf } from '@furria/studio/studio-cuts';
 import type { VideoAlignment } from '@furria/studio/studio-schemas';
 import type { StudioScreen } from '@furria/studio/studio-screen';
@@ -59,27 +59,27 @@ export const useVideoDesk = (screen: StudioScreen, takes: ActStudioTakes): Video
   }
   const clip = video === null || video.state !== 'ready' ? null : clipOf(video);
   const span = video === null ? null : clipSpanOf(video);
-  const clips: readonly CutSpan[] = clip === null ? [] : [clip];
+  const room: CutRoom = {
+    lowest: 0,
+    highest: video?.durationSeconds ?? Number.POSITIVE_INFINITY,
+  };
   const playheadAt = (seconds: number): number | null =>
     span === null || clip === null
       ? null
       : playheadInOf(span.start, span.end, clip.startSeconds, seconds);
-  const reach = useCutReach(player, clips, 0, video?.durationSeconds ?? null, playheadAt);
+  const reach = useCutReach(player, clip, room, playheadAt);
 
   if (video === null) {
     return null;
   }
 
-  const trimmed = (pieces: CutSpan[]): void => {
-    const [next] = pieces;
-    if (next !== undefined) {
-      work.change({
-        kind: 'videoClip',
-        videoId: video.videoId,
-        startSeconds: next.startSeconds,
-        endSeconds: next.endSeconds,
-      });
-    }
+  const trimmed = (next: CutSpan): void => {
+    work.change({
+      kind: 'videoClip',
+      videoId: video.videoId,
+      startSeconds: next.startSeconds,
+      endSeconds: next.endSeconds,
+    });
   };
 
   const covered =
@@ -128,13 +128,12 @@ export const useVideoDesk = (screen: StudioScreen, takes: ActStudioTakes): Video
       clip === null
         ? null
         : cutDeskOf({
-            pieces: clips,
-            index: 0,
-            limit: video.durationSeconds,
+            cut: clip,
+            room,
             reach,
             playhead: () => playheadAt(player.position()),
-            trim: (_, pieces) => {
-              trimmed(pieces);
+            trim: (_, next) => {
+              trimmed(next);
             },
             split: (atSeconds) => {
               videos.split({ videoId: video.videoId, atSeconds });

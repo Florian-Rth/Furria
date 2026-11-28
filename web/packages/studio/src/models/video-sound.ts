@@ -20,6 +20,7 @@ export const soundSegmentOf = (
   const span = soundSpanOf(clip, videoStart);
 
   return {
+    songId: null,
     mediaItemId: video.mediaItemId,
     audioUrl: video.urls.video,
     peaksUrl: video.urls.peaks,

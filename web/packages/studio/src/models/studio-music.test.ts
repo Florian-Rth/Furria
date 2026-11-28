@@ -5,6 +5,7 @@ import {
   movedOrderOf,
   nudgedFirstBeatOf,
   outsideMusicOf,
+  songRoomOf,
   startInOrderOf,
   steppedTempoOf,
 } from '@furria/studio/studio-music';
@@ -15,7 +16,8 @@ const songOf = (songId: number, position: number, firstBeat: number | null = 0.5
   songId,
   mediaItemId: songId * 10,
   position,
-  pieces: [{ startSeconds: 10, endSeconds: 70 }],
+  startSeconds: 10,
+  endSeconds: 70,
   firstBeatSeconds: firstBeat,
   tempoBpm: 120,
   state: 'ready',
@@ -25,6 +27,7 @@ const songOf = (songId: number, position: number, firstBeat: number | null = 0.5
 });
 
 const segment: MusicSegment = {
+  songId: 1,
   mediaItemId: 10,
   audioUrl: '/n',
   peaksUrl: '/k',
@@ -49,7 +52,7 @@ describe('movedOrderOf', () => {
 });
 
 describe('startInOrderOf', () => {
-  const songs = [songOf(1, 0), { ...songOf(2, 1), pieces: [{ startSeconds: 0, endSeconds: 30 }] }];
+  const songs = [songOf(1, 0), { ...songOf(2, 1), startSeconds: 0, endSeconds: 30 }];
 
   it.each([
     [[2, 1], 1, 30],
@@ -60,51 +63,58 @@ describe('startInOrderOf', () => {
 });
 
 describe('keptPositionOf', () => {
-  const songs = [songOf(1, 0), { ...songOf(2, 1), pieces: [{ startSeconds: 0, endSeconds: 30 }] }];
+  const songs = [
+    songOf(1, 0),
+    { ...songOf(2, 1), startSeconds: 0, endSeconds: 30 },
+    { ...songOf(3, 2), mediaItemId: 10, startSeconds: 75, endSeconds: 85 },
+  ];
   const segments: MusicSegment[] = [
     { ...segment, timelineStart: 0, timelineEnd: 60 },
     {
       ...segment,
+      songId: 2,
       mediaItemId: 20,
       sourceStart: 0,
       sourceEnd: 30,
       timelineStart: 60,
       timelineEnd: 90,
     },
+    {
+      ...segment,
+      songId: 3,
+      sourceStart: 75,
+      sourceEnd: 85,
+      timelineStart: 90,
+      timelineEnd: 100,
+    },
   ];
 
   it.each([
-    [[2, 1], 70, 10],
-    [[2, 1], 95, null],
+    [[2, 1, 3], 70, 10],
+    [[3, 2, 1], 95, 5],
+    [[2, 1, 3], 105, null],
   ])('in order %j keeps %s at %s', (order, position, kept) => {
     expect(keptPositionOf(songs, segments, order, position)).toBe(kept);
   });
+});
 
-  it('keeps the place inside a later piece of a split song', () => {
-    const split = [
-      {
-        ...songOf(1, 0),
-        pieces: [
-          { startSeconds: 10, endSeconds: 30 },
-          { startSeconds: 40, endSeconds: 70 },
-        ],
-      },
-      { ...songOf(2, 1), pieces: [{ startSeconds: 0, endSeconds: 30 }] },
-    ];
-    const pieces: MusicSegment[] = [
-      { ...segment, sourceStart: 10, sourceEnd: 30, timelineStart: 0, timelineEnd: 20 },
-      { ...segment, sourceStart: 40, sourceEnd: 70, timelineStart: 20, timelineEnd: 50 },
-      {
-        ...segment,
-        mediaItemId: 20,
-        sourceStart: 0,
-        sourceEnd: 30,
-        timelineStart: 50,
-        timelineEnd: 80,
-      },
-    ];
+describe('songRoomOf', () => {
+  const half = (songId: number, startSeconds: number, endSeconds: number): StudioSong => ({
+    ...songOf(songId, songId),
+    mediaItemId: 10,
+    startSeconds,
+    endSeconds,
+  });
+  const songs = [half(1, 5, 20), half(2, 30, 50), half(3, 60, 80), songOf(4, 3)];
 
-    expect(keptPositionOf(split, pieces, [2, 1], 25)).toBe(55);
+  it.each([
+    [1, { lowest: 0, highest: 30 }],
+    [2, { lowest: 20, highest: 60 }],
+    [3, { lowest: 50, highest: 90 }],
+  ])('lets song %s reach %o of its file', (songId, expected) => {
+    const song = songs.find((candidate) => candidate.songId === songId);
+
+    expect(song === undefined ? null : songRoomOf(songs, song)).toEqual(expected);
   });
 });
 
@@ -138,9 +148,8 @@ describe('nudgedFirstBeatOf', () => {
 describe('outsideMusicOf', () => {
   it('counts what lies outside the cut music', () => {
     const studio: Studio = {
-      music: { lengthSeconds: 60, source: 'workingMix' },
+      music: { lengthSeconds: 60 },
       songs: [songOf(1, 0)],
-      finalTracks: [],
       steps: [
         {
           stepId: 1,

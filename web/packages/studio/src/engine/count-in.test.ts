@@ -3,6 +3,7 @@ import type { MusicSegment } from '../models/music-timeline';
 import { countInAt, countInOf } from './count-in';
 
 const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
+  songId: 1,
   mediaItemId: 1,
   audioUrl: '/a',
   peaksUrl: '/k',

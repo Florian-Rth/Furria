@@ -4,6 +4,7 @@ import type { Keyframe } from '../models/studio-schemas';
 import type { TimedStep } from './document-projection';
 import { timelineStepsOf } from './document-projection';
 import { sameValue } from './same-value';
+import { overlapsASiblingIn } from './song-cuts';
 import type { DocumentSong, DocumentStep, StudioDocument } from './studio-document';
 import { idsOf, itemOf } from './studio-document';
 
@@ -15,20 +16,6 @@ export interface SavedTrack {
 export type SaveWrite =
   | { kind: 'songOrder'; songIds: readonly number[] }
   | { kind: 'songSettings'; songId: number; settings: DocumentSong }
-  | {
-      kind: 'finalBeat';
-      finalTrackId: number;
-      firstBeatSeconds: number | null;
-      tempoBpm: number | null;
-    }
-  | {
-      kind: 'finalOffset';
-      finalTrackId: number;
-      sourceMediaItemId: number;
-      fromSeconds: number;
-      offsetSeconds: number;
-      stretch: number;
-    }
   | { kind: 'spotRemove'; spotId: number }
   | { kind: 'spotAdd'; spotId: number }
   | { kind: 'spotAssign'; spotId: number; personId: number | null }
@@ -67,51 +54,43 @@ const removedIdsOf = <TItem>(
   current: Readonly<Record<number, TItem>>,
 ): number[] => addedIdsOf(current, saved);
 
+type SongWrite = Extract<SaveWrite, { kind: 'songSettings' }>;
+
+const fittingOrderOf = (
+  songs: Readonly<Record<number, DocumentSong>>,
+  waiting: readonly SongWrite[],
+): SongWrite[] => {
+  const next =
+    waiting.find((write) => !overlapsASiblingIn(songs, write.songId, write.settings)) ?? waiting[0];
+
+  return next === undefined
+    ? []
+    : [
+        next,
+        ...fittingOrderOf(
+          { ...songs, [next.songId]: next.settings },
+          waiting.filter((write) => write !== next),
+        ),
+      ];
+};
+
+const songWritesOf = (saved: StudioDocument, current: StudioDocument): SongWrite[] =>
+  fittingOrderOf(
+    saved.songs,
+    keptIdsOf(saved.songs, current.songs).flatMap((songId): SongWrite[] => {
+      const settings = itemOf(current.songs, songId);
+
+      return settings === null || sameValue(itemOf(saved.songs, songId), settings)
+        ? []
+        : [{ kind: 'songSettings', songId, settings }];
+    }),
+  );
+
 const musicWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] => [
   ...(sameValue(saved.songOrder, current.songOrder)
     ? []
     : [{ kind: 'songOrder' as const, songIds: current.songOrder }]),
-  ...keptIdsOf(saved.songs, current.songs).flatMap((songId) => {
-    const settings = itemOf(current.songs, songId);
-
-    return settings === null || sameValue(itemOf(saved.songs, songId), settings)
-      ? []
-      : [{ kind: 'songSettings' as const, songId, settings }];
-  }),
-  ...keptIdsOf(saved.finalTracks, current.finalTracks).flatMap((finalTrackId) => {
-    const before = itemOf(saved.finalTracks, finalTrackId);
-    const after = itemOf(current.finalTracks, finalTrackId);
-    if (before === null || after === null) {
-      return [];
-    }
-
-    const beat: SaveWrite[] =
-      before.firstBeatSeconds === after.firstBeatSeconds && before.tempoBpm === after.tempoBpm
-        ? []
-        : [
-            {
-              kind: 'finalBeat',
-              finalTrackId,
-              firstBeatSeconds: after.firstBeatSeconds,
-              tempoBpm: after.tempoBpm,
-            },
-          ];
-    const offsets = idsOf(after.alignments).flatMap((sourceMediaItemId): SaveWrite[] => {
-      const known = itemOf(before.alignments, sourceMediaItemId) ?? [];
-
-      return (itemOf(after.alignments, sourceMediaItemId) ?? []).flatMap(
-        (alignment): SaveWrite[] => {
-          const saved = known.find((entry) => entry.fromSeconds === alignment.fromSeconds);
-
-          return saved !== undefined && sameValue(saved, alignment)
-            ? []
-            : [{ kind: 'finalOffset', finalTrackId, sourceMediaItemId, ...alignment }];
-        },
-      );
-    });
-
-    return [...beat, ...offsets];
-  }),
+  ...songWritesOf(saved, current),
 ];
 
 const spotWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] => {

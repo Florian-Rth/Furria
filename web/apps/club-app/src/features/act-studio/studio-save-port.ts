@@ -8,8 +8,6 @@ import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
 import {
   requestChoreographySave,
-  requestFinalTrackBeat,
-  requestFinalTrackOffset,
   requestPartAdd,
   requestPartRemoval,
   requestPartSettings,
@@ -62,10 +60,6 @@ const performed = async (
       return sent(requestSongOrder(actId, write.songIds, accessToken));
     case 'songSettings':
       return sent(requestSongSettings(actId, write.songId, write.settings, accessToken));
-    case 'finalBeat':
-      return sent(requestFinalTrackBeat(actId, write, accessToken));
-    case 'finalOffset':
-      return sent(requestFinalTrackOffset(actId, write, accessToken));
     case 'spotRemove':
       return sent(requestSpotRemoval(actId, write.spotId, accessToken));
     case 'spotAdd':

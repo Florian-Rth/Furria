@@ -6,7 +6,7 @@ import { serverIdOf, withLearnedId } from './id-map';
 import type { SaveWrite } from './save-plan';
 import type { SaveOutcome, ServerWrite } from './save-port';
 import { applyChange, dropStep } from './studio-changes';
-import type { DocumentAlignment, StudioDocument } from './studio-document';
+import type { StudioDocument } from './studio-document';
 import { idsOf, itemOf } from './studio-document';
 
 const resolvedOf = (
@@ -134,21 +134,6 @@ const stepAdded = (
   };
 };
 
-const recordedAlignmentsOf = (
-  saved: readonly DocumentAlignment[],
-  target: readonly DocumentAlignment[],
-  write: Extract<SaveWrite, { kind: 'finalOffset' }>,
-): DocumentAlignment[] => {
-  const wanted = new Set(target.map((entry) => entry.fromSeconds));
-
-  return [
-    ...saved
-      .filter((entry) => entry.fromSeconds !== write.fromSeconds && wanted.has(entry.fromSeconds))
-      .map((entry) => ({ ...entry })),
-    { fromSeconds: write.fromSeconds, offsetSeconds: write.offsetSeconds, stretch: write.stretch },
-  ].sort((left, right) => left.fromSeconds - right.fromSeconds);
-};
-
 const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: SaveWrite): void => {
   switch (write.kind) {
     case 'songOrder':
@@ -156,28 +141,6 @@ const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: S
       return;
     case 'songSettings': {
       draft.songs[write.songId] = { ...write.settings };
-      return;
-    }
-    case 'finalBeat': {
-      const track = itemOf(draft.finalTracks, write.finalTrackId);
-      if (track !== null) {
-        track.firstBeatSeconds = write.firstBeatSeconds;
-        track.tempoBpm = write.tempoBpm;
-      }
-      return;
-    }
-    case 'finalOffset': {
-      const track = itemOf(draft.finalTracks, write.finalTrackId);
-      if (track !== null) {
-        track.alignments[write.sourceMediaItemId] = recordedAlignmentsOf(
-          itemOf(track.alignments, write.sourceMediaItemId) ?? [],
-          itemOf(
-            itemOf(target.finalTracks, write.finalTrackId)?.alignments ?? {},
-            write.sourceMediaItemId,
-          ) ?? [],
-          write,
-        );
-      }
       return;
     }
     case 'spotRemove':

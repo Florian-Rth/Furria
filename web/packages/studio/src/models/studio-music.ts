@@ -1,17 +1,14 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import { isStepOnTimeline, timelineSecondsOf } from '@furria/studio/music-timeline';
-import type { SongPiece, Studio, StudioSong } from '@furria/studio/studio-schemas';
+import type { CutRoom, CutSpan } from '@furria/studio/studio-cuts';
+import { cutRoomOf } from '@furria/studio/studio-cuts';
+import type { SongSettings } from '@furria/studio/studio-document';
+import type { Studio, StudioSong } from '@furria/studio/studio-schemas';
 
 const MIN_TEMPO_BPM = 40;
 const MAX_TEMPO_BPM = 300;
 const TEMPO_GRAIN = 10;
 const BEAT_GRAIN = 1000;
-
-export interface SongSettings {
-  pieces: SongPiece[];
-  firstBeatSeconds: number | null;
-  tempoBpm: number | null;
-}
 
 export interface OutsideMusic {
   steps: number;
@@ -20,7 +17,8 @@ export interface OutsideMusic {
 }
 
 export const songSettingsOf = (song: StudioSong): SongSettings => ({
-  pieces: song.pieces.map((piece) => ({ ...piece })),
+  startSeconds: song.startSeconds,
+  endSeconds: song.endSeconds,
   firstBeatSeconds: song.firstBeatSeconds,
   tempoBpm: song.tempoBpm,
 });
@@ -45,38 +43,17 @@ export const movedOrderOf = (
   return ids;
 };
 
-export const keptLengthOf = (pieces: readonly SongPiece[]): number =>
-  pieces.reduce((sum, piece) => sum + Math.max(0, piece.endSeconds - piece.startSeconds), 0);
+export const cutLengthOf = (cut: CutSpan): number => Math.max(0, cut.endSeconds - cut.startSeconds);
 
 export const songOfSegment = (
   songs: readonly StudioSong[],
   segment: MusicSegment,
-): StudioSong | null => songs.find((song) => song.mediaItemId === segment.mediaItemId) ?? null;
+): StudioSong | null => songs.find((song) => song.songId === segment.songId) ?? null;
 
-export const deskSegmentIndexOf = (
+export const segmentOfSong = (
   segments: readonly MusicSegment[],
-  mediaItemId: number,
-  seconds: number,
-  heldStart: number | null,
-): number => {
-  const reaches = (segment: MusicSegment): boolean =>
-    segment.mediaItemId === mediaItemId &&
-    seconds >= segment.timelineStart &&
-    seconds <= segment.timelineEnd;
-  const held = segments.findIndex(
-    (segment) => segment.sourceStart === heldStart && reaches(segment),
-  );
-  const playing = segments.findIndex(
-    (segment) => reaches(segment) && seconds < segment.timelineEnd,
-  );
-  const ending = segments.findLastIndex(reaches);
-  const first = segments.findIndex((segment) => segment.mediaItemId === mediaItemId);
-
-  return [held, playing, ending].find((index) => index >= 0) ?? first;
-};
-
-const keptBeforeOf = (song: StudioSong, segment: MusicSegment): number =>
-  keptLengthOf(song.pieces.filter((piece) => piece.endSeconds <= segment.sourceStart));
+  songId: number,
+): MusicSegment | null => segments.find((segment) => segment.songId === songId) ?? null;
 
 export const startInOrderOf = (
   songs: readonly StudioSong[],
@@ -90,7 +67,7 @@ export const startInOrderOf = (
       return start;
     }
     const song = songs.find((candidate) => candidate.songId === id);
-    start += song === undefined ? 0 : keptLengthOf(song.pieces);
+    start += song === undefined ? 0 : cutLengthOf(song);
   }
 
   return start;
@@ -109,10 +86,7 @@ export const keptPositionOf = (
 
   return playing === null || segment === undefined
     ? null
-    : startInOrderOf(songs, order, playing.songId) +
-        keptBeforeOf(playing, segment) +
-        position -
-        segment.timelineStart;
+    : startInOrderOf(songs, order, playing.songId) + position - segment.timelineStart;
 };
 
 export const steppedTempoOf = (tempo: number, delta: number): number => {
@@ -123,8 +97,16 @@ export const steppedTempoOf = (tempo: number, delta: number): number => {
 
 const roundedBeatOf = (seconds: number): number => Math.round(seconds * BEAT_GRAIN) / BEAT_GRAIN;
 
-export const songLimitOf = (song: StudioSong): number =>
-  song.durationSeconds ?? song.pieces.at(-1)?.endSeconds ?? 0;
+export const songLimitOf = (song: StudioSong): number => song.durationSeconds ?? song.endSeconds;
+
+export const songRoomOf = (songs: readonly StudioSong[], song: StudioSong): CutRoom =>
+  cutRoomOf(
+    song,
+    songs.filter(
+      (candidate) => candidate.mediaItemId === song.mediaItemId && candidate.songId !== song.songId,
+    ),
+    song.durationSeconds,
+  );
 
 export const firstBeatAtOf = (song: StudioSong, segment: MusicSegment, seconds: number): number => {
   const source = segment.sourceStart + (seconds - segment.timelineStart);

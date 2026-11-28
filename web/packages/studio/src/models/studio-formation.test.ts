@@ -30,6 +30,7 @@ const segment = (
   sourceEnd: number,
   timelineStart: number,
 ): MusicSegment => ({
+  songId: mediaItemId,
   mediaItemId,
   audioUrl: '/a',
   peaksUrl: '/p',

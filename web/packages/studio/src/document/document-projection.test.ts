@@ -11,7 +11,8 @@ const song = (songId: number, position: number, startSeconds: number, endSeconds
   songId,
   mediaItemId: songId,
   position,
-  pieces: [{ startSeconds, endSeconds }],
+  startSeconds,
+  endSeconds,
   firstBeatSeconds: 0.5,
   tempoBpm: 120,
   state: 'ready' as const,
@@ -30,9 +31,8 @@ const step = (stepId: number, startSeconds: number, endSeconds: number) => ({
 });
 
 const base: Studio = {
-  music: { lengthSeconds: 30, source: 'workingMix' },
+  music: { lengthSeconds: 30 },
   songs: [song(1, 0, 10, 30), song(2, 1, 0, 10)],
-  finalTracks: [],
   steps: [step(11, 0, 8), step(12, 8, 16), step(13, 16, 30)],
   parts: [
     {
@@ -106,7 +106,8 @@ describe('studioOf', () => {
       {
         kind: 'songSettings',
         songId: 1,
-        pieces: [{ startSeconds: 10, endSeconds: 20 }],
+        startSeconds: 10,
+        endSeconds: 20,
         firstBeatSeconds: 0.5,
         tempoBpm: 120,
       },

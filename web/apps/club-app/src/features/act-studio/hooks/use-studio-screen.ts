@@ -27,7 +27,6 @@ import { useSongMutations, useVideoMutations } from '../api';
 import { useStepSetupRoute } from './use-step-setup-route';
 import { useStudioDeveloping } from './use-studio-developing';
 import { useStudioDocument } from './use-studio-document';
-import { useStudioFinal } from './use-studio-final';
 import { useStudioMusicRoute } from './use-studio-music-route';
 import { useVideoAutoAlign } from './use-video-auto-align';
 import { useVisitHistory } from './use-visit-history';
@@ -67,7 +66,7 @@ export const useStudioScreen = (
   useVideoAutoAlign(source, canEdit, videos);
   useStudioDeveloping(actId, source);
   const edits = useActStudioEdits();
-  const { studio, final, add } = useStudioFinal(actId, work.studio, mode, edits);
+  const studio = work.studio;
   const peaksByItem = useAudioPeaks(musicSegmentsOf(studio));
   const base = useStudioPlayback(studio, viewerId, peaksByItem);
   const playback: StudioPlayback = {
@@ -84,7 +83,6 @@ export const useStudioScreen = (
   const uploads = {
     songs: actUploadPortOf(actId, music.add.mutateAsync),
     videos: actUploadPortOf(actId, videos.add.mutateAsync),
-    final: actUploadPortOf(actId, add),
   };
   const history = useVisitHistory(actId);
   const openMusic = useStudioMusicRoute(actId);
@@ -95,7 +93,13 @@ export const useStudioScreen = (
     mode,
     editor: studioEditorOf(stageEditor, mode.editing, wide),
     songs: {
-      remove: music.remove.mutate,
+      remove: async (songId) => {
+        await music.remove.mutateAsync(songId);
+      },
+      split: async (split) => {
+        await music.split.mutateAsync(split);
+      },
+      splitting: music.split.isPending,
     },
     cast,
     document: work,
@@ -109,7 +113,6 @@ export const useStudioScreen = (
     history,
     openMusic,
     openStepSetup,
-    final,
     frame: largeTextFrameOf(video.hero, large.videoShown),
     large,
     edits,

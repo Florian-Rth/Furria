@@ -25,8 +25,8 @@ const keyframe = {
 const saved: StudioDocument = {
   songOrder: [1, 2],
   songs: {
-    1: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: 0.5, tempoBpm: 120 },
-    2: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: null, tempoBpm: null },
+    1: { mediaItemId: 1, startSeconds: 0, endSeconds: 20, firstBeatSeconds: 0.5, tempoBpm: 120 },
+    2: { mediaItemId: 2, startSeconds: 0, endSeconds: 20, firstBeatSeconds: null, tempoBpm: null },
   },
   steps: {
     1: { startSeconds: 0, endSeconds: 8, name: '' },
@@ -38,13 +38,6 @@ const saved: StudioDocument = {
   spots: { 31: { person: lena }, 32: { person: null } },
   tracks: { 31: [keyframe] },
   videos: { 5: { name: null, startSeconds: null, clipStartSeconds: 0, clipEndSeconds: 30 } },
-  finalTracks: {
-    40: {
-      firstBeatSeconds: null,
-      tempoBpm: null,
-      alignments: { 1: [{ fromSeconds: 0, offsetSeconds: 0, stretch: 1 }] },
-    },
-  },
 };
 
 const known: IdMap = withLearnedId(
@@ -112,18 +105,10 @@ describe('savedAfter', () => {
       {
         kind: 'songSettings',
         songId: 1,
-        pieces: [{ startSeconds: 2, endSeconds: 18 }],
+        startSeconds: 2,
+        endSeconds: 18,
         firstBeatSeconds: 1,
         tempoBpm: 100,
-      },
-      {
-        kind: 'finalOffset',
-        finalTrackId: 40,
-        sourceMediaItemId: 1,
-        fromSeconds: 0,
-        untilSeconds: 20,
-        offsetSeconds: 0.4,
-        stretch: 1,
       },
       { kind: 'stepRemove', stepId: 2 },
       { kind: 'stepMark', stepId: -1, openingStepId: -2, atSeconds: 12, lengthSeconds: 40 },
@@ -135,15 +120,6 @@ describe('savedAfter', () => {
       { kind: 'tracks', tracks: { [-4]: [keyframe] } },
       { kind: 'videoStart', videoId: 5, startSeconds: 3 },
       { kind: 'videoClip', videoId: 5, startSeconds: 1, endSeconds: 9 },
-      {
-        kind: 'finalOffset',
-        finalTrackId: 40,
-        sourceMediaItemId: 1,
-        fromSeconds: 10,
-        untilSeconds: 20,
-        offsetSeconds: 3,
-        stretch: 1,
-      },
     ];
     for (const change of changes) {
       applyChange(draft, change);

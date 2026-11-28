@@ -9,7 +9,6 @@ export const SETUP_TITLES: Record<SetupKey, string> = {
   spots: 'Plätze',
   formation: 'Aufstellung',
   video: 'Video',
-  final: 'Endfassung',
 };
 
 export const SETUP_ACTIONS: Record<SetupKey, string> = {
@@ -18,7 +17,6 @@ export const SETUP_ACTIONS: Record<SetupKey, string> = {
   spots: 'Platz hinzufügen',
   formation: 'Aufstellen',
   video: 'Video hochladen',
-  final: 'Endfassung',
 };
 
 export const SETUP_STEPS_DONE_ACTION = 'Zu den Schritten';
@@ -29,7 +27,6 @@ export const SETUP_HINTS: Record<SetupKey, string> = {
   spots: 'Einen Platz auf die Bühne stellen',
   formation: 'Plätze für den ersten Schritt ziehen',
   video: 'Trainervideo hochladen',
-  final: 'Die fertig geschnittene Musik',
 };
 
 export const SETUP_STATES: Record<SetupState, string> = {
@@ -47,14 +44,6 @@ const LOCKED_FACTS: Partial<Record<SetupKey, string>> = {
   steps: 'Geht, sobald Musik da ist.',
   formation: 'Geht, sobald es Plätze und einen Schritt gibt.',
   video: 'Geht, sobald Musik da ist.',
-};
-
-const waitingOf = (count: number): string => (count === 1 ? 'wartet' : 'warten');
-
-const finalFactOf = (amount: number, waiting: number): string => {
-  const versions = amountOf(amount, 'Fassung', 'Fassungen');
-
-  return waiting === 0 ? versions : `${versions}, ${waiting} ${waitingOf(waiting)}`;
 };
 
 export const setupFactOf = (row: SetupRow): string => {
@@ -82,8 +71,6 @@ export const setupFactOf = (row: SetupRow): string => {
         : `${amountOf(row.amount, 'Platz', 'Plätze')} aufgestellt, ${row.open} noch ohne Stelle`;
     case 'video':
       return row.amount === 0 ? 'Noch kein Video' : amountOf(row.amount, 'Video', 'Videos');
-    case 'final':
-      return row.amount === 0 ? 'Noch keine Endfassung' : finalFactOf(row.amount, row.open);
   }
 };
 

@@ -12,7 +12,6 @@ const document: StudioDocument = {
   spots: {},
   tracks: {},
   videos: {},
-  finalTracks: {},
 };
 
 describe('patchedWhereFitting', () => {

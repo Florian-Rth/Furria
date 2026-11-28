@@ -20,8 +20,8 @@ const keyframe = {
 const saved: StudioDocument = {
   songOrder: [1, 2],
   songs: {
-    1: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: 0.5, tempoBpm: 120 },
-    2: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: null, tempoBpm: null },
+    1: { mediaItemId: 1, startSeconds: 0, endSeconds: 20, firstBeatSeconds: 0.5, tempoBpm: 120 },
+    2: { mediaItemId: 2, startSeconds: 0, endSeconds: 20, firstBeatSeconds: null, tempoBpm: null },
   },
   steps: {
     1: { startSeconds: 0, endSeconds: 8, name: '' },
@@ -34,10 +34,26 @@ const saved: StudioDocument = {
   spots: { 31: { person: lena }, 32: { person: tom } },
   tracks: { 31: [keyframe] },
   videos: { 5: { name: null, startSeconds: null, clipStartSeconds: 0, clipEndSeconds: 30 } },
-  finalTracks: {},
 };
 
 const empty: StudioDocument = { ...saved, steps: {}, parts: {} };
+
+const halves: StudioDocument = {
+  ...empty,
+  songs: {
+    1: { mediaItemId: 3, startSeconds: 0, endSeconds: 10, firstBeatSeconds: null, tempoBpm: null },
+    2: { mediaItemId: 3, startSeconds: 10, endSeconds: 20, firstBeatSeconds: null, tempoBpm: null },
+  },
+};
+
+const cutOf = (songId: number, startSeconds: number, endSeconds: number): StudioChange => ({
+  kind: 'songSettings',
+  songId,
+  startSeconds,
+  endSeconds,
+  firstBeatSeconds: null,
+  tempoBpm: null,
+});
 
 const planned = (from: StudioDocument, ...changes: StudioChange[]): string[] =>
   savePlanOf(
@@ -58,6 +74,8 @@ const planned = (from: StudioDocument, ...changes: StudioChange[]): string[] =>
         return `spotAssign ${write.spotId}=${write.personId}`;
       case 'tracks':
         return `tracks ${write.tracks.map((track) => track.spotId).join(',')}`;
+      case 'songSettings':
+        return `songSettings ${write.songId}`;
       default:
         return write.kind;
     }
@@ -119,6 +137,21 @@ describe('savePlanOf', () => {
     },
   ])('$name', ({ changes, writes }) => {
     expect(planned(saved, ...changes)).toEqual(writes);
+  });
+
+  it.each<{ name: string; changes: StudioChange[]; writes: string[] }>([
+    {
+      name: 'lets the later half of a file yield before the earlier one grows into it',
+      changes: [cutOf(2, 12, 20), cutOf(1, 0, 11.5)],
+      writes: ['songSettings 2', 'songSettings 1'],
+    },
+    {
+      name: 'lets the earlier half of a file yield before the later one grows into it',
+      changes: [cutOf(1, 0, 8), cutOf(2, 8, 20)],
+      writes: ['songSettings 1', 'songSettings 2'],
+    },
+  ])('$name', ({ changes, writes }) => {
+    expect(planned(halves, ...changes)).toEqual(writes);
   });
 
   it('moves the leading edge first when a step leaves its old span', () => {

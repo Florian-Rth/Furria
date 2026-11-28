@@ -1,6 +1,4 @@
 using System.Net;
-using FastEndpoints;
-using Furria.Api.Endpoints.Acts;
 using Furria.Core.Studio;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Fixtures;
@@ -22,7 +20,7 @@ public sealed class PutActSongTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CutAwayTheSteps_When_AnEndOfTheirsFallsIntoTheGapBetweenTwoPieces()
+    public async Task Should_CutAwayTheSteps_When_AnEndOfTheirsFallsIntoTheGapBetweenTheHalves()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
@@ -32,8 +30,9 @@ public sealed class PutActSongTests : IClassFixture<ApiTestFixture>
         await _fixture.RenderSongDirectlyAsync(march, 180, ct);
         var songId = await AddSongAsync(admin, actId, march);
         await StepsBetweenAsync(admin, actId, 30, 70);
+        var (_, secondHalf) = await SplitSongAsync(admin, actId, songId, 20);
 
-        await PutAsync(admin, actId, songId, Cut([(0, 20), (50, 180)], null, null));
+        await CutSongAsync(admin, actId, secondHalf, 50, 180);
 
         var steps = (await StudioOfAsync(admin, actId)).Studio!.Steps;
         Assert.Equal(
@@ -49,7 +48,7 @@ public sealed class PutActSongTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseThePieces_When_TheyOverlap()
+    public async Task Should_RefuseTheCut_When_ItReachesIntoTheOtherHalfOfItsFile()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
@@ -58,31 +57,10 @@ public sealed class PutActSongTests : IClassFixture<ApiTestFixture>
         var march = await UploadSongAsync(admin, actId, ct);
         await _fixture.RenderSongDirectlyAsync(march, 180, ct);
         var songId = await AddSongAsync(admin, actId, march);
+        await SplitSongAsync(admin, actId, songId, 30);
 
-        var response = await PutAsync(admin, actId, songId, Cut([(0, 30), (29.5, 60)], null, null));
+        var response = await CutSongAsync(admin, actId, songId, 0, 40);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
-
-    private static PutActSongRequest Cut(
-        (double Start, double End)[] pieces,
-        double? firstBeat,
-        double? tempo
-    ) =>
-        new()
-        {
-            ActId = 0,
-            SongId = 0,
-            Pieces = PiecesOf(pieces),
-            FirstBeatSeconds = firstBeat,
-            TempoBpm = tempo,
-        };
-
-    private static Task<HttpResponseMessage> PutAsync(
-        HttpClient client,
-        int actId,
-        int songId,
-        PutActSongRequest cut
-    ) =>
-        client.PUTAsync<PutActSong, PutActSongRequest>(cut with { ActId = actId, SongId = songId });
 }

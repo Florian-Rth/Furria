@@ -19,7 +19,6 @@ import {
 import { scrubKeyActionsOf } from '@furria/studio/studio-key-actions';
 import type { StudioMusicTool } from '@furria/studio/studio-schemas';
 import type { StudioScreen } from '@furria/studio/studio-screen';
-import { useActStudioFinal } from '@furria/studio/use-act-studio-final';
 import { useActStudioSongs } from '@furria/studio/use-act-studio-songs';
 import { useActStudioTakes } from '@furria/studio/use-act-studio-takes';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
@@ -36,7 +35,6 @@ interface ActMusicViewProps {
 
 export const ActMusicView: FC<ActMusicViewProps> = ({ screen, onTool }) => {
   const songs = useActStudioSongs(screen);
-  const finalList = useActStudioFinal(screen);
   const takes = useActStudioTakes(screen);
   const { history } = screen;
   useStudioKeys(scrubKeyActionsOf(screen, null), true);
@@ -68,7 +66,7 @@ export const ActMusicView: FC<ActMusicViewProps> = ({ screen, onTool }) => {
         <ActStudioWaveLayer screen={screen} />
       </KkLaneDesk.Panel>
       <KkLaneDesk.Panel label={MUSIC_PAGE_LIST}>
-        <ActStudioMusicPanel screen={screen} songs={songs} finalList={finalList} />
+        <ActStudioMusicPanel screen={screen} songs={songs} />
       </KkLaneDesk.Panel>
     </KkLanePhone.Split>
   );

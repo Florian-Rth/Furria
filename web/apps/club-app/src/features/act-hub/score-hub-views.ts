@@ -12,7 +12,6 @@ const READINESS_ICONS: Record<ReadinessKey, KkIconName> = {
   places: 'group',
   movement: 'timeline',
   video: 'play',
-  final: 'flag',
 };
 
 export type ScoreGo = (link: ScoreLink) => () => void;

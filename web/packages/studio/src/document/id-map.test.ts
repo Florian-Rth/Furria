@@ -3,9 +3,8 @@ import type { Studio } from '../models/studio-schemas';
 import { NO_IDS, serverStudioOf, withLearnedId } from './id-map';
 
 const local: Studio = {
-  music: { lengthSeconds: 30, source: 'workingMix' },
+  music: { lengthSeconds: 30 },
   songs: [],
-  finalTracks: [],
   steps: [
     {
       stepId: 11,

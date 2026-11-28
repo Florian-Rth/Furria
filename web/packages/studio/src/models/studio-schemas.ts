@@ -14,25 +14,6 @@ export const VideoAlignmentSchema = z.object({
 });
 export type VideoAlignment = z.infer<typeof VideoAlignmentSchema>;
 
-export const SongPieceSchema = z.object({
-  startSeconds: z.number(),
-  endSeconds: z.number(),
-});
-export type SongPiece = z.infer<typeof SongPieceSchema>;
-
-export const FinalTrackMatchesSchema = z.object({
-  matches: z.array(
-    z.object({
-      sourceMediaItemId: z.int(),
-      fromSeconds: z.number(),
-      offsetSeconds: z.number(),
-      stretch: z.number().positive(),
-      confidence: z.number(),
-    }),
-  ),
-});
-export type FinalTrackMatches = z.infer<typeof FinalTrackMatchesSchema>;
-
 export const StudioMusicToolSchema = z.enum(['music', 'video']);
 export type StudioMusicTool = z.infer<typeof StudioMusicToolSchema>;
 
@@ -41,7 +22,6 @@ const VideoPlacementSchema = z.enum(['onTimeline', 'cutAway', 'musicMissing', 'u
 
 export const StudioMusicSchema = z.object({
   lengthSeconds: z.number(),
-  source: z.enum(['workingMix', 'finalTrack']),
 });
 export type StudioMusic = z.infer<typeof StudioMusicSchema>;
 
@@ -105,33 +85,13 @@ type StudioSongSchema = z.ZodObject<{
   songId: z.ZodInt;
   mediaItemId: z.ZodInt;
   position: z.ZodInt;
-  pieces: z.ZodArray<typeof SongPieceSchema>;
+  startSeconds: z.ZodNumber;
+  endSeconds: z.ZodNumber;
   firstBeatSeconds: z.ZodNullable<z.ZodNumber>;
   tempoBpm: z.ZodNullable<z.ZodNumber>;
   state: typeof MediaItemStateSchema;
   durationSeconds: z.ZodNullable<z.ZodNumber>;
   fileName: z.ZodString;
-  urls: AudioUrlsSchema;
-}>;
-
-type StudioFinalTrackSchema = z.ZodObject<{
-  finalTrackId: z.ZodInt;
-  mediaItemId: z.ZodInt;
-  version: z.ZodInt;
-  adopted: z.ZodBoolean;
-  state: typeof MediaItemStateSchema;
-  durationSeconds: z.ZodNullable<z.ZodNumber>;
-  fileName: z.ZodString;
-  firstBeatSeconds: z.ZodNullable<z.ZodNumber>;
-  tempoBpm: z.ZodNullable<z.ZodNumber>;
-  alignments: z.ZodArray<
-    z.ZodObject<{
-      sourceMediaItemId: z.ZodInt;
-      fromSeconds: z.ZodNumber;
-      offsetSeconds: z.ZodNumber;
-      stretch: z.ZodNumber;
-    }>
-  >;
   urls: AudioUrlsSchema;
 }>;
 
@@ -170,7 +130,6 @@ type StudioVideoSchema = z.ZodObject<{
 type StudioSchema = z.ZodObject<{
   music: typeof StudioMusicSchema;
   songs: z.ZodArray<StudioSongSchema>;
-  finalTracks: z.ZodArray<StudioFinalTrackSchema>;
   steps: z.ZodArray<typeof StudioStepSchema>;
   parts: z.ZodArray<typeof StudioPartSchema>;
   spots: z.ZodArray<StudioSpotSchema>;
@@ -197,32 +156,13 @@ export const createStudioSchemas = ({
     songId: z.int(),
     mediaItemId: z.int(),
     position: z.int(),
-    pieces: z.array(SongPieceSchema),
+    startSeconds: z.number(),
+    endSeconds: z.number(),
     firstBeatSeconds: z.number().nullable(),
     tempoBpm: z.number().nullable(),
     state: MediaItemStateSchema,
     durationSeconds: z.number().nullable(),
     fileName: z.string(),
-    urls: AudioUrlsSchema,
-  });
-  const StudioFinalTrackSchema = z.object({
-    finalTrackId: z.int(),
-    mediaItemId: z.int(),
-    version: z.int(),
-    adopted: z.boolean(),
-    state: MediaItemStateSchema,
-    durationSeconds: z.number().nullable(),
-    fileName: z.string(),
-    firstBeatSeconds: z.number().nullable(),
-    tempoBpm: z.number().nullable(),
-    alignments: z.array(
-      z.object({
-        sourceMediaItemId: z.int(),
-        fromSeconds: z.number(),
-        offsetSeconds: z.number(),
-        stretch: z.number().positive(),
-      }),
-    ),
     urls: AudioUrlsSchema,
   });
   const StudioPersonSchema = z.object({
@@ -260,7 +200,6 @@ export const createStudioSchemas = ({
     StudioSchema: z.object({
       music: StudioMusicSchema,
       songs: z.array(StudioSongSchema),
-      finalTracks: z.array(StudioFinalTrackSchema),
       steps: z.array(StudioStepSchema),
       parts: z.array(StudioPartSchema),
       spots: z.array(StudioSpotSchema),
@@ -272,7 +211,6 @@ export const createStudioSchemas = ({
 };
 
 export type StudioSong = z.infer<StudioSongSchema>;
-export type StudioFinalTrack = z.infer<StudioFinalTrackSchema>;
 export type StudioPerson = z.infer<StudioPersonSchema>;
 export type StudioSpot = z.infer<StudioSpotSchema>;
 export type StudioVideo = z.infer<StudioVideoSchema>;

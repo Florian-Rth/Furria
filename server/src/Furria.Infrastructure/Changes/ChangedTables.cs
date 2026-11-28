@@ -92,8 +92,6 @@ public static class ChangedTables
         [typeof(ActWish)] = [DomainChange.Act],
         [typeof(ActCoEditor)] = [DomainChange.ActCoEditor],
         [typeof(ActSong)] = [DomainChange.ActMusic],
-        [typeof(ActFinalTrack)] = [DomainChange.ActMusic],
-        [typeof(ActFinalTrackAlignment)] = [DomainChange.ActMusic],
         [typeof(ActStep)] = [DomainChange.ActSteps],
         [typeof(ActPart)] = [DomainChange.ActSteps],
         [typeof(ActVideo)] = [DomainChange.ActVideos],

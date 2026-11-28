@@ -54,14 +54,12 @@ const WEEKDAY = new Intl.DateTimeFormat('de-DE', {
   timeZone: 'Europe/Berlin',
 });
 
-const MUSIC_SPEAKING_KINDS = new Set(['music']);
-
 export const toDoorLabel = (door: DoorKey, template: ActTemplate, kind: string | null): string => {
   if (door !== 'cast') {
     return DOOR_LABELS[door];
   }
 
-  return kind !== null && MUSIC_SPEAKING_KINDS.has(kind) ? 'Mitwirkende' : CAST_LABELS[template];
+  return kind === 'music' ? 'Mitwirkende' : CAST_LABELS[template];
 };
 
 const stripDot = (value: string): string => value.replace('.', '');
@@ -115,7 +113,7 @@ export const toClockLine = (startsAt: string): string =>
 export const toMusicFigure = (seconds: number): string => musicClockOf(seconds);
 
 export const toMusicSource = (counts: StudioCounts): string =>
-  counts.finalTrack ? 'Endfassung' : `Arbeitsmix · ${counts.songs} Lieder`;
+  `${counts.songs} ${counts.songs === 1 ? 'Lied' : 'Lieder'}`;
 
 export const toStepsMeta = (counts: StudioCounts): string =>
   `${counts.placedSteps} auf der Musik · ${counts.parts.length} Teile`;

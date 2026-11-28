@@ -54,21 +54,14 @@ public sealed class ActGlanceReader
         ];
     }
 
-    private async Task<HashSet<int>> PlayableActIdsAsync(List<int> actIds, CancellationToken ct)
-    {
-        var withSongs = await _dbContext
-            .ActSongs.Where(song => actIds.Contains(song.ActId))
-            .Select(song => song.ActId)
-            .Distinct()
-            .ToListAsync(ct);
-        var withAdoptedTrack = await _dbContext
-            .ActFinalTracks.Where(track => actIds.Contains(track.ActId) && track.AdoptedAt != null)
-            .Select(track => track.ActId)
-            .Distinct()
-            .ToListAsync(ct);
-
-        return [.. withSongs, .. withAdoptedTrack];
-    }
+    private async Task<HashSet<int>> PlayableActIdsAsync(List<int> actIds, CancellationToken ct) =>
+        [
+            .. await _dbContext
+                .ActSongs.Where(song => actIds.Contains(song.ActId))
+                .Select(song => song.ActId)
+                .Distinct()
+                .ToListAsync(ct),
+        ];
 
     private async Task<ActEditors> EditorsAsync(
         List<int> actIds,

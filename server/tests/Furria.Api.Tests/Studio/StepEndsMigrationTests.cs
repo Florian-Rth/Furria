@@ -78,7 +78,8 @@ public sealed class StepEndsMigrationTests : IClassFixture<ApiTestFixture>
         var march = await UploadSongAsync(admin, actId, ct);
         await _fixture.RenderSongDirectlyAsync(march, 180, ct);
         var songId = await AddSongAsync(admin, actId, march);
-        await CutSongAsync(admin, actId, songId, (0, 30), (60, 90));
+        var (_, secondHalf) = await SplitSongAsync(admin, actId, songId, 30);
+        await CutSongAsync(admin, actId, secondHalf, 60, 90);
         await _fixture.MigrateDatabaseToAsync(BeforeStepsHaveTheirOwnEnd, ct);
         await _fixture.MarkStepOnOldSchemaDirectlyAsync(actId, march, 10, ct);
         await _fixture.MarkStepOnOldSchemaDirectlyAsync(actId, march, 70, ct);

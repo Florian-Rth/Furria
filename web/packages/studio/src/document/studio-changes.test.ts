@@ -17,7 +17,6 @@ const document = (patch: Partial<StudioDocument>): StudioDocument => ({
   spots: {},
   tracks: {},
   videos: {},
-  finalTracks: {},
   ...patch,
 });
 
@@ -321,41 +320,6 @@ describe('songOrder', () => {
     const result = changed(base, { kind: 'songOrder', songIds: [3, 9, 1] });
 
     expect(result.songOrder).toEqual([3, 1, 2]);
-  });
-});
-
-describe('finalOffset', () => {
-  const aligned = document({
-    finalTracks: {
-      40: {
-        firstBeatSeconds: null,
-        tempoBpm: null,
-        alignments: {
-          1: [
-            { fromSeconds: 0, offsetSeconds: 2, stretch: 1 },
-            { fromSeconds: 20, offsetSeconds: 5, stretch: 1 },
-            { fromSeconds: 30, offsetSeconds: 9, stretch: 1 },
-          ],
-        },
-      },
-    },
-  });
-
-  it.each<[string, number, number, number[]]>([
-    ['drops older entries inside the piece', 10, 35, [0, 10]],
-    ['adds an entry for a fresh piece', 12, 18, [0, 12, 20, 30]],
-  ])('%s', (_, fromSeconds, untilSeconds, froms) => {
-    const result = changed(aligned, {
-      kind: 'finalOffset',
-      finalTrackId: 40,
-      sourceMediaItemId: 1,
-      fromSeconds,
-      untilSeconds,
-      offsetSeconds: 7,
-      stretch: 1,
-    });
-
-    expect(result.finalTracks[40]?.alignments[1]?.map((entry) => entry.fromSeconds)).toEqual(froms);
   });
 });
 

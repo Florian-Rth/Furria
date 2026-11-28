@@ -11,23 +11,26 @@ public readonly record struct MusicCut(
     public double LengthSeconds => EndSeconds - StartSeconds;
 
     [Pure]
-    public static IReadOnlyList<MusicCut> OfSong(
+    public static MusicCut OfSong(
         int mediaItemId,
-        IReadOnlyList<SongPiece> pieces,
+        double startSeconds,
+        double? endSeconds,
         double? durationSeconds
     ) =>
-        pieces.Count == 0
-            ? [new MusicCut(mediaItemId, 0, durationSeconds ?? 0)]
-            :
-            [
-                .. pieces.Select(piece => new MusicCut(
-                    mediaItemId,
-                    piece.StartSeconds,
-                    piece.EndSeconds
-                )),
-            ];
+        new(
+            mediaItemId,
+            startSeconds,
+            Math.Max(startSeconds, endSeconds ?? durationSeconds ?? startSeconds)
+        );
 
     [Pure]
-    public static MusicCut OfFinalTrack(int mediaItemId, double? durationSeconds) =>
-        new(mediaItemId, 0, durationSeconds ?? 0);
+    public bool Overlaps(MusicCut other) =>
+        SourceMediaItemId == other.SourceMediaItemId
+        && StartSeconds < other.EndSeconds - CutLength.RoundingSeconds
+        && other.StartSeconds < EndSeconds - CutLength.RoundingSeconds;
+
+    [Pure]
+    public bool CanSplitAt(double seconds) =>
+        CutLength.IsLongEnough(StartSeconds, seconds)
+        && CutLength.IsLongEnough(seconds, EndSeconds);
 }

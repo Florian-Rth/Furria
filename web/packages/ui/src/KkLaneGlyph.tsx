@@ -17,7 +17,6 @@ import HistoryRounded from '@mui/icons-material/HistoryRounded';
 import HorizontalRuleRounded from '@mui/icons-material/HorizontalRuleRounded';
 import KeyboardDoubleArrowLeftRounded from '@mui/icons-material/KeyboardDoubleArrowLeftRounded';
 import KeyboardDoubleArrowRightRounded from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
-import LibraryMusicRounded from '@mui/icons-material/LibraryMusicRounded';
 import MoreHorizRounded from '@mui/icons-material/MoreHorizRounded';
 import MusicNoteRounded from '@mui/icons-material/MusicNoteRounded';
 import PauseRounded from '@mui/icons-material/PauseRounded';
@@ -63,7 +62,6 @@ export type KkLaneGlyphName =
   | 'spots'
   | 'formation'
   | 'paths'
-  | 'final'
   | 'key'
   | 'check'
   | 'mirror'
@@ -113,7 +111,6 @@ const GLYPHS: Record<KkLaneGlyphName, typeof AddRounded> = {
   spots: PersonAddRounded,
   formation: GroupsRounded,
   paths: RouteRounded,
-  final: LibraryMusicRounded,
   key: DiamondRounded,
   check: CheckRounded,
   mirror: FlipRounded,

@@ -4,27 +4,12 @@ import type { Keyframe, StudioPerson } from '../models/studio-schemas';
 import type { TimedStep } from './document-projection';
 import { timelineStepsOf } from './document-projection';
 import { sameValue } from './same-value';
-import type { DocumentSong, StudioDocument } from './studio-document';
+import type { SongSettings, StudioDocument } from './studio-document';
 import { idsOf, itemOf } from './studio-document';
 
 export type StudioChange =
   | { kind: 'songOrder'; songIds: readonly number[] }
-  | ({ kind: 'songSettings'; songId: number } & DocumentSong)
-  | {
-      kind: 'finalBeat';
-      finalTrackId: number;
-      firstBeatSeconds: number | null;
-      tempoBpm: number | null;
-    }
-  | {
-      kind: 'finalOffset';
-      finalTrackId: number;
-      sourceMediaItemId: number;
-      fromSeconds: number;
-      untilSeconds: number;
-      offsetSeconds: number;
-      stretch: number;
-    }
+  | ({ kind: 'songSettings'; songId: number } & SongSettings)
   | {
       kind: 'stepMark';
       stepId: number;
@@ -320,38 +305,11 @@ const songOrdered: Edit<'songOrder'> = (draft, { songIds }) => {
 const songSet: Edit<'songSettings'> = (draft, change) => {
   const song = itemOf(draft.songs, change.songId);
   if (song !== null) {
-    song.pieces = change.pieces.map((piece) => ({ ...piece }));
+    song.startSeconds = change.startSeconds;
+    song.endSeconds = change.endSeconds;
     song.firstBeatSeconds = change.firstBeatSeconds;
     song.tempoBpm = change.tempoBpm;
   }
-};
-
-const finalBeatSet: Edit<'finalBeat'> = (draft, { finalTrackId, firstBeatSeconds, tempoBpm }) => {
-  const track = itemOf(draft.finalTracks, finalTrackId);
-  if (track !== null) {
-    track.firstBeatSeconds = firstBeatSeconds;
-    track.tempoBpm = tempoBpm;
-  }
-};
-
-const finalOffsetSet: Edit<'finalOffset'> = (
-  draft,
-  { finalTrackId, sourceMediaItemId, fromSeconds, untilSeconds, offsetSeconds, stretch },
-) => {
-  const track = itemOf(draft.finalTracks, finalTrackId);
-  if (track === null) {
-    return;
-  }
-
-  const kept = (itemOf(track.alignments, sourceMediaItemId) ?? []).filter(
-    (entry) =>
-      entry.fromSeconds !== fromSeconds &&
-      (entry.fromSeconds < fromSeconds || entry.fromSeconds >= untilSeconds),
-  );
-  track.alignments[sourceMediaItemId] = [
-    ...kept.map((entry) => ({ ...entry })),
-    { fromSeconds, offsetSeconds, stretch },
-  ].sort((left, right) => left.fromSeconds - right.fromSeconds);
 };
 
 export const applyChange = (draft: Draft<StudioDocument>, change: StudioChange): void => {
@@ -361,12 +319,6 @@ export const applyChange = (draft: Draft<StudioDocument>, change: StudioChange):
       return;
     case 'songSettings':
       songSet(draft, change);
-      return;
-    case 'finalBeat':
-      finalBeatSet(draft, change);
-      return;
-    case 'finalOffset':
-      finalOffsetSet(draft, change);
       return;
     case 'stepMark':
       stepMarked(draft, change);
@@ -435,10 +387,6 @@ export const mergeKeyOf = (change: StudioChange): string | null => {
   switch (change.kind) {
     case 'songSettings':
       return `song:${change.songId}`;
-    case 'finalBeat':
-      return `finalBeat:${change.finalTrackId}`;
-    case 'finalOffset':
-      return `finalOffset:${change.finalTrackId}:${change.sourceMediaItemId}:${change.fromSeconds}`;
     case 'stepMove':
       return `stepMove:${change.stepId}`;
     case 'stepName':

@@ -80,28 +80,52 @@ internal static class StudioSteps
         HttpClient client,
         int actId,
         int songId,
-        params (double Start, double End)[] pieces
+        double startSeconds,
+        double endSeconds
     ) =>
         client.PUTAsync<PutActSong, PutActSongRequest>(
             new()
             {
                 ActId = actId,
                 SongId = songId,
-                Pieces = PiecesOf(pieces),
+                StartSeconds = startSeconds,
+                EndSeconds = endSeconds,
                 FirstBeatSeconds = null,
                 TempoBpm = null,
             }
         );
 
-    internal static IReadOnlyList<SongPieceDataDto> PiecesOf(
-        params (double Start, double End)[] pieces
-    ) =>
-        [
-            .. pieces.Select(piece => new SongPieceDataDto
+    internal static async Task<(HttpResponseMessage Response, int SongId)> SplitSongAsync(
+        HttpClient client,
+        int actId,
+        int songId,
+        double atSeconds
+    )
+    {
+        var (response, result) = await client.POSTAsync<
+            PostActSongSplit,
+            PostActSongSplitRequest,
+            PostActSongSplitResponse
+        >(
+            new()
             {
-                StartSeconds = piece.Start,
-                EndSeconds = piece.End,
-            }),
+                ActId = actId,
+                SongId = songId,
+                AtSeconds = atSeconds,
+            }
+        );
+
+        return (response, response.IsSuccessStatusCode ? result.SongId : 0);
+    }
+
+    internal static async Task<
+        IReadOnlyList<(int MediaItemId, double Start, double End)>
+    > SongCutsOfAsync(HttpClient client, int actId) =>
+        [
+            .. (await StudioOfAsync(client, actId))
+                .Studio!.Songs.OrderBy(song => song.Position)
+                .ThenBy(song => song.SongId)
+                .Select(song => (song.MediaItemId, song.StartSeconds, song.EndSeconds)),
         ];
 
     internal static async Task<int> AddSpotAsync(HttpClient client, int actId)
@@ -412,72 +436,6 @@ internal static class StudioSteps
             video.VideoId == videoId
         );
 
-    internal static async Task<int> SongMediaOfAsync(
-        ApiTestFixture fixture,
-        HttpClient client,
-        int actId,
-        double seconds,
-        CancellationToken ct
-    )
-    {
-        var mediaItemId = await UploadSongAsync(client, actId, ct);
-        await fixture.RenderSongDirectlyAsync(mediaItemId, seconds, ct);
-        await AddSongAsync(client, actId, mediaItemId);
-
-        return mediaItemId;
-    }
-
-    internal static async Task<(
-        HttpResponseMessage Response,
-        int FinalTrackId
-    )> PostFinalTrackAsync(HttpClient client, int actId, int mediaItemId)
-    {
-        var (response, result) = await client.POSTAsync<
-            PostActFinalTrack,
-            PostActFinalTrackRequest,
-            PostActFinalTrackResponse
-        >(new() { ActId = actId, MediaItemId = mediaItemId });
-
-        return (response, response.IsSuccessStatusCode ? result.FinalTrackId : 0);
-    }
-
-    internal static async Task<(int FinalTrackId, int MediaItemId)> FinalTrackOfAsync(
-        ApiTestFixture fixture,
-        HttpClient client,
-        int actId,
-        double seconds,
-        CancellationToken ct
-    )
-    {
-        var mediaItemId = await UploadSongAsync(client, actId, ct, "Endfassung.wav");
-        await fixture.RenderSongDirectlyAsync(mediaItemId, seconds, ct);
-        var (response, finalTrackId) = await PostFinalTrackAsync(client, actId, mediaItemId);
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-        return (finalTrackId, mediaItemId);
-    }
-
-    internal static Task<HttpResponseMessage> TuneOffsetAsync(
-        HttpClient client,
-        int actId,
-        int finalTrackId,
-        int sourceMediaItemId,
-        double offsetSeconds,
-        double stretch = 1,
-        double fromSeconds = 0
-    ) =>
-        client.PUTAsync<PutActFinalTrackAlignment, PutActFinalTrackAlignmentRequest>(
-            new()
-            {
-                ActId = actId,
-                FinalTrackId = finalTrackId,
-                SourceMediaItemId = sourceMediaItemId,
-                FromSeconds = fromSeconds,
-                OffsetSeconds = offsetSeconds,
-                Stretch = stretch,
-            }
-        );
-
     internal static Task<HttpResponseMessage> DeleteSpotAsync(
         HttpClient client,
         int actId,
@@ -553,26 +511,4 @@ internal static class StudioSteps
 
         return (response, response.IsSuccessStatusCode ? result.Version : 0);
     }
-
-    internal static async Task AdoptMatchedAsync(
-        HttpClient client,
-        int actId,
-        int finalTrackId,
-        int songMediaItemId
-    )
-    {
-        (
-            await TuneOffsetAsync(client, actId, finalTrackId, songMediaItemId, 0)
-        ).EnsureSuccessStatusCode();
-        (await AdoptAsync(client, actId, finalTrackId)).EnsureSuccessStatusCode();
-    }
-
-    internal static Task<HttpResponseMessage> AdoptAsync(
-        HttpClient client,
-        int actId,
-        int finalTrackId
-    ) =>
-        client.POSTAsync<PostActFinalTrackAdoption, PostActFinalTrackAdoptionRequest>(
-            new() { ActId = actId, FinalTrackId = finalTrackId }
-        );
 }

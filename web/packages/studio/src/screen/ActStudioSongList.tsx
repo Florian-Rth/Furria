@@ -1,4 +1,3 @@
-import { ActStudioFinalSection } from '@furria/studio/ActStudioFinalSection';
 import { ActStudioSortedSongs } from '@furria/studio/ActStudioSortedSongs';
 import {
   STUDIO_OUTSIDE_MUSIC,
@@ -9,7 +8,6 @@ import {
   uploadMetaOf,
 } from '@furria/studio/studio-copy';
 import type { StudioScreen } from '@furria/studio/studio-screen';
-import type { ActStudioFinal } from '@furria/studio/use-act-studio-final';
 import type { ActStudioSongs } from '@furria/studio/use-act-studio-songs';
 import { useStudioUploads } from '@furria/studio/use-studio-uploads';
 import { KkStudioList } from '@furria/ui/KkStudioList';
@@ -19,27 +17,10 @@ import type { FC } from 'react';
 interface ActStudioSongListProps {
   screen: StudioScreen;
   songs: ActStudioSongs;
-  finalList: ActStudioFinal;
 }
 
-export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs, finalList }) => {
+export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs }) => {
   const uploads = useStudioUploads(screen.uploads.songs);
-  const shown = screen.final.previewing ? finalList.sources : songs.rows;
-  const sortable = !screen.final.previewing && !songs.locked;
-  const listed = shown.map((song) => (
-    <KkStudioList.Row
-      key={song.key}
-      lead={song.lead}
-      title={song.title}
-      meta={song.meta}
-      badge={song.badge}
-      badgeTone={song.badgeTone}
-      selected={song.selected}
-      label={song.label}
-      onPress={song.press}
-    />
-  ));
-  const rows = sortable ? <ActStudioSortedSongs songs={songs} /> : listed;
   const uploading = uploads.rows.map((upload) => {
     const dismiss = (): void => {
       uploads.dismiss(upload.key);
@@ -65,16 +46,15 @@ export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs, f
   return (
     <KkStudioList label={STUDIO_SONGS}>
       <KkStudioList.Head text={STUDIO_SONGS} aside={songs.count} />
-      {rows}
+      <ActStudioSortedSongs songs={songs} />
       {uploading}
       <KkStudioList.Action
         icon="upload"
         text={STUDIO_SONG_ADD}
-        disabled={songs.locked}
+        disabled={false}
         onPress={uploads.choose}
       />
       {outside}
-      <ActStudioFinalSection screen={screen} finalList={finalList} />
       <Box
         component="input"
         type="file"

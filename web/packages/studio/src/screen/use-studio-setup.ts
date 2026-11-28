@@ -26,7 +26,6 @@ const GLYPHS: Record<SetupKey, KkLaneGlyphName> = {
   spots: 'spots',
   formation: 'formation',
   video: 'video',
-  final: 'final',
 };
 
 export interface StudioSetupHost {
@@ -79,9 +78,6 @@ export const useStudioSetup = (
       host.showStep(playback.steps[0]?.stepId ?? null);
     },
     video: videos.choose,
-    final: () => {
-      screen.openMusic('music');
-    },
   };
   const uploading: Partial<Record<SetupKey, string | null>> = {
     music: uploadingOf(songs),

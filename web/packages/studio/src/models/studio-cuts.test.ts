@@ -1,96 +1,78 @@
-import type { CutEdge, CutSpan } from '@furria/studio/studio-cuts';
+import type { CutEdge, CutRoom, CutSpan } from '@furria/studio/studio-cuts';
 import {
-  nudgedPiecesOf,
-  pieceIndexAt,
+  cutRoomOf,
+  nudgedCutOf,
   playheadInOf,
-  removedPiecesOf,
   shiftedPositionOf,
-  splitPiecesOf,
-  trimmedPiecesOf,
+  splitPointOf,
+  trimmedCutOf,
 } from '@furria/studio/studio-cuts';
 import { describe, expect, it } from 'vitest';
 
-const pieces: CutSpan[] = [
-  { startSeconds: 2, endSeconds: 10 },
-  { startSeconds: 14, endSeconds: 20 },
-];
+const cut: CutSpan = { startSeconds: 14, endSeconds: 20 };
+const room: CutRoom = { lowest: 10, highest: 30 };
 
-describe('trimmedPiecesOf', () => {
-  it.each<[string, number, CutEdge, number, number | null, CutSpan[] | null]>([
+describe('cutRoomOf', () => {
+  it.each<[string, CutSpan[], number | null, CutRoom]>([
+    ['reaches the whole file without other halves', [], 30, { lowest: 0, highest: 30 }],
     [
-      'brings cut-out music back up to the piece before',
-      1,
-      'start',
-      10,
-      30,
+      'stops at the halves of the same file around it',
       [
         { startSeconds: 2, endSeconds: 10 },
-        { startSeconds: 10, endSeconds: 20 },
+        { startSeconds: 24, endSeconds: 28 },
       ],
+      30,
+      { lowest: 10, highest: 24 },
     ],
-    ['never overlaps the piece before', 1, 'start', 9.9, 30, null],
-    ['never ends after the file', 1, 'end', 30.5, 30, null],
-    ['never leaves less than half a second', 0, 'start', 9.6, 30, null],
     [
       'ends anywhere while the file length is unknown',
-      1,
-      'end',
-      45,
+      [{ startSeconds: 2, endSeconds: 10 }],
       null,
-      [
-        { startSeconds: 2, endSeconds: 10 },
-        { startSeconds: 14, endSeconds: 45 },
-      ],
+      { lowest: 10, highest: Number.POSITIVE_INFINITY },
     ],
-  ])('%s', (_, index, edge, at, limit, expected) => {
-    expect(trimmedPiecesOf(pieces, index, edge, at, limit)).toEqual(expected);
+  ])('%s', (_, siblings, limit, expected) => {
+    expect(cutRoomOf(cut, siblings, limit)).toEqual(expected);
   });
 });
 
-describe('nudgedPiecesOf', () => {
+describe('trimmedCutOf', () => {
+  it.each<[string, CutEdge, number, CutSpan | null]>([
+    [
+      'brings cut-out music back up to the half before',
+      'start',
+      10,
+      { startSeconds: 10, endSeconds: 20 },
+    ],
+    ['never overlaps the half before', 'start', 9.9, null],
+    ['never ends after the room', 'end', 30.5, null],
+    ['never leaves less than half a second', 'start', 19.6, null],
+    ['rounds to a millisecond', 'end', 25.12345, { startSeconds: 14, endSeconds: 25.123 }],
+  ])('%s', (_, edge, at, expected) => {
+    expect(trimmedCutOf(cut, edge, at, room)).toEqual(expected);
+  });
+});
+
+describe('nudgedCutOf', () => {
   it.each<[CutEdge, number, CutSpan | null]>([
     ['start', -0.1, { startSeconds: 13.9, endSeconds: 20 }],
     ['end', -0.01, { startSeconds: 14, endSeconds: 19.99 }],
-  ])('moves the %s of a piece by %s', (edge, delta, expected) => {
-    expect(nudgedPiecesOf(pieces, 1, edge, delta, 30)?.[1] ?? null).toEqual(expected);
+  ])('moves the %s by %s', (edge, delta, expected) => {
+    expect(nudgedCutOf(cut, edge, delta, room)).toEqual(expected);
   });
 
-  it('refuses a nudge past the file end', () => {
-    expect(nudgedPiecesOf(pieces, 1, 'end', 0.1, 20)).toBeNull();
-  });
-});
-
-describe('splitPiecesOf', () => {
-  it.each<[number, CutSpan[] | null]>([
-    [
-      2.5,
-      [
-        { startSeconds: 2, endSeconds: 2.5 },
-        { startSeconds: 2.5, endSeconds: 10 },
-        { startSeconds: 14, endSeconds: 20 },
-      ],
-    ],
-    [2.4, null],
-  ])('splits the first piece at %s', (at, expected) => {
-    expect(splitPiecesOf(pieces, 0, at)).toEqual(expected);
+  it('refuses a nudge past the room', () => {
+    expect(nudgedCutOf(cut, 'end', 0.1, { lowest: 0, highest: 20 })).toBeNull();
   });
 });
 
-describe('removedPiecesOf', () => {
-  it.each<[CutSpan[], number, CutSpan[] | null]>([
-    [[{ startSeconds: 0, endSeconds: 5 }], 0, null],
-    [pieces, 3, null],
-  ])('removes piece %#', (from, index, expected) => {
-    expect(removedPiecesOf(from, index)).toEqual(expected);
-  });
-});
-
-describe('pieceIndexAt', () => {
-  it.each([
-    [10, -1],
-    [14, 1],
-  ])('finds the piece holding second %s', (seconds, index) => {
-    expect(pieceIndexAt(pieces, seconds)).toBe(index);
+describe('splitPointOf', () => {
+  it.each<[number, number | null]>([
+    [14.5, 14.5],
+    [14.4, null],
+    [19.5004, 19.5],
+    [19.6, null],
+  ])('splits at %s', (at, expected) => {
+    expect(splitPointOf(cut, at)).toBe(expected);
   });
 });
 

@@ -104,7 +104,6 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(RunningOrderCostStep)] =
             "noChangeover tightChangeover mustRules preferRules sameKind unplaced changeoverRoom",
         [typeof(RunningOrderHoldKind)] = "pin block mustRule mustWish",
-        [typeof(StudioMusicSource)] = "workingMix finalTrack",
         [typeof(AnchorPlacement)] = "onTimeline cutAway musicMissing",
         [typeof(VideoPlacement)] = "onTimeline cutAway musicMissing unaligned",
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",

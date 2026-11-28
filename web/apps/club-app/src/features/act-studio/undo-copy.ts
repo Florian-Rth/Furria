@@ -7,8 +7,6 @@ export const REDO_LABEL = 'Wiederholen';
 export const CHANGE_TEXT: Record<ChangeKind, string> = {
   songOrder: 'Liedfolge geändert',
   songSettings: 'Lied eingestellt',
-  finalBeat: 'Takt der Endfassung gesetzt',
-  finalOffset: 'Endfassung ausgerichtet',
   stepMark: 'Schritt gesetzt',
   stepMove: 'Schrittgrenze verschoben',
   stepName: 'Schritt umbenannt',

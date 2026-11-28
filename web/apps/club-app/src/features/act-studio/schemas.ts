@@ -22,8 +22,8 @@ export type AddedVideo = z.infer<typeof AddedVideoSchema>;
 export const SplitVideoSchema = z.object({ videoId: z.int() });
 export type SplitVideo = z.infer<typeof SplitVideoSchema>;
 
-export const AddedFinalTrackSchema = z.object({ finalTrackId: z.int() });
-export type AddedFinalTrack = z.infer<typeof AddedFinalTrackSchema>;
+export const SplitSongSchema = z.object({ songId: z.int() });
+export type SplitSong = z.infer<typeof SplitSongSchema>;
 
 export const CHOREOGRAPHY_VERSION_KINDS = [
   'saved',
