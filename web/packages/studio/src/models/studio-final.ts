@@ -1,7 +1,8 @@
 import type { MusicAnchor, MusicSegment } from '@furria/studio/music-timeline';
 import { EDGE_TOLERANCE_SECONDS, pieceAlignmentOf } from '@furria/studio/music-timeline';
+import { STEP_BORDER_TOLERANCE_SECONDS } from '@furria/studio/step-borders';
 import { finalTitleOf, songNameOf } from '@furria/studio/studio-copy';
-import { anchorAt } from '@furria/studio/studio-formation';
+import { anchorAt, endAnchorAt } from '@furria/studio/studio-formation';
 import type {
   Studio,
   StudioFinalTrack,
@@ -182,32 +183,37 @@ export const mixSecondsAt = (
   return null;
 };
 
+const previewSecondsOf = (
+  seconds: number | null,
+  mapping: FinalMapping,
+  anchorOf: typeof anchorAt,
+): number | null =>
+  seconds === null ? null : finalSecondsOf(anchorOf(mapping.segments, seconds), mapping);
+
+const previewStepOf = (step: StudioStep, mapping: FinalMapping): StudioStep => {
+  const placed = step.placement === 'onTimeline' && step.endPlacement === 'onTimeline';
+  const start = placed ? previewSecondsOf(step.startSeconds, mapping, anchorAt) : null;
+  const end = placed ? previewSecondsOf(step.endSeconds, mapping, endAnchorAt) : null;
+
+  return start !== null && end !== null && end > start + STEP_BORDER_TOLERANCE_SECONDS
+    ? { ...step, startSeconds: start, endSeconds: end }
+    : {
+        ...step,
+        startSeconds: null,
+        endSeconds: null,
+        placement: step.placement === 'onTimeline' ? 'musicMissing' : step.placement,
+        endPlacement: step.endPlacement === 'onTimeline' ? 'musicMissing' : step.endPlacement,
+      };
+};
+
 const previewStepsOf = (steps: readonly StudioStep[], mapping: FinalMapping): StudioStep[] => {
-  const moved = steps.map((step) => ({
-    step,
-    start:
-      step.placement === 'onTimeline' && step.startSeconds !== null
-        ? finalSecondsOf(anchorAt(mapping.segments, step.startSeconds), mapping)
-        : null,
-  }));
-  const placed = moved
-    .filter((entry) => entry.start !== null)
-    .sort((left, right) => (left.start ?? 0) - (right.start ?? 0));
-  const adrift = moved.filter((entry) => entry.start === null);
+  const previewed = steps.map((step) => previewStepOf(step, mapping));
 
   return [
-    ...placed.map(({ step, start }, index) => ({
-      ...step,
-      startSeconds: index === 0 ? 0 : start,
-      endSeconds: placed[index + 1]?.start ?? mapping.length,
-      placement: 'onTimeline' as const,
-    })),
-    ...adrift.map(({ step }) => ({
-      ...step,
-      startSeconds: null,
-      endSeconds: null,
-      placement: step.placement === 'onTimeline' ? ('musicMissing' as const) : step.placement,
-    })),
+    ...previewed
+      .filter((step) => step.startSeconds !== null)
+      .sort((left, right) => (left.startSeconds ?? 0) - (right.startSeconds ?? 0)),
+    ...previewed.filter((step) => step.startSeconds === null),
   ];
 };
 

@@ -9,8 +9,9 @@ import { FinalTrackMatchesSchema, VideoAlignmentSchema } from '@furria/studio/st
 import type {
   PartOpening,
   PartSettingsInput,
+  StepBorderInput,
   StepNameInput,
-  StepStartInput,
+  StepSpanInput,
 } from '@furria/studio/studio-steps';
 import type {
   VideoClipInput,
@@ -25,9 +26,9 @@ import type {
   AddedPart,
   AddedSong,
   AddedSpot,
+  AddedStep,
   AddedVideo,
   ChoreographyVersionPage,
-  MarkedSteps,
   SavedChoreography,
   SplitVideo,
 } from './schemas';
@@ -36,9 +37,9 @@ import {
   AddedPartSchema,
   AddedSongSchema,
   AddedSpotSchema,
+  AddedStepSchema,
   AddedVideoSchema,
   ChoreographyVersionPageSchema,
-  MarkedStepsSchema,
   SavedChoreographySchema,
   SplitVideoSchema,
 } from './schemas';
@@ -148,15 +149,15 @@ export const requestSongRemoval = (
     accessToken,
   });
 
-export const requestStepMark = (
+export const requestStepAdd = (
   actId: number,
-  atSeconds: number,
+  { startSeconds, endSeconds }: StepSpanInput,
   accessToken: string,
-): Promise<MarkedSteps> =>
+): Promise<AddedStep> =>
   apiFetch(stepsPathOf(actId), {
     method: 'POST',
-    body: { atSeconds },
-    schema: MarkedStepsSchema,
+    body: { startSeconds, endSeconds },
+    schema: AddedStepSchema,
     accessToken,
   });
 
@@ -174,10 +175,22 @@ export const requestStepName = (
 
 export const requestStepStart = (
   actId: number,
-  { stepId, atSeconds }: StepStartInput,
+  { stepId, atSeconds }: StepBorderInput,
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`${stepsPathOf(actId)}/${stepId}/start`, {
+    method: 'PUT',
+    body: { atSeconds },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestStepEnd = (
+  actId: number,
+  { stepId, atSeconds }: StepBorderInput,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${stepsPathOf(actId)}/${stepId}/end`, {
     method: 'PUT',
     body: { atSeconds },
     schema: NoContentSchema,

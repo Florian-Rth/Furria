@@ -18,7 +18,8 @@ import {
   requestSpotAdd,
   requestSpotAssignment,
   requestSpotRemoval,
-  requestStepMark,
+  requestStepAdd,
+  requestStepEnd,
   requestStepName,
   requestStepRemoval,
   requestStepStart,
@@ -75,13 +76,12 @@ const performed = async (
       return sent(requestPartRemoval(actId, write.partId, accessToken));
     case 'stepRemove':
       return sent(requestStepRemoval(actId, write.stepId, accessToken));
-    case 'stepMove':
+    case 'stepStart':
       return sent(requestStepStart(actId, write, accessToken));
-    case 'stepMark':
-      return {
-        kind: 'created',
-        ids: (await requestStepMark(actId, write.atSeconds, accessToken)).stepIds,
-      };
+    case 'stepEnd':
+      return sent(requestStepEnd(actId, write, accessToken));
+    case 'stepAdd':
+      return { kind: 'created', ids: [(await requestStepAdd(actId, write, accessToken)).stepId] };
     case 'stepName':
       return sent(requestStepName(actId, write, accessToken));
     case 'partAdd':

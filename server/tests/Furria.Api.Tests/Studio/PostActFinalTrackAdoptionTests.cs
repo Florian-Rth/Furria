@@ -24,7 +24,7 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId, opener, finale) = await MixAsync(ct);
-        await MarkedAsync(admin, actId, 10, 70);
+        await StepsBetweenAsync(admin, actId, 10, 70);
         var videoId = await VideoOfAsync(_fixture, admin, actId, 20, ct);
         await PlaceVideoAsync(admin, actId, videoId, 70);
         var spotId = await AddSpotAsync(admin, actId);
@@ -44,7 +44,7 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
         var studio = (await StudioOfAsync(admin, actId)).Studio!;
         Assert.Equal(StudioMusicSource.FinalTrack, studio.Music.Source);
         Assert.Equal(
-            [(0d, 15d), (15d, 65d), (65d, 120d)],
+            [(5d, 15d), (15d, 65d), (65d, 115d)],
             studio.Steps.Select(step => (step.StartSeconds!.Value, step.EndSeconds!.Value))
         );
         Assert.Equal(65, studio.Videos.Single().StartSeconds!.Value, 6);
@@ -93,7 +93,7 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId, _, _) = await MixAsync(ct);
-        await MarkedAsync(admin, actId, 10, 70);
+        await StepsBetweenAsync(admin, actId, 10, 70);
         var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 120, ct);
 
         var response = await AdoptAsync(admin, actId, finalTrackId);

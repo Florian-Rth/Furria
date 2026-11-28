@@ -1,3 +1,4 @@
+import { isStepOnTimeline } from '@furria/studio/music-timeline';
 import type { ActStudio, MyAct } from '@/features/acts/schemas';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import type { ActKind } from '@/features/running-order/schemas';
@@ -102,7 +103,7 @@ export const studioCountsOf = (studio: ActStudio): StudioCounts => ({
   finalTrack: studio.music.source === 'finalTrack',
   songs: studio.songs.length,
   steps: studio.steps.length,
-  placedSteps: studio.steps.filter((step) => step.placement === 'onTimeline').length,
+  placedSteps: studio.steps.filter(isStepOnTimeline).length,
   parts: studio.parts.map((part) => part.name),
   spots: studio.spots.length,
   openSpots: studio.spots.filter((spot) => spot.person === null).length,

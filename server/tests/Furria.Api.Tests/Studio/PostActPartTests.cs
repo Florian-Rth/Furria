@@ -36,7 +36,7 @@ public sealed class PostActPartTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 60, 90);
+        var stepIds = await StepsBetweenAsync(admin, actId, 30, 60, 90);
         await AddPartAsync(admin, actId, stepIds[1], stepIds[2], "Hauptteil");
 
         var response = await PostAsync(admin, actId, stepIds[first], stepIds[last]);

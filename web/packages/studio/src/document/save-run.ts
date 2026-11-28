@@ -1,12 +1,13 @@
 import type { Draft } from 'immer';
 import { produce } from 'immer';
+import { splitsTheTailOf } from '../models/step-borders';
 import type { CreatedCollection, IdMap } from './id-map';
 import { serverIdOf, withLearnedId } from './id-map';
 import type { SaveWrite } from './save-plan';
 import type { SaveOutcome, ServerWrite } from './save-port';
-import { applyChange } from './studio-changes';
+import { applyChange, dropStep } from './studio-changes';
 import type { DocumentAlignment, StudioDocument } from './studio-document';
-import { itemOf } from './studio-document';
+import { idsOf, itemOf } from './studio-document';
 
 const resolvedOf = (
   ids: IdMap,
@@ -62,7 +63,8 @@ export const serverWriteOf = (
         : { ...write, firstStepId, lastStepId };
     }
     case 'stepRemove':
-    case 'stepMove':
+    case 'stepStart':
+    case 'stepEnd':
     case 'stepName':
       return resolvedOf(ids, 'steps', write.stepId, (stepId) => ({ ...write, stepId }));
     case 'tracks':
@@ -72,54 +74,64 @@ export const serverWriteOf = (
   }
 };
 
-export interface LearnedIds {
-  ids: IdMap;
-  strayStepIds: readonly number[];
-}
-
-const stepIdsLearned = (
-  write: Extract<SaveWrite, { kind: 'stepMark' }>,
-  created: readonly number[],
-  ids: IdMap,
-): LearnedIds => {
-  const marked = created.at(-1);
-  if (marked === undefined) {
-    return { ids, strayStepIds: [] };
+export const idsLearnedFrom = (write: SaveWrite, outcome: SaveOutcome, ids: IdMap): IdMap => {
+  const first = outcome.kind === 'created' ? outcome.ids[0] : undefined;
+  if (first === undefined) {
+    return ids;
   }
-
-  const opening = write.openingStepId === null ? undefined : created.slice(0, -1)[0];
-  const strays = created.slice(0, -1).filter((stepId) => stepId !== opening);
-  const withMark = withLearnedId(ids, 'steps', write.stepId, marked);
-
-  return {
-    ids:
-      opening === undefined || write.openingStepId === null
-        ? withMark
-        : withLearnedId(withMark, 'steps', write.openingStepId, opening),
-    strayStepIds: strays,
-  };
-};
-
-export const idsLearnedFrom = (write: SaveWrite, outcome: SaveOutcome, ids: IdMap): LearnedIds => {
-  const created = outcome.kind === 'created' ? outcome.ids : [];
-  const first = created[0];
 
   switch (write.kind) {
     case 'spotAdd':
-      return {
-        ids: first === undefined ? ids : withLearnedId(ids, 'spots', write.spotId, first),
-        strayStepIds: [],
-      };
+      return withLearnedId(ids, 'spots', write.spotId, first);
     case 'partAdd':
-      return {
-        ids: first === undefined ? ids : withLearnedId(ids, 'parts', write.partId, first),
-        strayStepIds: [],
-      };
-    case 'stepMark':
-      return stepIdsLearned(write, created, ids);
+      return withLearnedId(ids, 'parts', write.partId, first);
+    case 'stepAdd':
+      return withLearnedId(ids, 'steps', write.stepId, first);
     default:
-      return { ids, strayStepIds: [] };
+      return ids;
   }
+};
+
+const splitOwnerIdOf = (
+  draft: Draft<StudioDocument>,
+  write: Extract<SaveWrite, { kind: 'stepAdd' }>,
+): number | null => {
+  const added = { start: write.startSeconds, end: write.endSeconds };
+
+  return (
+    idsOf(draft.steps).find((stepId) => {
+      const step = itemOf(draft.steps, stepId);
+
+      return (
+        step !== null &&
+        step.startSeconds !== null &&
+        step.endSeconds !== null &&
+        splitsTheTailOf({ start: step.startSeconds, end: step.endSeconds }, added)
+      );
+    }) ?? null
+  );
+};
+
+const stepAdded = (
+  draft: Draft<StudioDocument>,
+  write: Extract<SaveWrite, { kind: 'stepAdd' }>,
+): void => {
+  const ownerId = splitOwnerIdOf(draft, write);
+  const owner = ownerId === null ? null : itemOf(draft.steps, ownerId);
+  if (owner !== null) {
+    owner.endSeconds = write.startSeconds;
+    for (const partId of idsOf(draft.parts)) {
+      const part = itemOf(draft.parts, partId);
+      if (part !== null && part.lastStepId === ownerId) {
+        part.lastStepId = write.stepId;
+      }
+    }
+  }
+  draft.steps[write.stepId] = {
+    startSeconds: write.startSeconds,
+    endSeconds: write.endSeconds,
+    name: '',
+  };
 };
 
 const recordedAlignmentsOf = (
@@ -188,22 +200,25 @@ const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: S
       return;
     }
     case 'stepRemove':
-      applyChange(draft, { kind: 'stepRemove', stepId: write.stepId });
+      dropStep(draft, write.stepId);
       return;
-    case 'stepMove': {
+    case 'stepStart': {
       const step = itemOf(draft.steps, write.stepId);
       if (step !== null) {
         step.startSeconds = write.atSeconds;
       }
       return;
     }
-    case 'stepMark': {
-      draft.steps[write.stepId] = { startSeconds: write.atSeconds, name: '' };
-      if (write.openingStepId !== null) {
-        draft.steps[write.openingStepId] = { startSeconds: 0, name: '' };
+    case 'stepEnd': {
+      const step = itemOf(draft.steps, write.stepId);
+      if (step !== null) {
+        step.endSeconds = write.atSeconds;
       }
       return;
     }
+    case 'stepAdd':
+      stepAdded(draft, write);
+      return;
     case 'stepName': {
       const step = itemOf(draft.steps, write.stepId);
       if (step !== null) {

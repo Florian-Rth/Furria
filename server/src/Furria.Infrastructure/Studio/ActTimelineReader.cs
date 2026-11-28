@@ -16,22 +16,15 @@ public sealed class ActTimelineReader
     public async Task<ActTimeline> TimelineOfAsync(int actId, CancellationToken ct)
     {
         var music = await PlayedMusicOfAsync(actId, ct);
-        var stepStarts = await _dbContext
+        var stepAnchors = await _dbContext
             .ActSteps.Where(step => step.ActId == actId)
-            .Select(step => new
-            {
+            .Select(step => new StepAnchors(
                 step.Id,
-                step.StartSourceMediaItemId,
-                step.StartSeconds,
-            })
+                new MusicAnchor(step.StartSourceMediaItemId, step.StartSeconds),
+                new MusicAnchor(step.EndSourceMediaItemId, step.EndSeconds)
+            ))
             .ToListAsync(ct);
-        var steps = ActSteps.Tile(
-            stepStarts.Select(step => new StepStart(
-                step.Id,
-                new MusicAnchor(step.StartSourceMediaItemId, step.StartSeconds)
-            )),
-            music
-        );
+        var steps = ActSteps.Tile(stepAnchors, music);
         var partRanges = await _dbContext
             .ActParts.Where(part => part.ActId == actId)
             .Select(part => new PartRange(part.Id, part.FirstStepId, part.LastStepId))

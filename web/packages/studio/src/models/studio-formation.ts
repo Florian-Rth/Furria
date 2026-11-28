@@ -278,6 +278,25 @@ export const anchorAt = (
       };
 };
 
+export const endAnchorAt = (
+  segments: readonly MusicSegment[],
+  seconds: number,
+): MusicAnchor | null => {
+  const segment = segments.find(
+    (candidate) =>
+      seconds > candidate.timelineStart + KEY_TOLERANCE_SECONDS &&
+      seconds <= candidate.timelineEnd + KEY_TOLERANCE_SECONDS,
+  );
+
+  return segment === undefined
+    ? anchorAt(segments, seconds)
+    : {
+        sourceMediaItemId: segment.mediaItemId,
+        seconds:
+          segment.sourceStart + (Math.min(seconds, segment.timelineEnd) - segment.timelineStart),
+      };
+};
+
 const turnOf = (degrees: number | null): number | null =>
   degrees === null ? null : ((degrees % FULL_TURN_DEGREES) + FULL_TURN_DEGREES) % FULL_TURN_DEGREES;
 

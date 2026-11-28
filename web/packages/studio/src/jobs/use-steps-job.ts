@@ -2,6 +2,9 @@ import { countsBetweenOf } from '@furria/studio/count-marks';
 import {
   JOB_FIRST_STEP,
   JOB_FIRST_STEP_LABEL,
+  JOB_GAP,
+  JOB_GAP_MARK,
+  JOB_GAP_MARK_LABEL,
   JOB_GROUP_LENGTH,
   JOB_GROUP_MAIN_VIDEO,
   JOB_GROUP_PART_START,
@@ -38,6 +41,7 @@ import {
 import type { JobAction, JobBlock, JobSection, JobView } from '@furria/studio/job-view';
 import { actionsIn, jobActionOf } from '@furria/studio/job-view';
 import { partOfStep } from '@furria/studio/music-timeline';
+import { nearBorder } from '@furria/studio/step-borders';
 import { stepNumberOf } from '@furria/studio/step-names';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import { markSecondsOf, startsAPart } from '@furria/studio/studio-steps';
@@ -62,14 +66,17 @@ export const useStepsJob = (
   const texts = useStepNaming(screen);
   const desk = useStepDesk(screen);
   const first = steps.length === 0;
+  const inGap = step === null && !first;
+  const markText = first ? JOB_FIRST_STEP : inGap ? JOB_GAP_MARK : JOB_MARK;
+  const markLabel = first ? JOB_FIRST_STEP_LABEL : inGap ? JOB_GAP_MARK_LABEL : JOB_MARK_LABEL;
   const mark = jobActionOf(
     'mark',
-    first ? JOB_FIRST_STEP : JOB_MARK,
+    markText,
     'mark',
     () => {
       work.mark(markSecondsOf(playback, player.position()), length);
     },
-    { label: first ? JOB_FIRST_STEP_LABEL : JOB_MARK_LABEL, tone: first ? 'accent' : 'quiet' },
+    { label: markLabel, tone: first || inGap ? 'accent' : 'quiet' },
   );
   const silent = length <= 0;
 
@@ -77,15 +84,16 @@ export const useStepsJob = (
     const startSections: JobSection[] = silent
       ? []
       : [{ kind: 'tools', key: 'mark', title: null, aside: null, actions: [mark] }];
+    const title = first ? JOB_NO_STEP : JOB_GAP;
     const noStep: JobBlock = {
-      key: 'none',
+      key: first ? 'none' : 'gap',
       owner: JOB_STEP_OWNER,
-      title: JOB_NO_STEP,
-      meta: silent ? JOB_NO_STEP_MUSIC : JOB_NO_STEP_HINT,
+      title,
+      meta: first ? (silent ? JOB_NO_STEP_MUSIC : JOB_NO_STEP_HINT) : null,
       sections: startSections,
       danger: null,
     };
-    const view = { context: JOB_NO_STEP, blocks: [noStep], bar: [] };
+    const view = { context: title, blocks: [noStep], bar: [] };
 
     return { ...view, bar: actionsIn(view, ['mark']) };
   }
@@ -120,9 +128,12 @@ export const useStepsJob = (
   ];
   const newPart = jobActionOf('newPart', JOB_NEW_PART, 'parts', desk?.openPart ?? ignore);
   const splitTools = startsAPart(parts, step.stepId) ? [mark] : [mark, newPart];
-  const lengthSection: JobSection = canStretch
-    ? { kind: 'tools', key: 'length', title: JOB_GROUP_LENGTH, aside: null, actions: lengthTools }
-    : { kind: 'note', key: 'length', text: JOB_LAST_STEP };
+  const endsWithTheSong = nearBorder(end, length);
+  const lengthSections: JobSection[] = canStretch
+    ? [{ kind: 'tools', key: 'length', title: JOB_GROUP_LENGTH, aside: null, actions: lengthTools }]
+    : endsWithTheSong
+      ? [{ kind: 'note', key: 'length', text: JOB_LAST_STEP }]
+      : [];
   const stepSections: JobSection[] = [
     {
       kind: 'fields',
@@ -139,7 +150,7 @@ export const useStepsJob = (
         },
       ],
     },
-    lengthSection,
+    ...lengthSections,
     { kind: 'tools', key: 'steps', title: JOB_GROUP_STEPS, aside: null, actions: splitTools },
   ];
   const stepBlock: JobBlock = {

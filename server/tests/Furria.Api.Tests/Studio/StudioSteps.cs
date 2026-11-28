@@ -183,7 +183,7 @@ internal static class StudioSteps
         CancellationToken ct
     ) => await AddSongAsync(client, actId, await UploadSongAsync(client, actId, ct));
 
-    internal static async Task SongOfAsync(
+    internal static async Task<int> SongOfAsync(
         ApiTestFixture fixture,
         HttpClient client,
         int actId,
@@ -194,34 +194,71 @@ internal static class StudioSteps
         var mediaItemId = await UploadSongAsync(client, actId, ct);
         await fixture.RenderSongDirectlyAsync(mediaItemId, seconds, ct);
         await AddSongAsync(client, actId, mediaItemId);
+
+        return mediaItemId;
     }
 
-    internal static async Task<IReadOnlyList<int>> MarkAsync(
+    internal static Task<HttpResponseMessage> PostStepAsync(
         HttpClient client,
         int actId,
-        double atSeconds
+        double startSeconds,
+        double endSeconds
+    ) =>
+        client.POSTAsync<PostActStep, PostActStepRequest>(
+            new()
+            {
+                ActId = actId,
+                StartSeconds = startSeconds,
+                EndSeconds = endSeconds,
+            }
+        );
+
+    internal static async Task<int> CreateStepAsync(
+        HttpClient client,
+        int actId,
+        double startSeconds,
+        double endSeconds
     )
     {
         var (response, result) = await client.POSTAsync<
             PostActStep,
             PostActStepRequest,
             PostActStepResponse
-        >(new() { ActId = actId, AtSeconds = atSeconds });
+        >(
+            new()
+            {
+                ActId = actId,
+                StartSeconds = startSeconds,
+                EndSeconds = endSeconds,
+            }
+        );
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        return result.StepIds;
+        return result.StepId;
     }
 
-    internal static async Task<IReadOnlyList<int>> MarkedAsync(
+    internal static async Task<int> SplitAsync(HttpClient client, int actId, double atSeconds)
+    {
+        var split = (await StepSpansOfAsync(client, actId)).Single(span =>
+            span.Start < atSeconds && atSeconds < span.End
+        );
+
+        return await CreateStepAsync(client, actId, atSeconds, split.End ?? atSeconds);
+    }
+
+    internal static async Task<IReadOnlyList<int>> StepsBetweenAsync(
         HttpClient client,
         int actId,
-        params double[] marks
+        params double[] borders
     )
     {
-        foreach (var mark in marks)
-            await MarkAsync(client, actId, mark);
+        var lengthSeconds = (await StudioOfAsync(client, actId)).Studio!.Music.LengthSeconds;
+        double[] edges = [0, .. borders, lengthSeconds];
+        var stepIds = new List<int>();
+        foreach (var (start, end) in edges.Zip(edges.Skip(1)))
+            stepIds.Add(await CreateStepAsync(client, actId, start, end));
 
-        return [.. (await StudioOfAsync(client, actId)).Studio!.Steps.Select(step => step.StepId)];
+        return stepIds;
     }
 
     internal static async Task<int> AddPartAsync(

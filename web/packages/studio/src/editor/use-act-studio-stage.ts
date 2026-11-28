@@ -80,9 +80,10 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
   useLayoutEffect(() => {
     pending.current = null;
   });
-  const formation = mode.tool === 'formation';
-  const moving = mode.tool === 'movement';
   const step = practice.step;
+  const placeable = step !== null || steps.length === 0;
+  const formation = mode.tool === 'formation' && placeable;
+  const moving = mode.tool === 'movement' && placeable;
   const stepIndex = steps.findIndex((candidate) => candidate.stepId === step?.stepId);
   const formationSeconds = step?.startSeconds ?? 0;
   const span: TimeSpan = { start: formationSeconds, end: step?.endSeconds ?? length };
@@ -113,7 +114,7 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
   };
 
   const settle = (moves: ReadonlyMap<number, StagePoint>): void => {
-    if (moves.size > 0) {
+    if (moves.size > 0 && placeable) {
       commit(placed(moves));
     }
   };

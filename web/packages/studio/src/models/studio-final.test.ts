@@ -55,6 +55,7 @@ const stepOf = (stepId: number, start: number, end: number): StudioStep => ({
   startSeconds: start,
   endSeconds: end,
   placement: 'onTimeline',
+  endPlacement: 'onTimeline',
 });
 
 const studioOf = (patch: Partial<Studio>): Studio => ({
@@ -191,9 +192,9 @@ describe('offsets', () => {
 describe('finalPreviewOf', () => {
   const track = trackOf(1, 1, false);
 
-  it('re-tiles the steps on the final file and loses those whose music is left out', () => {
+  it('maps each step with its own end and loses those whose music is left out', () => {
     const studio = studioOf({
-      steps: [stepOf(1, 0, 20), stepOf(2, 20, 35), stepOf(3, 35, 60)],
+      steps: [stepOf(1, 0, 20), stepOf(2, 20, 30), stepOf(3, 30, 60)],
     });
 
     const preview = finalPreviewOf(studio, track, mix, { 1: placed(-5) });
@@ -206,8 +207,8 @@ describe('finalPreviewOf', () => {
         step.placement,
       ]),
     ).toEqual([
-      [1, 0, 25, 'onTimeline'],
-      [2, 25, 70, 'onTimeline'],
+      [1, 5, 25, 'onTimeline'],
+      [2, 25, 35, 'onTimeline'],
       [3, null, null, 'musicMissing'],
     ]);
   });

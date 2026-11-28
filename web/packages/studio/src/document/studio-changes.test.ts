@@ -2,7 +2,7 @@ import { produce } from 'immer';
 import { describe, expect, it } from 'vitest';
 import type { StudioChange } from './studio-changes';
 import { applyChange, mergeKeyOf } from './studio-changes';
-import type { StudioDocument } from './studio-document';
+import type { DocumentPart, StudioDocument } from './studio-document';
 
 const lena = { personId: 7, firstName: 'Lena', lastName: 'Berg', portrait: null };
 
@@ -23,9 +23,16 @@ const document = (patch: Partial<StudioDocument>): StudioDocument => ({
 
 const threeSteps = document({
   steps: {
-    1: { startSeconds: 0, name: 'Auftakt' },
-    2: { startSeconds: 8, name: '' },
-    3: { startSeconds: 16, name: '' },
+    1: { startSeconds: 0, endSeconds: 8, name: 'Auftakt' },
+    2: { startSeconds: 8, endSeconds: 16, name: '' },
+    3: { startSeconds: 16, endSeconds: 40, name: '' },
+  },
+});
+
+const gapped = document({
+  steps: {
+    1: { startSeconds: 2, endSeconds: 8, name: '' },
+    3: { startSeconds: 16, endSeconds: 30, name: '' },
   },
 });
 
@@ -34,20 +41,68 @@ const changed = (base: StudioDocument, change: StudioChange): StudioDocument =>
     applyChange(draft, change);
   });
 
-const startsOf = (result: StudioDocument): Record<string, number | null> =>
-  Object.fromEntries(Object.entries(result.steps).map(([id, step]) => [id, step.startSeconds]));
+const spansOf = (result: StudioDocument): Record<string, [number | null, number | null]> =>
+  Object.fromEntries(
+    Object.entries(result.steps).map(([id, step]) => [id, [step.startSeconds, step.endSeconds]]),
+  );
 
 describe('stepMark', () => {
-  it.each([
-    { name: 'opens an empty timeline', base: document({}), at: 5, starts: { '-2': 0, '-1': 5 } },
+  it.each<{ name: string; base: StudioDocument; at: number; spans: Record<string, number[]> }>([
+    {
+      name: 'opens an empty timeline',
+      base: document({}),
+      at: 5,
+      spans: { '-2': [0, 5], '-1': [5, 40] },
+    },
+    {
+      name: 'covers all music from its start',
+      base: document({}),
+      at: 0,
+      spans: { '-1': [0, 40] },
+    },
     {
       name: 'splits a step',
       base: threeSteps,
       at: 12,
-      starts: { 1: 0, 2: 8, 3: 16, '-1': 12 },
+      spans: { 1: [0, 8], 2: [8, 12], 3: [16, 40], '-1': [12, 16] },
     },
-    { name: 'refuses a border', base: threeSteps, at: 8.005, starts: { 1: 0, 2: 8, 3: 16 } },
-  ])('$name', ({ base, at, starts }) => {
+    {
+      name: 'refuses a border',
+      base: threeSteps,
+      at: 8.005,
+      spans: { 1: [0, 8], 2: [8, 16], 3: [16, 40] },
+    },
+    {
+      name: 'fills a gap up to the next step',
+      base: gapped,
+      at: 10,
+      spans: { 1: [2, 8], 3: [16, 30], '-1': [10, 16] },
+    },
+    {
+      name: 'fills the music after the last step',
+      base: gapped,
+      at: 32,
+      spans: { 1: [2, 8], 3: [16, 30], '-1': [32, 40] },
+    },
+    {
+      name: 'refuses a step shorter than the border tolerance at the music end',
+      base: gapped,
+      at: 39.995,
+      spans: { 1: [2, 8], 3: [16, 30] },
+    },
+    {
+      name: 'refuses a mark right before the end of a step with a gap after it',
+      base: gapped,
+      at: 29.995,
+      spans: { 1: [2, 8], 3: [16, 30] },
+    },
+    {
+      name: 'fills the music before the first step',
+      base: gapped,
+      at: 0.5,
+      spans: { 1: [2, 8], 3: [16, 30], '-1': [0.5, 2] },
+    },
+  ])('$name', ({ base, at, spans }) => {
     const result = changed(base, {
       kind: 'stepMark',
       stepId: -1,
@@ -56,28 +111,96 @@ describe('stepMark', () => {
       lengthSeconds: 40,
     });
 
-    expect(startsOf(result)).toEqual(starts);
+    expect(spansOf(result)).toEqual(spans);
   });
 });
 
 describe('stepMove', () => {
-  it.each([
-    { stepId: 2, at: 16.5, moved: 8 },
-    { stepId: 1, at: 2, moved: 0 },
-    { stepId: 3, at: 39.995, moved: 16 },
-  ])('moves step $stepId to $at only between its neighbours', ({ stepId, at, moved }) => {
-    const result = changed(threeSteps, {
-      kind: 'stepMove',
-      stepId,
-      atSeconds: at,
-      lengthSeconds: 40,
-    });
-
-    expect(result.steps[stepId]?.startSeconds).toBe(moved);
+  it.each<{ name: string; base: StudioDocument; stepId: number; at: number; spans: object }>([
+    {
+      name: 'takes the touching step before along',
+      base: threeSteps,
+      stepId: 2,
+      at: 10,
+      spans: { 1: [0, 10], 2: [10, 16], 3: [16, 40] },
+    },
+    {
+      name: 'stays before its own end',
+      base: threeSteps,
+      stepId: 2,
+      at: 16.5,
+      spans: { 1: [0, 8], 2: [8, 16], 3: [16, 40] },
+    },
+    {
+      name: 'stays after the start of the touching step before',
+      base: threeSteps,
+      stepId: 2,
+      at: 0.005,
+      spans: { 1: [0, 8], 2: [8, 16], 3: [16, 40] },
+    },
+    {
+      name: 'moves the first step away from the music start',
+      base: threeSteps,
+      stepId: 1,
+      at: 2,
+      spans: { 1: [2, 8], 2: [8, 16], 3: [16, 40] },
+    },
+    {
+      name: 'leaves the step before a gap alone',
+      base: gapped,
+      stepId: 3,
+      at: 12,
+      spans: { 1: [2, 8], 3: [12, 30] },
+    },
+    {
+      name: 'does not overlap the step before a gap',
+      base: gapped,
+      stepId: 3,
+      at: 7,
+      spans: { 1: [2, 8], 3: [16, 30] },
+    },
+    {
+      name: 'closes a gap up to the step before',
+      base: gapped,
+      stepId: 3,
+      at: 8,
+      spans: { 1: [2, 8], 3: [8, 30] },
+    },
+  ])('$name', ({ base, stepId, at, spans }) => {
+    expect(spansOf(changed(base, { kind: 'stepMove', stepId, atSeconds: at }))).toEqual(spans);
   });
 });
 
-const part = (name: string, firstStepId: number | null, lastStepId: number | null) => ({
+describe('stepRemove spans', () => {
+  it.each<{ name: string; base: StudioDocument; removed: number; spans: object }>([
+    {
+      name: 'lets the touching step before take over',
+      base: threeSteps,
+      removed: 2,
+      spans: { 1: [0, 16], 3: [16, 40] },
+    },
+    {
+      name: 'leaves music without a step where the first step was',
+      base: threeSteps,
+      removed: 1,
+      spans: { 2: [8, 16], 3: [16, 40] },
+    },
+    {
+      name: 'leaves a gap where no step touches',
+      base: gapped,
+      removed: 3,
+      spans: { 1: [2, 8] },
+    },
+  ])('$name', ({ base, removed, spans }) => {
+    expect(spansOf(changed(base, { kind: 'stepRemove', stepId: removed }))).toEqual(spans);
+  });
+});
+
+const part = (
+  name: string,
+  firstStepId: number | null,
+  lastStepId: number | null,
+): DocumentPart => ({
   name,
   firstStepId,
   lastStepId,
@@ -238,7 +361,7 @@ describe('finalOffset', () => {
 
 describe('mergeKeyOf', () => {
   it.each<{ change: StudioChange; merges: boolean }>([
-    { change: { kind: 'stepMove', stepId: 1, atSeconds: 2, lengthSeconds: 40 }, merges: true },
+    { change: { kind: 'stepMove', stepId: 1, atSeconds: 2 }, merges: true },
     { change: { kind: 'stepRemove', stepId: 1 }, merges: false },
   ])('$change.kind merges: $merges', ({ change, merges }) => {
     expect(mergeKeyOf(change) !== null).toBe(merges);

@@ -7,50 +7,52 @@ public static class ActSteps
     private const double BorderToleranceSeconds = 0.01;
 
     [Pure]
-    public static StepTiling Tile(IEnumerable<StepStart> steps, ActMusic music)
+    public static StepTiling Tile(IEnumerable<StepAnchors> steps, ActMusic music)
     {
-        var located = steps.Select(step => (step.StepId, Place: music.Locate(step.Start))).ToList();
-        var onTimeline = located
-            .SelectMany(step =>
-                step.Place.TimelineSeconds is { } seconds
-                    ? [(step.StepId, Seconds: seconds)]
-                    : Array.Empty<(int StepId, double Seconds)>()
-            )
-            .OrderBy(step => step.Seconds)
-            .ThenBy(step => step.StepId)
+        var located = steps
+            .Select(step => new LocatedStep(
+                step.StepId,
+                music.Locate(step.Start).TimelineSeconds,
+                music.LocateEnd(step.End).TimelineSeconds
+            ))
             .ToList();
+        var spans = SpansOf(located);
+        var placed = spans.Select(span => span.StepId).ToHashSet();
 
         return new StepTiling(
-            SpansOf(onTimeline, music.LengthSeconds),
-            [
-                .. located
-                    .Where(step => step.Place.TimelineSeconds is null)
-                    .Select(step => step.StepId),
-            ]
+            spans,
+            [.. located.Where(step => !placed.Contains(step.StepId)).Select(step => step.StepId)]
         );
     }
 
     [Pure]
-    public static StepMark MarkAt(StepTiling tiling, double timelineSeconds, ActMusic music)
+    public static StepCreation Create(
+        StepTiling tiling,
+        double startSeconds,
+        double endSeconds,
+        ActMusic music
+    )
     {
-        if (
-            !IsInsideTheMusic(timelineSeconds, music)
-            || music.AnchorAt(timelineSeconds) is not { } mark
-        )
-            return StepMark.Refused(StepMarkRefusal.OutsideTheMusic);
+        if (!IsInsideTheMusic(startSeconds, endSeconds, music))
+            return StepCreation.Refused(StepRefusal.OutsideTheMusic);
+        if (endSeconds - startSeconds < BorderToleranceSeconds)
+            return StepCreation.Refused(StepRefusal.TooShort);
+        if (music.AnchorAt(startSeconds) is not { } start)
+            return StepCreation.Refused(StepRefusal.OutsideTheMusic);
+        if (TailOf(tiling, startSeconds, endSeconds) is { } split)
+            return music.EndAnchorAt(startSeconds) is { } newEnd
+                ? StepCreation.Splitting(new StepSplit(split.StepId, newEnd), start)
+                : StepCreation.Refused(StepRefusal.OutsideTheMusic);
+        if (Overlaps(tiling, startSeconds, endSeconds))
+            return StepCreation.Refused(StepRefusal.OverlapsAStep);
 
-        if (tiling.Spans.Count > 0)
-            return LiesOnABorder(tiling, timelineSeconds)
-                ? StepMark.Refused(StepMarkRefusal.OnABorder)
-                : StepMark.Starting(mark);
-
-        return music.AnchorAt(0) is { } opening && timelineSeconds > BorderToleranceSeconds
-            ? StepMark.Starting(opening, mark)
-            : StepMark.Starting(mark);
+        return music.EndAnchorAt(Math.Min(endSeconds, music.LengthSeconds)) is { } end
+            ? StepCreation.Fresh(start, end)
+            : StepCreation.Refused(StepRefusal.OutsideTheMusic);
     }
 
     [Pure]
-    public static StepMark MoveTo(
+    public static StepBorderMove MoveStart(
         StepTiling tiling,
         int stepId,
         double timelineSeconds,
@@ -59,25 +61,90 @@ public static class ActSteps
     {
         var index = IndexOf(tiling, stepId);
         if (index < 0)
-            return StepMark.Refused(StepMarkRefusal.Adrift);
-        if (index == 0)
-            return StepMark.Refused(StepMarkRefusal.FirstStep);
-        if (!LiesBetweenNeighbours(tiling, index, timelineSeconds))
-            return StepMark.Refused(StepMarkRefusal.BeyondANeighbour);
+            return StepBorderMove.Refused(StepRefusal.Adrift);
+        if (timelineSeconds < 0 || timelineSeconds >= music.LengthSeconds)
+            return StepBorderMove.Refused(StepRefusal.OutsideTheMusic);
+        if (tiling.Spans[index].EndSeconds - timelineSeconds < BorderToleranceSeconds)
+            return StepBorderMove.Refused(StepRefusal.TooShort);
+        if (
+            index > 0
+            && timelineSeconds < tiling.Spans[index - 1].EndSeconds - BorderToleranceSeconds
+        )
+            return StepBorderMove.Refused(StepRefusal.OverlapsAStep);
 
         return music.AnchorAt(timelineSeconds) is { } start
-            ? StepMark.Starting(start)
-            : StepMark.Refused(StepMarkRefusal.OutsideTheMusic);
+            ? StepBorderMove.To(start)
+            : StepBorderMove.Refused(StepRefusal.OutsideTheMusic);
     }
 
     [Pure]
-    public static int? StepAt(StepTiling tiling, double timelineSeconds) =>
+    public static StepBorderMove MoveEnd(
+        StepTiling tiling,
+        int stepId,
+        double timelineSeconds,
+        ActMusic music
+    )
+    {
+        var index = IndexOf(tiling, stepId);
+        if (index < 0)
+            return StepBorderMove.Refused(StepRefusal.Adrift);
+        if (timelineSeconds <= 0 || timelineSeconds > music.LengthSeconds + BorderToleranceSeconds)
+            return StepBorderMove.Refused(StepRefusal.OutsideTheMusic);
+        if (timelineSeconds - tiling.Spans[index].StartSeconds < BorderToleranceSeconds)
+            return StepBorderMove.Refused(StepRefusal.TooShort);
+        if (
+            index + 1 < tiling.Spans.Count
+            && timelineSeconds > tiling.Spans[index + 1].StartSeconds + BorderToleranceSeconds
+        )
+            return StepBorderMove.Refused(StepRefusal.OverlapsAStep);
+
+        return music.EndAnchorAt(Math.Min(timelineSeconds, music.LengthSeconds)) is { } end
+            ? StepBorderMove.To(end)
+            : StepBorderMove.Refused(StepRefusal.OutsideTheMusic);
+    }
+
+    [Pure]
+    private static List<StepSpan> SpansOf(IEnumerable<LocatedStep> located)
+    {
+        var spans = new List<StepSpan>();
+        foreach (
+            var played in located
+                .SelectMany(PlayedSpanOf)
+                .OrderBy(span => span.StartSeconds)
+                .ThenBy(span => span.StepId)
+        )
+            if (
+                spans.Count == 0
+                || played.StartSeconds >= spans[^1].EndSeconds - BorderToleranceSeconds
+            )
+                spans.Add(played);
+
+        return spans;
+    }
+
+    [Pure]
+    private static IEnumerable<StepSpan> PlayedSpanOf(LocatedStep step) =>
+        step is { Start: { } start, End: { } end } && end - start >= BorderToleranceSeconds
+            ? [new StepSpan(step.StepId, start, end)]
+            : [];
+
+    [Pure]
+    private static StepSpan? TailOf(StepTiling tiling, double startSeconds, double endSeconds) =>
         tiling
             .Spans.Where(span =>
-                span.StartSeconds <= timelineSeconds && timelineSeconds < span.EndSeconds
+                span.StartSeconds + BorderToleranceSeconds < startSeconds
+                && startSeconds < span.EndSeconds - BorderToleranceSeconds
+                && Math.Abs(span.EndSeconds - endSeconds) < BorderToleranceSeconds
             )
-            .Select(span => (int?)span.StepId)
+            .Select(span => (StepSpan?)span)
             .FirstOrDefault();
+
+    [Pure]
+    private static bool Overlaps(StepTiling tiling, double startSeconds, double endSeconds) =>
+        tiling.Spans.Any(span =>
+            span.StartSeconds < endSeconds - BorderToleranceSeconds
+            && startSeconds < span.EndSeconds - BorderToleranceSeconds
+        );
 
     [Pure]
     private static int IndexOf(StepTiling tiling, int stepId)
@@ -90,37 +157,10 @@ public static class ActSteps
     }
 
     [Pure]
-    private static bool LiesBetweenNeighbours(
-        StepTiling tiling,
-        int index,
-        double timelineSeconds
-    ) =>
-        timelineSeconds > tiling.Spans[index - 1].StartSeconds + BorderToleranceSeconds
-        && timelineSeconds < tiling.Spans[index].EndSeconds - BorderToleranceSeconds;
+    private static bool IsInsideTheMusic(double startSeconds, double endSeconds, ActMusic music) =>
+        startSeconds >= 0
+        && startSeconds < music.LengthSeconds
+        && endSeconds <= music.LengthSeconds + BorderToleranceSeconds;
 
-    [Pure]
-    private static List<StepSpan> SpansOf(
-        IReadOnlyList<(int StepId, double Seconds)> ordered,
-        double lengthSeconds
-    ) =>
-        [
-            .. ordered.Select(
-                (step, index) =>
-                    new StepSpan(
-                        step.StepId,
-                        index == 0 ? 0 : step.Seconds,
-                        index + 1 < ordered.Count ? ordered[index + 1].Seconds : lengthSeconds
-                    )
-            ),
-        ];
-
-    [Pure]
-    private static bool IsInsideTheMusic(double timelineSeconds, ActMusic music) =>
-        timelineSeconds >= 0 && timelineSeconds < music.LengthSeconds;
-
-    [Pure]
-    private static bool LiesOnABorder(StepTiling tiling, double timelineSeconds) =>
-        tiling.Spans.Any(span =>
-            Math.Abs(span.StartSeconds - timelineSeconds) < BorderToleranceSeconds
-        );
+    private readonly record struct LocatedStep(int StepId, double? Start, double? End);
 }

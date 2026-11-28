@@ -46,7 +46,10 @@ export const documentOf = (studio: Studio): StudioDocument => ({
     ]),
   ),
   steps: Object.fromEntries(
-    studio.steps.map((step) => [step.stepId, { startSeconds: step.startSeconds, name: step.name }]),
+    studio.steps.map((step) => [
+      step.stepId,
+      { startSeconds: step.startSeconds, endSeconds: step.endSeconds, name: step.name },
+    ]),
   ),
   parts: Object.fromEntries(
     studio.parts.map((part) => [
@@ -92,23 +95,21 @@ export const documentOf = (studio: Studio): StudioDocument => ({
 export interface TimedStep {
   stepId: number;
   startSeconds: number;
+  endSeconds: number;
 }
 
 export const timelineStepsOf = (document: StudioDocument): TimedStep[] =>
   idsOf(document.steps)
     .flatMap((stepId) => {
-      const start = itemOf(document.steps, stepId)?.startSeconds ?? null;
+      const step = itemOf(document.steps, stepId);
+      const start = step?.startSeconds ?? null;
+      const end = step?.endSeconds ?? null;
 
-      return start === null ? [] : [{ stepId, startSeconds: start }];
+      return start === null || end === null
+        ? []
+        : [{ stepId, startSeconds: start, endSeconds: end }];
     })
     .sort((left, right) => left.startSeconds - right.startSeconds || left.stepId - right.stepId);
-
-const OPENING_SECONDS = 0;
-
-export const stepBordersOf = (document: StudioDocument): TimedStep[] =>
-  timelineStepsOf(document).map((step, index) =>
-    index === 0 ? { ...step, startSeconds: OPENING_SECONDS } : step,
-  );
 
 const songsOf = (base: Studio, document: StudioDocument): StudioSong[] =>
   base.songs.flatMap((song) => {
@@ -118,44 +119,62 @@ const songsOf = (base: Studio, document: StudioDocument): StudioSong[] =>
     return settings === null ? [] : [{ ...song, ...settings, position }];
   });
 
-const projectedStepOf = (
-  base: StudioStep | undefined,
-  stepId: number,
-  step: DocumentStep,
-  endSeconds: number | null,
+const MUSIC_END_TOLERANCE_SECONDS = 0.01;
+
+const isOnTheTimeline = (step: DocumentStep): boolean =>
+  step.startSeconds !== null && step.endSeconds !== null;
+
+const placedStepOf = (
+  { stepId, startSeconds, endSeconds }: TimedStep,
+  name: string,
 ): StudioStep => ({
   stepId,
-  name: step.name,
-  startSeconds: step.startSeconds,
+  name,
+  startSeconds,
   endSeconds,
-  placement: step.startSeconds === null ? (base?.placement ?? 'cutAway') : 'onTimeline',
+  placement: 'onTimeline',
+  endPlacement: 'onTimeline',
+});
+
+const beyondTheMusicOf = (
+  { stepId, startSeconds }: TimedStep,
+  name: string,
+  lengthSeconds: number,
+): StudioStep => ({
+  stepId,
+  name,
+  startSeconds: null,
+  endSeconds: null,
+  placement: startSeconds < lengthSeconds ? 'onTimeline' : 'cutAway',
+  endPlacement: 'cutAway',
+});
+
+const unplacedStepOf = (known: StudioStep, step: DocumentStep): StudioStep => ({
+  ...known,
+  name: step.name,
+  startSeconds: null,
+  endSeconds: null,
 });
 
 const stepsOf = (base: Studio, document: StudioDocument, lengthSeconds: number): StudioStep[] => {
-  const timeline = stepBordersOf(document);
-  const placed = timeline.flatMap(({ stepId, startSeconds }, index) => {
-    const step = itemOf(document.steps, stepId);
+  const timeline = timelineStepsOf(document).map((timed) => {
+    const name = itemOf(document.steps, timed.stepId)?.name ?? '';
 
-    return step === null
-      ? []
-      : [
-          projectedStepOf(
-            base.steps.find((known) => known.stepId === stepId),
-            stepId,
-            { ...step, startSeconds },
-            timeline[index + 1]?.startSeconds ?? lengthSeconds,
-          ),
-        ];
+    return timed.endSeconds > lengthSeconds + MUSIC_END_TOLERANCE_SECONDS
+      ? beyondTheMusicOf(timed, name, lengthSeconds)
+      : placedStepOf(timed, name);
   });
   const unplaced = base.steps.flatMap((known) => {
     const step = itemOf(document.steps, known.stepId);
 
-    return step === null || step.startSeconds !== null
-      ? []
-      : [projectedStepOf(known, known.stepId, step, null)];
+    return step === null || isOnTheTimeline(step) ? [] : [unplacedStepOf(known, step)];
   });
 
-  return [...placed, ...unplaced];
+  return [
+    ...timeline.filter((step) => step.startSeconds !== null),
+    ...timeline.filter((step) => step.startSeconds === null),
+    ...unplaced,
+  ];
 };
 
 const isAdrift = (base: Studio, partId: number): boolean =>

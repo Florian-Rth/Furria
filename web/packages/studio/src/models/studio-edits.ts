@@ -1,5 +1,6 @@
 import type { SpotPath, StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
 import type { CountMark } from '@furria/studio/music-timeline';
+import { nearBorder } from '@furria/studio/step-borders';
 import type { StudioStep } from '@furria/studio/studio-schemas';
 
 const MIN_STEP_SECONDS = 0.5;
@@ -58,6 +59,11 @@ export const snappedOf = (marks: readonly CountMark[], seconds: number): number 
   return best;
 };
 
+export const sharesABorder = (before: StudioStep, after: StudioStep): boolean =>
+  before.endSeconds !== null &&
+  after.startSeconds !== null &&
+  nearBorder(before.endSeconds, after.startSeconds);
+
 export const borderMovedOf = (
   steps: readonly StudioStep[],
   beforeStepId: number,
@@ -72,7 +78,8 @@ export const borderMovedOf = (
     before === undefined ||
     after === undefined ||
     before.startSeconds === null ||
-    after.endSeconds === null
+    after.endSeconds === null ||
+    !sharesABorder(before, after)
   ) {
     return {};
   }

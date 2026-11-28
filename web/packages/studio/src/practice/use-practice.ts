@@ -3,6 +3,7 @@ import { partOfStep, partRangeOf, stepRangeOf } from '@furria/studio/music-timel
 import type { LoopKind } from '@furria/studio/practice-controls';
 import { loopKindOf, loopRangeOf } from '@furria/studio/practice-controls';
 import {
+  PRACTICE_GAP,
   PRACTICE_LOAD_FAILED,
   PRACTICE_NO_STEPS,
   PRACTICE_PAUSE,
@@ -12,6 +13,8 @@ import {
 } from '@furria/studio/practice-copy';
 import type { SkipDirection } from '@furria/studio/practice-stepping';
 import {
+  followingStepOf,
+  hasTimedSteps,
   nextRateOf,
   ratePercentOf,
   shownStepOf,
@@ -24,9 +27,11 @@ import { useScreenWakeLock } from '@furria/studio/use-screen-wake-lock';
 import type { StudioPlayback } from '@furria/studio/use-studio-playback';
 
 const NO_STEP_KEY = 'none';
+const GAP_KEY = 'gap';
 
 export interface Practice {
   step: StudioStep | null;
+  following: StudioStep | null;
   stepKey: string;
   stepName: string;
   note: string | null;
@@ -35,6 +40,7 @@ export interface Practice {
   playLabel: string;
   canPlay: boolean;
   canStep: boolean;
+  canLoop: boolean;
   loop: TimelineRange | null;
   loopKind: LoopKind;
   rate: number;
@@ -62,7 +68,15 @@ export const usePractice = (playback: StudioPlayback): Practice => {
     player,
     (seconds) => shownStepOf(steps, seconds)?.stepId ?? null,
   );
+  const followingId = usePlaybackSelection(
+    player,
+    (seconds) => followingStepOf(steps, seconds)?.stepId ?? null,
+  );
   const step = steps.find((candidate) => candidate.stepId === stepId) ?? null;
+  const following = steps.find((candidate) => candidate.stepId === followingId) ?? null;
+  const stepped = hasTimedSteps(steps);
+  const gapName = stepped ? PRACTICE_GAP : PRACTICE_NO_STEPS;
+  const gapKey = stepped ? `${GAP_KEY}-${followingId ?? NO_STEP_KEY}` : NO_STEP_KEY;
   const part = step === null ? null : partOfStep(parts, step.stepId);
   const loopKind = loopKindOf(state.loop, step, parts, steps);
   const percent = ratePercentOf(state.rate);
@@ -97,17 +111,17 @@ export const usePractice = (playback: StudioPlayback): Practice => {
 
   return {
     step,
-    stepKey: step === null ? NO_STEP_KEY : String(step.stepId),
+    following,
+    stepKey: step === null ? gapKey : String(step.stepId),
     stepName:
-      step === null
-        ? PRACTICE_NO_STEPS
-        : shownStepNameOf(step.name, stepNumberOf(steps, step.stepId)),
+      step === null ? gapName : shownStepNameOf(step.name, stepNumberOf(steps, step.stepId)),
     note: state.load === 'failed' ? PRACTICE_LOAD_FAILED : null,
     partName: part?.name ?? null,
     playing: state.playing,
     playLabel: state.playing ? PRACTICE_PAUSE : PRACTICE_PLAY,
     canPlay: state.load === 'ready',
-    canStep: step !== null,
+    canStep: stepped,
+    canLoop: step !== null,
     loop: state.loop,
     loopKind,
     rate: state.rate,

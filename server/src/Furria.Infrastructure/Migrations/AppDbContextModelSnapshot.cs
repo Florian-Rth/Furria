@@ -4857,11 +4857,23 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("act_id");
 
+                    b.Property<double>("EndSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("end_seconds");
+
+                    b.Property<int>("EndSourceMediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("end_source_media_item_id");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)")
                         .HasColumnName("name");
+
+                    b.Property<bool>("NeedsCheck")
+                        .HasColumnType("boolean")
+                        .HasColumnName("needs_check");
 
                     b.Property<double>("StartSeconds")
                         .HasColumnType("double precision")
@@ -4877,6 +4889,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("ActId")
                         .HasDatabaseName("ix_act_step_act_id");
 
+                    b.HasIndex("EndSourceMediaItemId")
+                        .HasDatabaseName("ix_act_step_end_source_media_item_id");
+
                     b.HasIndex("StartSourceMediaItemId")
                         .HasDatabaseName("ix_act_step_start_source_media_item_id");
 
@@ -4886,6 +4901,8 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("act_step", null, t =>
                         {
+                            t.HasCheckConstraint("ck_act_step_end", "end_seconds >= 0");
+
                             t.HasCheckConstraint("ck_act_step_start", "start_seconds >= 0");
                         });
                 });
@@ -8334,6 +8351,13 @@ namespace Furria.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_act_step_act_act_id");
 
+                    b.HasOne("Furria.Core.Media.MediaItem", "EndSource")
+                        .WithMany()
+                        .HasForeignKey("EndSourceMediaItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_step_media_item_end_source_media_item_id");
+
                     b.HasOne("Furria.Core.Media.MediaItem", "StartSource")
                         .WithMany()
                         .HasForeignKey("StartSourceMediaItemId")
@@ -8342,6 +8366,8 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_act_step_media_item_start_source_media_item_id");
 
                     b.Navigation("Act");
+
+                    b.Navigation("EndSource");
 
                     b.Navigation("StartSource");
                 });

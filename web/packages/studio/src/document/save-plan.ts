@@ -1,11 +1,11 @@
+import type { StepSpan } from '../models/step-borders';
+import { STEP_BORDER_TOLERANCE_SECONDS, splitsTheTailOf } from '../models/step-borders';
 import type { Keyframe } from '../models/studio-schemas';
 import type { TimedStep } from './document-projection';
 import { timelineStepsOf } from './document-projection';
 import { sameValue } from './same-value';
-import type { DocumentSong, StudioDocument } from './studio-document';
+import type { DocumentSong, DocumentStep, StudioDocument } from './studio-document';
 import { idsOf, itemOf } from './studio-document';
-
-const OPENING_TOLERANCE_SECONDS = 0.01;
 
 export interface SavedTrack {
   spotId: number;
@@ -34,8 +34,9 @@ export type SaveWrite =
   | { kind: 'spotAssign'; spotId: number; personId: number | null }
   | { kind: 'partRemove'; partId: number }
   | { kind: 'stepRemove'; stepId: number }
-  | { kind: 'stepMove'; stepId: number; atSeconds: number }
-  | { kind: 'stepMark'; stepId: number; openingStepId: number | null; atSeconds: number }
+  | { kind: 'stepStart'; stepId: number; atSeconds: number }
+  | { kind: 'stepEnd'; stepId: number; atSeconds: number }
+  | { kind: 'stepAdd'; stepId: number; startSeconds: number; endSeconds: number }
   | { kind: 'stepName'; stepId: number; name: string }
   | { kind: 'partAdd'; partId: number; firstStepId: number; lastStepId: number; name: string }
   | {
@@ -130,53 +131,172 @@ const spotWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite
   ];
 };
 
-const stepMovesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] => {
-  const moves = keptIdsOf(saved.steps, current.steps).flatMap((stepId) => {
-    const from = itemOf(saved.steps, stepId)?.startSeconds ?? null;
-    const to = itemOf(current.steps, stepId)?.startSeconds ?? null;
+type LeapDirection = 'left' | 'right';
 
-    return from === null || to === null || from === to ? [] : [{ stepId, from, to }];
-  });
-  const later = moves
-    .filter((move) => move.to > move.from)
-    .sort((left, right) => right.to - left.to);
-  const earlier = moves
-    .filter((move) => move.to < move.from)
-    .sort((left, right) => left.to - right.to);
+interface StepLeap {
+  direction: LeapDirection;
+  at: number;
+  writes: SaveWrite[];
+}
 
-  return [...later, ...earlier].map(({ stepId, to }) => ({
-    kind: 'stepMove',
-    stepId,
-    atSeconds: to,
-  }));
+interface StepSpanWrites {
+  shrinks: SaveWrite[];
+  grows: SaveWrite[];
+  leap: StepLeap | null;
+}
+
+interface KeptStepWrites {
+  stepId: number;
+  writes: StepSpanWrites;
+}
+
+interface SplitPlan {
+  splits: TimedStep[];
+  ownerEnds: ReadonlyMap<number, number>;
+}
+
+const NO_SPAN_WRITES: StepSpanWrites = { shrinks: [], grows: [], leap: null };
+
+const spanOf = (step: DocumentStep | null): StepSpan | null =>
+  step === null || step.startSeconds === null || step.endSeconds === null
+    ? null
+    : { start: step.startSeconds, end: step.endSeconds };
+
+const timedSpanOf = (step: TimedStep): StepSpan => ({
+  start: step.startSeconds,
+  end: step.endSeconds,
+});
+
+const stepAddOf = (step: TimedStep): SaveWrite => ({
+  kind: 'stepAdd',
+  stepId: step.stepId,
+  startSeconds: step.startSeconds,
+  endSeconds: step.endSeconds,
+});
+
+const endsBeforeTheSplit = (after: StepSpan | null, added: StepSpan): boolean =>
+  after !== null &&
+  after.start < added.start - STEP_BORDER_TOLERANCE_SECONDS &&
+  after.end <= added.start + STEP_BORDER_TOLERANCE_SECONDS;
+
+const splitOwnerOf = (
+  owners: ReadonlyMap<number, StepSpan>,
+  current: StudioDocument,
+  added: StepSpan,
+): number | null => {
+  for (const [stepId, owner] of owners) {
+    if (
+      splitsTheTailOf(owner, added) &&
+      endsBeforeTheSplit(spanOf(itemOf(current.steps, stepId)), added)
+    ) {
+      return stepId;
+    }
+  }
+
+  return null;
 };
 
-const stepMarksOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] => {
+const splitPlanOf = (
+  kept: ReadonlyMap<number, StepSpan>,
+  current: StudioDocument,
+  added: readonly TimedStep[],
+): SplitPlan => {
+  const owners = new Map(kept);
+  const ownerEnds = new Map<number, number>();
+  const splits: TimedStep[] = [];
+
+  for (const step of [...added].sort((left, right) => right.startSeconds - left.startSeconds)) {
+    const ownerId = splitOwnerOf(owners, current, timedSpanOf(step));
+    const owner = ownerId === null ? undefined : owners.get(ownerId);
+    if (ownerId !== null && owner !== undefined) {
+      owners.set(ownerId, { ...owner, end: step.startSeconds });
+      ownerEnds.set(ownerId, step.startSeconds);
+      splits.push(step);
+    }
+  }
+
+  return { splits, ownerEnds };
+};
+
+const spanWritesOf = (stepId: number, from: StepSpan, to: StepSpan): StepSpanWrites => {
+  const start: SaveWrite = { kind: 'stepStart', stepId, atSeconds: to.start };
+  const end: SaveWrite = { kind: 'stepEnd', stepId, atSeconds: to.end };
+  if (to.end <= from.start) {
+    return {
+      shrinks: [],
+      grows: [],
+      leap: { direction: 'left', at: to.start, writes: [start, end] },
+    };
+  }
+  if (to.start >= from.end) {
+    return {
+      shrinks: [],
+      grows: [],
+      leap: { direction: 'right', at: to.start, writes: [end, start] },
+    };
+  }
+
+  return {
+    shrinks: [...(to.start > from.start ? [start] : []), ...(to.end < from.end ? [end] : [])],
+    grows: [...(to.start < from.start ? [start] : []), ...(to.end > from.end ? [end] : [])],
+    leap: null,
+  };
+};
+
+const leapWritesOf = (kept: readonly KeptStepWrites[], direction: LeapDirection): SaveWrite[] =>
+  kept
+    .flatMap(({ writes }) => (writes.leap?.direction === direction ? [writes.leap] : []))
+    .sort((left, right) => (direction === 'left' ? left.at - right.at : right.at - left.at))
+    .flatMap((leap) => leap.writes);
+
+const orderedSpanWritesOf = (
+  kept: readonly KeptStepWrites[],
+  plan: SplitPlan,
+  creates: readonly TimedStep[],
+): SaveWrite[] => {
+  const borderShrinksOf = (afterSplits: boolean): SaveWrite[] =>
+    kept.flatMap(({ stepId, writes }) =>
+      writes.shrinks.filter(
+        (write) => (write.kind === 'stepEnd' && plan.ownerEnds.has(stepId)) === afterSplits,
+      ),
+    );
+
+  return [
+    ...borderShrinksOf(false),
+    ...plan.splits.map(stepAddOf),
+    ...borderShrinksOf(true),
+    ...leapWritesOf(kept, 'left'),
+    ...leapWritesOf(kept, 'right'),
+    ...creates.map(stepAddOf),
+    ...kept.flatMap(({ writes }) => writes.grows),
+  ];
+};
+
+const stepSpanWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] => {
   const added = timelineStepsOf(current).filter(
     (step) => itemOf(saved.steps, step.stepId) === null,
   );
-  const [first, second, ...rest] = added;
-  if (first === undefined) {
-    return [];
-  }
+  const keptSpans = new Map(
+    keptIdsOf(saved.steps, current.steps).flatMap((stepId): [number, StepSpan][] => {
+      const span = spanOf(itemOf(saved.steps, stepId));
 
-  const opensTheTimeline =
-    timelineStepsOf(saved).length === 0 &&
-    first.startSeconds <= OPENING_TOLERANCE_SECONDS &&
-    second !== undefined;
-  const marks: (TimedStep & { openingStepId: number | null })[] = opensTheTimeline
-    ? [
-        { ...second, openingStepId: first.stepId },
-        ...rest.map((step) => ({ ...step, openingStepId: null })),
-      ]
-    : added.map((step) => ({ ...step, openingStepId: null }));
+      return span === null ? [] : [[stepId, span]];
+    }),
+  );
+  const plan = splitPlanOf(keptSpans, current, added);
+  const kept = [...keptSpans].map(([stepId, span]): KeptStepWrites => {
+    const to = spanOf(itemOf(current.steps, stepId));
+    const from = { start: span.start, end: plan.ownerEnds.get(stepId) ?? span.end };
 
-  return marks.map((step) => ({
-    kind: 'stepMark',
-    stepId: step.stepId,
-    openingStepId: step.openingStepId,
-    atSeconds: step.startSeconds,
-  }));
+    return { stepId, writes: to === null ? NO_SPAN_WRITES : spanWritesOf(stepId, from, to) };
+  });
+  const splitIds = new Set(plan.splits.map((step) => step.stepId));
+
+  return orderedSpanWritesOf(
+    kept,
+    plan,
+    added.filter((step) => !splitIds.has(step.stepId)),
+  );
 };
 
 const stepNamesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] =>
@@ -310,8 +430,7 @@ export const savePlanOf = (saved: StudioDocument, current: StudioDocument): Save
   ...removedIdsOf(saved.steps, current.steps).map(
     (stepId): SaveWrite => ({ kind: 'stepRemove', stepId }),
   ),
-  ...stepMovesOf(saved, current),
-  ...stepMarksOf(saved, current),
+  ...stepSpanWritesOf(saved, current),
   ...stepNamesOf(saved, current),
   ...orderedPartWritesOf(saved, current),
   ...videoWritesOf(saved, current),

@@ -18,9 +18,9 @@ const document = (patch: Partial<StudioDocument>): StudioDocument => ({
   songOrder: [],
   songs: {},
   steps: {
-    1: { startSeconds: 0, name: 'Auftakt' },
-    2: { startSeconds: 8, name: '' },
-    3: { startSeconds: 16, name: '' },
+    1: { startSeconds: 0, endSeconds: 8, name: 'Auftakt' },
+    2: { startSeconds: 8, endSeconds: 16, name: '' },
+    3: { startSeconds: 16, endSeconds: 40, name: '' },
   },
   parts: {},
   spotOrder: [],
@@ -35,7 +35,6 @@ const move = (atSeconds: number): StudioChange => ({
   kind: 'stepMove',
   stepId: 2,
   atSeconds,
-  lengthSeconds: 40,
 });
 
 const applied = (
@@ -112,18 +111,18 @@ describe('rebased', () => {
     );
     const theirs = document({
       steps: {
-        1: { startSeconds: 0, name: 'Auftakt' },
-        2: { startSeconds: 8, name: 'Ihr Name' },
-        3: { startSeconds: 16, name: 'Ihr' },
+        1: { startSeconds: 0, endSeconds: 8, name: 'Auftakt' },
+        2: { startSeconds: 8, endSeconds: 16, name: 'Ihr Name' },
+        3: { startSeconds: 16, endSeconds: 40, name: 'Ihr' },
       },
     });
 
     const result = rebased(mine, theirs, 'replayPending');
 
     expect(result.state.document.steps).toEqual({
-      1: { startSeconds: 0, name: 'Auftakt' },
-      2: { startSeconds: 9, name: 'Ihr Name' },
-      3: { startSeconds: 16, name: 'Mein' },
+      1: { startSeconds: 0, endSeconds: 9, name: 'Auftakt' },
+      2: { startSeconds: 9, endSeconds: 16, name: 'Ihr Name' },
+      3: { startSeconds: 16, endSeconds: 40, name: 'Mein' },
     });
   });
 
@@ -138,8 +137,8 @@ describe('rebased', () => {
     );
     const withoutStepThree = document({
       steps: {
-        1: { startSeconds: 0, name: 'Auftakt' },
-        2: { startSeconds: 8, name: '' },
+        1: { startSeconds: 0, endSeconds: 8, name: 'Auftakt' },
+        2: { startSeconds: 8, endSeconds: 16, name: '' },
       },
     });
 

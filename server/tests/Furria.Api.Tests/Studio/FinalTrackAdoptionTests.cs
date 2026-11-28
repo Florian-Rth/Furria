@@ -46,6 +46,14 @@ public sealed class FinalTrackAdoptionTests
         Assert.Equal(expectedSeconds, rewritten.Seconds, 9);
     }
 
+    [Fact]
+    public void Should_EndAtTheEndOfTheFinalFile_When_AnEndMapsPastIt()
+    {
+        var rewritten = Adoption.RewrittenEnd(new MusicAnchor(Finale, 70));
+
+        Assert.Equal(new MusicAnchor(FinalFile, 120), rewritten);
+    }
+
     [Theory]
     [InlineData(20, 20)]
     [InlineData(30, 80)]

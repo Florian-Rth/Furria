@@ -31,6 +31,15 @@ public sealed class FinalTrackAdoption
             : anchor;
 
     [Pure]
+    public MusicAnchor RewrittenEnd(MusicAnchor anchor) =>
+        EndAlignmentOf(anchor) is { } alignment
+            ? new MusicAnchor(
+                _finalMediaItemId,
+                Math.Clamp(alignment.Placement.FinalSecondsOf(anchor.Seconds), 0, _lengthSeconds)
+            )
+            : anchor;
+
+    [Pure]
     public VideoAnchor Rewritten(VideoAnchor anchor)
     {
         if (FinalSecondsOf(anchor.Music) is not { } seconds)
@@ -68,6 +77,12 @@ public sealed class FinalTrackAdoption
         && seconds <= _lengthSeconds
             ? seconds
             : null;
+
+    [Pure]
+    private SourceAlignment? EndAlignmentOf(MusicAnchor anchor) =>
+        _workingMix.PieceEnding(anchor) is { } piece
+            ? SourceAlignments.OfPiece(_alignments, piece)
+            : SourceAlignments.Near(_alignments, anchor);
 
     [Pure]
     private SourceAlignment? AlignmentOf(MusicAnchor anchor) =>

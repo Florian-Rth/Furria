@@ -956,6 +956,29 @@ public sealed class ApiTestFixture : IAsyncLifetime
         );
     }
 
+    public async Task<int> MarkStepOnOldSchemaDirectlyAsync(
+        int actId,
+        int startSourceMediaItemId,
+        double startSeconds,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var inserted = await db
+            .Database.SqlQuery<int>(
+                $"""
+                INSERT INTO act_step (act_id, start_source_media_item_id, start_seconds, name)
+                VALUES ({actId}, {startSourceMediaItemId}, {startSeconds}, '')
+                RETURNING id AS "Value"
+                """
+            )
+            .ToListAsync(ct);
+
+        return inserted.Single();
+    }
+
     public async Task SeatAndEntrustDirectlyAsync(
         int actId,
         int spotId,

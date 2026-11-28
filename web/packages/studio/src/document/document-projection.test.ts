@@ -26,6 +26,7 @@ const step = (stepId: number, startSeconds: number, endSeconds: number) => ({
   startSeconds,
   endSeconds,
   placement: 'onTimeline' as const,
+  endPlacement: 'onTimeline' as const,
 });
 
 const base: Studio = {
@@ -115,14 +116,18 @@ describe('studioOf', () => {
     expect([
       studio.music.lengthSeconds,
       studio.songs.map((known) => [known.songId, known.position]),
-      studio.steps.at(-1)?.endSeconds,
+      studio.steps.map((known) => [known.stepId, known.endSeconds, known.endPlacement]),
     ]).toEqual([
       20,
       [
         [1, 1],
         [2, 0],
       ],
-      20,
+      [
+        [11, 8, 'onTimeline'],
+        [12, 16, 'onTimeline'],
+        [13, null, 'cutAway'],
+      ],
     ]);
   });
 });

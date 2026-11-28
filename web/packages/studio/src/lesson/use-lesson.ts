@@ -16,7 +16,6 @@ import type { LessonPicturePlan } from '@furria/studio/lesson-picture';
 import { lessonPictureOf } from '@furria/studio/lesson-picture';
 import type { LessonScreen } from '@furria/studio/lesson-screen';
 import { stepRangeOf } from '@furria/studio/music-timeline';
-import { nextStepOf } from '@furria/studio/next-step';
 import { playerKeyActionsOf } from '@furria/studio/practice-key-actions';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
 import type { TimelineRows } from '@furria/studio/timeline-rows';
@@ -91,9 +90,13 @@ export const useLesson = (screen: LessonScreen): Lesson => {
   const { step } = practice;
   const number = step === null ? 0 : stepNumberOf(playback.steps, step.stepId);
   const plan = lessonPictureOf(video.hero, swapped);
-  const following = nextStepOf(playback.steps, step?.stepId ?? null);
+  const following = practice.following;
+  const followingNumber =
+    following === null ? null : stepNumberOf(playback.steps, following.stepId);
   const nextName =
-    following === null ? null : shownStepNameOf(following.step.name, following.number);
+    following === null || followingNumber === null
+      ? null
+      : shownStepNameOf(following.name, followingNumber);
 
   return {
     screen,
@@ -107,12 +110,12 @@ export const useLesson = (screen: LessonScreen): Lesson => {
     },
     counts: stepCountsOf(playback.countMarks, step === null ? null : stepRangeOf(step)),
     next: {
-      number: following?.number ?? null,
+      number: followingNumber,
       name: nextName ?? LESSON_LAST,
       label: nextLabelOf(nextName),
       jump: () => {
         if (following !== null) {
-          practice.jumpTo(following.step.stepId);
+          practice.jumpTo(following.stepId);
         }
       },
     },

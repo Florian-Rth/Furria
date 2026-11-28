@@ -22,7 +22,7 @@ public sealed class PutActSongTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CutAwayTheStep_When_ItsMusicFallsIntoTheGapBetweenTwoPieces()
+    public async Task Should_CutAwayTheSteps_When_AnEndOfTheirsFallsIntoTheGapBetweenTwoPieces()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
@@ -31,18 +31,21 @@ public sealed class PutActSongTests : IClassFixture<ApiTestFixture>
         var march = await UploadSongAsync(admin, actId, ct);
         await _fixture.RenderSongDirectlyAsync(march, 180, ct);
         var songId = await AddSongAsync(admin, actId, march);
-        await MarkedAsync(admin, actId, 30, 70);
+        await StepsBetweenAsync(admin, actId, 30, 70);
 
         await PutAsync(admin, actId, songId, Cut([(0, 20), (50, 180)], null, null));
 
         var steps = (await StudioOfAsync(admin, actId)).Studio!.Steps;
         Assert.Equal(
-            [(0.0, 40.0), (40.0, 150.0)],
-            steps
-                .Where(step => step.Placement == AnchorPlacement.OnTimeline)
-                .Select(step => (step.StartSeconds!.Value, step.EndSeconds!.Value))
+            [
+                ((double?)40, (double?)150, AnchorPlacement.OnTimeline, AnchorPlacement.OnTimeline),
+                (null, null, AnchorPlacement.OnTimeline, AnchorPlacement.CutAway),
+                (null, null, AnchorPlacement.CutAway, AnchorPlacement.OnTimeline),
+            ],
+            steps.Select(step =>
+                (step.StartSeconds, step.EndSeconds, step.Placement, step.EndPlacement)
+            )
         );
-        Assert.Equal(AnchorPlacement.CutAway, steps[^1].Placement);
     }
 
     [Fact]

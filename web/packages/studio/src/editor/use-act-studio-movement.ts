@@ -101,10 +101,11 @@ export const useActStudioMovement = (
   { preview, commit, drop }: TrackCommit,
 ): ActStudioMovement => {
   const { playback, practice, mode } = screen;
-  const { player, paths, stage, countMarks, controls, length } = playback;
+  const { player, paths, stage, countMarks, controls, length, steps } = playback;
   const grabbed = useRef<Grab | null>(null);
   const bending = useRef<Bend | null>(null);
   const step = practice.step;
+  const inAGap = step === null && steps.length > 0;
   const span: TimeSpan = { start: step?.startSeconds ?? 0, end: step?.endSeconds ?? length };
   const chosen = paths.filter((path) => selected.includes(path.spotId));
   const code = usePlaybackSelection(player, (now) =>
@@ -132,6 +133,9 @@ export const useActStudioMovement = (
   const changed = (
     change: (keyframes: readonly TimedKeyframe[], entry: MoveAt) => readonly TimedKeyframe[] | null,
   ): void => {
+    if (inAGap) {
+      return;
+    }
     const tracks: StudioTracks = {};
     for (const entry of moves) {
       const path = pathOf(entry.spotId);
@@ -202,6 +206,9 @@ export const useActStudioMovement = (
             return [{ spotId: entry.spotId, x: share.x, y: share.y }];
           }),
     grab: (spotIds, share) => {
+      if (inAGap) {
+        return;
+      }
       grabbed.current = {
         spotIds,
         start: share,
@@ -240,7 +247,7 @@ export const useActStudioMovement = (
     bendPress: (spotId) => {
       const entry = moves.find((candidate) => candidate.spotId === spotId);
       const path = pathOf(spotId);
-      if (entry?.move === null || entry === undefined || path === null) {
+      if (inAGap || entry?.move === null || entry === undefined || path === null) {
         return false;
       }
       if (player.state().playing) {

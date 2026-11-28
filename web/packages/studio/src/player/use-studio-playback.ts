@@ -4,6 +4,7 @@ import type { MixPlayer, MixPlayerState } from '@furria/studio/mix-player';
 import type { CountMark, MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
 import {
   countMarksOf,
+  isStepOnTimeline,
   musicLengthOf,
   musicSegmentsOf,
   partRangeOf,
@@ -44,9 +45,7 @@ export interface StudioPlayback {
 }
 
 export const timedStepsOf = (steps: readonly StudioStep[]): StudioStep[] =>
-  steps
-    .filter((step) => step.placement === 'onTimeline' && step.startSeconds !== null)
-    .sort((left, right) => (left.startSeconds ?? 0) - (right.startSeconds ?? 0));
+  steps.filter(isStepOnTimeline).sort((left, right) => left.startSeconds - right.startSeconds);
 
 const ownSpotIdOf = (studio: Studio, viewerId: number | null): number | null =>
   viewerId === null

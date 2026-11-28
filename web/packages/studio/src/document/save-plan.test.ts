@@ -24,10 +24,10 @@ const saved: StudioDocument = {
     2: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: null, tempoBpm: null },
   },
   steps: {
-    1: { startSeconds: 0, name: '' },
-    2: { startSeconds: 8, name: '' },
-    3: { startSeconds: 16, name: '' },
-    4: { startSeconds: 24, name: '' },
+    1: { startSeconds: 0, endSeconds: 8, name: '' },
+    2: { startSeconds: 8, endSeconds: 16, name: '' },
+    3: { startSeconds: 16, endSeconds: 24, name: '' },
+    4: { startSeconds: 24, endSeconds: 40, name: '' },
   },
   parts: { 10: { name: 'A', firstStepId: 1, lastStepId: 1, mainVideoId: null } },
   spotOrder: [31, 32],
@@ -49,10 +49,11 @@ const planned = (from: StudioDocument, ...changes: StudioChange[]): string[] =>
     }),
   ).map((write) => {
     switch (write.kind) {
-      case 'stepMove':
-        return `stepMove ${write.stepId}→${write.atSeconds}`;
-      case 'stepMark':
-        return `stepMark ${write.stepId}@${write.atSeconds} opening ${write.openingStepId}`;
+      case 'stepStart':
+      case 'stepEnd':
+        return `${write.kind} ${write.stepId}→${write.atSeconds}`;
+      case 'stepAdd':
+        return `stepAdd ${write.stepId} ${write.startSeconds}–${write.endSeconds}`;
       case 'spotAssign':
         return `spotAssign ${write.spotId}=${write.personId}`;
       case 'tracks':
@@ -63,50 +64,91 @@ const planned = (from: StudioDocument, ...changes: StudioChange[]): string[] =>
   });
 
 describe('savePlanOf', () => {
-  it('sends music first, removals before moves, marks after moves and the choreography last', () => {
+  it('sends music first, removals before step spans and the choreography last', () => {
     expect(
       planned(
         saved,
         { kind: 'tracks', tracks: { 32: [keyframe] } },
         { kind: 'stepMark', stepId: -1, openingStepId: -2, atSeconds: 20, lengthSeconds: 40 },
-        { kind: 'stepMove', stepId: 3, atSeconds: 14, lengthSeconds: 40 },
+        { kind: 'stepMove', stepId: 3, atSeconds: 14 },
         { kind: 'stepRemove', stepId: 2 },
         { kind: 'songOrder', songIds: [2, 1] },
       ),
     ).toEqual([
       'songOrder',
       'stepRemove',
-      'stepMove 3→14',
-      'stepMark -1@20 opening null',
+      'stepAdd -1 20–24',
+      'stepEnd 1→14',
+      'stepStart 3→14',
       'tracks 32',
     ]);
   });
 
-  it('moves later steps from the back and earlier steps from the front', () => {
-    expect(
-      planned(
-        saved,
-        { kind: 'stepMove', stepId: 3, atSeconds: 20, lengthSeconds: 40 },
-        { kind: 'stepMove', stepId: 4, atSeconds: 26, lengthSeconds: 40 },
-      ),
-    ).toEqual(['stepMove 4→26', 'stepMove 3→20']);
-    expect(
-      planned(
-        saved,
-        { kind: 'stepMove', stepId: 3, atSeconds: 12, lengthSeconds: 40 },
-        { kind: 'stepMove', stepId: 2, atSeconds: 4, lengthSeconds: 40 },
-      ),
-    ).toEqual(['stepMove 2→4', 'stepMove 3→12']);
+  it.each<{ name: string; changes: StudioChange[]; writes: string[] }>([
+    {
+      name: 'shrinks before it grows when borders move later',
+      changes: [
+        { kind: 'stepMove', stepId: 3, atSeconds: 20 },
+        { kind: 'stepMove', stepId: 4, atSeconds: 26 },
+      ],
+      writes: ['stepStart 3→20', 'stepStart 4→26', 'stepEnd 2→20', 'stepEnd 3→26'],
+    },
+    {
+      name: 'shrinks before it grows when borders move earlier',
+      changes: [
+        { kind: 'stepMove', stepId: 3, atSeconds: 12 },
+        { kind: 'stepMove', stepId: 2, atSeconds: 4 },
+      ],
+      writes: ['stepEnd 1→4', 'stepEnd 2→12', 'stepStart 2→4', 'stepStart 3→12'],
+    },
+    {
+      name: 'splits one saved step twice, the later split first',
+      changes: [
+        { kind: 'stepMark', stepId: -1, openingStepId: -2, atSeconds: 30, lengthSeconds: 40 },
+        { kind: 'stepMark', stepId: -3, openingStepId: -4, atSeconds: 35, lengthSeconds: 40 },
+      ],
+      writes: ['stepAdd -3 35–40', 'stepAdd -1 30–35'],
+    },
+    {
+      name: 'creates a step in music left without one',
+      changes: [
+        { kind: 'stepRemove', stepId: 1 },
+        { kind: 'stepMark', stepId: -1, openingStepId: -2, atSeconds: 2, lengthSeconds: 40 },
+      ],
+      writes: ['partRemove', 'stepRemove', 'stepAdd -1 2–8'],
+    },
+  ])('$name', ({ changes, writes }) => {
+    expect(planned(saved, ...changes)).toEqual(writes);
   });
 
-  it('lets the first mark on an empty timeline open it', () => {
+  it('moves the leading edge first when a step leaves its old span', () => {
+    const tiled: StudioDocument = {
+      ...saved,
+      steps: {
+        1: { startSeconds: 0, endSeconds: 10, name: '' },
+        2: { startSeconds: 10, endSeconds: 20, name: '' },
+        3: { startSeconds: 20, endSeconds: 30, name: '' },
+      },
+      parts: {},
+    };
+
+    expect(
+      planned(
+        tiled,
+        { kind: 'stepMove', stepId: 2, atSeconds: 5 },
+        { kind: 'stepMove', stepId: 3, atSeconds: 8 },
+      ),
+    ).toEqual(['stepEnd 1→5', 'stepStart 2→5', 'stepEnd 2→8', 'stepStart 3→8']);
+  });
+
+  it('opens an empty timeline with one create per step', () => {
     expect(
       planned(
         empty,
         { kind: 'stepMark', stepId: -1, openingStepId: -2, atSeconds: 8, lengthSeconds: 40 },
         { kind: 'stepMark', stepId: -3, openingStepId: -4, atSeconds: 16, lengthSeconds: 40 },
       ),
-    ).toEqual(['stepMark -1@8 opening -2', 'stepMark -3@16 opening null']);
+    ).toEqual(['stepAdd -2 0–8', 'stepAdd -1 8–16', 'stepAdd -3 16–40']);
   });
 
   it('shrinks parts before others grow into the freed steps', () => {

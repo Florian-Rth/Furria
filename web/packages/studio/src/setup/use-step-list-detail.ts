@@ -129,11 +129,11 @@ export const useStepListDetail = (
           STEP_LIST_MERGE,
           'shorter',
           () => {
-            if (next !== undefined) {
+            if (next !== undefined && stretchable) {
               work.change({ kind: 'stepRemove', stepId: next.stepId });
             }
           },
-          { disabled: next === undefined },
+          { disabled: next === undefined || !stretchable },
         ),
       ],
       partTools: own.actions,

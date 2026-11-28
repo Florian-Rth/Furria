@@ -1,3 +1,4 @@
+import { isStepOnTimeline } from '@furria/studio/music-timeline';
 import type { Studio } from '@furria/studio/studio-schemas';
 
 export type SetupKey = 'music' | 'steps' | 'spots' | 'formation' | 'video' | 'final';
@@ -64,9 +65,7 @@ const factsOf = (studio: Studio): SetupFacts => {
 
   return {
     songs: studio.songs.filter(isReady).length,
-    timedSteps: studio.steps.filter(
-      (step) => step.placement === 'onTimeline' && step.startSeconds !== null,
-    ).length,
+    timedSteps: studio.steps.filter(isStepOnTimeline).length,
     spots: studio.spots.length,
     openSpots: studio.spots.filter((spot) => spot.person === null).length,
     placedSpots: studio.spots.filter((spot) => placed.has(spot.spotId)).length,

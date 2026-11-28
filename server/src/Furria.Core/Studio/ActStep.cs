@@ -15,9 +15,17 @@ public sealed class ActStep
 
     public double StartSeconds { get; set; }
 
+    public int EndSourceMediaItemId { get; set; }
+
+    public double EndSeconds { get; set; }
+
+    public bool NeedsCheck { get; set; }
+
     public string Name { get; set; } = "";
 
     public Act? Act { get; set; }
 
     public MediaItem? StartSource { get; set; }
+
+    public MediaItem? EndSource { get; set; }
 }

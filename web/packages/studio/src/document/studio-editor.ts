@@ -186,7 +186,7 @@ export const createStudioEditor = <TStudio extends Studio>(
   const recorded = (write: SaveWrite, outcome: SaveOutcome, target: StudioDocument): void => {
     session = {
       ...session,
-      ids: idsLearnedFrom(write, outcome, session.ids).ids,
+      ids: idsLearnedFrom(write, outcome, session.ids),
       saved: savedAfter(session.saved, target, write),
       base:
         outcome.kind === 'choreographySaved'
@@ -214,11 +214,7 @@ export const createStudioEditor = <TStudio extends Studio>(
         return { kind: 'rejected' };
       }
 
-      const strays = idsLearnedFrom(write, outcome, session.ids).strayStepIds;
       recorded(write, outcome, target);
-      for (const stepId of strays) {
-        await port.save({ kind: 'stepRemove', stepId });
-      }
     }
 
     return { kind: 'saved' };

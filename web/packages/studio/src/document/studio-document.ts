@@ -8,6 +8,7 @@ export interface DocumentSong {
 
 export interface DocumentStep {
   startSeconds: number | null;
+  endSeconds: number | null;
   name: string;
 }
 

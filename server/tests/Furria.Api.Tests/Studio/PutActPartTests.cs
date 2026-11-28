@@ -35,7 +35,7 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 60, 90);
+        var stepIds = await StepsBetweenAsync(admin, actId, 30, 60, 90);
         await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
         var partId = await AddPartAsync(admin, actId, stepIds[2], stepIds[3], "Ausmarsch");
 
@@ -63,7 +63,7 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 90);
+        var stepIds = await StepsBetweenAsync(admin, actId, 30, 90);
         await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
         var partId = await AddPartAsync(admin, actId, stepIds[2], stepIds[2], "Ausmarsch");
 

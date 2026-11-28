@@ -39,10 +39,7 @@ public sealed class ActStudioReader
             .ActSteps.AsNoTracking()
             .Where(step => step.ActId == actId)
             .ToDictionaryAsync(step => step.Id, ct);
-        var stepTiling = ActSteps.Tile(
-            steps.Values.Select(step => new StepStart(step.Id, AnchorOf(step))),
-            music
-        );
+        var stepTiling = ActSteps.Tile(steps.Values.Select(AnchorsOf), music);
 
         return new ActStudioContent
         {
@@ -187,16 +184,28 @@ public sealed class ActStudioReader
             .. tiling.Spans.Select(span =>
                 StepOf(
                     steps[span.StepId],
-                    span.StartSeconds,
-                    span.EndSeconds,
-                    AnchorPlacement.OnTimeline
+                    AnchorPlace.At(span.StartSeconds),
+                    AnchorPlace.At(span.EndSeconds)
                 )
             ),
             .. tiling
                 .AdriftStepIds.Select(stepId => steps[stepId])
                 .OrderBy(step => step.Id)
-                .Select(step => StepOf(step, null, null, music.Locate(AnchorOf(step)).Placement)),
+                .Select(step => AdriftStepOf(step, music)),
         ];
+
+    [Pure]
+    private static StudioStepDetails AdriftStepOf(ActStep step, ActMusic music)
+    {
+        var anchors = AnchorsOf(step);
+        var details = StepOf(step, music.Locate(anchors.Start), music.LocateEnd(anchors.End));
+
+        return details with
+        {
+            StartSeconds = null,
+            EndSeconds = null,
+        };
+    }
 
     private async Task<IReadOnlyList<StudioPartDetails>> PartsOfAsync(
         int actId,
@@ -364,23 +373,23 @@ public sealed class ActStudioReader
         MusicCut.OfFinalTrack(track.MediaItemId, track.DurationSeconds);
 
     [Pure]
-    private static MusicAnchor AnchorOf(ActStep step) =>
-        new(step.StartSourceMediaItemId, step.StartSeconds);
+    private static StepAnchors AnchorsOf(ActStep step) =>
+        new(
+            step.Id,
+            new MusicAnchor(step.StartSourceMediaItemId, step.StartSeconds),
+            new MusicAnchor(step.EndSourceMediaItemId, step.EndSeconds)
+        );
 
     [Pure]
-    private static StudioStepDetails StepOf(
-        ActStep step,
-        double? startSeconds,
-        double? endSeconds,
-        AnchorPlacement placement
-    ) =>
+    private static StudioStepDetails StepOf(ActStep step, AnchorPlace start, AnchorPlace end) =>
         new()
         {
             StepId = step.Id,
             Name = step.Name,
-            StartSeconds = startSeconds,
-            EndSeconds = endSeconds,
-            Placement = placement,
+            StartSeconds = start.TimelineSeconds,
+            EndSeconds = end.TimelineSeconds,
+            Placement = start.Placement,
+            EndPlacement = end.Placement,
         };
 
     [Pure]

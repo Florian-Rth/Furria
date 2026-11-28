@@ -29,9 +29,9 @@ const saved: StudioDocument = {
     2: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: null, tempoBpm: null },
   },
   steps: {
-    1: { startSeconds: 0, name: '' },
-    2: { startSeconds: 8, name: '' },
-    3: { startSeconds: 16, name: '' },
+    1: { startSeconds: 0, endSeconds: 8, name: '' },
+    2: { startSeconds: 8, endSeconds: 16, name: '' },
+    3: { startSeconds: 16, endSeconds: 40, name: '' },
   },
   parts: { 10: { name: 'A', firstStepId: 2, lastStepId: 2, mainVideoId: null } },
   spotOrder: [31, 32],
@@ -64,45 +64,44 @@ describe('serverWriteOf', () => {
       write: { kind: 'tracks', tracks: [{ spotId: -2, keyframes: [] }] },
       sent: { kind: 'tracks', baseVersion: 4, tracks: [{ spotId: 88, keyframes: [] }] },
     },
-    { write: { kind: 'stepMove', stepId: -9, atSeconds: 3 }, sent: null },
+    { write: { kind: 'stepStart', stepId: -9, atSeconds: 3 }, sent: null },
+    {
+      write: { kind: 'stepEnd', stepId: -1, atSeconds: 9 },
+      sent: { kind: 'stepEnd', stepId: 77, atSeconds: 9 },
+    },
   ])('resolves $write.kind', ({ write, sent }) => {
     expect(serverWriteOf(write, known, 4)).toEqual(sent);
   });
 });
 
 describe('idsLearnedFrom', () => {
-  it.each<{
-    name: string;
-    openingStepId: number | null;
-    created: number[];
-    ids: number[][];
-    strays: number[];
-  }>([
+  it.each<{ name: string; write: SaveWrite; steps: number[][] }>([
     {
-      name: 'a mark that opens the timeline',
-      openingStepId: -2,
-      created: [69, 70],
-      ids: [
-        [-1, 70],
-        [-2, 69],
-      ],
-      strays: [],
+      name: 'the id of a created step',
+      write: { kind: 'stepAdd', stepId: -1, startSeconds: 8, endSeconds: 16 },
+      steps: [[-1, 70]],
     },
-    {
-      name: 'an opening nobody asked for',
-      openingStepId: null,
-      created: [69, 70],
-      ids: [[-1, 70]],
-      strays: [69],
-    },
-  ])('learns $name', ({ openingStepId, created, ids, strays }) => {
-    const learned = idsLearnedFrom(
-      { kind: 'stepMark', stepId: -1, openingStepId, atSeconds: 8 },
-      { kind: 'created', ids: created },
-      NO_IDS,
-    );
+    { name: 'nothing from a rename', write: { kind: 'stepName', stepId: 3, name: 'A' }, steps: [] },
+  ])('learns $name', ({ write, steps }) => {
+    const learned = idsLearnedFrom(write, { kind: 'created', ids: [70] }, NO_IDS);
 
-    expect([[...learned.ids.steps], learned.strayStepIds]).toEqual([ids, strays]);
+    expect([...learned.steps]).toEqual(steps);
+  });
+});
+
+describe('savedAfter a split', () => {
+  it('ends the split step where the created step starts, as the server does', () => {
+    const split = savedAfter(saved, saved, {
+      kind: 'stepAdd',
+      stepId: -1,
+      startSeconds: 30,
+      endSeconds: 40,
+    });
+
+    expect([split.steps[3], split.steps[-1]]).toEqual([
+      { startSeconds: 16, endSeconds: 30, name: '' },
+      { startSeconds: 30, endSeconds: 40, name: '' },
+    ]);
   });
 });
 

@@ -1,7 +1,7 @@
 import type { CountMark } from '@furria/studio/music-timeline';
 import type { TimedStep } from '@furria/studio/setup-progress';
+import { STEP_BORDER_TOLERANCE_SECONDS } from '@furria/studio/step-borders';
 
-const BORDER_SECONDS = 0.01;
 const HALF = 0.5;
 
 export interface ListPart {
@@ -166,13 +166,15 @@ export const splitSecondsOf = (
 ): number | null => {
   const inside = counts.filter(
     (mark) =>
-      mark.seconds > step.start + BORDER_SECONDS && mark.seconds < step.end - BORDER_SECONDS,
+      mark.seconds > step.start + STEP_BORDER_TOLERANCE_SECONDS &&
+      mark.seconds < step.end - STEP_BORDER_TOLERANCE_SECONDS,
   );
   if (inside.length === 0) {
     return null;
   }
   const aim =
-    playhead > step.start + BORDER_SECONDS && playhead < step.end - BORDER_SECONDS
+    playhead > step.start + STEP_BORDER_TOLERANCE_SECONDS &&
+    playhead < step.end - STEP_BORDER_TOLERANCE_SECONDS
       ? playhead
       : step.start + (step.end - step.start) * HALF;
 

@@ -54,7 +54,7 @@ export const LessonBody: FC<LessonBodyProps> = ({ title, tone, screen }) => {
               text={LESSON_LOOP}
               label={loop.label}
               pressed={loop.pressed}
-              disabled={!practice.canStep}
+              disabled={!practice.canLoop}
               onToggle={loop.toggle}
             />
           </KkLesson.Part>

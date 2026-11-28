@@ -1,11 +1,11 @@
 import type { Draft } from 'immer';
+import { nearBorder, STEP_BORDER_TOLERANCE_SECONDS } from '../models/step-borders';
 import type { Keyframe, StudioPerson } from '../models/studio-schemas';
-import { stepBordersOf, timelineStepsOf } from './document-projection';
+import type { TimedStep } from './document-projection';
+import { timelineStepsOf } from './document-projection';
 import { sameValue } from './same-value';
 import type { DocumentSong, StudioDocument } from './studio-document';
 import { idsOf, itemOf } from './studio-document';
-
-const BORDER_TOLERANCE_SECONDS = 0.01;
 
 export type StudioChange =
   | { kind: 'songOrder'; songIds: readonly number[] }
@@ -32,7 +32,7 @@ export type StudioChange =
       atSeconds: number;
       lengthSeconds: number;
     }
-  | { kind: 'stepMove'; stepId: number; atSeconds: number; lengthSeconds: number }
+  | { kind: 'stepMove'; stepId: number; atSeconds: number }
   | { kind: 'stepName'; stepId: number; name: string }
   | { kind: 'stepRemove'; stepId: number }
   | { kind: 'partAdd'; partId: number; firstStepId: number; lastStepId: number; name: string }
@@ -58,53 +58,108 @@ type Edit<TKind extends StudioChange['kind']> = (
   change: Extract<StudioChange, { kind: TKind }>,
 ) => void;
 
-const liesOnABorder = (document: StudioDocument, seconds: number): boolean =>
-  stepBordersOf(document).some(
-    (step) => Math.abs(step.startSeconds - seconds) < BORDER_TOLERANCE_SECONDS,
+const liesOnABorder = (timeline: readonly TimedStep[], seconds: number): boolean =>
+  timeline.some(
+    (step) => nearBorder(step.startSeconds, seconds) || nearBorder(step.endSeconds, seconds),
   );
 
-const insideTheMusic = (seconds: number, lengthSeconds: number): boolean =>
-  seconds >= 0 && seconds < lengthSeconds;
+const holdingStepOf = (timeline: readonly TimedStep[], seconds: number): TimedStep | null =>
+  timeline.find(
+    (step) =>
+      seconds > step.startSeconds + STEP_BORDER_TOLERANCE_SECONDS &&
+      seconds < step.endSeconds - STEP_BORDER_TOLERANCE_SECONDS,
+  ) ?? null;
 
-const stepMarked: Edit<'stepMark'> = (
-  draft,
-  { stepId, openingStepId, atSeconds, lengthSeconds },
-) => {
-  if (
-    !insideTheMusic(atSeconds, lengthSeconds) ||
-    itemOf(draft.steps, stepId) !== null ||
-    liesOnABorder(draft, atSeconds)
-  ) {
+const insideTheMusic = (seconds: number, lengthSeconds: number): boolean =>
+  seconds >= 0 && seconds < lengthSeconds - STEP_BORDER_TOLERANCE_SECONDS;
+
+const withinTheMusicOf = (timeline: readonly TimedStep[], lengthSeconds: number): TimedStep[] =>
+  timeline.filter((step) => step.endSeconds <= lengthSeconds + STEP_BORDER_TOLERANCE_SECONDS);
+
+const touchingBeforeOf = (timeline: readonly TimedStep[], index: number): TimedStep | null => {
+  const before = timeline[index - 1];
+  const after = timeline[index];
+
+  return before !== undefined &&
+    after !== undefined &&
+    nearBorder(before.endSeconds, after.startSeconds)
+    ? before
+    : null;
+};
+
+const stepSplit = (
+  draft: Draft<StudioDocument>,
+  holding: TimedStep,
+  stepId: number,
+  atSeconds: number,
+): void => {
+  const owner = itemOf(draft.steps, holding.stepId);
+  if (owner === null) {
     return;
   }
 
-  if (timelineStepsOf(draft).length === 0 && atSeconds > BORDER_TOLERANCE_SECONDS) {
-    draft.steps[openingStepId] = { startSeconds: 0, name: '' };
-  }
-  draft.steps[stepId] = { startSeconds: atSeconds, name: '' };
-  const order = timelineStepsOf(draft).map((step) => step.stepId);
-  const split = order[order.indexOf(stepId) - 1];
+  draft.steps[stepId] = { startSeconds: atSeconds, endSeconds: holding.endSeconds, name: '' };
+  owner.endSeconds = atSeconds;
   for (const partId of idsOf(draft.parts)) {
     const part = itemOf(draft.parts, partId);
-    if (part !== null && split !== undefined && part.lastStepId === split) {
+    if (part !== null && part.lastStepId === holding.stepId) {
       part.lastStepId = stepId;
     }
   }
 };
 
-const stepMoved: Edit<'stepMove'> = (draft, { stepId, atSeconds, lengthSeconds }) => {
-  const borders = stepBordersOf(draft);
-  const index = borders.findIndex((step) => step.stepId === stepId);
-  const before = borders[index - 1];
-  const after = borders[index + 1];
-  const step = itemOf(draft.steps, stepId);
-  const fits =
-    before !== undefined &&
-    atSeconds > before.startSeconds + BORDER_TOLERANCE_SECONDS &&
-    atSeconds < (after?.startSeconds ?? lengthSeconds) - BORDER_TOLERANCE_SECONDS;
+const stepMarked: Edit<'stepMark'> = (
+  draft,
+  { stepId, openingStepId, atSeconds, lengthSeconds },
+) => {
+  const timeline = withinTheMusicOf(timelineStepsOf(draft), lengthSeconds);
+  if (
+    !insideTheMusic(atSeconds, lengthSeconds) ||
+    itemOf(draft.steps, stepId) !== null ||
+    liesOnABorder(timeline, atSeconds)
+  ) {
+    return;
+  }
 
-  if (step !== null && fits) {
-    step.startSeconds = atSeconds;
+  const holding = holdingStepOf(timeline, atSeconds);
+  if (holding !== null) {
+    stepSplit(draft, holding, stepId, atSeconds);
+    return;
+  }
+
+  if (timeline.length === 0 && atSeconds > STEP_BORDER_TOLERANCE_SECONDS) {
+    draft.steps[openingStepId] = { startSeconds: 0, endSeconds: atSeconds, name: '' };
+  }
+  const following = timeline.find((step) => step.startSeconds > atSeconds);
+  draft.steps[stepId] = {
+    startSeconds: atSeconds,
+    endSeconds: following?.startSeconds ?? lengthSeconds,
+    name: '',
+  };
+};
+
+const stepMoved: Edit<'stepMove'> = (draft, { stepId, atSeconds }) => {
+  const timeline = timelineStepsOf(draft);
+  const index = timeline.findIndex((step) => step.stepId === stepId);
+  const moved = timeline[index];
+  const step = itemOf(draft.steps, stepId);
+  if (moved === undefined || step === null) {
+    return;
+  }
+
+  const touching = touchingBeforeOf(timeline, index);
+  const fitsBefore =
+    touching === null
+      ? atSeconds >= (timeline[index - 1]?.endSeconds ?? 0)
+      : atSeconds > touching.startSeconds + STEP_BORDER_TOLERANCE_SECONDS;
+  if (!fitsBefore || atSeconds >= moved.endSeconds - STEP_BORDER_TOLERANCE_SECONDS) {
+    return;
+  }
+
+  step.startSeconds = atSeconds;
+  const previous = touching === null ? null : itemOf(draft.steps, touching.stepId);
+  if (previous !== null) {
+    previous.endSeconds = atSeconds;
   }
 };
 
@@ -156,7 +211,7 @@ const rangeFits = (
   );
 };
 
-const stepRemoved: Edit<'stepRemove'> = (draft, { stepId }) => {
+export const dropStep = (draft: Draft<StudioDocument>, stepId: number): void => {
   if (itemOf(draft.steps, stepId) === null) {
     return;
   }
@@ -177,6 +232,19 @@ const stepRemoved: Edit<'stepRemove'> = (draft, { stepId }) => {
     }
   }
   delete draft.steps[stepId];
+};
+
+const stepRemoved: Edit<'stepRemove'> = (draft, { stepId }) => {
+  const timeline = timelineStepsOf(draft);
+  const index = timeline.findIndex((step) => step.stepId === stepId);
+  const removed = timeline[index];
+  const touching = index < 0 ? null : touchingBeforeOf(timeline, index);
+  const absorbing = touching === null ? null : itemOf(draft.steps, touching.stepId);
+
+  if (absorbing !== null && removed !== undefined) {
+    absorbing.endSeconds = removed.endSeconds;
+  }
+  dropStep(draft, stepId);
 };
 
 const partAdded: Edit<'partAdd'> = (draft, { partId, firstStepId, lastStepId, name }) => {

@@ -6,6 +6,7 @@ import type { KkKeyListEntry } from '@furria/ui/KkKeyList';
 
 export const PRACTICE_LABEL = 'Üben';
 export const PRACTICE_NO_STEPS = 'Noch keine Schritte';
+export const PRACTICE_GAP = 'Noch ohne Schritt';
 export const PRACTICE_LOAD_FAILED = 'Die Musik lädt gerade nicht. Versuch es gleich noch einmal.';
 export const PRACTICE_STAGE_LABEL = 'Bühne aus deiner Sicht, das Publikum oben';
 export const PRACTICE_FRONT = 'Publikum';

@@ -38,6 +38,9 @@ export const useArrange = (screen: StudioScreen, editor: ActStudioStage): JobArr
   const keyframesOf = (spotId: number): readonly TimedKeyframe[] =>
     paths.find((path) => path.spotId === spotId)?.keyframes ?? [];
   const settle = (moves: ReadonlyMap<number, StagePoint>): void => {
+    if (step === null && steps.length > 0) {
+      return;
+    }
     const tracks: StudioTracks = {};
     for (const [spotId, point] of moves) {
       tracks[spotId] = formationPlacedOf(spotId, keyframesOf(spotId), span, point);

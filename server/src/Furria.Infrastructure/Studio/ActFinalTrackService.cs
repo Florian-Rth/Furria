@@ -224,6 +224,7 @@ public sealed class ActFinalTrackService
     )
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.LockStepsOfActAsync(command.ActId, ct);
         var pending = await PendingTrackAsync(accountId, command.ActId, command.FinalTrackId, ct);
         if (!pending.IsSuccess)
             return Result.Carrying(pending);
@@ -284,11 +285,16 @@ public sealed class ActFinalTrackService
         var steps = await _dbContext.ActSteps.Where(step => step.ActId == actId).ToListAsync(ct);
         foreach (var step in steps)
         {
-            var anchor = adoption.Rewritten(
+            var start = adoption.Rewritten(
                 new MusicAnchor(step.StartSourceMediaItemId, step.StartSeconds)
             );
-            step.StartSourceMediaItemId = anchor.SourceMediaItemId;
-            step.StartSeconds = anchor.Seconds;
+            var end = adoption.RewrittenEnd(
+                new MusicAnchor(step.EndSourceMediaItemId, step.EndSeconds)
+            );
+            step.StartSourceMediaItemId = start.SourceMediaItemId;
+            step.StartSeconds = start.Seconds;
+            step.EndSourceMediaItemId = end.SourceMediaItemId;
+            step.EndSeconds = end.Seconds;
         }
     }
 

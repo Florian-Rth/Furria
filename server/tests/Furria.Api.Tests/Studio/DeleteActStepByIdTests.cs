@@ -31,16 +31,16 @@ public sealed class DeleteActStepByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_GiveTheMusicToThePreviousStep_When_AStepIsRemoved()
+    public async Task Should_LeaveItsMusicWithoutAStep_When_AStepIsRemoved()
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 90);
+        var stepIds = await StepsBetweenAsync(admin, actId, 30, 90);
 
         var response = await DeleteAsync(admin, actId, stepIds[1]);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal([(0, 90), (90, 180)], await StepSpansOfAsync(admin, actId));
+        Assert.Equal([(0, 30), (90, 180)], await StepSpansOfAsync(admin, actId));
     }
 
     private static Task<HttpResponseMessage> DeleteAsync(

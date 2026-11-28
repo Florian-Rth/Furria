@@ -30,7 +30,7 @@ public sealed class PutActStepStart : Endpoint<PutActStepStartRequest>
             return;
         }
 
-        var result = await _stepService.MoveAsync(
+        var result = await _stepService.MoveStartAsync(
             accountId.Value,
             new MoveActStepCommand
             {

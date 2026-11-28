@@ -1,3 +1,5 @@
+import type { TimedStudioStep } from '@furria/studio/music-timeline';
+import { isStepOnTimeline } from '@furria/studio/music-timeline';
 import type { StudioStep } from '@furria/studio/studio-schemas';
 
 const RESTART_GRACE_SECONDS = 1.5;
@@ -6,47 +8,46 @@ const RATE_TOLERANCE = 1e-6;
 
 export type SkipDirection = 'back' | 'forward';
 
-const startOf = (step: StudioStep): number => step.startSeconds ?? 0;
+export const currentStepOf = (
+  steps: readonly StudioStep[],
+  seconds: number,
+): TimedStudioStep | null =>
+  steps
+    .filter(isStepOnTimeline)
+    .find((step) => seconds >= step.startSeconds && seconds < step.endSeconds) ?? null;
 
-const endOf = (step: StudioStep): number => step.endSeconds ?? startOf(step);
+export const shownStepOf = (steps: readonly StudioStep[], seconds: number): StudioStep | null =>
+  currentStepOf(steps, seconds);
 
-const isTimed = (step: StudioStep): boolean =>
-  step.startSeconds !== null && step.endSeconds !== null;
+export const followingStepOf = (
+  steps: readonly StudioStep[],
+  seconds: number,
+): TimedStudioStep | null =>
+  steps.filter(isStepOnTimeline).find((step) => step.startSeconds > seconds) ?? null;
 
-export const currentStepOf = (steps: readonly StudioStep[], seconds: number): StudioStep | null =>
-  steps.find((step) => isTimed(step) && seconds >= startOf(step) && seconds < endOf(step)) ?? null;
+export const hasTimedSteps = (steps: readonly StudioStep[]): boolean =>
+  steps.some(isStepOnTimeline);
 
-export const shownStepOf = (steps: readonly StudioStep[], seconds: number): StudioStep | null => {
-  const timed = steps.filter(isTimed);
-
-  return (
-    currentStepOf(timed, seconds) ??
-    timed.find((step) => startOf(step) > seconds) ??
-    timed.at(-1) ??
-    null
-  );
-};
-
-const previousOf = (timed: readonly StudioStep[], seconds: number): StudioStep | null =>
-  timed.findLast((step) => startOf(step) < seconds) ?? null;
+const previousOf = (timed: readonly TimedStudioStep[], seconds: number): StudioStep | null =>
+  timed.findLast((step) => step.startSeconds < seconds) ?? null;
 
 export const skipTargetOf = (
   steps: readonly StudioStep[],
   seconds: number,
   direction: SkipDirection,
 ): StudioStep | null => {
-  const timed = steps.filter(isTimed);
+  const timed = steps.filter(isStepOnTimeline);
   const current = currentStepOf(timed, seconds);
 
   if (direction === 'forward') {
-    return timed.find((step) => startOf(step) > seconds) ?? null;
+    return followingStepOf(timed, seconds);
   }
 
-  if (current !== null && seconds - startOf(current) > RESTART_GRACE_SECONDS) {
+  if (current !== null && seconds - current.startSeconds > RESTART_GRACE_SECONDS) {
     return current;
   }
 
-  const before = previousOf(timed, current === null ? seconds : startOf(current));
+  const before = previousOf(timed, current === null ? seconds : current.startSeconds);
 
   return before ?? current ?? timed[0] ?? null;
 };

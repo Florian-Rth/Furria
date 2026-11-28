@@ -4,6 +4,8 @@ namespace Furria.Core.Studio;
 
 public sealed class ActMusic
 {
+    private const double BorderToleranceSeconds = 0.01;
+
     private readonly IReadOnlyList<PlacedCut> _placedCuts;
 
     public double LengthSeconds { get; }
@@ -32,6 +34,23 @@ public sealed class ActMusic
     }
 
     [Pure]
+    public AnchorPlace LocateEnd(MusicAnchor anchor)
+    {
+        var ofSource = CutsOf(anchor.SourceMediaItemId);
+        if (ofSource.Count == 0)
+            return AnchorPlace.MusicMissing;
+
+        var placed = PieceEnding(ofSource, anchor.Seconds);
+        return placed is null
+            ? AnchorPlace.CutAway
+            : AnchorPlace.At(placed.TimelineSecondsOf(anchor.Seconds));
+    }
+
+    [Pure]
+    public MusicCut? PieceEnding(MusicAnchor anchor) =>
+        PieceEnding(CutsOf(anchor.SourceMediaItemId), anchor.Seconds)?.Cut;
+
+    [Pure]
     public MusicCut? PieceHolding(MusicAnchor anchor) =>
         PieceHolding(CutsOf(anchor.SourceMediaItemId), anchor.Seconds)?.Cut;
 
@@ -44,6 +63,13 @@ public sealed class ActMusic
 
         return placed?.AnchorAt(timelineSeconds);
     }
+
+    [Pure]
+    public MusicAnchor? EndAnchorAt(double timelineSeconds) =>
+        _placedCuts.FirstOrDefault(candidate => candidate.EndsNear(timelineSeconds))?.EndAnchor
+        ?? _placedCuts
+            .FirstOrDefault(candidate => candidate.EndsIn(timelineSeconds))
+            ?.AnchorAt(timelineSeconds);
 
     [Pure]
     public VideoAnchor? VideoAnchorAt(double videoStartSeconds) =>
@@ -68,6 +94,11 @@ public sealed class ActMusic
     private static PlacedCut? PieceHolding(IReadOnlyList<PlacedCut> ofSource, double seconds) =>
         ofSource.FirstOrDefault(candidate => candidate.HoldsBeforeItsEnd(seconds))
         ?? ofSource.LastOrDefault(candidate => candidate.Holds(seconds));
+
+    [Pure]
+    private static PlacedCut? PieceEnding(IReadOnlyList<PlacedCut> ofSource, double seconds) =>
+        ofSource.FirstOrDefault(candidate => candidate.HoldsAfterItsStart(seconds))
+        ?? ofSource.FirstOrDefault(candidate => candidate.Holds(seconds));
 
     [Pure]
     private static VideoAnchor? VideoAnchorOf(MusicAnchor? music, double videoSeconds) =>
@@ -98,6 +129,8 @@ public sealed class ActMusic
     {
         public double EndsAtSeconds => OffsetSeconds + Cut.LengthSeconds;
 
+        public MusicAnchor EndAnchor => new(Cut.SourceMediaItemId, Cut.EndSeconds);
+
         [Pure]
         public bool Holds(double sourceSeconds) =>
             sourceSeconds >= Cut.StartSeconds && sourceSeconds <= Cut.EndSeconds;
@@ -105,6 +138,19 @@ public sealed class ActMusic
         [Pure]
         public bool HoldsBeforeItsEnd(double sourceSeconds) =>
             sourceSeconds >= Cut.StartSeconds && sourceSeconds < Cut.EndSeconds;
+
+        [Pure]
+        public bool HoldsAfterItsStart(double sourceSeconds) =>
+            sourceSeconds > Cut.StartSeconds && sourceSeconds <= Cut.EndSeconds;
+
+        [Pure]
+        public bool EndsNear(double timelineSeconds) =>
+            Cut.LengthSeconds > 0
+            && Math.Abs(EndsAtSeconds - timelineSeconds) < BorderToleranceSeconds;
+
+        [Pure]
+        public bool EndsIn(double timelineSeconds) =>
+            timelineSeconds > OffsetSeconds && timelineSeconds <= EndsAtSeconds;
 
         [Pure]
         public bool Spans(double timelineSeconds) =>

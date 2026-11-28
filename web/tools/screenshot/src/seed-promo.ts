@@ -36,7 +36,7 @@ import {
   CreatedSessionRecordSchema,
   CreatedSongSchema,
   CreatedSpotSchema,
-  CreatedStepsSchema,
+  CreatedStepSchema,
   EventsSchema,
   HallSchema,
   HallsSchema,
@@ -1685,6 +1685,21 @@ const waitForMusic = async (session: Session, actId: number): Promise<Studio> =>
   throw new Error('the march was not ready in time — is the promo media worker running?');
 };
 
+interface PlacedStep {
+  stepId: number;
+  name: string;
+  startSeconds: number;
+}
+
+const placedStepsOf = (studio: Studio): PlacedStep[] =>
+  studio.steps
+    .flatMap((step) =>
+      step.startSeconds === null || step.endSeconds === null
+        ? []
+        : [{ stepId: step.stepId, name: step.name, startSeconds: step.startSeconds }],
+    )
+    .sort((first, second) => first.startSeconds - second.startSeconds);
+
 const ensureStudio = async (ctx: Context, actId: number): Promise<void> => {
   const trainer = await sessionOf(ctx, TRAINER);
   const march = carnivalMarch();
@@ -1713,18 +1728,20 @@ const ensureStudio = async (ctx: Context, actId: number): Promise<void> => {
   }
   const stepCount = MARCH_STEPS.reduce((count, part) => count + part.names.length, 0);
   const stepSeconds = march.barSeconds * STEP_BARS;
+  const musicSeconds = song.durationSeconds;
   if (studio.steps.length === 0) {
-    for (let step = 1; step < stepCount; step += 1) {
+    for (let step = 0; step < stepCount; step += 1) {
+      const endSeconds = step === stepCount - 1 ? musicSeconds : (step + 1) * stepSeconds;
       await postJson(
         `acts/${actId}/steps`,
         trainer,
-        { atSeconds: step * stepSeconds },
-        CreatedStepsSchema,
+        { startSeconds: step * stepSeconds, endSeconds },
+        CreatedStepSchema,
       );
     }
   }
   studio = await studioOf(trainer, actId);
-  const steps = [...studio.steps].sort((first, second) => first.startSeconds - second.startSeconds);
+  const steps = placedStepsOf(studio);
   const names = MARCH_STEPS.flatMap((part) => part.names);
   for (const [index, step] of steps.entries()) {
     const name = names[index] ?? '';
@@ -1774,7 +1791,7 @@ const ensureSpotsAndChoreography = async (
       await send('PUT', `acts/${actId}/spots/${spot.spotId}`, trainer, { personId });
     }
   }
-  const steps = [...studio.steps].sort((first, second) => first.startSeconds - second.startSeconds);
+  const steps = placedStepsOf(studio);
   const formations = steps.map((_, index) => formationOf(index, spots.length));
   const keyframe = (seconds: number, position: Position): Keyframe => ({
     sourceMediaItemId: mediaItemId,

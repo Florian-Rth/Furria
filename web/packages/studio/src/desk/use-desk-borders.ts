@@ -1,6 +1,6 @@
 import { borderLabelOf, clockOf } from '@furria/studio/desk-copy';
 import { neighbourCountOf } from '@furria/studio/music-timeline';
-import { borderMovedOf } from '@furria/studio/studio-edits';
+import { borderMovedOf, sharesABorder } from '@furria/studio/studio-edits';
 import type { StudioWorkScreen } from '@furria/studio/studio-work-screen';
 import { useGestureRelease } from '@furria/studio/use-gesture-release';
 import { useState } from 'react';
@@ -24,21 +24,26 @@ export interface DeskBorders {
 export const useDeskBorders = (screen: StudioWorkScreen): DeskBorders => {
   const { playback } = screen;
   const work = screen.document;
-  const { steps, length, countMarks } = playback;
+  const { steps, countMarks } = playback;
   const [activeId, setActiveId] = useState<number | null>(null);
   useGestureRelease(activeId !== null, work.endGesture);
 
   const moveTo = (beforeId: number, afterId: number, seconds: number): void => {
     const moved = borderMovedOf(steps, beforeId, seconds, countMarks)[afterId]?.start;
     if (moved !== undefined) {
-      work.change({ kind: 'stepMove', stepId: afterId, atSeconds: moved, lengthSeconds: length });
+      work.change({ kind: 'stepMove', stepId: afterId, atSeconds: moved });
     }
   };
 
   const nudgeAt = (index: number, direction: -1 | 1): void => {
     const before = steps[index];
     const after = steps[index + 1];
-    if (before === undefined || after === undefined || after.startSeconds === null) {
+    if (
+      before === undefined ||
+      after === undefined ||
+      after.startSeconds === null ||
+      !sharesABorder(before, after)
+    ) {
       return;
     }
     const target = neighbourCountOf(countMarks, after.startSeconds, direction);
@@ -50,7 +55,7 @@ export const useDeskBorders = (screen: StudioWorkScreen): DeskBorders => {
 
   const borders = steps.slice(0, -1).flatMap((before, index) => {
     const after = steps[index + 1];
-    if (after === undefined || after.startSeconds === null) {
+    if (after === undefined || after.startSeconds === null || !sharesABorder(before, after)) {
       return [];
     }
     const seconds = after.startSeconds;
@@ -87,7 +92,9 @@ export const useDeskBorders = (screen: StudioWorkScreen): DeskBorders => {
     },
     canStretch: (stepId) => {
       const index = steps.findIndex((step) => step.stepId === stepId);
-      return index >= 0 && index < steps.length - 1;
+      const before = steps[index];
+      const after = steps[index + 1];
+      return before !== undefined && after !== undefined && sharesABorder(before, after);
     },
   };
 };

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using Furria.Application.Results;
 using Furria.Application.Studio;
@@ -12,12 +13,10 @@ public sealed class ActStepService
     private const string UnknownStepMessage = "Diesen Schritt gibt es im Auftritt nicht.";
     private const string OutsideTheMusicMessage =
         "Hier ist keine Musik, auf die ein Schritt passt.";
-    private const string OnABorderMessage = "Hier beginnt schon ein Schritt.";
     private const string AdriftMessage =
         "Die Musik dieses Schritts ist nicht mehr da, er lässt sich nicht verschieben.";
-    private const string FirstStepMessage = "Der erste Schritt beginnt immer mit der Musik.";
-    private const string BeyondANeighbourMessage =
-        "Ein Schritt beginnt zwischen dem Anfang des vorigen und dem Ende des eigenen.";
+    private const string OverlapsAStepMessage = "Hier liegt schon ein Schritt.";
+    private const string TooShortMessage = "Ein Schritt endet erst nach seinem Anfang.";
 
     private readonly AppDbContext _dbContext;
     private readonly ActStudioGate _gate;
@@ -30,67 +29,55 @@ public sealed class ActStepService
         _timelines = timelines;
     }
 
-    public async Task<Result<IReadOnlyList<int>>> MarkAsync(
+    public async Task<Result<int>> CreateAsync(
         int accountId,
-        MarkActStepCommand command,
+        CreateActStepCommand command,
         CancellationToken ct
     )
     {
         var editable = await _gate.EditableStudioAsync(accountId, command.ActId, ct);
         if (!editable.IsSuccess)
-            return Result<IReadOnlyList<int>>.Carrying(editable);
-
-        var timeline = await _timelines.TimelineOfAsync(command.ActId, ct);
-        var mark = ActSteps.MarkAt(timeline.Steps, command.AtSeconds, timeline.Music);
-        if (mark.Refusal is { } refusal)
-            return Result<IReadOnlyList<int>>.Validation(MessageOf(refusal));
+            return Result<int>.Carrying(editable);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        var steps = mark.NewStarts.Select(start => StepAt(command.ActId, start)).ToList();
-        _dbContext.ActSteps.AddRange(steps);
-        await _dbContext.SaveChangesAsync(ct);
-        if (ActSteps.StepAt(timeline.Steps, command.AtSeconds) is { } splitStepId)
-            await KeepSplitHalvesInTheirPartAsync(timeline.Parts, splitStepId, steps[^1].Id, ct);
+        await _dbContext.LockStepsOfActAsync(command.ActId, ct);
+        var timeline = await _timelines.TimelineOfAsync(command.ActId, ct);
+        var creation = ActSteps.Create(
+            timeline.Steps,
+            command.StartSeconds,
+            command.EndSeconds,
+            timeline.Music
+        );
+        if (creation.Refusal is { } refusal)
+            return Result<int>.Validation(MessageOf(refusal));
+
+        var step = creation switch
+        {
+            { Split: { } split, Start: { } start } => await SplitAsync(
+                timeline.Parts,
+                split,
+                start,
+                ct
+            ),
+            { Start: { } start, End: { } end } => await AddedAsync(command.ActId, start, end, ct),
+            _ => throw new UnreachableException(),
+        };
         await transaction.CommitAsync(ct);
 
-        return Result<IReadOnlyList<int>>.Success([.. steps.Select(step => step.Id)]);
+        return Result<int>.Success(step.Id);
     }
 
-    public async Task<Result> MoveAsync(
+    public Task<Result> MoveStartAsync(
         int accountId,
         MoveActStepCommand command,
         CancellationToken ct
-    )
-    {
-        var editable = await _gate.EditableStudioAsync(accountId, command.ActId, ct);
-        if (!editable.IsSuccess)
-            return editable;
-        if (!await IsStepOfAsync(command.ActId, command.StepId, ct))
-            return Result.NotFound(UnknownStepMessage);
+    ) => MoveBorderAsync(accountId, command, ActSteps.MoveStart, StartTo, ct);
 
-        var timeline = await _timelines.TimelineOfAsync(command.ActId, ct);
-        var move = ActSteps.MoveTo(
-            timeline.Steps,
-            command.StepId,
-            command.AtSeconds,
-            timeline.Music
-        );
-        if (move.Refusal is { } refusal)
-            return Result.Validation(MessageOf(refusal));
-
-        var start = move.NewStarts[0];
-        await _dbContext
-            .ActSteps.Where(step => step.Id == command.StepId)
-            .ExecuteUpdateAsync(
-                setters =>
-                    setters
-                        .SetProperty(step => step.StartSourceMediaItemId, start.SourceMediaItemId)
-                        .SetProperty(step => step.StartSeconds, start.Seconds),
-                ct
-            );
-
-        return Result.Success();
-    }
+    public Task<Result> MoveEndAsync(
+        int accountId,
+        MoveActStepCommand command,
+        CancellationToken ct
+    ) => MoveBorderAsync(accountId, command, ActSteps.MoveEnd, EndTo, ct);
 
     public async Task<Result> RenameAsync(
         int accountId,
@@ -123,6 +110,7 @@ public sealed class ActStepService
             return editable;
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.LockStepsOfActAsync(command.ActId, ct);
         var step = await _dbContext.ActSteps.SingleOrDefaultAsync(
             row => row.Id == command.StepId && row.ActId == command.ActId,
             ct
@@ -137,6 +125,74 @@ public sealed class ActStepService
         await transaction.CommitAsync(ct);
 
         return Result.Success();
+    }
+
+    private async Task<Result> MoveBorderAsync(
+        int accountId,
+        MoveActStepCommand command,
+        Func<StepTiling, int, double, ActMusic, StepBorderMove> move,
+        Action<ActStep, MusicAnchor> apply,
+        CancellationToken ct
+    )
+    {
+        var editable = await _gate.EditableStudioAsync(accountId, command.ActId, ct);
+        if (!editable.IsSuccess)
+            return editable;
+
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.LockStepsOfActAsync(command.ActId, ct);
+        var step = await _dbContext.ActSteps.SingleOrDefaultAsync(
+            row => row.Id == command.StepId && row.ActId == command.ActId,
+            ct
+        );
+        if (step is null)
+            return Result.NotFound(UnknownStepMessage);
+
+        var timeline = await _timelines.TimelineOfAsync(command.ActId, ct);
+        var moved = move(timeline.Steps, command.StepId, command.AtSeconds, timeline.Music);
+        if (moved.Refusal is { } refusal)
+            return Result.Validation(MessageOf(refusal));
+
+        apply(step, moved.Anchor ?? throw new UnreachableException());
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+
+        return Result.Success();
+    }
+
+    private async Task<ActStep> AddedAsync(
+        int actId,
+        MusicAnchor start,
+        MusicAnchor end,
+        CancellationToken ct
+    )
+    {
+        var step = StepBetween(actId, start, end);
+        _dbContext.ActSteps.Add(step);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return step;
+    }
+
+    private async Task<ActStep> SplitAsync(
+        PartTiling parts,
+        StepSplit split,
+        MusicAnchor start,
+        CancellationToken ct
+    )
+    {
+        var head = await _dbContext.ActSteps.SingleAsync(step => step.Id == split.StepId, ct);
+        var tail = StepBetween(
+            head.ActId,
+            start,
+            new MusicAnchor(head.EndSourceMediaItemId, head.EndSeconds)
+        );
+        EndTo(head, split.NewEnd);
+        _dbContext.ActSteps.Add(tail);
+        await _dbContext.SaveChangesAsync(ct);
+        await KeepSplitHalvesInTheirPartAsync(parts, split.StepId, tail.Id, ct);
+
+        return tail;
     }
 
     private async Task ShrinkPartsEndingOnAsync(int stepId, PartTiling parts, CancellationToken ct)
@@ -180,33 +236,43 @@ public sealed class ActStepService
         await _dbContext.SaveChangesAsync(ct);
     }
 
-    private Task<bool> IsStepOfAsync(int actId, int stepId, CancellationToken ct) =>
-        _dbContext.ActSteps.AnyAsync(step => step.Id == stepId && step.ActId == actId, ct);
-
     private static void Reach(ActPart part, PartRange range)
     {
         part.FirstStepId = range.FirstStepId;
         part.LastStepId = range.LastStepId;
     }
 
+    private static void StartTo(ActStep step, MusicAnchor start)
+    {
+        step.StartSourceMediaItemId = start.SourceMediaItemId;
+        step.StartSeconds = start.Seconds;
+    }
+
+    private static void EndTo(ActStep step, MusicAnchor end)
+    {
+        step.EndSourceMediaItemId = end.SourceMediaItemId;
+        step.EndSeconds = end.Seconds;
+    }
+
     [Pure]
-    private static ActStep StepAt(int actId, MusicAnchor start) =>
+    private static ActStep StepBetween(int actId, MusicAnchor start, MusicAnchor end) =>
         new()
         {
             ActId = actId,
             StartSourceMediaItemId = start.SourceMediaItemId,
             StartSeconds = start.Seconds,
+            EndSourceMediaItemId = end.SourceMediaItemId,
+            EndSeconds = end.Seconds,
         };
 
     [Pure]
-    private static string MessageOf(StepMarkRefusal refusal) =>
+    private static string MessageOf(StepRefusal refusal) =>
         refusal switch
         {
-            StepMarkRefusal.OnABorder => OnABorderMessage,
-            StepMarkRefusal.Adrift => AdriftMessage,
-            StepMarkRefusal.FirstStep => FirstStepMessage,
-            StepMarkRefusal.BeyondANeighbour => BeyondANeighbourMessage,
-            StepMarkRefusal.OutsideTheMusic => OutsideTheMusicMessage,
+            StepRefusal.OutsideTheMusic => OutsideTheMusicMessage,
+            StepRefusal.Adrift => AdriftMessage,
+            StepRefusal.OverlapsAStep => OverlapsAStepMessage,
+            StepRefusal.TooShort => TooShortMessage,
             _ => throw new ArgumentOutOfRangeException(nameof(refusal), refusal, null),
         };
 }

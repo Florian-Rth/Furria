@@ -1,5 +1,5 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
-import { timelineSecondsOf } from '@furria/studio/music-timeline';
+import { isStepOnTimeline, timelineSecondsOf } from '@furria/studio/music-timeline';
 import type { SongPiece, Studio, StudioSong } from '@furria/studio/studio-schemas';
 
 const MIN_TEMPO_BPM = 40;
@@ -144,7 +144,7 @@ export const outsideMusicOf = (
   studio: Studio,
   segments: readonly MusicSegment[],
 ): OutsideMusic => ({
-  steps: studio.steps.filter((step) => step.placement !== 'onTimeline').length,
+  steps: studio.steps.filter((step) => !isStepOnTimeline(step)).length,
   videos: studio.videos.filter(
     (video) => video.placement === 'cutAway' || video.placement === 'musicMissing',
   ).length,

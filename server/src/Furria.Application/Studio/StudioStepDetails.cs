@@ -13,4 +13,6 @@ public sealed record StudioStepDetails
     public required double? EndSeconds { get; init; }
 
     public required AnchorPlacement Placement { get; init; }
+
+    public required AnchorPlacement EndPlacement { get; init; }
 }

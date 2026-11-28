@@ -1,5 +1,7 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import type { TimelineRange } from '@furria/studio/music-timeline';
+import { isStepOnTimeline } from '@furria/studio/music-timeline';
+import type { StudioStep } from '@furria/studio/studio-schemas';
 
 const BORDER_SECONDS = 0.02;
 
@@ -10,19 +12,13 @@ export interface TimedStep {
   end: number;
 }
 
-export interface PlacedStep {
-  stepId: number;
-  name: string;
-  startSeconds: number | null;
-  endSeconds: number | null;
-}
-
-export const timedStepsOf = (steps: readonly PlacedStep[]): TimedStep[] =>
-  steps.flatMap((step) =>
-    step.startSeconds === null || step.endSeconds === null
-      ? []
-      : [{ stepId: step.stepId, name: step.name, start: step.startSeconds, end: step.endSeconds }],
-  );
+export const timedStepsOf = (steps: readonly StudioStep[]): TimedStep[] =>
+  steps.filter(isStepOnTimeline).map((step) => ({
+    stepId: step.stepId,
+    name: step.name,
+    start: step.startSeconds,
+    end: step.endSeconds,
+  }));
 
 export interface SetupProgress {
   total: number;

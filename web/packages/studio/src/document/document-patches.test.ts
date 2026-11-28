@@ -6,7 +6,7 @@ import type { StudioDocument } from './studio-document';
 const document: StudioDocument = {
   songOrder: [1],
   songs: {},
-  steps: { 2: { startSeconds: 8, name: '' } },
+  steps: { 2: { startSeconds: 8, endSeconds: 16, name: '' } },
   parts: {},
   spotOrder: [],
   spots: {},

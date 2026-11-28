@@ -148,6 +148,7 @@ describe('outsideMusicOf', () => {
           startSeconds: 0,
           endSeconds: 10,
           placement: 'onTimeline',
+          endPlacement: 'onTimeline',
         },
         {
           stepId: 2,
@@ -155,6 +156,7 @@ describe('outsideMusicOf', () => {
           startSeconds: null,
           endSeconds: null,
           placement: 'cutAway',
+          endPlacement: 'onTimeline',
         },
       ],
       parts: [],

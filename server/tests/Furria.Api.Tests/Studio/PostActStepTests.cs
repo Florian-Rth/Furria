@@ -1,6 +1,4 @@
 using System.Net;
-using FastEndpoints;
-using Furria.Api.Endpoints.Acts;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -31,14 +29,58 @@ public sealed class PostActStepTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_LeaveTheMusicAroundFree_When_AStepIsCreatedBetweenOthers()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+        await CreateStepAsync(admin, actId, 10, 30);
+        await CreateStepAsync(admin, actId, 120, 150);
+
+        await CreateStepAsync(admin, actId, 60, 90);
+
+        Assert.Equal([(10, 30), (60, 90), (120, 150)], await StepSpansOfAsync(admin, actId));
+    }
+
+    [Theory]
+    [InlineData(20, 40)]
+    [InlineData(50, 70)]
+    [InlineData(40, 50)]
+    public async Task Should_RefuseTheStep_When_ItOverlapsAnother(
+        double startSeconds,
+        double endSeconds
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+        await CreateStepAsync(admin, actId, 30, 60);
+
+        var response = await PostStepAsync(admin, actId, startSeconds, endSeconds);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal([(30, 60)], await StepSpansOfAsync(admin, actId));
+    }
+
+    [Fact]
+    public async Task Should_SplitTheStepAndKeepItsEnd_When_TheNewStepIsItsTail()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+        await CreateStepAsync(admin, actId, 30, 90);
+
+        await CreateStepAsync(admin, actId, 60, 90);
+
+        Assert.Equal([(30, 60), (60, 90)], await StepSpansOfAsync(admin, actId));
+    }
+
+    [Fact]
     public async Task Should_KeepBothHalvesInThePart_When_ItsLastStepIsSplit()
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 90);
+        var stepIds = await StepsBetweenAsync(admin, actId, 30, 90);
         await AddPartAsync(admin, actId, stepIds[0], stepIds[1], "Einmarsch");
 
-        var newStepId = Assert.Single(await MarkAsync(admin, actId, 60));
+        var newStepId = await SplitAsync(admin, actId, 60);
 
         Assert.Equal(
             [
@@ -49,31 +91,27 @@ public sealed class PostActStepTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheMark_When_TheActHasNoMusic()
+    public async Task Should_RefuseTheStep_When_TheActHasNoMusic()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
         var actId = await GardetanzAsync(ctx, ct);
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
 
-        var response = await admin.POSTAsync<PostActStep, PostActStepRequest>(
-            new() { ActId = actId, AtSeconds = 0 }
-        );
+        var response = await PostStepAsync(admin, actId, 0, 10);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
     [Fact]
-    public async Task Should_KeepTheStepsGaplessOrRefuse_When_EditorsMarkAtOnce()
+    public async Task Should_NeverLetStepsOverlap_When_EditorsCreateAtOnce()
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
 
         var responses = await Task.WhenAll(
-            new[] { 20.0, 40, 60, 80, 100, 120 }.Select(seconds =>
-                admin.POSTAsync<PostActStep, PostActStepRequest>(
-                    new() { ActId = actId, AtSeconds = seconds }
-                )
+            new[] { 20.0, 30, 40, 50, 60, 70 }.Select(start =>
+                PostStepAsync(admin, actId, start, start + 25)
             )
         );
 
@@ -82,19 +120,17 @@ public sealed class PostActStepTests : IClassFixture<ApiTestFixture>
             response =>
                 Assert.Contains(
                     response.StatusCode,
-                    new[] { HttpStatusCode.OK, HttpStatusCode.Conflict }
+                    new[] { HttpStatusCode.OK, HttpStatusCode.UnprocessableEntity }
                 )
         );
-        var added = responses.Count(response => response.StatusCode == HttpStatusCode.OK);
-        Assert.InRange(added, 1, responses.Length);
         var spans = await StepSpansOfAsync(admin, actId);
         Assert.Equal(
-            (added + 1, (double?)0, (double?)180),
-            (spans.Length, spans[0].Start, spans[^1].End)
+            responses.Count(response => response.StatusCode == HttpStatusCode.OK),
+            spans.Length
         );
-        Assert.Equal(
-            spans.Skip(1).Select(span => span.Start),
-            spans.SkipLast(1).Select(span => span.End)
+        Assert.All(
+            spans.Zip(spans.Skip(1)),
+            pair => Assert.True(pair.First.End <= pair.Second.Start)
         );
     }
 }

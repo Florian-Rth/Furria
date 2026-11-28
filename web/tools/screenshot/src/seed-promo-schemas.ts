@@ -40,7 +40,12 @@ export const StudioSchema = z.object({
         }),
       ),
       steps: z.array(
-        z.object({ stepId: z.number().int(), name: z.string(), startSeconds: z.number() }),
+        z.object({
+          stepId: z.number().int(),
+          name: z.string(),
+          startSeconds: z.number().nullable(),
+          endSeconds: z.number().nullable(),
+        }),
       ),
       parts: z.array(z.object({ partId: z.number().int(), name: z.string() })),
       spots: z.array(
@@ -72,7 +77,7 @@ export const StudioSchema = z.object({
 export type Studio = NonNullable<z.infer<typeof StudioSchema>['studio']>;
 
 export const CreatedSongSchema = z.object({ songId: z.number().int() });
-export const CreatedStepsSchema = z.object({ stepIds: z.array(z.number().int()) });
+export const CreatedStepSchema = z.object({ stepId: z.number().int() });
 export const CreatedPartSchema = z.object({ partId: z.number().int() });
 export const CreatedSpotSchema = z.object({ spotId: z.number().int(), number: z.number().int() });
 export const ChoreographyVersionSchema = z.object({ version: z.number().int() });

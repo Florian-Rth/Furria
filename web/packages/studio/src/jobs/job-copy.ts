@@ -96,6 +96,9 @@ export const JOB_NO_STEP = 'Noch keine Schritte';
 export const JOB_NO_STEP_MUSIC = 'Erst ein Lied hochladen, dann Schritte setzen.';
 export const JOB_NO_STEP_HINT =
   'Abspielen und an der richtigen Stelle „Ersten Schritt setzen“ tippen.';
+export const JOB_GAP = 'Noch ohne Schritt';
+export const JOB_GAP_MARK = 'Schritt hier setzen';
+export const JOB_GAP_MARK_LABEL = 'Schritt an der Abspielposition bis zum nächsten Schritt setzen';
 export const JOB_GROUP_TEXT = 'Name und Beschreibung';
 export const JOB_NAME = 'Name';
 export const JOB_GROUP_LENGTH = 'Länge';

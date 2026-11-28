@@ -10,7 +10,11 @@ public sealed class ActStepConfiguration : IEntityTypeConfiguration<ActStep>
     {
         builder.ToTable(
             "act_step",
-            table => table.HasCheckConstraint("ck_act_step_start", "start_seconds >= 0")
+            table =>
+            {
+                table.HasCheckConstraint("ck_act_step_start", "start_seconds >= 0");
+                table.HasCheckConstraint("ck_act_step_end", "end_seconds >= 0");
+            }
         );
         builder.HasKey(step => step.Id);
 
@@ -42,5 +46,15 @@ public sealed class ActStepConfiguration : IEntityTypeConfiguration<ActStep>
         builder
             .HasIndex(step => step.StartSourceMediaItemId)
             .HasDatabaseName("ix_act_step_start_source_media_item_id");
+
+        builder
+            .HasOne(step => step.EndSource)
+            .WithMany()
+            .HasForeignKey(step => step.EndSourceMediaItemId)
+            .HasConstraintName("fk_act_step_media_item_end_source_media_item_id")
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
+            .HasIndex(step => step.EndSourceMediaItemId)
+            .HasDatabaseName("ix_act_step_end_source_media_item_id");
     }
 }

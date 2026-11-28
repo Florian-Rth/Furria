@@ -1,5 +1,6 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
-import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import type { CountMark, OffTimelinePlacement, TimelineRange } from '@furria/studio/music-timeline';
+import { offTimelinePlacementOf, stepRangeOf } from '@furria/studio/music-timeline';
 import { stepNumberOf } from '@furria/studio/step-names';
 import type { Studio, StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { clipSpanOf } from '@furria/studio/studio-videos';
@@ -8,7 +9,7 @@ const SAME_PLACE_METRES = 0.05;
 const COVER_SHARE = 0.5;
 const COUNTS_PER_EIGHT = 8;
 
-export type ScoreStepFlag = 'cutAway' | 'musicMissing';
+export type ScoreStepFlag = OffTimelinePlacement;
 
 export interface ScoreStepVideo {
   videoId: number;
@@ -40,14 +41,6 @@ export interface ScorePart {
   range: TimelineRange | null;
   stepIds: readonly number[];
 }
-
-export const stepRangeOf = (step: StudioStep): TimelineRange | null =>
-  step.placement !== 'onTimeline' ||
-  step.startSeconds === null ||
-  step.endSeconds === null ||
-  step.endSeconds <= step.startSeconds
-    ? null
-    : { start: step.startSeconds, end: step.endSeconds };
 
 export const countsIn = (marks: readonly CountMark[], range: TimelineRange): ScoreCounts | null => {
   const beats = marks.filter((mark) => mark.seconds >= range.start && mark.seconds < range.end);
@@ -116,8 +109,7 @@ export const coveringVideoOf = (
       };
 };
 
-const flagOf = (step: StudioStep): ScoreStepFlag | null =>
-  step.placement === 'onTimeline' ? null : step.placement;
+const flagOf = (step: StudioStep): ScoreStepFlag | null => offTimelinePlacementOf(step);
 
 const partStartOf = (part: StudioPart, steps: readonly StudioStep[]): number => {
   const starts = steps

@@ -166,10 +166,19 @@ Goal: group admins mark members in the calendar entry; hall mode and roll call a
 
 ### Phase 4 — Steps with their own end
 Goal: steps may leave music without steps; overlaps are refused; current screens keep working.
-- [ ] Migration: `act_step` end anchor (filled from the next step's start / end of music), `needs_check`
-- [ ] Endpoints: create with start + end (inside a step = split as today), move start/end, overlap refusal; placement flags for ends ("ohne Musik")
-- [ ] `@furria/studio`: document steps carry their end; step-list, count and practice models handle gaps (Üben plays through, "Noch ohne Schritt"); current editor/setup create contiguous steps with ends
-- [ ] Tests: gap creation, overlap refusal, split keeps ends, migration fill (backend); gap handling in step and practice models (studio)
+- [x] Migration: `act_step` end anchor (filled from the next step's start / end of music), `needs_check`
+- [x] Endpoints: create with start + end (inside a step = split as today), move start/end, overlap refusal; placement flags for ends ("ohne Musik")
+- [x] `@furria/studio`: document steps carry their end; step-list, count and practice models handle gaps (Üben plays through, "Noch ohne Schritt"); current editor/setup create contiguous steps with ends
+- [x] Tests: gap creation, overlap refusal, split keeps ends, migration fill (backend); gap handling in step and practice models (studio)
+
+Decided while building (2026-11-28):
+- `POST acts/{id}/steps {startSeconds, endSeconds}` → `{stepId}`; a new step that is exactly the tail of a step splits it atomically (parts keep both halves); everything else must lie in free music (touching allowed, 0,01 s tolerance). `PUT …/start` and new `PUT …/end` move one border each; `DELETE` leaves a gap. Step writes lock the act row.
+- An end on a song border is anchored in the earlier song (split, move, migration, final-track adoption — which clamps an end past the final file to its end), so removing the next song keeps the step.
+- A step is on the timeline only when both ends are, the end lies after the start and it does not overlap an earlier step; otherwise its seconds are null (`placement`/`endPlacement` tell which end lost its music). Null seconds is the "ohne Musik" contract for the client.
+- The current editor keeps today's feel on top of ends: a border drag moves a touching neighbour's end along, removing a step lets the touching previous step absorb it. The save plan sends removes → shrinks → splits → creates → grows.
+- Üben's gap handling is player logic (UI under the test rules), so the studio tests cover the step/document/save-plan models, not the player.
+- Nothing moves in a gap: the current formation/movement tools are off while the line is in a gap; an act without any step still places across the whole song. The migration starts the first step with the music (as the old tiling drew it).
+- For phase 5: step ends cascade with their media item like starts, so song replacement re-anchors ends before any media row goes.
 
 ### Phase 5 — Music chain: split and replace, no final file
 Goal: songs are split and replaced in place; the final-file concept is gone (per-song offset for now).

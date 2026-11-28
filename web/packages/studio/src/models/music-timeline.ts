@@ -325,10 +325,29 @@ export const countMarksOf = (segments: readonly MusicSegment[]): CountMark[] =>
     segment.beats.flatMap((section) => countMarksInSection(segment, section)),
   );
 
+export interface TimedStudioStep extends StudioStep {
+  startSeconds: number;
+  endSeconds: number;
+}
+
+export const isStepOnTimeline = (step: StudioStep): step is TimedStudioStep =>
+  step.startSeconds !== null && step.endSeconds !== null && step.endSeconds > step.startSeconds;
+
 export const stepRangeOf = (step: StudioStep): TimelineRange | null =>
-  step.startSeconds === null || step.endSeconds === null
-    ? null
-    : { start: step.startSeconds, end: step.endSeconds };
+  isStepOnTimeline(step) ? { start: step.startSeconds, end: step.endSeconds } : null;
+
+export type OffTimelinePlacement = Exclude<StudioStep['placement'], 'onTimeline'>;
+
+export const offTimelinePlacementOf = (step: StudioStep): OffTimelinePlacement | null => {
+  if (isStepOnTimeline(step)) {
+    return null;
+  }
+  if (step.placement !== 'onTimeline') {
+    return step.placement;
+  }
+
+  return step.endPlacement === 'onTimeline' ? 'cutAway' : step.endPlacement;
+};
 
 export const partOfStep = (parts: readonly StudioPart[], stepId: number): StudioPart | null =>
   parts.find((part) => part.stepIds.includes(stepId)) ?? null;

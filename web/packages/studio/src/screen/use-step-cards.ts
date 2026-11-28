@@ -1,23 +1,14 @@
 import { countsBetweenOf } from '@furria/studio/count-marks';
-import { partOfStep } from '@furria/studio/music-timeline';
+import { isStepOnTimeline, partOfStep } from '@furria/studio/music-timeline';
 import type { StepCountCell } from '@furria/studio/step-cards';
 import { countSheetOf, stepCountCellsOf } from '@furria/studio/step-cards';
 import { stepCardEyebrowOf, stepCardLabelOf } from '@furria/studio/step-cards-copy';
-import type { StudioStep } from '@furria/studio/studio-schemas';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { StepNaming } from '@furria/studio/use-step-naming';
 import { useStepNaming } from '@furria/studio/use-step-naming';
 
 const NEAR = 1;
-
-interface TimedStep extends StudioStep {
-  startSeconds: number;
-  endSeconds: number;
-}
-
-const isTimed = (step: StudioStep): step is TimedStep =>
-  step.startSeconds !== null && step.endSeconds !== null;
 
 export interface StepCard {
   key: string;
@@ -41,7 +32,7 @@ export interface StepCards {
 export const useStepCards = (screen: StudioScreen, editor: ActStudioStage): StepCards => {
   const { practice, playback } = screen;
   const { parts, countMarks, paths } = playback;
-  const steps = playback.steps.filter(isTimed);
+  const steps = playback.steps.filter(isStepOnTimeline);
   const texts = useStepNaming(screen);
   const selected = new Set(editor.selected);
   const keyed = selected.size === 0 ? paths : paths.filter((path) => selected.has(path.spotId));

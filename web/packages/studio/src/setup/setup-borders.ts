@@ -1,8 +1,7 @@
 import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
 import type { TimedStep } from '@furria/studio/setup-progress';
+import { nearBorder, STEP_BORDER_TOLERANCE_SECONDS } from '@furria/studio/step-borders';
 import { snappedOf } from '@furria/studio/studio-edits';
-
-const BORDER_SECONDS = 0.01;
 
 export interface TapMarking {
   starts: readonly number[];
@@ -21,7 +20,7 @@ export interface SetupBorder {
 }
 
 const onABorder = (starts: readonly number[], seconds: number): boolean =>
-  seconds <= BORDER_SECONDS || starts.some((start) => Math.abs(start - seconds) < BORDER_SECONDS);
+  starts.some((start) => nearBorder(start, seconds));
 
 export const tapMarksOf = ({
   starts,
@@ -32,16 +31,16 @@ export const tapMarksOf = ({
   length,
 }: TapMarking): number[] => {
   const at = snappedOf(counts, seconds);
-  if (at >= length - BORDER_SECONDS || onABorder(starts, at)) {
+  if (at >= length - STEP_BORDER_TOLERANCE_SECONDS || onABorder(starts, at)) {
     return [];
   }
 
   const opening = snappedOf(counts, videoStart);
-  const opens = opening < at - BORDER_SECONDS && !onABorder(starts, opening);
+  const opens = opening < at - STEP_BORDER_TOLERANCE_SECONDS && !onABorder(starts, opening);
   const closing = snappedOf(counts, videoEnd);
   const closes =
-    closing > at + BORDER_SECONDS &&
-    closing < length - BORDER_SECONDS &&
+    closing > at + STEP_BORDER_TOLERANCE_SECONDS &&
+    closing < length - STEP_BORDER_TOLERANCE_SECONDS &&
     !onABorder(starts, closing);
 
   return [...(opens ? [opening] : []), at, ...(closes ? [closing] : [])];
@@ -54,9 +53,11 @@ export const bordersInRangeOf = (
   steps.slice(1).flatMap((after, index) => {
     const before = steps[index];
     const inside =
-      after.start >= range.start - BORDER_SECONDS && after.start <= range.end + BORDER_SECONDS;
+      after.start >= range.start - STEP_BORDER_TOLERANCE_SECONDS &&
+      after.start <= range.end + STEP_BORDER_TOLERANCE_SECONDS;
+    const shared = before !== undefined && nearBorder(before.end, after.start);
 
-    return before === undefined || !inside
+    return before === undefined || !inside || !shared
       ? []
       : [
           {

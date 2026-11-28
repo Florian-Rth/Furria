@@ -1,4 +1,5 @@
 import type { CountMark } from '@furria/studio/music-timeline';
+import { nearBorder } from '@furria/studio/step-borders';
 import { snappedOf } from '@furria/studio/studio-edits';
 import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
 
@@ -7,9 +8,14 @@ export interface StepNameInput {
   name: string;
 }
 
-export interface StepStartInput {
+export interface StepBorderInput {
   stepId: number;
   atSeconds: number;
+}
+
+export interface StepSpanInput {
+  startSeconds: number;
+  endSeconds: number;
 }
 
 export interface PartOpening {
@@ -49,8 +55,6 @@ export interface PartDeskAnchor {
   partId: number;
 }
 
-const BORDER_TOLERANCE_SECONDS = 0.01;
-
 export const markSecondsOf = (
   timeline: { steps: readonly StudioStep[]; countMarks: readonly CountMark[] },
   seconds: number,
@@ -58,9 +62,7 @@ export const markSecondsOf = (
   const free = timeline.countMarks.filter(
     (mark) =>
       !timeline.steps.some(
-        (step) =>
-          step.startSeconds !== null &&
-          Math.abs(step.startSeconds - mark.seconds) < BORDER_TOLERANCE_SECONDS,
+        (step) => step.startSeconds !== null && nearBorder(step.startSeconds, mark.seconds),
       ),
   );
 

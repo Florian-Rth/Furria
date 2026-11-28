@@ -30,9 +30,14 @@ public sealed class PostActStep : Endpoint<PostActStepRequest, PostActStepRespon
             return;
         }
 
-        var result = await _stepService.MarkAsync(
+        var result = await _stepService.CreateAsync(
             accountId.Value,
-            new MarkActStepCommand { ActId = req.ActId, AtSeconds = req.AtSeconds },
+            new CreateActStepCommand
+            {
+                ActId = req.ActId,
+                StartSeconds = req.StartSeconds,
+                EndSeconds = req.EndSeconds,
+            },
             ct
         );
         if (!result.IsSuccess)
@@ -41,7 +46,7 @@ public sealed class PostActStep : Endpoint<PostActStepRequest, PostActStepRespon
             return;
         }
 
-        await Send.OkAsync(new PostActStepResponse { StepIds = result.Value }, cancellation: ct);
+        await Send.OkAsync(new PostActStepResponse { StepId = result.Value }, cancellation: ct);
     }
 }
 
@@ -50,7 +55,9 @@ public sealed record PostActStepRequest
     [RouteParam]
     public required int ActId { get; init; }
 
-    public required double AtSeconds { get; init; }
+    public required double StartSeconds { get; init; }
+
+    public required double EndSeconds { get; init; }
 }
 
 public sealed class PostActStepValidator : Validator<PostActStepRequest>
@@ -58,11 +65,12 @@ public sealed class PostActStepValidator : Validator<PostActStepRequest>
     public PostActStepValidator()
     {
         RuleFor(request => request.ActId).GreaterThan(0);
-        RuleFor(request => request.AtSeconds).GreaterThanOrEqualTo(0);
+        RuleFor(request => request.StartSeconds).GreaterThanOrEqualTo(0);
+        RuleFor(request => request.EndSeconds).GreaterThan(request => request.StartSeconds);
     }
 }
 
 public sealed record PostActStepResponse
 {
-    public required IReadOnlyList<int> StepIds { get; init; }
+    public required int StepId { get; init; }
 }
