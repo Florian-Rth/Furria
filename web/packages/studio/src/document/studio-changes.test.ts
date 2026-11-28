@@ -22,16 +22,22 @@ const document = (patch: Partial<StudioDocument>): StudioDocument => ({
 
 const threeSteps = document({
   steps: {
-    1: { startSeconds: 0, endSeconds: 8, name: 'Auftakt' },
-    2: { startSeconds: 8, endSeconds: 16, name: '' },
-    3: { startSeconds: 16, endSeconds: 40, name: '' },
+    1: {
+      startSeconds: 0,
+      endSeconds: 8,
+      name: 'Auftakt',
+      startNeedsCheck: false,
+      endNeedsCheck: false,
+    },
+    2: { startSeconds: 8, endSeconds: 16, name: '', startNeedsCheck: false, endNeedsCheck: false },
+    3: { startSeconds: 16, endSeconds: 40, name: '', startNeedsCheck: false, endNeedsCheck: false },
   },
 });
 
 const gapped = document({
   steps: {
-    1: { startSeconds: 2, endSeconds: 8, name: '' },
-    3: { startSeconds: 16, endSeconds: 30, name: '' },
+    1: { startSeconds: 2, endSeconds: 8, name: '', startNeedsCheck: false, endNeedsCheck: false },
+    3: { startSeconds: 16, endSeconds: 30, name: '', startNeedsCheck: false, endNeedsCheck: false },
   },
 });
 
@@ -210,6 +216,58 @@ const rangesOf = (result: StudioDocument): Record<string, [number | null, number
   Object.fromEntries(
     Object.entries(result.parts).map(([id, shown]) => [id, [shown.firstStepId, shown.lastStepId]]),
   );
+
+describe('borders to check', () => {
+  const unchecked = document({
+    steps: {
+      1: { startSeconds: 0, endSeconds: 8, name: '', startNeedsCheck: true, endNeedsCheck: true },
+      2: { startSeconds: 8, endSeconds: 16, name: '', startNeedsCheck: true, endNeedsCheck: true },
+    },
+  });
+
+  const checksOf = (result: StudioDocument): Record<string, [boolean, boolean]> =>
+    Object.fromEntries(
+      Object.entries(result.steps).map(([id, step]) => [
+        id,
+        [step.startNeedsCheck, step.endNeedsCheck],
+      ]),
+    );
+
+  it.each<{ name: string; change: StudioChange; checks: Record<string, [boolean, boolean]> }>([
+    {
+      name: 'a moved border clears the flags of both touching steps',
+      change: { kind: 'stepMove', stepId: 2, atSeconds: 9 },
+      checks: { 1: [true, false], 2: [false, true] },
+    },
+    {
+      name: 'a moved first start clears only its own flag',
+      change: { kind: 'stepMove', stepId: 1, atSeconds: 1 },
+      checks: { 1: [false, true], 2: [true, true] },
+    },
+    {
+      name: 'a refused move keeps the flags',
+      change: { kind: 'stepMove', stepId: 2, atSeconds: 20 },
+      checks: { 1: [true, true], 2: [true, true] },
+    },
+    {
+      name: 'a move onto the same spot keeps the flags',
+      change: { kind: 'stepMove', stepId: 2, atSeconds: 8 },
+      checks: { 1: [true, true], 2: [true, true] },
+    },
+    {
+      name: 'a split keeps the old end to check on the new step',
+      change: { kind: 'stepMark', stepId: -1, openingStepId: -2, atSeconds: 4, lengthSeconds: 16 },
+      checks: { 1: [true, false], 2: [true, true], '-1': [false, true] },
+    },
+    {
+      name: 'a removed step leaves the grown end checked',
+      change: { kind: 'stepRemove', stepId: 2 },
+      checks: { 1: [true, false] },
+    },
+  ])('$name', ({ change, checks }) => {
+    expect(checksOf(changed(unchecked, change))).toEqual(checks);
+  });
+});
 
 describe('stepMark in a part', () => {
   it('keeps the new step in the part when it splits its last step', () => {

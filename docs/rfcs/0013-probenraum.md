@@ -208,10 +208,17 @@ Decided while building (2026-11-28):
 
 ### Phase 6 — Steps follow replaced music (helper 5)
 Goal: on *Ersetzen* every border re-finds its music; unsure ones are flagged.
-- [ ] Core: per-border local matching over sound profiles with confidence; piecewise keyframe mapping between matched borders
-- [ ] Replacement applies per-border results, re-matches covered videos by their own sound, sets/clears `needs_check`
-- [ ] Studio read model + document expose `needs_check`; any edit of that border clears it
-- [ ] Tests: a shortened chorus moves only later borders of that section; low-confidence border flagged, not moved silently; keyframes follow
+- [x] Core: per-border local matching over sound profiles with confidence; piecewise keyframe mapping between matched borders
+- [x] Replacement applies per-border results, re-matches covered videos by their own sound, sets/clears `needs_check`
+- [x] Studio read model + document expose `needs_check`; any edit of that border clears it
+- [x] Tests: a shortened chorus moves only later borders of that section; low-confidence border flagged, not moved silently; keyframes follow
+
+Decided while building (2026-11-28):
+- Each border (and each replaced song's cut edges, so the new cut follows too) is matched with a sound window of 4 s either side, cut to the song: first within ±0,25 s of where the last found border of the song predicts it (the song's tempo carried on), then within ±30 s. A match counts at a correlation of 0,8; the wide search also needs a clear lead over any other spot ≥ 0,75 s away (distinctness 0,2). Found borders keep their order (≥ 0,1 s apart). Calibrated on the synthetic test songs: exact windows ≈ 1,0, beat-shifted ≤ 0,65, cut-away ≤ 0,75, hall recordings ≈ 0,55 (all flagged). Loop-heavy real music may flag more borders — the conservative side.
+- An unfound border is placed by its found neighbours (linear between them, the song's tempo beyond the outermost); the song-level placement only when no border of the song was found. This replaces "keeps the song-level position" so an unsure border can never land out of order. Keyframes and videos without a sound match follow the same per-song map.
+- Flags are per border: `needs_check` became `start_needs_check` + `end_needs_check` (a step's end is its own border since phase 4). A border moved onto the new file is flagged when its own sound did not confirm it (clamped borders included); only an editor's edit clears a flag — a later replacement that finds a guessed border by sound keeps it flagged; a crossfade-shortened end takes the next start's flag. The migration copies the old step flag onto both borders. Moving a border (`PUT …/start`, `…/end`, incl. the save plan's grows) clears it; a split gives the tail the old end's flag; undo restores the flags with the anchors (they are part of the undo snapshot and its fingerprint).
+- Videos anchored in a replaced song are re-matched by their whole soundtrack against the new file (confidence ≥ 0,35, as when placing) before the act lock is taken; otherwise they follow the map. Border matching itself runs under the act lock (two short window searches per border, milliseconds), since it needs the locked steps.
+- `@furria/studio`: `StudioStep`/`DocumentStep` carry `startNeedsCheck`/`endNeedsCheck`; the document clears them on the same edits as the server (moved start and touching end, split head, absorbed end) and the saved mirror does too.
 
 ### Phase 7 — A smarter "1" (helper 4)
 Goal: count marks and step taps sit on the bar's real "1".

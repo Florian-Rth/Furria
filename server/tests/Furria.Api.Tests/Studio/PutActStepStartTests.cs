@@ -49,6 +49,19 @@ public sealed class PutActStepStartTests : IClassFixture<ApiTestFixture>
         Assert.Equal([(10, 40), (40, 120)], await StepSpansOfAsync(admin, actId));
     }
 
+    [Fact]
+    public async Task Should_NoLongerAskToCheckTheStart_When_TheStartIsMoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId, stepIds) = await TwoStepsAsync(ct);
+        await _fixture.FlagStepBordersForCheckAsync(stepIds[1], ct);
+
+        var response = await PutStartAsync(admin, actId, stepIds[1], 80);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal([(false, false), (false, true)], await StepChecksOfAsync(admin, actId));
+    }
+
     [Theory]
     [InlineData(1, 30)]
     [InlineData(0, 45)]

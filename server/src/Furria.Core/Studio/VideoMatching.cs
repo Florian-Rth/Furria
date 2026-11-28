@@ -21,4 +21,10 @@ public static class VideoMatching
         var alignment = SoundComparison.Align(mix, soundtrack);
         return alignment is { Confidence: >= LeastConfidence } ? alignment : null;
     }
+
+    [Pure]
+    public static double? StartIn(SoundProfile file, SoundProfile soundtrack) =>
+        SoundComparison.Align(file, soundtrack) is { Confidence: >= LeastConfidence } alignment
+            ? alignment.OffsetSeconds
+            : null;
 }

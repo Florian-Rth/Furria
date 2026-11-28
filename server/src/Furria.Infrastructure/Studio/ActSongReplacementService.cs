@@ -98,6 +98,12 @@ public sealed class ActSongReplacementService
         if (!matched.IsSuccess)
             return Result<int>.Carrying(matched);
 
+        var heardVideoStarts = await HeardVideoStartsAsync(
+            command.ActId,
+            newFile.Value.Profile,
+            matched.Value.Songs,
+            ct
+        );
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await _dbContext.LockStepsOfActAsync(command.ActId, ct);
         var chain = await ChainOfAsync(command.ActId, ct);
@@ -105,13 +111,14 @@ public sealed class ActSongReplacementService
         if (!songs.IsSuccess || !songs.Value.SequenceEqual(matched.Value.Songs))
             return Result<int>.Conflict(StaleSongsMessage);
 
-        var replacement = new SongReplacement(
-            newFile.Value.MediaItemId,
-            newFile.Value.LengthSeconds,
-            [.. chain.Select(song => song.Cut)],
-            matched.Value.Found
+        var steps = await StepBordersOfAsync(command.ActId, ct);
+        var replacement = ReplacementOf(newFile.Value, chain, matched.Value, steps);
+        var newSongId = await ReplaceInPlaceAsync(
+            accountId,
+            songs.Value,
+            new ReplacementWork(replacement, steps, heardVideoStarts),
+            ct
         );
-        var newSongId = await ReplaceInPlaceAsync(accountId, songs.Value, replacement, ct);
         await transaction.CommitAsync(ct);
 
         return Result<int>.Success(newSongId);
@@ -192,36 +199,62 @@ public sealed class ActSongReplacementService
         if (sounds.Any(sound => sound is null))
             return Result<MatchedRun>.Conflict(MusicDevelopingMessage);
 
-        return
-            SongMatching.FoundInOrder(newFile.Profile, [.. sounds.OfType<CutSound>()]) is { } found
-            ? Result<MatchedRun>.Success(new MatchedRun(songs.Value, found))
+        IReadOnlyList<CutSound> heard = [.. sounds.OfType<CutSound>()];
+        return SongMatching.FoundInOrder(newFile.Profile, heard) is { } found
+            ? Result<MatchedRun>.Success(new MatchedRun(songs.Value, heard, found))
             : Result<MatchedRun>.Validation(NoMatchMessage);
+    }
+
+    private async Task<IReadOnlyDictionary<int, double>> HeardVideoStartsAsync(
+        int actId,
+        SoundProfile newFile,
+        IReadOnlyList<ChainSong> replaced,
+        CancellationToken ct
+    )
+    {
+        var replacedFileIds = replaced.Select(song => song.Snapshot.MediaItemId).ToList();
+        var videos = await _dbContext
+            .ActVideos.AsNoTracking()
+            .Where(video =>
+                video.ActId == actId
+                && video.StartSourceMediaItemId != null
+                && replacedFileIds.Contains(video.StartSourceMediaItemId.Value)
+                && video.MediaItem!.State == MediaItemState.Ready
+            )
+            .Select(video => new { video.Id, video.MediaItem!.StorageKey })
+            .ToListAsync(ct);
+
+        var heardStarts = new Dictionary<int, double>();
+        foreach (var video in videos)
+            if (
+                await _profiles.ProfileOfAsync(video.StorageKey, ct) is { } soundtrack
+                && VideoMatching.StartIn(newFile, soundtrack) is { } startSeconds
+            )
+                heardStarts[video.Id] = startSeconds;
+
+        return heardStarts;
     }
 
     private async Task<int> ReplaceInPlaceAsync(
         int accountId,
         IReadOnlyList<ChainSong> songs,
-        SongReplacement replacement,
+        ReplacementWork work,
         CancellationToken ct
     )
     {
         var actId = songs[0].ActId;
-        var steps = await StepAnchorsOfAsync(actId, ct);
+        var replacement = work.Replacement;
         var videos = await PlacedVideosOfAsync(actId, ct);
         var choreography = await _history.ChoreographyOfAsync(actId, ct);
         var before = new MusicBeforeReplacement(
             [.. songs.Select(song => song.Snapshot)],
-            steps,
+            work.Steps,
             videos,
             choreography?.Document
         );
 
-        await ApplyStepsAsync(actId, replacement.RewrittenSteps(steps), ct);
-        await ApplyVideosAsync(
-            actId,
-            [.. videos.Select(video => Rewritten(video, replacement))],
-            ct
-        );
+        await ApplyStepsAsync(actId, replacement.RewrittenSteps(work.Steps), ct);
+        await ApplyVideosAsync(actId, [.. videos.Select(video => Rewritten(video, work))], ct);
         await WriteChoreographyAsync(
             accountId,
             choreography,
@@ -292,11 +325,11 @@ public sealed class ActSongReplacementService
 
     private async Task ApplyStepsAsync(
         int actId,
-        IReadOnlyList<StepAnchors> anchors,
+        IReadOnlyList<StepBorders> borders,
         CancellationToken ct
     )
     {
-        var byStep = anchors.ToDictionary(step => step.StepId);
+        var byStep = borders.ToDictionary(step => step.StepId);
         var stepIds = byStep.Keys.ToList();
         var steps = await _dbContext
             .ActSteps.Where(step => step.ActId == actId && stepIds.Contains(step.Id))
@@ -403,12 +436,12 @@ public sealed class ActSongReplacementService
     ) =>
         new(
             [.. (await ChainOfAsync(actId, ct)).Select(song => song.Snapshot)],
-            await StepAnchorsOfAsync(actId, ct),
+            await StepBordersOfAsync(actId, ct),
             await PlacedVideosOfAsync(actId, ct),
             choreographyVersion
         );
 
-    private async Task<IReadOnlyList<StepAnchors>> StepAnchorsOfAsync(
+    private async Task<IReadOnlyList<StepBorders>> StepBordersOfAsync(
         int actId,
         CancellationToken ct
     ) =>
@@ -418,7 +451,7 @@ public sealed class ActSongReplacementService
                     .ActSteps.AsNoTracking()
                     .Where(step => step.ActId == actId)
                     .ToListAsync(ct)
-            ).Select(AnchorsOf),
+            ).Select(BordersOf),
         ];
 
     private async Task<IReadOnlyList<PlacedVideo>> PlacedVideosOfAsync(
@@ -498,10 +531,36 @@ public sealed class ActSongReplacementService
     ) => before.Choreography is { } document ? replacement.Rewritten(document) : null;
 
     [Pure]
-    private static PlacedVideo Rewritten(PlacedVideo video, SongReplacement replacement) =>
+    private static SongReplacement ReplacementOf(
+        NewFile newFile,
+        IReadOnlyList<ChainSong> chain,
+        MatchedRun matched,
+        IReadOnlyList<StepBorders> steps
+    )
+    {
+        IReadOnlyList<MusicCut> cuts = [.. chain.Select(song => song.Cut)];
+        return new SongReplacement(
+            newFile.MediaItemId,
+            newFile.LengthSeconds,
+            cuts,
+            BorderMatching.Followed(
+                newFile.Profile,
+                cuts,
+                matched.Sounds,
+                matched.Found,
+                [.. steps.Select(step => step.Anchors)]
+            )
+        );
+    }
+
+    [Pure]
+    private static PlacedVideo Rewritten(PlacedVideo video, ReplacementWork work) =>
         video with
         {
-            Start = replacement.Rewritten(video.Start),
+            Start = work.Replacement.Rewritten(
+                video.Start,
+                work.HeardVideoStarts.TryGetValue(video.VideoId, out var heard) ? heard : null
+            ),
         };
 
     [Pure]
@@ -535,11 +594,13 @@ public sealed class ActSongReplacementService
         };
 
     [Pure]
-    private static StepAnchors AnchorsOf(ActStep step) =>
+    private static StepBorders BordersOf(ActStep step) =>
         new(
             step.Id,
             new MusicAnchor(step.StartSourceMediaItemId, step.StartSeconds),
-            new MusicAnchor(step.EndSourceMediaItemId, step.EndSeconds)
+            new MusicAnchor(step.EndSourceMediaItemId, step.EndSeconds),
+            step.StartNeedsCheck,
+            step.EndNeedsCheck
         );
 
     [Pure]
@@ -555,12 +616,14 @@ public sealed class ActSongReplacementService
             )
         );
 
-    private static void Anchor(ActStep step, StepAnchors anchors)
+    private static void Anchor(ActStep step, StepBorders borders)
     {
-        step.StartSourceMediaItemId = anchors.Start.SourceMediaItemId;
-        step.StartSeconds = anchors.Start.Seconds;
-        step.EndSourceMediaItemId = anchors.End.SourceMediaItemId;
-        step.EndSeconds = anchors.End.Seconds;
+        step.StartSourceMediaItemId = borders.Start.SourceMediaItemId;
+        step.StartSeconds = borders.Start.Seconds;
+        step.StartNeedsCheck = borders.StartNeedsCheck;
+        step.EndSourceMediaItemId = borders.End.SourceMediaItemId;
+        step.EndSeconds = borders.End.Seconds;
+        step.EndNeedsCheck = borders.EndNeedsCheck;
     }
 
     private static void Place(ActVideo video, VideoAnchor anchor)
@@ -581,6 +644,13 @@ public sealed class ActSongReplacementService
 
     private sealed record MatchedRun(
         IReadOnlyList<ChainSong> Songs,
+        IReadOnlyList<CutSound> Sounds,
         IReadOnlyList<FoundSong> Found
+    );
+
+    private sealed record ReplacementWork(
+        SongReplacement Replacement,
+        IReadOnlyList<StepBorders> Steps,
+        IReadOnlyDictionary<int, double> HeardVideoStarts
     );
 }

@@ -311,6 +311,8 @@ public sealed class ActStudioReader
             EndSeconds = end.TimelineSeconds,
             Placement = start.Placement,
             EndPlacement = end.Placement,
+            StartNeedsCheck = step.StartNeedsCheck,
+            EndNeedsCheck = step.EndNeedsCheck,
         };
 
     [Pure]

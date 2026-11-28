@@ -9,6 +9,8 @@ const stepOf = (stepId: number, start: number | null, end: number | null): Studi
   endSeconds: end,
   placement: start === null ? 'cutAway' : 'onTimeline',
   endPlacement: end === null ? 'cutAway' : 'onTimeline',
+  startNeedsCheck: false,
+  endNeedsCheck: false,
 });
 
 const partOf = (partId: number, stepIds: number[], adrift = false): StudioPart => ({

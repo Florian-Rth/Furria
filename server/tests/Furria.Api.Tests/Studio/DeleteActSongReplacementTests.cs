@@ -43,6 +43,29 @@ public sealed class DeleteActSongReplacementTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
+    public async Task Should_NoLongerAskForChecks_When_TheReplacementIsUndone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var mix = await MarchAndPolkaWithABorderInTheBreakAsync(_fixture, ct);
+        var newFile = await AnalysedFileAsync(
+            _fixture,
+            mix.Admin,
+            mix.ActId,
+            MarchWithoutABreak,
+            ct
+        );
+        var (_, songId) = await ReplaceSongAsync(mix.Admin, mix.ActId, mix.March.SongId, newFile);
+
+        var response = await UndoReplacementAsync(mix.Admin, mix.ActId, songId);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.All(
+            await StepChecksOfAsync(mix.Admin, mix.ActId),
+            checks => Assert.Equal((false, false), checks)
+        );
+    }
+
+    [Fact]
     public async Task Should_RefuseTheUndo_When_TheDanceChangedSince()
     {
         var ct = TestContext.Current.CancellationToken;

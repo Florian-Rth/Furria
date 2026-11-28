@@ -19,7 +19,9 @@ public sealed class ActStep
 
     public double EndSeconds { get; set; }
 
-    public bool NeedsCheck { get; set; }
+    public bool StartNeedsCheck { get; set; }
+
+    public bool EndNeedsCheck { get; set; }
 
     public string Name { get; set; } = "";
 

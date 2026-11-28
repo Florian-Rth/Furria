@@ -21,24 +21,21 @@ public sealed class SongReplacementTests
         NewFile,
         NewLength,
         Chain,
-        [new FoundSong(OpenerCut, new SongPlacement(-5, 0.98))]
+        [Followed(OpenerCut, -5, 0.98)]
     );
 
     private static readonly SongReplacement IntroCutAway = new(
         NewFile,
         NewLength,
         Chain,
-        [new FoundSong(OpenerCut, new SongPlacement(-20, 1))]
+        [Followed(OpenerCut, -20, 1)]
     );
 
     private static readonly SongReplacement FinalMix = new(
         NewFile,
         NewLength,
         Chain,
-        [
-            new FoundSong(OpenerCut, new SongPlacement(0, 1)),
-            new FoundSong(FinaleCut, new SongPlacement(58, 1)),
-        ]
+        [Followed(OpenerCut, 0, 1), Followed(FinaleCut, 58, 1)]
     );
 
     [Theory]
@@ -69,17 +66,12 @@ public sealed class SongReplacementTests
     [Fact]
     public void Should_EndAtTheEndOfTheNewFile_When_AnEndMapsPastIt()
     {
-        var replacement = new SongReplacement(
-            NewFile,
-            100,
-            Chain,
-            [new FoundSong(FinaleCut, new SongPlacement(60, 1))]
-        );
+        var replacement = new SongReplacement(NewFile, 100, Chain, [Followed(FinaleCut, 60, 1)]);
 
         Assert.Equal(
-            [new StepAnchors(1, new MusicAnchor(NewFile, 90), new MusicAnchor(NewFile, 100))],
+            [Unsure(1, new MusicAnchor(NewFile, 90), new MusicAnchor(NewFile, 100))],
             replacement.RewrittenSteps([
-                new StepAnchors(1, new MusicAnchor(Finale, 30), new MusicAnchor(Finale, 70)),
+                Step(1, new MusicAnchor(Finale, 30), new MusicAnchor(Finale, 70)),
             ])
         );
     }
@@ -93,10 +85,7 @@ public sealed class SongReplacementTests
             NewFile,
             NewLength,
             [firstHalf, secondHalf],
-            [
-                new FoundSong(firstHalf, new SongPlacement(100, 1)),
-                new FoundSong(secondHalf, new SongPlacement(0, 1)),
-            ]
+            [Followed(firstHalf, 100, 1), Followed(secondHalf, 0, 1)]
         );
 
         Assert.Equal(
@@ -114,7 +103,7 @@ public sealed class SongReplacementTests
             NewFile,
             NewLength,
             [firstHalf, secondHalf],
-            [new FoundSong(secondHalf, new SongPlacement(0, 1))]
+            [Followed(secondHalf, 0, 1)]
         );
         var anchor = new MusicAnchor(Opener, 25);
 
@@ -132,7 +121,8 @@ public sealed class SongReplacementTests
     )
     {
         var rewritten = OpenerReplaced.Rewritten(
-            new VideoAnchor(new MusicAnchor(Opener, musicSeconds), videoSeconds)
+            new VideoAnchor(new MusicAnchor(Opener, musicSeconds), videoSeconds),
+            null
         );
 
         Assert.Equal(NewFile, rewritten.Music.SourceMediaItemId);
@@ -144,16 +134,131 @@ public sealed class SongReplacementTests
     public void Should_EndAStepWhereTheNextBegins_When_ACrossfadeMakesThemOverlap()
     {
         var rewritten = FinalMix.RewrittenSteps([
-            new StepAnchors(1, new MusicAnchor(Opener, 40), new MusicAnchor(Opener, 60)),
-            new StepAnchors(2, new MusicAnchor(Finale, 0), new MusicAnchor(Finale, 20)),
+            Step(1, new MusicAnchor(Opener, 40), new MusicAnchor(Opener, 60)),
+            Step(2, new MusicAnchor(Finale, 0), new MusicAnchor(Finale, 20)),
         ]);
 
         Assert.Equal(
             [
-                new StepAnchors(1, new MusicAnchor(NewFile, 40), new MusicAnchor(NewFile, 58)),
-                new StepAnchors(2, new MusicAnchor(NewFile, 58), new MusicAnchor(NewFile, 78)),
+                Unsure(1, new MusicAnchor(NewFile, 40), new MusicAnchor(NewFile, 58)),
+                Unsure(2, new MusicAnchor(NewFile, 58), new MusicAnchor(NewFile, 78)),
             ],
             rewritten
+        );
+    }
+
+    [Fact]
+    public void Should_AskToCheckOnlyTheBordersTheSoundDidNotFind_When_StepsFollowTheNewFile()
+    {
+        var replacement = new SongReplacement(
+            NewFile,
+            NewLength,
+            Chain,
+            [
+                new FollowedSong(
+                    OpenerCut,
+                    new SongWarp(new SongPlacement(0, 1), [new(0, 0), new(20, 18)])
+                ),
+            ]
+        );
+
+        var rewritten = replacement.RewrittenSteps([
+            Step(1, new MusicAnchor(Opener, 0), new MusicAnchor(Opener, 10)),
+            Step(2, new MusicAnchor(Opener, 10), new MusicAnchor(Opener, 20)),
+        ]);
+
+        Assert.Equal(
+            [
+                new StepBorders(
+                    1,
+                    new MusicAnchor(NewFile, 0),
+                    new MusicAnchor(NewFile, 9),
+                    false,
+                    true
+                ),
+                new StepBorders(
+                    2,
+                    new MusicAnchor(NewFile, 9),
+                    new MusicAnchor(NewFile, 18),
+                    true,
+                    false
+                ),
+            ],
+            rewritten
+        );
+    }
+
+    [Fact]
+    public void Should_KeepAskingToCheckABorder_When_TheNextVersionFindsItsGuessedSpot()
+    {
+        var replacement = new SongReplacement(
+            NewFile,
+            NewLength,
+            Chain,
+            [
+                new FollowedSong(
+                    OpenerCut,
+                    new SongWarp(new SongPlacement(0, 1), [new(0, 0), new(10, 10)])
+                ),
+            ]
+        );
+
+        var rewritten = replacement.RewrittenSteps([
+            Unsure(1, new MusicAnchor(Opener, 0), new MusicAnchor(Opener, 10)),
+        ]);
+
+        Assert.Equal((true, true), (rewritten[0].StartNeedsCheck, rewritten[0].EndNeedsCheck));
+    }
+
+    [Fact]
+    public void Should_PlaceTheVideoWhereItsSoundWasHeard_When_ItIsReMatched()
+    {
+        var rewritten = OpenerReplaced.Rewritten(
+            new VideoAnchor(new MusicAnchor(Opener, 20), 3),
+            30
+        );
+
+        Assert.Equal(new VideoAnchor(new MusicAnchor(NewFile, 30), 0), rewritten);
+    }
+
+    [Fact]
+    public void Should_KeepTheChecksOfStepsOnOtherSongs_When_ASongIsReplaced()
+    {
+        var onTheLiveSong = Unsure(1, new MusicAnchor(Live, 0), new MusicAnchor(Live, 10));
+
+        Assert.Equal([onTheLiveSong], OpenerReplaced.RewrittenSteps([onTheLiveSong]));
+    }
+
+    [Fact]
+    public void Should_AskToCheckTheShortenedEnd_When_ACrossfadeEndsItWhereAnUnsureStepBegins()
+    {
+        var replacement = new SongReplacement(
+            NewFile,
+            NewLength,
+            Chain,
+            [
+                new FollowedSong(
+                    OpenerCut,
+                    new SongWarp(new SongPlacement(0, 1), [new(40, 40), new(60, 60)])
+                ),
+                Followed(FinaleCut, 58, 1),
+            ]
+        );
+
+        var rewritten = replacement.RewrittenSteps([
+            Step(1, new MusicAnchor(Opener, 40), new MusicAnchor(Opener, 60)),
+            Step(2, new MusicAnchor(Finale, 0), new MusicAnchor(Finale, 20)),
+        ]);
+
+        Assert.Equal(
+            new StepBorders(
+                1,
+                new MusicAnchor(NewFile, 40),
+                new MusicAnchor(NewFile, 58),
+                false,
+                true
+            ),
+            rewritten[0]
         );
     }
 
@@ -161,18 +266,18 @@ public sealed class SongReplacementTests
     public void Should_LeaveTheStepsBeforeTheNewFileWhereTheyWere_When_ItStartsLaterInTheSong()
     {
         var rewritten = IntroCutAway.RewrittenSteps([
-            new StepAnchors(1, new MusicAnchor(Opener, 0), new MusicAnchor(Opener, 5)),
-            new StepAnchors(2, new MusicAnchor(Opener, 5), new MusicAnchor(Opener, 10)),
-            new StepAnchors(3, new MusicAnchor(Opener, 10), new MusicAnchor(Opener, 30)),
-            new StepAnchors(4, new MusicAnchor(Opener, 30), new MusicAnchor(Opener, 40)),
+            Step(1, new MusicAnchor(Opener, 0), new MusicAnchor(Opener, 5)),
+            Step(2, new MusicAnchor(Opener, 5), new MusicAnchor(Opener, 10)),
+            Step(3, new MusicAnchor(Opener, 10), new MusicAnchor(Opener, 30)),
+            Step(4, new MusicAnchor(Opener, 30), new MusicAnchor(Opener, 40)),
         ]);
 
         Assert.Equal(
             [
-                new StepAnchors(1, new MusicAnchor(Opener, 0), new MusicAnchor(Opener, 5)),
-                new StepAnchors(2, new MusicAnchor(Opener, 5), new MusicAnchor(Opener, 10)),
-                new StepAnchors(3, new MusicAnchor(NewFile, 0), new MusicAnchor(NewFile, 10)),
-                new StepAnchors(4, new MusicAnchor(NewFile, 10), new MusicAnchor(NewFile, 20)),
+                Step(1, new MusicAnchor(Opener, 0), new MusicAnchor(Opener, 5)),
+                Step(2, new MusicAnchor(Opener, 5), new MusicAnchor(Opener, 10)),
+                Unsure(3, new MusicAnchor(NewFile, 0), new MusicAnchor(NewFile, 10)),
+                Unsure(4, new MusicAnchor(NewFile, 10), new MusicAnchor(NewFile, 20)),
             ],
             rewritten
         );
@@ -228,6 +333,15 @@ public sealed class SongReplacementTests
         Assert.Null(FinalMix.NewFirstBeatSeconds(10));
         Assert.Null(FinalMix.NewTempoBpm(120));
     }
+
+    private static FollowedSong Followed(MusicCut cut, double offsetSeconds, double stretch) =>
+        new(cut, SongWarp.Of(new SongPlacement(offsetSeconds, stretch)));
+
+    private static StepBorders Step(int stepId, MusicAnchor start, MusicAnchor end) =>
+        new(stepId, start, end, false, false);
+
+    private static StepBorders Unsure(int stepId, MusicAnchor start, MusicAnchor end) =>
+        new(stepId, start, end, true, true);
 
     private static Keyframe KeyframeAt(int source, double seconds) =>
         new(

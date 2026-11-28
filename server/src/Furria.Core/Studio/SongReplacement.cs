@@ -10,10 +10,10 @@ public sealed class SongReplacement
     private readonly double _newLengthSeconds;
     private readonly ActMusic _chain;
     private readonly IReadOnlyList<MusicCut> _chainCuts;
-    private readonly IReadOnlyList<FoundSong> _replaced;
-    private readonly Dictionary<MusicCut, SongPlacement> _placementsByCut;
+    private readonly IReadOnlyList<FollowedSong> _replaced;
+    private readonly Dictionary<MusicCut, SongWarp> _warpsByCut;
 
-    private SongPlacement? OnlyPlacement => _replaced.Count == 1 ? _replaced[0].Placement : null;
+    private SongWarp? OnlyWarp => _replaced.Count == 1 ? _replaced[0].Warp : null;
 
     public MusicCut NewCut =>
         new(
@@ -26,7 +26,7 @@ public sealed class SongReplacement
         int newMediaItemId,
         double newLengthSeconds,
         IReadOnlyList<MusicCut> chain,
-        IReadOnlyList<FoundSong> replaced
+        IReadOnlyList<FollowedSong> replaced
     )
     {
         _newMediaItemId = newMediaItemId;
@@ -34,21 +34,21 @@ public sealed class SongReplacement
         _chain = new ActMusic(chain);
         _chainCuts = chain;
         _replaced = replaced;
-        _placementsByCut = replaced.ToDictionary(song => song.Cut, song => song.Placement);
+        _warpsByCut = replaced.ToDictionary(song => song.Cut, song => song.Warp);
     }
 
     [Pure]
     public double? NewFirstBeatSeconds(double? firstBeatSeconds) =>
-        OnlyPlacement is { } placement
+        OnlyWarp is { } warp
         && firstBeatSeconds is { } beat
-        && placement.NewSecondsOf(beat) is var seconds and >= 0
+        && warp.NewSecondsOf(beat) is var seconds and >= 0
         && seconds <= _newLengthSeconds
             ? seconds
             : null;
 
     [Pure]
     public double? NewTempoBpm(double? tempoBpm) =>
-        OnlyPlacement is { } placement && tempoBpm is { } tempo ? tempo / placement.Stretch : null;
+        OnlyWarp is { } warp && tempoBpm is { } tempo ? tempo / warp.Stretch : null;
 
     [Pure]
     public MusicAnchor Rewritten(MusicAnchor anchor) =>
@@ -57,19 +57,23 @@ public sealed class SongReplacement
             : anchor;
 
     [Pure]
-    public VideoAnchor Rewritten(VideoAnchor anchor)
+    public VideoAnchor Rewritten(VideoAnchor anchor, double? heardStartSeconds)
     {
-        if (NewSecondsOf(anchor.Music) is not { } seconds || IsPastTheNewFile(seconds))
+        if (NewSecondsOf(anchor.Music) is not { } seconds)
             return anchor;
 
-        var videoStart = seconds - anchor.VideoSeconds;
+        if (heardStartSeconds is null && IsPastTheNewFile(seconds))
+            return anchor;
+
+        var videoStart = heardStartSeconds ?? seconds - anchor.VideoSeconds;
+
         return videoStart >= 0
             ? new VideoAnchor(new MusicAnchor(_newMediaItemId, videoStart), 0)
             : new VideoAnchor(new MusicAnchor(_newMediaItemId, 0), -videoStart);
     }
 
     [Pure]
-    public IReadOnlyList<StepAnchors> RewrittenSteps(IEnumerable<StepAnchors> steps) =>
+    public IReadOnlyList<StepBorders> RewrittenSteps(IEnumerable<StepBorders> steps) =>
         WithoutOverlapsOnTheNewFile([.. steps.Select(Rewritten)]);
 
     [Pure]
@@ -92,29 +96,35 @@ public sealed class SongReplacement
         ]);
 
     [Pure]
-    private IReadOnlyList<StepAnchors> WithoutOverlapsOnTheNewFile(IReadOnlyList<StepAnchors> steps)
+    private IReadOnlyList<StepBorders> WithoutOverlapsOnTheNewFile(IReadOnlyList<StepBorders> steps)
     {
         var onTheNewFile = steps.Where(IsOnTheNewFile).OrderBy(step => step.Start.Seconds).ToList();
-        var trimmedEnds = onTheNewFile
+        var nextOverlapping = onTheNewFile
             .Zip(onTheNewFile.Skip(1))
             .Where(pair => pair.First.End.Seconds > pair.Second.Start.Seconds)
-            .ToDictionary(pair => pair.First.StepId, pair => pair.Second.Start);
+            .ToDictionary(pair => pair.First.StepId, pair => pair.Second);
 
         return
         [
             .. steps.Select(step =>
-                trimmedEnds.TryGetValue(step.StepId, out var end) ? step with { End = end } : step
+                nextOverlapping.TryGetValue(step.StepId, out var next)
+                    ? step with
+                    {
+                        End = next.Start,
+                        EndNeedsCheck = next.StartNeedsCheck,
+                    }
+                    : step
             ),
         ];
     }
 
     [Pure]
-    private bool IsOnTheNewFile(StepAnchors step) =>
+    private bool IsOnTheNewFile(StepBorders step) =>
         step.Start.SourceMediaItemId == _newMediaItemId
         && step.End.SourceMediaItemId == _newMediaItemId;
 
     [Pure]
-    private StepAnchors Rewritten(StepAnchors step)
+    private StepBorders Rewritten(StepBorders step)
     {
         var start = NewSecondsOf(step.Start);
         var end = NewEndSecondsOf(step.End);
@@ -124,9 +134,20 @@ public sealed class SongReplacement
         return step with
         {
             Start = start is { } newStart ? OnTheNewFile(newStart) : step.Start,
+            StartNeedsCheck =
+                step.StartNeedsCheck || (start is not null && !IsFoundStart(step.Start)),
             End = end is { } newEnd ? OnTheNewFile(newEnd) : step.End,
+            EndNeedsCheck = step.EndNeedsCheck || (end is not null && !IsFoundEnd(step.End)),
         };
     }
+
+    [Pure]
+    private bool IsFoundStart(MusicAnchor anchor) =>
+        WarpOf(_chain.PieceHolding(anchor))?.Found(anchor.Seconds) ?? false;
+
+    [Pure]
+    private bool IsFoundEnd(MusicAnchor anchor) =>
+        WarpOf(_chain.PieceEnding(anchor))?.Found(anchor.Seconds) ?? false;
 
     [Pure]
     private bool IsWhollyOutsideTheNewFile(double startSeconds, double endSeconds) =>
@@ -147,17 +168,15 @@ public sealed class SongReplacement
 
     [Pure]
     private double? NewSecondsOf(MusicAnchor anchor) =>
-        PlacementOf(_chain.PieceHolding(anchor) ?? NearestCutOf(anchor))
-            ?.NewSecondsOf(anchor.Seconds);
+        WarpOf(_chain.PieceHolding(anchor) ?? NearestCutOf(anchor))?.NewSecondsOf(anchor.Seconds);
 
     [Pure]
     private double? NewEndSecondsOf(MusicAnchor anchor) =>
-        PlacementOf(_chain.PieceEnding(anchor) ?? NearestCutOf(anchor))
-            ?.NewSecondsOf(anchor.Seconds);
+        WarpOf(_chain.PieceEnding(anchor) ?? NearestCutOf(anchor))?.NewSecondsOf(anchor.Seconds);
 
     [Pure]
-    private SongPlacement? PlacementOf(MusicCut? cut) =>
-        cut is { } song && _placementsByCut.TryGetValue(song, out var placement) ? placement : null;
+    private SongWarp? WarpOf(MusicCut? cut) =>
+        cut is { } song && _warpsByCut.TryGetValue(song, out var warp) ? warp : null;
 
     [Pure]
     private MusicCut? NearestCutOf(MusicAnchor anchor)

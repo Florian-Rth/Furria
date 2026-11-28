@@ -15,6 +15,8 @@ export interface DocumentStep {
   startSeconds: number | null;
   endSeconds: number | null;
   name: string;
+  startNeedsCheck: boolean;
+  endNeedsCheck: boolean;
 }
 
 export interface DocumentPart {
@@ -55,3 +57,15 @@ export const itemOf = <TItem>(
   collection: Readonly<Record<number, TItem>>,
   id: number,
 ): TItem | null => (Object.hasOwn(collection, id) ? (collection[id] ?? null) : null);
+
+export const stepBetween = (
+  startSeconds: number,
+  endSeconds: number,
+  endNeedsCheck: boolean,
+): DocumentStep => ({
+  startSeconds,
+  endSeconds,
+  name: '',
+  startNeedsCheck: false,
+  endNeedsCheck,
+});

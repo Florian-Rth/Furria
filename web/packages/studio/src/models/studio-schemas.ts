@@ -32,6 +32,8 @@ export const StudioStepSchema = z.object({
   endSeconds: z.number().nullable(),
   placement: PlacementSchema,
   endPlacement: PlacementSchema,
+  startNeedsCheck: z.boolean(),
+  endNeedsCheck: z.boolean(),
 });
 export type StudioStep = z.infer<typeof StudioStepSchema>;
 

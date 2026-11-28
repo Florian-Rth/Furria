@@ -49,6 +49,19 @@ public sealed class PutActStepEndTests : IClassFixture<ApiTestFixture>
         Assert.Equal([(10, 90), (90, 120)], await StepSpansOfAsync(admin, actId));
     }
 
+    [Fact]
+    public async Task Should_NoLongerAskToCheckTheEnd_When_TheEndIsMoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId, stepIds) = await TwoStepsAsync(ct);
+        await _fixture.FlagStepBordersForCheckAsync(stepIds[0], ct);
+
+        var response = await PutEndAsync(admin, actId, stepIds[0], 50);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal([(true, false), (false, false)], await StepChecksOfAsync(admin, actId));
+    }
+
     [Theory]
     [InlineData(0, 100)]
     [InlineData(0, 5)]

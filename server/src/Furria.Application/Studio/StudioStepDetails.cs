@@ -15,4 +15,8 @@ public sealed record StudioStepDetails
     public required AnchorPlacement Placement { get; init; }
 
     public required AnchorPlacement EndPlacement { get; init; }
+
+    public required bool StartNeedsCheck { get; init; }
+
+    public required bool EndNeedsCheck { get; init; }
 }

@@ -29,9 +29,9 @@ const saved: StudioDocument = {
     2: { mediaItemId: 2, startSeconds: 0, endSeconds: 20, firstBeatSeconds: null, tempoBpm: null },
   },
   steps: {
-    1: { startSeconds: 0, endSeconds: 8, name: '' },
-    2: { startSeconds: 8, endSeconds: 16, name: '' },
-    3: { startSeconds: 16, endSeconds: 40, name: '' },
+    1: { startSeconds: 0, endSeconds: 8, name: '', startNeedsCheck: false, endNeedsCheck: false },
+    2: { startSeconds: 8, endSeconds: 16, name: '', startNeedsCheck: false, endNeedsCheck: false },
+    3: { startSeconds: 16, endSeconds: 40, name: '', startNeedsCheck: false, endNeedsCheck: false },
   },
   parts: { 10: { name: 'A', firstStepId: 2, lastStepId: 2, mainVideoId: null } },
   spotOrder: [31, 32],
@@ -92,9 +92,46 @@ describe('savedAfter a split', () => {
     });
 
     expect([split.steps[3], split.steps[-1]]).toEqual([
-      { startSeconds: 16, endSeconds: 30, name: '' },
-      { startSeconds: 30, endSeconds: 40, name: '' },
+      { startSeconds: 16, endSeconds: 30, name: '', startNeedsCheck: false, endNeedsCheck: false },
+      { startSeconds: 30, endSeconds: 40, name: '', startNeedsCheck: false, endNeedsCheck: false },
     ]);
+  });
+});
+
+describe('savedAfter on flagged borders', () => {
+  const flagged = produce(saved, (draft) => {
+    for (const step of Object.values(draft.steps)) {
+      step.startNeedsCheck = true;
+      step.endNeedsCheck = true;
+    }
+  });
+
+  const checksOf = (result: StudioDocument): Record<string, [boolean, boolean]> =>
+    Object.fromEntries(
+      Object.entries(result.steps).map(([id, step]) => [
+        id,
+        [step.startNeedsCheck, step.endNeedsCheck],
+      ]),
+    );
+
+  it.each<{ name: string; write: SaveWrite; checks: Record<string, [boolean, boolean]> }>([
+    {
+      name: 'a split gives the old end flag to the created step',
+      write: { kind: 'stepAdd', stepId: -1, startSeconds: 30, endSeconds: 40 },
+      checks: { 1: [true, true], 2: [true, true], 3: [true, false], '-1': [false, true] },
+    },
+    {
+      name: 'a moved start is checked',
+      write: { kind: 'stepStart', stepId: 2, atSeconds: 9 },
+      checks: { 1: [true, true], 2: [false, true], 3: [true, true] },
+    },
+    {
+      name: 'a moved end is checked',
+      write: { kind: 'stepEnd', stepId: 2, atSeconds: 15 },
+      checks: { 1: [true, true], 2: [true, false], 3: [true, true] },
+    },
+  ])('$name', ({ write, checks }) => {
+    expect(checksOf(savedAfter(flagged, flagged, write))).toEqual(checks);
   });
 });
 

@@ -24,10 +24,10 @@ const saved: StudioDocument = {
     2: { mediaItemId: 2, startSeconds: 0, endSeconds: 20, firstBeatSeconds: null, tempoBpm: null },
   },
   steps: {
-    1: { startSeconds: 0, endSeconds: 8, name: '' },
-    2: { startSeconds: 8, endSeconds: 16, name: '' },
-    3: { startSeconds: 16, endSeconds: 24, name: '' },
-    4: { startSeconds: 24, endSeconds: 40, name: '' },
+    1: { startSeconds: 0, endSeconds: 8, name: '', startNeedsCheck: false, endNeedsCheck: false },
+    2: { startSeconds: 8, endSeconds: 16, name: '', startNeedsCheck: false, endNeedsCheck: false },
+    3: { startSeconds: 16, endSeconds: 24, name: '', startNeedsCheck: false, endNeedsCheck: false },
+    4: { startSeconds: 24, endSeconds: 40, name: '', startNeedsCheck: false, endNeedsCheck: false },
   },
   parts: { 10: { name: 'A', firstStepId: 1, lastStepId: 1, mainVideoId: null } },
   spotOrder: [31, 32],
@@ -158,9 +158,27 @@ describe('savePlanOf', () => {
     const tiled: StudioDocument = {
       ...saved,
       steps: {
-        1: { startSeconds: 0, endSeconds: 10, name: '' },
-        2: { startSeconds: 10, endSeconds: 20, name: '' },
-        3: { startSeconds: 20, endSeconds: 30, name: '' },
+        1: {
+          startSeconds: 0,
+          endSeconds: 10,
+          name: '',
+          startNeedsCheck: false,
+          endNeedsCheck: false,
+        },
+        2: {
+          startSeconds: 10,
+          endSeconds: 20,
+          name: '',
+          startNeedsCheck: false,
+          endNeedsCheck: false,
+        },
+        3: {
+          startSeconds: 20,
+          endSeconds: 30,
+          name: '',
+          startNeedsCheck: false,
+          endNeedsCheck: false,
+        },
       },
       parts: {},
     };

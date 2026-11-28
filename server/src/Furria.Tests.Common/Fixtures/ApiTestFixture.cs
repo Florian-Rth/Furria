@@ -469,6 +469,21 @@ public sealed class ApiTestFixture : IAsyncLifetime
         );
     }
 
+    public async Task FlagStepBordersForCheckAsync(int stepId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db
+            .ActSteps.Where(step => step.Id == stepId)
+            .ExecuteUpdateAsync(
+                setters =>
+                    setters
+                        .SetProperty(step => step.StartNeedsCheck, true)
+                        .SetProperty(step => step.EndNeedsCheck, true),
+                ct
+            );
+    }
+
     public async Task BookClubAssistantCallAsync(
         ClubAssistantTokens tokens,
         CancellationToken ct = default

@@ -4805,6 +4805,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("act_id");
 
+                    b.Property<bool>("EndNeedsCheck")
+                        .HasColumnType("boolean")
+                        .HasColumnName("end_needs_check");
+
                     b.Property<double>("EndSeconds")
                         .HasColumnType("double precision")
                         .HasColumnName("end_seconds");
@@ -4819,9 +4823,9 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(80)")
                         .HasColumnName("name");
 
-                    b.Property<bool>("NeedsCheck")
+                    b.Property<bool>("StartNeedsCheck")
                         .HasColumnType("boolean")
-                        .HasColumnName("needs_check");
+                        .HasColumnName("start_needs_check");
 
                     b.Property<double>("StartSeconds")
                         .HasColumnType("double precision")

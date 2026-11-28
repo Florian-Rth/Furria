@@ -23,6 +23,11 @@ internal static class SongReplacementSteps
         SoundSamples.Excerpt(Polka, 0, 40)
     );
 
+    internal static readonly SoundSignal MarchWithoutABreak = Joined(
+        SoundSamples.Excerpt(March, 5, 30),
+        SoundSamples.Excerpt(March, 38, 55)
+    );
+
     internal static readonly (double? Start, double? End)[] StepSpans =
     [
         (0, 10),
@@ -43,6 +48,36 @@ internal static class SongReplacementSteps
         await StepsBetweenAsync(admin, actId, 10, 40);
 
         return new MarchAndPolka(admin, actId, march, polka);
+    }
+
+    internal static async Task<MarchAndPolka> MarchAndPolkaWithABorderInTheBreakAsync(
+        ApiTestFixture fixture,
+        CancellationToken ct
+    )
+    {
+        var ctx = await fixture.BuildAsync(GardeWithDancers(fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var march = await AnalysedSongAsync(fixture, admin, actId, March, 10, 50, ct);
+        var polka = await AnalysedSongAsync(fixture, admin, actId, Polka, 0, 40, ct);
+        await StepsBetweenAsync(admin, actId, 10, 24, 40);
+
+        return new MarchAndPolka(admin, actId, march, polka);
+    }
+
+    internal static async Task<int> AnalysedVideoAsync(
+        ApiTestFixture fixture,
+        HttpClient client,
+        int actId,
+        SoundSignal sound,
+        CancellationToken ct
+    )
+    {
+        var mediaItemId = await UploadVideoAsync(client, actId, ct);
+        await fixture.RenderSongDirectlyAsync(mediaItemId, sound.DurationSeconds, ct);
+        await KeepProfileAsync(fixture, mediaItemId, sound, ct);
+
+        return await AddVideoAsync(client, actId, mediaItemId);
     }
 
     internal static async Task<(int MediaItemId, int SongId)> AnalysedSongAsync(
@@ -73,11 +108,21 @@ internal static class SongReplacementSteps
     {
         var mediaItemId = await UploadSongAsync(client, actId, ct);
         await fixture.RenderSongDirectlyAsync(mediaItemId, sound.DurationSeconds, ct);
+        await KeepProfileAsync(fixture, mediaItemId, sound, ct);
+
+        return mediaItemId;
+    }
+
+    private static async Task KeepProfileAsync(
+        ApiTestFixture fixture,
+        int mediaItemId,
+        SoundSignal sound,
+        CancellationToken ct
+    )
+    {
         var path = await fixture.SoundProfileOfAsync(mediaItemId, ct);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
         await File.WriteAllBytesAsync(path, SoundProfile.Of(sound).ToBytes(), ct);
-
-        return mediaItemId;
     }
 
     internal static SoundSignal Joined(SoundSignal first, SoundSignal second) =>

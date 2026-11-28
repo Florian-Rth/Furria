@@ -124,6 +124,8 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             EndSeconds = step.EndSeconds,
             Placement = step.Placement,
             EndPlacement = step.EndPlacement,
+            StartNeedsCheck = step.StartNeedsCheck,
+            EndNeedsCheck = step.EndNeedsCheck,
         };
 
     private static StudioPartDto ToDto(StudioPartDetails part) =>
@@ -324,6 +326,10 @@ public sealed record StudioStepDto
     public required AnchorPlacement Placement { get; init; }
 
     public required AnchorPlacement EndPlacement { get; init; }
+
+    public required bool StartNeedsCheck { get; init; }
+
+    public required bool EndNeedsCheck { get; init; }
 }
 
 public sealed record StudioPartDto

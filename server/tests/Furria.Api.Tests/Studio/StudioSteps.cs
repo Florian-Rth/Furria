@@ -328,6 +328,16 @@ internal static class StudioSteps
             ),
         ];
 
+    internal static async Task<(bool Start, bool End)[]> StepChecksOfAsync(
+        HttpClient client,
+        int actId
+    ) =>
+        [
+            .. (await StudioOfAsync(client, actId)).Studio!.Steps.Select(step =>
+                (step.StartNeedsCheck, step.EndNeedsCheck)
+            ),
+        ];
+
     internal static Task<int> UploadVideoAsync(
         HttpClient client,
         int actId,

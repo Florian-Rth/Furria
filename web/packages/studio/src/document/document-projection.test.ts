@@ -28,6 +28,8 @@ const step = (stepId: number, startSeconds: number, endSeconds: number) => ({
   endSeconds,
   placement: 'onTimeline' as const,
   endPlacement: 'onTimeline' as const,
+  startNeedsCheck: false,
+  endNeedsCheck: false,
 });
 
 const base: Studio = {

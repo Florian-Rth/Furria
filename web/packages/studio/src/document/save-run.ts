@@ -7,7 +7,7 @@ import type { SaveWrite } from './save-plan';
 import type { SaveOutcome, ServerWrite } from './save-port';
 import { applyChange, dropStep } from './studio-changes';
 import type { StudioDocument } from './studio-document';
-import { idsOf, itemOf } from './studio-document';
+import { idsOf, itemOf, stepBetween } from './studio-document';
 
 const resolvedOf = (
   ids: IdMap,
@@ -118,8 +118,10 @@ const stepAdded = (
 ): void => {
   const ownerId = splitOwnerIdOf(draft, write);
   const owner = ownerId === null ? null : itemOf(draft.steps, ownerId);
+  const carriedEndNeedsCheck = owner?.endNeedsCheck ?? false;
   if (owner !== null) {
     owner.endSeconds = write.startSeconds;
+    owner.endNeedsCheck = false;
     for (const partId of idsOf(draft.parts)) {
       const part = itemOf(draft.parts, partId);
       if (part !== null && part.lastStepId === ownerId) {
@@ -127,11 +129,11 @@ const stepAdded = (
       }
     }
   }
-  draft.steps[write.stepId] = {
-    startSeconds: write.startSeconds,
-    endSeconds: write.endSeconds,
-    name: '',
-  };
+  draft.steps[write.stepId] = stepBetween(
+    write.startSeconds,
+    write.endSeconds,
+    carriedEndNeedsCheck,
+  );
 };
 
 const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: SaveWrite): void => {
@@ -169,6 +171,7 @@ const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: S
       const step = itemOf(draft.steps, write.stepId);
       if (step !== null) {
         step.startSeconds = write.atSeconds;
+        step.startNeedsCheck = false;
       }
       return;
     }
@@ -176,6 +179,7 @@ const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: S
       const step = itemOf(draft.steps, write.stepId);
       if (step !== null) {
         step.endSeconds = write.atSeconds;
+        step.endNeedsCheck = false;
       }
       return;
     }

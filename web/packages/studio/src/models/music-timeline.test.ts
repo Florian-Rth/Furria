@@ -86,6 +86,8 @@ const step = (
   endSeconds,
   placement: startSeconds === null ? 'cutAway' : 'onTimeline',
   endPlacement: endSeconds === null ? 'cutAway' : 'onTimeline',
+  startNeedsCheck: false,
+  endNeedsCheck: false,
 });
 
 describe('musicSegmentsOf', () => {

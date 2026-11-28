@@ -13,6 +13,8 @@ const local: Studio = {
       endSeconds: 8,
       placement: 'onTimeline',
       endPlacement: 'onTimeline',
+      startNeedsCheck: false,
+      endNeedsCheck: false,
     },
     {
       stepId: -1,
@@ -21,6 +23,8 @@ const local: Studio = {
       endSeconds: 30,
       placement: 'onTimeline',
       endPlacement: 'onTimeline',
+      startNeedsCheck: false,
+      endNeedsCheck: false,
     },
   ],
   parts: [

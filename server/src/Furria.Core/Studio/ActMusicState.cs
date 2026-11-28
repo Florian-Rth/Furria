@@ -6,7 +6,7 @@ namespace Furria.Core.Studio;
 
 public sealed record ActMusicState(
     IReadOnlyList<SongSnapshot> Songs,
-    IReadOnlyList<StepAnchors> Steps,
+    IReadOnlyList<StepBorders> Steps,
     IReadOnlyList<PlacedVideo> Videos,
     int? ChoreographyVersion
 )
@@ -33,9 +33,9 @@ public sealed record ActMusicState(
         );
 
     [Pure]
-    private static string LineOf(StepAnchors step) =>
+    private static string LineOf(StepBorders step) =>
         FormattableString.Invariant(
-            $"step {step.StepId} {step.Start.SourceMediaItemId} {step.Start.Seconds:R} {step.End.SourceMediaItemId} {step.End.Seconds:R}"
+            $"step {step.StepId} {step.Start.SourceMediaItemId} {step.Start.Seconds:R} {step.StartNeedsCheck} {step.End.SourceMediaItemId} {step.End.Seconds:R} {step.EndNeedsCheck}"
         );
 
     [Pure]

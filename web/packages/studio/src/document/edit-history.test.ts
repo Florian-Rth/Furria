@@ -19,9 +19,15 @@ const document = (patch: Partial<StudioDocument>): StudioDocument => ({
   songOrder: [],
   songs: {},
   steps: {
-    1: { startSeconds: 0, endSeconds: 8, name: 'Auftakt' },
-    2: { startSeconds: 8, endSeconds: 16, name: '' },
-    3: { startSeconds: 16, endSeconds: 40, name: '' },
+    1: {
+      startSeconds: 0,
+      endSeconds: 8,
+      name: 'Auftakt',
+      startNeedsCheck: false,
+      endNeedsCheck: false,
+    },
+    2: { startSeconds: 8, endSeconds: 16, name: '', startNeedsCheck: false, endNeedsCheck: false },
+    3: { startSeconds: 16, endSeconds: 40, name: '', startNeedsCheck: false, endNeedsCheck: false },
   },
   parts: {},
   spotOrder: [],
@@ -111,18 +117,54 @@ describe('rebased', () => {
     );
     const theirs = document({
       steps: {
-        1: { startSeconds: 0, endSeconds: 8, name: 'Auftakt' },
-        2: { startSeconds: 8, endSeconds: 16, name: 'Ihr Name' },
-        3: { startSeconds: 16, endSeconds: 40, name: 'Ihr' },
+        1: {
+          startSeconds: 0,
+          endSeconds: 8,
+          name: 'Auftakt',
+          startNeedsCheck: false,
+          endNeedsCheck: false,
+        },
+        2: {
+          startSeconds: 8,
+          endSeconds: 16,
+          name: 'Ihr Name',
+          startNeedsCheck: false,
+          endNeedsCheck: false,
+        },
+        3: {
+          startSeconds: 16,
+          endSeconds: 40,
+          name: 'Ihr',
+          startNeedsCheck: false,
+          endNeedsCheck: false,
+        },
       },
     });
 
     const result = rebased(mine, theirs, 'replayPending');
 
     expect(result.state.document.steps).toEqual({
-      1: { startSeconds: 0, endSeconds: 9, name: 'Auftakt' },
-      2: { startSeconds: 9, endSeconds: 16, name: 'Ihr Name' },
-      3: { startSeconds: 16, endSeconds: 40, name: 'Mein' },
+      1: {
+        startSeconds: 0,
+        endSeconds: 9,
+        name: 'Auftakt',
+        startNeedsCheck: false,
+        endNeedsCheck: false,
+      },
+      2: {
+        startSeconds: 9,
+        endSeconds: 16,
+        name: 'Ihr Name',
+        startNeedsCheck: false,
+        endNeedsCheck: false,
+      },
+      3: {
+        startSeconds: 16,
+        endSeconds: 40,
+        name: 'Mein',
+        startNeedsCheck: false,
+        endNeedsCheck: false,
+      },
     });
   });
 
@@ -137,8 +179,20 @@ describe('rebased', () => {
     );
     const withoutStepThree = document({
       steps: {
-        1: { startSeconds: 0, endSeconds: 8, name: 'Auftakt' },
-        2: { startSeconds: 8, endSeconds: 16, name: '' },
+        1: {
+          startSeconds: 0,
+          endSeconds: 8,
+          name: 'Auftakt',
+          startNeedsCheck: false,
+          endNeedsCheck: false,
+        },
+        2: {
+          startSeconds: 8,
+          endSeconds: 16,
+          name: '',
+          startNeedsCheck: false,
+          endNeedsCheck: false,
+        },
       },
     });
 

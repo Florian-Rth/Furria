@@ -187,6 +187,7 @@ public sealed class ActStepService
             start,
             new MusicAnchor(head.EndSourceMediaItemId, head.EndSeconds)
         );
+        tail.EndNeedsCheck = head.EndNeedsCheck;
         EndTo(head, split.NewEnd);
         _dbContext.ActSteps.Add(tail);
         await _dbContext.SaveChangesAsync(ct);
@@ -246,12 +247,14 @@ public sealed class ActStepService
     {
         step.StartSourceMediaItemId = start.SourceMediaItemId;
         step.StartSeconds = start.Seconds;
+        step.StartNeedsCheck = false;
     }
 
     private static void EndTo(ActStep step, MusicAnchor end)
     {
         step.EndSourceMediaItemId = end.SourceMediaItemId;
         step.EndSeconds = end.Seconds;
+        step.EndNeedsCheck = false;
     }
 
     [Pure]

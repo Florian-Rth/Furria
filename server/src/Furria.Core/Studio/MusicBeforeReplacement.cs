@@ -2,7 +2,7 @@ namespace Furria.Core.Studio;
 
 public sealed record MusicBeforeReplacement(
     IReadOnlyList<SongSnapshot> Songs,
-    IReadOnlyList<StepAnchors> Steps,
+    IReadOnlyList<StepBorders> Steps,
     IReadOnlyList<PlacedVideo> Videos,
     ChoreographyDocument? Choreography
 )

@@ -10,6 +10,8 @@ const step = (stepId: number, start: number, end: number): StudioStep => ({
   endSeconds: end,
   placement: 'onTimeline',
   endPlacement: 'onTimeline',
+  startNeedsCheck: false,
+  endNeedsCheck: false,
 });
 
 const key = (seconds: number, right: number, back: number): TimedKeyframe => ({

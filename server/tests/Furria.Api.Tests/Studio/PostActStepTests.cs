@@ -73,6 +73,19 @@ public sealed class PostActStepTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_KeepAskingToCheckTheOldBorders_When_AFlaggedStepIsSplit()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+        var stepId = await CreateStepAsync(admin, actId, 30, 90);
+        await _fixture.FlagStepBordersForCheckAsync(stepId, ct);
+
+        await CreateStepAsync(admin, actId, 60, 90);
+
+        Assert.Equal([(true, false), (false, true)], await StepChecksOfAsync(admin, actId));
+    }
+
+    [Fact]
     public async Task Should_KeepBothHalvesInThePart_When_ItsLastStepIsSplit()
     {
         var ct = TestContext.Current.CancellationToken;

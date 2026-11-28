@@ -81,6 +81,63 @@ public sealed class PostActSongReplacementTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_MoveOnlyTheBordersAfterTheBreak_When_TheNewVersionCutsItOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var mix = await MarchAndPolkaWithABorderInTheBreakAsync(_fixture, ct);
+        var newFile = await AnalysedFileAsync(
+            _fixture,
+            mix.Admin,
+            mix.ActId,
+            MarchWithoutABreak,
+            ct
+        );
+
+        var (response, _) = await ReplaceSongAsync(mix.Admin, mix.ActId, mix.March.SongId, newFile);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var song = (await SongCutsOfAsync(mix.Admin, mix.ActId))[0];
+        Assert.Equal(5, song.Start, 0.1);
+        Assert.Equal(37, song.End, 0.1);
+        AssertNear(
+            [(0, 10), (10, 20.27), (20.27, 32), (32, 72)],
+            await StepSpansOfAsync(mix.Admin, mix.ActId)
+        );
+        Assert.Equal(
+            [(false, false), (false, true), (true, false), (false, false)],
+            await StepChecksOfAsync(mix.Admin, mix.ActId)
+        );
+    }
+
+    [Fact]
+    public async Task Should_PlaceAVideoByItsOwnSound_When_ItsMusicIsReplaced()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var mix = await MarchAndPolkaWithABorderInTheBreakAsync(_fixture, ct);
+        var videoId = await AnalysedVideoAsync(
+            _fixture,
+            mix.Admin,
+            mix.ActId,
+            SoundSamples.Excerpt(March, 40, 50),
+            ct
+        );
+        await PlaceVideoAsync(mix.Admin, mix.ActId, videoId, 30);
+        var newFile = await AnalysedFileAsync(
+            _fixture,
+            mix.Admin,
+            mix.ActId,
+            MarchWithoutABreak,
+            ct
+        );
+
+        var (response, _) = await ReplaceSongAsync(mix.Admin, mix.ActId, mix.March.SongId, newFile);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var video = await VideoInStudioAsync(mix.Admin, mix.ActId, videoId);
+        Assert.Equal(22, video.StartSeconds!.Value, 0.1);
+    }
+
+    [Fact]
     public async Task Should_RefuseTheReplacement_When_TheNewFileHoldsNoneOfTheSongs()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -5,7 +5,7 @@ import type { TimedStep } from './document-projection';
 import { timelineStepsOf } from './document-projection';
 import { sameValue } from './same-value';
 import type { SongSettings, StudioDocument } from './studio-document';
-import { idsOf, itemOf } from './studio-document';
+import { idsOf, itemOf, stepBetween } from './studio-document';
 
 export type StudioChange =
   | { kind: 'songOrder'; songIds: readonly number[] }
@@ -83,8 +83,9 @@ const stepSplit = (
     return;
   }
 
-  draft.steps[stepId] = { startSeconds: atSeconds, endSeconds: holding.endSeconds, name: '' };
+  draft.steps[stepId] = stepBetween(atSeconds, holding.endSeconds, owner.endNeedsCheck);
   owner.endSeconds = atSeconds;
+  owner.endNeedsCheck = false;
   for (const partId of idsOf(draft.parts)) {
     const part = itemOf(draft.parts, partId);
     if (part !== null && part.lastStepId === holding.stepId) {
@@ -113,14 +114,10 @@ const stepMarked: Edit<'stepMark'> = (
   }
 
   if (timeline.length === 0 && atSeconds > STEP_BORDER_TOLERANCE_SECONDS) {
-    draft.steps[openingStepId] = { startSeconds: 0, endSeconds: atSeconds, name: '' };
+    draft.steps[openingStepId] = stepBetween(0, atSeconds, false);
   }
   const following = timeline.find((step) => step.startSeconds > atSeconds);
-  draft.steps[stepId] = {
-    startSeconds: atSeconds,
-    endSeconds: following?.startSeconds ?? lengthSeconds,
-    name: '',
-  };
+  draft.steps[stepId] = stepBetween(atSeconds, following?.startSeconds ?? lengthSeconds, false);
 };
 
 const stepMoved: Edit<'stepMove'> = (draft, { stepId, atSeconds }) => {
@@ -129,6 +126,10 @@ const stepMoved: Edit<'stepMove'> = (draft, { stepId, atSeconds }) => {
   const moved = timeline[index];
   const step = itemOf(draft.steps, stepId);
   if (moved === undefined || step === null) {
+    return;
+  }
+
+  if (nearBorder(moved.startSeconds, atSeconds)) {
     return;
   }
 
@@ -142,9 +143,11 @@ const stepMoved: Edit<'stepMove'> = (draft, { stepId, atSeconds }) => {
   }
 
   step.startSeconds = atSeconds;
+  step.startNeedsCheck = false;
   const previous = touching === null ? null : itemOf(draft.steps, touching.stepId);
   if (previous !== null) {
     previous.endSeconds = atSeconds;
+    previous.endNeedsCheck = false;
   }
 };
 
@@ -228,6 +231,7 @@ const stepRemoved: Edit<'stepRemove'> = (draft, { stepId }) => {
 
   if (absorbing !== null && removed !== undefined) {
     absorbing.endSeconds = removed.endSeconds;
+    absorbing.endNeedsCheck = false;
   }
   dropStep(draft, stepId);
 };

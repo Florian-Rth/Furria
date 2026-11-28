@@ -31,7 +31,13 @@ export const documentOf = (studio: Studio): StudioDocument => ({
   steps: Object.fromEntries(
     studio.steps.map((step) => [
       step.stepId,
-      { startSeconds: step.startSeconds, endSeconds: step.endSeconds, name: step.name },
+      {
+        startSeconds: step.startSeconds,
+        endSeconds: step.endSeconds,
+        name: step.name,
+        startNeedsCheck: step.startNeedsCheck,
+        endNeedsCheck: step.endNeedsCheck,
+      },
     ]),
   ),
   parts: Object.fromEntries(
@@ -97,12 +103,25 @@ const MUSIC_END_TOLERANCE_SECONDS = 0.01;
 const isOnTheTimeline = (step: DocumentStep): boolean =>
   step.startSeconds !== null && step.endSeconds !== null;
 
+type StepDetails = Pick<DocumentStep, 'name' | 'startNeedsCheck' | 'endNeedsCheck'>;
+
+const UNKNOWN_STEP_DETAILS: StepDetails = {
+  name: '',
+  startNeedsCheck: false,
+  endNeedsCheck: false,
+};
+
+const detailsOf = (step: DocumentStep | null): StepDetails =>
+  step === null
+    ? UNKNOWN_STEP_DETAILS
+    : { name: step.name, startNeedsCheck: step.startNeedsCheck, endNeedsCheck: step.endNeedsCheck };
+
 const placedStepOf = (
   { stepId, startSeconds, endSeconds }: TimedStep,
-  name: string,
+  details: StepDetails,
 ): StudioStep => ({
   stepId,
-  name,
+  ...details,
   startSeconds,
   endSeconds,
   placement: 'onTimeline',
@@ -111,11 +130,11 @@ const placedStepOf = (
 
 const beyondTheMusicOf = (
   { stepId, startSeconds }: TimedStep,
-  name: string,
+  details: StepDetails,
   lengthSeconds: number,
 ): StudioStep => ({
   stepId,
-  name,
+  ...details,
   startSeconds: null,
   endSeconds: null,
   placement: startSeconds < lengthSeconds ? 'onTimeline' : 'cutAway',
@@ -124,18 +143,18 @@ const beyondTheMusicOf = (
 
 const unplacedStepOf = (known: StudioStep, step: DocumentStep): StudioStep => ({
   ...known,
-  name: step.name,
+  ...detailsOf(step),
   startSeconds: null,
   endSeconds: null,
 });
 
 const stepsOf = (base: Studio, document: StudioDocument, lengthSeconds: number): StudioStep[] => {
   const timeline = timelineStepsOf(document).map((timed) => {
-    const name = itemOf(document.steps, timed.stepId)?.name ?? '';
+    const details = detailsOf(itemOf(document.steps, timed.stepId));
 
     return timed.endSeconds > lengthSeconds + MUSIC_END_TOLERANCE_SECONDS
-      ? beyondTheMusicOf(timed, name, lengthSeconds)
-      : placedStepOf(timed, name);
+      ? beyondTheMusicOf(timed, details, lengthSeconds)
+      : placedStepOf(timed, details);
   });
   const unplaced = base.steps.flatMap((known) => {
     const step = itemOf(document.steps, known.stepId);
