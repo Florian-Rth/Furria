@@ -1,4 +1,3 @@
-import { KkScoreDeskEvenings } from './internal/layout/KkScoreDeskEvenings';
 import { KkScoreDeskHead } from './internal/layout/KkScoreDeskHead';
 import { KkScoreDeskIntro } from './internal/layout/KkScoreDeskIntro';
 import { KkScoreDeskList } from './internal/layout/KkScoreDeskList';
@@ -14,5 +13,4 @@ export const KkScoreDesk = Object.assign(KkScoreDeskRoot, {
   Score: KkScoreDeskScore,
   List: KkScoreDeskList,
   Pane: KkScoreDeskPane,
-  Evenings: KkScoreDeskEvenings,
 });

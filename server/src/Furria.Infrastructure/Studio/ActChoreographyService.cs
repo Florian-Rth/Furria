@@ -16,12 +16,12 @@ public sealed class ActChoreographyService
     private const string StaleVersionMessage =
         "Die Aufstellung wurde inzwischen woanders geändert. Lade sie neu und ändere sie erneut.";
 
-    public const string ProblemsMessage =
+    private const string ProblemsMessage =
         "Die Aufstellung passt nicht zu den Plätzen, der Musik oder der Bühne des Auftritts.";
 
-    public const string UnknownVersionMessage = "Diese Fassung der Aufstellung gibt es nicht.";
+    private const string UnknownVersionMessage = "Diese Fassung der Aufstellung gibt es nicht.";
 
-    public const string OutdatedVersionMessage =
+    private const string OutdatedVersionMessage =
         "Diese Fassung ist älter als die übernommene Endfassung und passt nicht mehr zur Musik.";
 
     private readonly AppDbContext _dbContext;
@@ -58,7 +58,7 @@ public sealed class ActChoreographyService
         return await RemergedOnLostRaceAsync(() => MergeAndSaveAsync(accountId, command, ct));
     }
 
-    public async Task<Result<ChoreographySaveDetails>> RemergedOnLostRaceAsync(
+    private async Task<Result<ChoreographySaveDetails>> RemergedOnLostRaceAsync(
         Func<Task<Result<ChoreographySaveDetails>>> save
     )
     {
@@ -82,7 +82,7 @@ public sealed class ActChoreographyService
         CancellationToken ct
     )
     {
-        var choreography = await SessionChoreographyAsync(command.ActId, ct);
+        var choreography = await _history.ChoreographyOfAsync(command.ActId, ct);
         var baseline = await BaselineAsync(choreography, command.BaseVersion, ct);
         if (baseline is null)
             return Result<ChoreographySaveDetails>.Conflict(StaleVersionMessage);
@@ -119,7 +119,7 @@ public sealed class ActChoreographyService
         if (!editable.IsSuccess)
             return Result<int>.Carrying(editable);
 
-        var choreography = await SessionChoreographyAsync(command.ActId, ct);
+        var choreography = await _history.ChoreographyOfAsync(command.ActId, ct);
         if (choreography is null)
             return Result<int>.NotFound(UnknownVersionMessage);
 
@@ -153,17 +153,12 @@ public sealed class ActChoreographyService
         if (!act.IsSuccess)
             return Result<ChoreographyVersionPage>.Carrying(act);
 
-        var choreographyId = await _dbContext
-            .Choreographies.Where(row => row.ActId == query.ActId && row.AppearanceId == null)
-            .Select(row => (int?)row.Id)
-            .SingleOrDefaultAsync(ct);
-
         return Result<ChoreographyVersionPage>.Success(
-            await _history.VersionsOfAsync(choreographyId, query.Before, ct)
+            await _history.VersionsOfAsync(query.ActId, query.Before, ct)
         );
     }
 
-    public async Task<ChoreographyDocument?> BaselineAsync(
+    private async Task<ChoreographyDocument?> BaselineAsync(
         Choreography? choreography,
         int? baseVersion,
         CancellationToken ct
@@ -181,7 +176,7 @@ public sealed class ActChoreographyService
             : await _history.DocumentAtAsync(choreography, version, ct);
     }
 
-    public async Task<Result<ChoreographyMerge>> MergeAsync(
+    private async Task<Result<ChoreographyMerge>> MergeAsync(
         ChoreographyMergeQuery query,
         CancellationToken ct
     )
@@ -199,7 +194,7 @@ public sealed class ActChoreographyService
             : Result<ChoreographyMerge>.Success(merge);
     }
 
-    public async Task<Result<ChoreographyDocument>> RestoredDocumentAsync(
+    private async Task<Result<ChoreographyDocument>> RestoredDocumentAsync(
         Choreography choreography,
         int version,
         CancellationToken ct
@@ -219,7 +214,7 @@ public sealed class ActChoreographyService
             : Result<ChoreographyDocument>.Success(restored);
     }
 
-    public async Task<ChoreographyFrame> FrameOfAsync(int actId, CancellationToken ct) =>
+    private async Task<ChoreographyFrame> FrameOfAsync(int actId, CancellationToken ct) =>
         new(
             await SpotIdsOfAsync(actId, ct),
             await MusicSourceIdsOfAsync(actId, ct),
@@ -228,7 +223,7 @@ public sealed class ActChoreographyService
         );
 
     [Pure]
-    public static ChoreographyWrite SavedBy(int accountId, ChoreographyDocument document) =>
+    private static ChoreographyWrite SavedBy(int accountId, ChoreographyDocument document) =>
         new()
         {
             AccountId = accountId,
@@ -237,13 +232,13 @@ public sealed class ActChoreographyService
         };
 
     [Pure]
-    public static Result<ChoreographySaveDetails> Saved(int version) =>
+    private static Result<ChoreographySaveDetails> Saved(int version) =>
         Result<ChoreographySaveDetails>.Success(
             new ChoreographySaveDetails { Version = version, Overlaps = [] }
         );
 
     [Pure]
-    public static Result<ChoreographySaveDetails> OverlapsOrRefusal(
+    private static Result<ChoreographySaveDetails> OverlapsOrRefusal(
         Result<ChoreographyMerge> merge
     ) =>
         merge.IsSuccess
@@ -257,12 +252,6 @@ public sealed class ActChoreographyService
         ChoreographyDocument document,
         ChoreographyFrame frame
     ) => new([.. document.Tracks.Where(track => frame.SpotIds.Contains(track.SpotId))]);
-
-    private Task<Choreography?> SessionChoreographyAsync(int actId, CancellationToken ct) =>
-        _dbContext.Choreographies.SingleOrDefaultAsync(
-            row => row.ActId == actId && row.AppearanceId == null,
-            ct
-        );
 
     private Choreography AddedChoreography(int actId)
     {

@@ -9,13 +9,9 @@ interface ActPracticeBodyProps {
   studio: ActStudio;
 }
 
-const SESSION_KEY = 'session';
-
 export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page, actId, studio }) => {
   const tone = page.load.act?.group?.tone ?? null;
-  const screenKey = `${actId}:${page.evening?.eventId ?? SESSION_KEY}`;
   const context = {
-    evening: page.evening,
     startEditing: page.startEditing,
     startHall: page.startHall,
     toggleEditing: page.toggleEditing,
@@ -25,14 +21,14 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page, actId, studio 
 
   return (
     <ActStudioBody
-      key={screenKey}
+      key={actId}
       actId={actId}
       title={page.title}
       tone={tone}
       studio={studio}
       viewerId={page.load.viewerId}
       canEdit={page.load.canEditStudio}
-      cast={page.eveningCast}
+      cast={page.load.act?.cast ?? []}
       context={context}
     />
   );

@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.RunningOrders;
-using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -22,7 +21,7 @@ public sealed class DeleteRunningOrderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseToDeleteTheRunningOrder_When_AnAppearanceChangesTheEvening()
+    public async Task Should_DeleteTheRunningOrderWithItsAppearances_When_APlannerDeletesIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
@@ -30,28 +29,17 @@ public sealed class DeleteRunningOrderTests : IClassFixture<ApiTestFixture>
         var eventId = ctx.Club.Events.IdOf(Gala);
         var tanz = await CreateActAsync(client, "Gardetanz", ctx.Groups.Groups.IdOf(Garde));
         await SavedAsync(client, eventId, null, [Line(tanz, 0)]);
-        await _fixture.ChangeEveningCastDirectlyAsync(
-            eventId,
-            tanz,
-            ctx.Identity.People.IdOf(Anna),
-            CastChange.Removed,
-            ct
-        );
 
         var response = await client.DELETEAsync<DeleteRunningOrder, DeleteRunningOrderRequest>(
             new() { EventId = eventId }
         );
 
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        Assert.Equal(
-            "Für diesen Abend angepasst, die Anpassung ginge verloren: „Gardetanz“ (Besetzung).",
-            await RefusalOfAsync(response)
-        );
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
             .Expected.RunningOrder(eventId)
-            .ToHaveVersion(1)
+            .ToNotExist()
             .RunningOrder(eventId)
-            .ToHaveAppearancesOf(tanz)
+            .ToHaveAppearancesOf()
             .AssertAsync(ct);
     }
 }

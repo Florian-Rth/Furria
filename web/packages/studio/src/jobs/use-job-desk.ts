@@ -62,11 +62,10 @@ export const useJobDesk = (screen: StudioScreen, editor: ActStudioStage): JobDes
   const jobs = useCurrentJob(screen, confirm);
   const takes = useActStudioTakes(screen);
   const plainDesk = useActDesk(screen, editor, takes);
-  const onEvening = screen.evening !== null;
   const [open, setOpen] = useState<JobDeskPane>(() =>
-    setupStartsOpen(screen.studio, onEvening) ? 'setup' : 'job',
+    setupStartsOpen(screen.studio) ? 'setup' : 'job',
   );
-  if (open === 'setup' && !setupShownOf(screen.studio, onEvening)) {
+  if (open === 'setup' && !setupShownOf(screen.studio)) {
     setOpen('job');
   }
   const openVideos = (): void => {

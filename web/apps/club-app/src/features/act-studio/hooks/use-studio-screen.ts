@@ -18,13 +18,12 @@ import { useStudioPlayback } from '@furria/studio/use-studio-playback';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import { useKkLaneWide } from '@furria/ui/KkLaneWide';
 import { useAudioPeaks } from '@/features/acts/api';
-import type { ActStudio, StudioEvening } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useLargeText } from '@/lib/use-large-text';
 import { actUploadPortOf } from '../act-upload-port';
 import type { VideoMutations } from '../api';
 import { useSongMutations, useVideoMutations } from '../api';
-import { eveningStudioOf } from '../studio-evening';
 import { useStepSetupRoute } from './use-step-setup-route';
 import { useStudioDeveloping } from './use-studio-developing';
 import { useStudioDocument } from './use-studio-document';
@@ -34,7 +33,6 @@ import { useVideoAutoAlign } from './use-video-auto-align';
 import { useVisitHistory } from './use-visit-history';
 
 export interface StudioScreenContext {
-  evening: StudioEvening | null;
   startEditing: boolean;
   startHall: (() => void) | null;
   toggleEditing?: () => void;
@@ -55,7 +53,6 @@ export const useStudioScreen = (
   canEdit: boolean,
   cast: readonly CastPerson[],
   {
-    evening,
     startEditing,
     startHall,
     toggleEditing,
@@ -67,25 +64,18 @@ export const useStudioScreen = (
   const wide = useKkLaneWide();
   const ownMode = useActStudioMode(canEdit, {
     silent: !canPractise(source),
-    evening: evening !== null,
     editing: startEditing,
     stageOnly: stageEditor,
     tool: startTool ?? null,
   });
   const mode = toggleEditing === undefined ? ownMode : { ...ownMode, toggle: toggleEditing };
   const music = useSongMutations(actId);
-  const work = useStudioDocument({ actId, eventId: null }, source);
-  const stageDocument = useStudioDocument({ actId, eventId: evening?.eventId ?? null }, source);
+  const work = useStudioDocument(actId, source);
   const videos = useVideoMutations(actId);
   useVideoAutoAlign(source, canEdit, videos);
   useStudioDeveloping(actId, source);
   const edits = useActStudioEdits();
-  const { studio, final, add } = useStudioFinal(
-    actId,
-    eveningStudioOf(work.studio, stageDocument.studio, evening, cast),
-    mode,
-    edits,
-  );
+  const { studio, final, add } = useStudioFinal(actId, work.studio, mode, edits);
   const peaksByItem = useAudioPeaks(musicSegmentsOf(studio));
   const base = useStudioPlayback(studio, viewerId, peaksByItem);
   const playback: StudioPlayback = {
@@ -104,19 +94,17 @@ export const useStudioScreen = (
     videos: actUploadPortOf(actId, videos.add.mutateAsync),
     final: actUploadPortOf(actId, add),
   };
-  const history = useVisitHistory(actId, studio);
+  const history = useVisitHistory(actId);
   const openMusic = useStudioMusicRoute(actId);
   const openStepSetup = useStepSetupRoute(actId);
 
   return {
     tone,
-    evening,
     mode,
     editor: studioEditorOf(stageEditor, mode.editing, wide),
     songs: {
       remove: music.remove.mutate,
     },
-    stageDocument,
     cast,
     document: work,
     videos: {

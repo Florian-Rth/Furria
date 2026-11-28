@@ -48,7 +48,6 @@ import { useStepDesk } from '@furria/studio/use-step-desk';
 import { useStepNaming } from '@furria/studio/use-step-naming';
 
 const BAR_KEYS: readonly string[] = ['shorter', 'longer', 'mark', 'newPart'];
-const EVENING_BAR_KEYS: readonly string[] = ['loopPart'];
 const ignore = (): void => undefined;
 
 export const useStepsJob = (
@@ -56,13 +55,12 @@ export const useStepsJob = (
   borders: DeskBorders,
   confirm: JobConfirm,
 ): JobView => {
-  const { playback, practice, evening } = screen;
+  const { playback, practice } = screen;
   const work = screen.document;
   const { steps, parts, countMarks, length, player } = playback;
   const step = practice.step;
   const texts = useStepNaming(screen);
   const desk = useStepDesk(screen);
-  const onSession = evening === null;
   const first = steps.length === 0;
   const mark = jobActionOf(
     'mark',
@@ -84,7 +82,7 @@ export const useStepsJob = (
       owner: JOB_STEP_OWNER,
       title: JOB_NO_STEP,
       meta: silent ? JOB_NO_STEP_MUSIC : JOB_NO_STEP_HINT,
-      sections: onSession ? startSections : [],
+      sections: startSections,
       danger: null,
     };
     const view = { context: JOB_NO_STEP, blocks: [noStep], bar: [] };
@@ -125,7 +123,7 @@ export const useStepsJob = (
   const lengthSection: JobSection = canStretch
     ? { kind: 'tools', key: 'length', title: JOB_GROUP_LENGTH, aside: null, actions: lengthTools }
     : { kind: 'note', key: 'length', text: JOB_LAST_STEP };
-  const sessionSections: JobSection[] = [
+  const stepSections: JobSection[] = [
     {
       kind: 'fields',
       key: 'text',
@@ -149,20 +147,18 @@ export const useStepsJob = (
     owner: stepOwnerOf(number, steps.length),
     title: step.name,
     meta: stepMetaOf(start, end, counts),
-    sections: onSession ? sessionSections : [],
-    danger: onSession
-      ? jobActionOf(
-          'deleteStep',
-          confirm.armed(deleteKey) ? JOB_SURE : JOB_STEP_DELETE,
-          'delete',
-          () => {
-            confirm.press(deleteKey, () => {
-              work.change({ kind: 'stepRemove', stepId: step.stepId });
-            });
-          },
-          { tone: 'danger' },
-        )
-      : null,
+    sections: stepSections,
+    danger: jobActionOf(
+      'deleteStep',
+      confirm.armed(deleteKey) ? JOB_SURE : JOB_STEP_DELETE,
+      'delete',
+      () => {
+        confirm.press(deleteKey, () => {
+          work.change({ kind: 'stepRemove', stepId: step.stepId });
+        });
+      },
+      { tone: 'danger' },
+    ),
   };
 
   const partDesk = desk?.part ?? null;
@@ -261,20 +257,18 @@ export const useStepsJob = (
             stepNumberOf(steps, part.stepIds.at(-1) ?? -1),
             part.stepIds.length,
           ),
-          sections: onSession ? partSectionsOf(partDesk, part.name) : [loopSection],
-          danger: onSession
-            ? jobActionOf(
-                'dissolve',
-                confirm.armed(`part:${part.partId}`) ? JOB_SURE_DISSOLVE : JOB_PART_DISSOLVE,
-                'dissolve',
-                () => {
-                  confirm.press(`part:${part.partId}`, () => {
-                    work.change({ kind: 'partRemove', partId: part.partId });
-                  });
-                },
-                { tone: 'danger' },
-              )
-            : null,
+          sections: partSectionsOf(partDesk, part.name),
+          danger: jobActionOf(
+            'dissolve',
+            confirm.armed(`part:${part.partId}`) ? JOB_SURE_DISSOLVE : JOB_PART_DISSOLVE,
+            'dissolve',
+            () => {
+              confirm.press(`part:${part.partId}`, () => {
+                work.change({ kind: 'partRemove', partId: part.partId });
+              });
+            },
+            { tone: 'danger' },
+          ),
         };
   const view: JobView = {
     context: stepTitleOf(number, step.name),
@@ -282,5 +276,5 @@ export const useStepsJob = (
     bar: [],
   };
 
-  return { ...view, bar: actionsIn(view, onSession ? BAR_KEYS : EVENING_BAR_KEYS) };
+  return { ...view, bar: actionsIn(view, BAR_KEYS) };
 };

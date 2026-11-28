@@ -206,8 +206,6 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<Appearance> Appearances => Set<Appearance>();
 
-    public DbSet<AppearanceCastChange> AppearanceCastChanges => Set<AppearanceCastChange>();
-
     public DbSet<RunningOrderRule> RunningOrderRules => Set<RunningOrderRule>();
 
     public DbSet<RunningOrderSuspendedWish> RunningOrderSuspendedWishes =>
@@ -226,8 +224,6 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<ActVideo> ActVideos => Set<ActVideo>();
 
     public DbSet<Spot> Spots => Set<Spot>();
-
-    public DbSet<AppearanceSpot> AppearanceSpots => Set<AppearanceSpot>();
 
     public DbSet<Choreography> Choreographies => Set<Choreography>();
 

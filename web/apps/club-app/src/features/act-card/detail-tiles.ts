@@ -9,13 +9,12 @@ import {
   SPOTS_TITLE,
   STEPS_TITLE,
   STUDIO_OPEN,
-  toCountLine,
-  toEveningsAside,
   toMusicFigure,
   toMusicSource,
   toSessionLine,
   toSpotsMeta,
   toStepsMeta,
+  toTrainingsAside,
   toVideosMeta,
   VIDEOS_TITLE,
   WISHES_TITLE,
@@ -124,19 +123,16 @@ const wishesTileOf = (view: ActCardView): DetailTile => ({
 });
 
 const sessionTileOf = (view: ActCardView): DetailTile => {
-  const joined = view.evenings.filter((evening) => evening.appearance !== null).length;
+  const trainings = view.trainings.length;
 
   return {
     key: 'session',
     icon: 'session',
     label: SESSION_TITLE,
-    value: String(joined),
-    aside: toEveningsAside(joined),
-    tone: countTone(joined),
-    lines: [
-      ...(view.sessionYear === null ? [] : [toSessionLine(view.sessionYear)]),
-      toCountLine(view.trainings.length, 'Training', 'Trainings'),
-    ],
+    value: String(trainings),
+    aside: toTrainingsAside(trainings),
+    tone: countTone(trainings),
+    lines: view.sessionYear === null ? [] : [toSessionLine(view.sessionYear)],
     link: null,
     hint: '',
   };

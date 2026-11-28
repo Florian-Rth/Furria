@@ -9,7 +9,6 @@ import { useActsQuery, useRunningOrdersQuery } from '@/features/running-order/ap
 import {
   dissolveBlock,
   dropAct,
-  isDroppable,
   moveUnit,
   pickActs,
   removeRule,
@@ -38,7 +37,6 @@ import {
 } from '../planner-catalogue';
 import {
   toAllPlacedMessage,
-  toKeptForEveningMessage,
   toPickedMessage,
   toPlacedMessage,
   toRemovedMessage,
@@ -149,10 +147,6 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
   const lineNameOf = (key: LineKey): string =>
     draft.lines.find((candidate) => candidate.key === key)?.act.name ?? '';
   const dropLine = (line: DraftLine): void => {
-    if (!isDroppable(line)) {
-      notify({ tone: 'info', message: toKeptForEveningMessage(line.act.name) });
-      return;
-    }
     apply(dropAct(draft, line.act.actId), toRemovedMessage(line.act.name));
   };
   const suggestion = usePlannerSuggestion(eventId, draft, store.findings, apply, lineNameOf);

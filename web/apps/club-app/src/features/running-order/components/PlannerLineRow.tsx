@@ -68,7 +68,6 @@ export const PlannerLineRow: FC<PlannerLineRowProps> = ({ entry }) => {
       act={act}
       cast={act.cast}
       compact={compact}
-      eveningChanges={entry.line.eveningChanges}
       archived={planner.isArchived(act.actId)}
     />
   );

@@ -51,7 +51,7 @@ export const useStudioSetup = (
 ): StudioSetup => {
   const { playback, mode, studio } = screen;
   const setup = setupOf(studio);
-  const shown = setupShownOf(studio, screen.evening !== null);
+  const shown = setupShownOf(studio);
   const stepsDone = setup.rows.some((row) => row.key === 'steps' && row.state === 'done');
   const songs = useStudioUploads(screen.uploads.songs);
   const videos = useStudioUploads(screen.uploads.videos);

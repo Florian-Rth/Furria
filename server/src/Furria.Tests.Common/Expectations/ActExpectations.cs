@@ -77,6 +77,34 @@ public sealed class ActExpectations
                 )
         );
 
+    public Expected ToHaveChoreographiesAtVersions(params int[] versions) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    versions.Order(),
+                    await dbContext
+                        .Choreographies.AsNoTracking()
+                        .Where(row => row.ActId == _actId)
+                        .OrderBy(row => row.Version)
+                        .Select(row => row.Version)
+                        .ToListAsync(ct)
+                )
+        );
+
+    public Expected ToHaveChoreographyHistoryAtVersions(params int[] versions) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    versions.Order(),
+                    await dbContext
+                        .ChoreographyVersions.AsNoTracking()
+                        .Where(row => row.Choreography!.ActId == _actId)
+                        .OrderBy(row => row.Version)
+                        .Select(row => row.Version)
+                        .ToListAsync(ct)
+                )
+        );
+
     public Expected ToBeInUse() =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ArchivedAt)

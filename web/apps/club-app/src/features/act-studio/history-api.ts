@@ -22,7 +22,6 @@ const olderCursorOf = (page: ChoreographyVersionPage): VersionCursor | undefined
 
 export const useChoreographyVersionsQuery = (
   actId: number,
-  eventId: number | null,
   enabled: boolean,
 ): UseInfiniteQueryResult<InfiniteData<ChoreographyVersionPage, VersionCursor>, Error> =>
   useInfiniteQuery<
@@ -32,11 +31,11 @@ export const useChoreographyVersionsQuery = (
     QueryKey,
     VersionCursor
   >({
-    queryKey: queryKeys.choreographyVersions(actId, eventId),
+    queryKey: queryKeys.choreographyVersions(actId),
     queryFn: enabled
       ? ({ pageParam }) =>
           withFreshAccessToken((accessToken) =>
-            requestChoreographyVersions(actId, eventId, pageParam, accessToken),
+            requestChoreographyVersions(actId, pageParam, accessToken),
           )
       : skipToken,
     initialPageParam: NEWEST_PAGE,
@@ -45,17 +44,14 @@ export const useChoreographyVersionsQuery = (
 
 export const useChoreographyRestore = (
   actId: number,
-  eventId: number | null,
 ): UseMutationResult<SavedChoreography, Error, number> => {
   const failure = useStudioWriteFailure(actId);
 
   return useApiMutation({
     request: (version: number, accessToken) =>
-      throughStudioEditor({ actId, eventId }, () =>
-        requestChoreographyRestore(actId, eventId, version, accessToken),
-      ),
-    changes: eventId === null ? ['actChoreography'] : ['actEvening'],
+      throughStudioEditor(actId, () => requestChoreographyRestore(actId, version, accessToken)),
+    changes: ['actChoreography'],
     notice: failure,
-    key: eventId === null ? ['actStage', actId] : ['actEvening', actId, eventId],
+    key: ['actStage', actId],
   });
 };

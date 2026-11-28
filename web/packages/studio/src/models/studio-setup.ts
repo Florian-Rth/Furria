@@ -133,8 +133,6 @@ export const setupOf = (studio: Studio): Setup => {
   };
 };
 
-export const setupStartsOpen = (studio: Studio, onEvening: boolean): boolean =>
-  !onEvening && !setupOf(studio).started;
+export const setupStartsOpen = (studio: Studio): boolean => !setupOf(studio).started;
 
-export const setupShownOf = (studio: Studio, onEvening: boolean): boolean =>
-  !onEvening && !setupOf(studio).complete;
+export const setupShownOf = (studio: Studio): boolean => !setupOf(studio).complete;

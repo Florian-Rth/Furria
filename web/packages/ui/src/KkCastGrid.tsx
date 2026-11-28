@@ -8,11 +8,10 @@ import type { KkImageSource } from './image-source';
 import { focusRing } from './internal/focus-ring';
 import { redInk } from './internal/red-ink';
 import { KkAvatar } from './KkAvatar/KkAvatar';
-import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
-export type KkCastTileState = 'in' | 'out' | 'guest' | 'person';
+export type KkCastTileState = 'in' | 'out' | 'person';
 
 export interface KkCastTile {
   id: number;
@@ -25,7 +24,6 @@ export interface KkCastTile {
 }
 
 const TILE_MIN = '4.5rem';
-const AVATAR_EXTENT = '2.5rem';
 const FLIP = { duration: 0.42, ease: [0.22, 0.61, 0.36, 1] } as const;
 
 const staticTilePaint: CSSObject = {
@@ -67,40 +65,18 @@ const badgePaint: CSSObject = {
   color: 'text.primary',
 };
 
-const addPaint = (theme: Theme): CSSObject => ({
-  ...tilePaint(theme),
-  color: 'text.secondary',
-  '& [data-kk-cast-add]': {
-    width: AVATAR_EXTENT,
-    height: AVATAR_EXTENT,
-    display: 'inline-flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: '50%',
-    borderWidth: kkTokens.line.section,
-    borderStyle: 'dashed',
-    borderColor: 'divider',
-  },
-});
-
-type KkCastGridAddTile =
-  | { addLabel: string; onAdd: () => void }
-  | { addLabel?: never; onAdd?: never };
-
-type KkCastGridProps = KkCastGridAddTile & {
+interface KkCastGridProps {
   label: string;
   tiles: readonly KkCastTile[];
   onToggle: (id: number) => void;
   readOnly?: boolean;
   sx?: KkSx;
-};
+}
 
 export const KkCastGrid: FC<KkCastGridProps> = ({
   label,
   tiles,
-  addLabel,
   onToggle,
-  onAdd,
   readOnly = false,
   sx,
 }) => {
@@ -180,23 +156,6 @@ export const KkCastGrid: FC<KkCastGridProps> = ({
       </Stack>
     );
   });
-  const addTile =
-    readOnly || onAdd === undefined ? null : (
-      <Stack component="li" sx={{ minWidth: 0 }}>
-        <ButtonBase onClick={onAdd} data-kk-cast-add-tile sx={addPaint}>
-          <Stack component="span" data-kk-cast-add>
-            <KkIcon name="add" size="small" />
-          </Stack>
-          <Box
-            component="span"
-            sx={{ typography: 'caption', fontWeight: 800, lineHeight: 1.15, textAlign: 'center' }}
-          >
-            {addLabel}
-          </Box>
-        </ButtonBase>
-      </Stack>
-    );
-
   return (
     <Box
       component="ul"
@@ -216,7 +175,6 @@ export const KkCastGrid: FC<KkCastGridProps> = ({
       ]}
     >
       {items}
-      {addTile}
     </Box>
   );
 };

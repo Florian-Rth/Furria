@@ -16,7 +16,6 @@ export type ChoreographyVersionsState = 'loading' | 'failed' | 'ready';
 export interface ChoreographyVersionsView {
   state: ChoreographyVersionsState;
   rows: VersionRowView[];
-  total: number;
   restoring: boolean;
   hasOlder: boolean;
   loadingOlder: boolean;
@@ -24,20 +23,13 @@ export interface ChoreographyVersionsView {
   loadOlder: () => void;
 }
 
-const currentVersionOf = (studio: ActStudio, eventId: number | null): number | null =>
-  eventId === null
-    ? (studio.choreography?.version ?? null)
-    : (studio.evenings.find((evening) => evening.eventId === eventId)?.appearance?.choreography
-        ?.version ?? null);
-
 export const useChoreographyVersions = (
   actId: number,
-  eventId: number | null,
   studio: ActStudio,
 ): ChoreographyVersionsView => {
-  const current = currentVersionOf(studio, eventId);
-  const query = useChoreographyVersionsQuery(actId, eventId, current !== null);
-  const restore = useChoreographyRestore(actId, eventId);
+  const current = studio.choreography?.version ?? null;
+  const query = useChoreographyVersionsQuery(actId, current !== null);
+  const restore = useChoreographyRestore(actId);
   const stateOf = (): ChoreographyVersionsState => {
     if (query.error !== null && query.data === undefined) {
       return 'failed';
@@ -62,7 +54,6 @@ export const useChoreographyVersions = (
           restore.mutate(version.version);
         },
       })),
-    total: pages[0]?.total ?? 0,
     restoring: restore.isPending,
     hasOlder: query.hasNextPage,
     loadingOlder: query.isFetchingNextPage,

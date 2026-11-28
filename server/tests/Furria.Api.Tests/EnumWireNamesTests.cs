@@ -70,7 +70,6 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(NewsPostState)] = "draft published withdrawn",
         [typeof(NewsPublicationRequirement)] = "category title teaser text",
         [typeof(MediaKind)] = "photo video audio",
-        [typeof(EveningChange)] = "cast spots choreography",
         [typeof(MediaOwnerKind)] =
             "person group gallery newsPost website event act session uploadLink intake",
         [typeof(UploadLinkState)] = "open expired revoked",
@@ -121,7 +120,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "groupMembership groupAdmin usualTrainingTime calendarEntry attendanceResponse "
             + "event role roleHolding boardOffice boardSeat sessionRecord venue keyHolding "
             + "clubRecord announcement announcementSeen media newsPost websitePicture act "
-            + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
+            + "actCoEditor actMusic actChoreography actSteps actVideos runningOrder "
             + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
             + "tablePlan seating claimWindow calendarPollVote calendarSignUpLine groupMatcher intake whatsApp",
         [typeof(ChangeLineKind)] = "ready changes ping",

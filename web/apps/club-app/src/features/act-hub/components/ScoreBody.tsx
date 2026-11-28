@@ -9,9 +9,8 @@ import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { ActHub } from '../hooks/use-act-hub';
-import { EVENINGS_TITLE, FACTS_LABEL } from '../score-copy';
+import { FACTS_LABEL } from '../score-copy';
 import { ScoreEditDrawer } from './ScoreEditDrawer';
-import { ScoreEveningsList } from './ScoreEveningsList';
 import { ScoreFactsStrip } from './ScoreFactsStrip';
 import { ScoreReadinessStrip } from './ScoreReadinessStrip';
 
@@ -53,12 +52,6 @@ export const ScoreBody: FC<ScoreBodyProps> = ({ score }) => {
       <KkScoreDesk.Pane>
         <ScoreStepPane view={score.pane} tools={score.stepTools} framed onClose={null} />
       </KkScoreDesk.Pane>
-    );
-  const evenings =
-    score.evenings.length === 0 ? null : (
-      <KkScoreDesk.Evenings label={EVENINGS_TITLE}>
-        <ScoreEveningsList evenings={score.evenings} />
-      </KkScoreDesk.Evenings>
     );
   const drawer = score.wide ? null : (
     <ScoreStepDrawer
@@ -103,7 +96,6 @@ export const ScoreBody: FC<ScoreBodyProps> = ({ score }) => {
         />
       </KkScoreDesk.List>
       {pane}
-      {evenings}
       {drawer}
       <ScoreEditDrawer
         open={score.editOpen}

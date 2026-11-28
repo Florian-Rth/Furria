@@ -31,19 +31,17 @@ export interface StepList {
   partDetail: StepListPartDetail | null;
   add: JobAction;
   setup: StepListSetup;
-  editable: boolean;
 }
 
 export const useStepList = (screen: StudioScreen, confirm: JobConfirm): StepList => {
-  const { playback, studio, evening } = screen;
+  const { playback, studio } = screen;
   const work = screen.document;
   const { steps, player, length } = playback;
   const moves = usePartMoves(screen);
   const [partId, setPartId] = useState<number | null>(null);
   const timed = timedStepsOf(steps);
-  const editable = evening === null;
   const rows = useStepListRows(screen, timed, moves, partId, setPartId, confirm);
-  const details = useStepListDetail(screen, timed, moves, partId, setPartId, confirm, editable);
+  const details = useStepListDetail(screen, timed, moves, partId, setPartId, confirm);
   const resume = setupResumeOf(
     setupProgressOf(timed),
     studio.videos.some((video) => video.placement === 'onTimeline'),
@@ -61,7 +59,7 @@ export const useStepList = (screen: StudioScreen, confirm: JobConfirm): StepList
       () => {
         work.mark(markSecondsOf(playback, player.position()), length);
       },
-      { label: STEP_LIST_ADD_LABEL, disabled: length <= 0 || !editable },
+      { label: STEP_LIST_ADD_LABEL, disabled: length <= 0 },
     ),
     setup: {
       text: SETUP_OPEN_TEXT[resume.open](resume.count, resume.total),
@@ -73,6 +71,5 @@ export const useStepList = (screen: StudioScreen, confirm: JobConfirm): StepList
         { tone: resume.open === 'nothing' ? 'quiet' : 'accent' },
       ),
     },
-    editable,
   };
 };

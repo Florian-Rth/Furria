@@ -238,7 +238,7 @@ public sealed class ActFinalTrackService
 
         await RewriteStepsAsync(command.ActId, adoption, ct);
         await RewriteVideosAsync(command.ActId, adoption, ct);
-        await RewriteChoreographiesAsync(accountId, command.ActId, adoption, ct);
+        await RewriteChoreographyAsync(accountId, command.ActId, adoption, ct);
         track.AdoptedAt = _timeProvider.GetUtcNow();
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
@@ -314,34 +314,27 @@ public sealed class ActFinalTrackService
         }
     }
 
-    private async Task RewriteChoreographiesAsync(
+    private async Task RewriteChoreographyAsync(
         int accountId,
         int actId,
         FinalTrackAdoption adoption,
         CancellationToken ct
     )
     {
-        var choreographies = await _dbContext
-            .Choreographies.Where(choreography => choreography.ActId == actId)
-            .ToListAsync(ct);
-        var sessionVersion = choreographies
-            .SingleOrDefault(choreography => choreography.AppearanceId is null)
-            ?.Version;
-        foreach (var choreography in choreographies)
-        {
-            await _history.WriteAsync(
-                choreography,
-                new ChoreographyWrite
-                {
-                    AccountId = accountId,
-                    Document = adoption.Rewritten(choreography.Document),
-                    Kind = ChoreographyVersionKind.MusicAdopted,
-                },
-                ct
-            );
-            if (choreography.CopiedFromVersion is { } copied && copied == sessionVersion)
-                choreography.CopiedFromVersion = copied + 1;
-        }
+        var choreography = await _history.ChoreographyOfAsync(actId, ct);
+        if (choreography is null)
+            return;
+
+        await _history.WriteAsync(
+            choreography,
+            new ChoreographyWrite
+            {
+                AccountId = accountId,
+                Document = adoption.Rewritten(choreography.Document),
+                Kind = ChoreographyVersionKind.MusicAdopted,
+            },
+            ct
+        );
     }
 
     private async Task<Result<ActFinalTrack>> PendingTrackAsync(

@@ -1,7 +1,6 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
-using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;

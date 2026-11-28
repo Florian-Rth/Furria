@@ -26,18 +26,17 @@ export interface SongMutations {
 export const useSongMutations = (actId: number): SongMutations => {
   const key = ['actSongs', actId];
   const failure = useStudioWriteFailure(actId);
-  const scope = { actId, eventId: null };
 
   const add = useApiMutation({
     request: (mediaItemId: number, accessToken) =>
-      throughStudioEditor(scope, () => requestSongAdd(actId, mediaItemId, accessToken)),
+      throughStudioEditor(actId, () => requestSongAdd(actId, mediaItemId, accessToken)),
     changes: ['actMusic'],
     notice: failure,
     key,
   });
   const remove = useApiMutation({
     request: (songId: number, accessToken) =>
-      throughStudioEditor(scope, () => requestSongRemoval(actId, songId, accessToken)),
+      throughStudioEditor(actId, () => requestSongRemoval(actId, songId, accessToken)),
     changes: ['actMusic'],
     notice: failure,
     key,
@@ -57,11 +56,10 @@ export interface VideoMutations {
 export const useVideoMutations = (actId: number): VideoMutations => {
   const key = ['actVideos', actId];
   const failure = useStudioWriteFailure(actId);
-  const scope = { actId, eventId: null };
 
   const add = useApiMutation({
     request: (mediaItemId: number, accessToken) =>
-      throughStudioEditor(scope, () => requestVideoAdd(actId, mediaItemId, accessToken)),
+      throughStudioEditor(actId, () => requestVideoAdd(actId, mediaItemId, accessToken)),
     changes: ['actVideos'],
     notice: failure,
     key,
@@ -79,7 +77,7 @@ export const useVideoMutations = (actId: number): VideoMutations => {
   });
   const remove = useApiMutation({
     request: (videoId: number, accessToken) =>
-      throughStudioEditor(scope, () => requestVideoRemoval(actId, videoId, accessToken)),
+      throughStudioEditor(actId, () => requestVideoRemoval(actId, videoId, accessToken)),
     changes: ['actVideos'],
     notice: failure,
     key,
@@ -87,7 +85,7 @@ export const useVideoMutations = (actId: number): VideoMutations => {
 
   const split = useApiMutation({
     request: (input: VideoSplitInput, accessToken) =>
-      throughStudioEditor(scope, () => requestVideoSplit(actId, input, accessToken)),
+      throughStudioEditor(actId, () => requestVideoSplit(actId, input, accessToken)),
     changes: ['actVideos'],
     notice: failure,
     key,
@@ -107,11 +105,10 @@ export interface FinalTrackMutations {
 export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
   const key = ['actSongs', actId];
   const failure = useStudioWriteFailure(actId);
-  const scope = { actId, eventId: null };
 
   const add = useApiMutation({
     request: (mediaItemId: number, accessToken) =>
-      throughStudioEditor(scope, () => requestFinalTrackAdd(actId, mediaItemId, accessToken)),
+      throughStudioEditor(actId, () => requestFinalTrackAdd(actId, mediaItemId, accessToken)),
     changes: ['actMusic'],
     notice: failure,
     key,
@@ -131,14 +128,14 @@ export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
   });
   const adopt = useApiMutation({
     request: (finalTrackId: number, accessToken) =>
-      throughStudioEditor(scope, () => requestFinalTrackAdoption(actId, finalTrackId, accessToken)),
+      throughStudioEditor(actId, () => requestFinalTrackAdoption(actId, finalTrackId, accessToken)),
     changes: ['actMusic'],
     notice: failure,
     key,
   });
   const remove = useApiMutation({
     request: (finalTrackId: number, accessToken) =>
-      throughStudioEditor(scope, () => requestFinalTrackRemoval(actId, finalTrackId, accessToken)),
+      throughStudioEditor(actId, () => requestFinalTrackRemoval(actId, finalTrackId, accessToken)),
     changes: ['actMusic'],
     notice: failure,
     key,

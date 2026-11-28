@@ -124,14 +124,7 @@ export const compassPointOf = (facing: number | null): number | null => {
 
 export const turnToOf = (facing: number | null, target: number): number => target - (facing ?? 0);
 
-export type JobReason =
-  | 'noMusic'
-  | 'lastStep'
-  | 'noSpots'
-  | 'sessionOnly'
-  | 'pickSpot'
-  | 'noWaypoint'
-  | 'noWay';
+export type JobReason = 'noMusic' | 'lastStep' | 'noSpots' | 'pickSpot' | 'noWaypoint' | 'noWay';
 
 interface Reasoned {
   disabled: boolean;

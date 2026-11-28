@@ -27,7 +27,10 @@ public sealed class DeleteActOpenAppearances : Endpoint<DeleteActOpenAppearances
         CancellationToken ct
     )
     {
-        var result = await _runningOrderService.WithdrawFromOpenEveningsAsync(req.ActId, ct);
+        var result = await _runningOrderService.WithdrawFromUpcomingRunningOrdersAsync(
+            req.ActId,
+            ct
+        );
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);

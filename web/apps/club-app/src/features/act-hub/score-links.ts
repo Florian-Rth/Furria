@@ -9,12 +9,12 @@ export interface ScoreLink {
 }
 
 export const playLinkOf = (actId: number): ScoreLink => ({
-  to: actScreenPathOf(actId, { kind: 'practice', eventId: null }),
+  to: actScreenPathOf(actId, { kind: 'practice' }),
   search: {},
 });
 
 export const editorLinkOf = (actId: number): ScoreLink => ({
-  to: actScreenPathOf(actId, { kind: 'edit', eventId: null }),
+  to: actScreenPathOf(actId, { kind: 'edit' }),
   search: {},
 });
 
@@ -30,11 +30,6 @@ export const detailsLinkOf = (actId: number): ScoreLink => ({
 
 export const settingsLinkOf = (actId: number): ScoreLink => ({
   to: actDetailsPathOf(actId, { kind: 'settings' }),
-  search: {},
-});
-
-export const eveningLinkOf = (actId: number, eventId: number | null): ScoreLink => ({
-  to: actDetailsPathOf(actId, eventId === null ? null : { kind: 'evening', eventId }),
   search: {},
 });
 

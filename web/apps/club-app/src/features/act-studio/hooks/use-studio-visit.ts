@@ -4,24 +4,23 @@ import { useKkNotice } from '@furria/ui/KkNotice';
 import { useEffect } from 'react';
 import { useStudioHistoryControls } from './use-studio-history-controls';
 
-const NO_ACT = 0;
 export const useStudioVisit = (actId: number | null): void => {
-  const { undo, redo, canUndo, canRedo, views } = useStudioHistoryControls(actId ?? NO_ACT);
+  const { undo, redo, canUndo, canRedo, view } = useStudioHistoryControls(actId);
   const raise = useKkNotice();
 
   useEffect(() => {
-    for (const { snapshot, editor } of views) {
-      if (snapshot.note !== null) {
-        raise({
-          tone: 'info',
-          icon: 'undo',
-          group: EDITOR_NOTE_GROUP,
-          message: EDITOR_NOTE_TEXT[snapshot.note.kind],
-        });
-        editor.dismissNote();
-      }
+    if (view === null || view.snapshot.note === null) {
+      return;
     }
-  }, [views, raise]);
+
+    raise({
+      tone: 'info',
+      icon: 'undo',
+      group: EDITOR_NOTE_GROUP,
+      message: EDITOR_NOTE_TEXT[view.snapshot.note.kind],
+    });
+    view.editor.dismissNote();
+  }, [view, raise]);
 
   useStudioKeys({ undo: canUndo ? undo : null, redo: canRedo ? redo : null }, actId !== null);
 };

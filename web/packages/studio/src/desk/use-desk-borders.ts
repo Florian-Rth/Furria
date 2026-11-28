@@ -48,8 +48,7 @@ export const useDeskBorders = (screen: StudioWorkScreen): DeskBorders => {
     moveTo(before.stepId, after.stepId, target);
   };
 
-  const locked = screen.evening !== null;
-  const borders = (locked ? [] : steps.slice(0, -1)).flatMap((before, index) => {
+  const borders = steps.slice(0, -1).flatMap((before, index) => {
     const after = steps[index + 1];
     if (after === undefined || after.startSeconds === null) {
       return [];
@@ -88,7 +87,7 @@ export const useDeskBorders = (screen: StudioWorkScreen): DeskBorders => {
     },
     canStretch: (stepId) => {
       const index = steps.findIndex((step) => step.stepId === stepId);
-      return !locked && index >= 0 && index < steps.length - 1;
+      return index >= 0 && index < steps.length - 1;
     },
   };
 };

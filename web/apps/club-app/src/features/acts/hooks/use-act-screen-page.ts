@@ -28,7 +28,6 @@ export const useActScreenPage = (
   rawActId: string,
   search: ActScreenSearch,
   screen: ActStudioScreen,
-  eventId: number | null,
 ): ActScreenPage => {
   const load = useActLoad(rawActId, search);
   const navigate = useNavigate();
@@ -62,8 +61,7 @@ export const useActScreenPage = (
 
   return {
     load,
-    origin:
-      actId === null ? load.away : playerOriginOf(actId, search, eventId, behind, load.away, name),
+    origin: actId === null ? load.away : playerOriginOf(actId, search, behind, load.away, name),
     actions: [cardAction],
     access: studio === undefined ? null : actScreenAccessOf(studio, load.canEditStudio, screen),
     originSearch,

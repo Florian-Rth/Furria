@@ -1,6 +1,7 @@
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
 using Furria.Api.Endpoints.RunningOrders;
+using Furria.Core.Club;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
@@ -58,50 +59,32 @@ public sealed class GetRunningOrderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CastTheEveningAndCheckIt_When_TheAppearanceChangesTheCastForTheEvening()
+    public async Task Should_CheckTheGroupWithoutItsNoAnswers_When_AMemberDeclinedTheEvening()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            PlannerWithGala(_fixture.Today) + SoloGroupsOf(Clara),
+            PlannerWithGala(
+                _fixture.Today,
+                club => club.AddAttendanceResponse("anna-nein", Gala, Anna, AttendanceAnswer.No)
+            ),
             ct
         );
         var client = await ctx.Identity.ClientForAsync(Planner, ct);
         var people = ctx.Identity.People;
         var eventId = ctx.Club.Events.IdOf(Gala);
         var tanz = await CreateActAsync(client, "Gardetanz", ctx.Groups.Groups.IdOf(Garde));
-        var rede = await CreateActAsync(
-            client,
-            "Büttenrede",
-            ctx.Groups.Groups.IdOf(SoloOf(Clara))
-        );
-        await SavedAsync(client, eventId, null, [Line(tanz, 0), Line(rede, 1)]);
-        await _fixture.ChangeEveningCastDirectlyAsync(
-            eventId,
-            tanz,
-            people.IdOf(Clara),
-            CastChange.Added,
-            ct
-        );
-        await _fixture.ChangeEveningCastDirectlyAsync(
-            eventId,
-            tanz,
-            people.IdOf(Anna),
-            CastChange.Removed,
-            ct
-        );
+        await SavedAsync(client, eventId, null, [Line(tanz, 0)]);
 
         var (_, result) = await GetAsync(client, eventId);
 
-        var dance = result.Lines.Single(line => line.Act.ActId == tanz);
-        Assert.Equal([EveningChange.Cast], dance.EveningChanges);
+        var dance = Assert.Single(result.Lines);
         Assert.Equal(
-            [people.IdOf(Clara), people.IdOf(Dora)],
-            dance.Act.Cast.Select(person => person.PersonId)
+            [(people.IdOf(Anna), true), (people.IdOf(Dora), false)],
+            dance.Act.Cast.Select(person => (person.PersonId, person.Absent))
         );
-        Assert.Empty(result.Lines.Single(line => line.Act.ActId == rede).EveningChanges);
         var finding = Assert.Single(result.Findings);
-        Assert.Equal(FindingKind.NoChangeover, finding.Kind);
-        Assert.Equal([people.IdOf(Clara)], finding.PersonIds);
+        Assert.Equal(FindingKind.Absences, finding.Kind);
+        Assert.Equal([people.IdOf(Anna)], finding.PersonIds);
     }
 
     private static Task<TestResult<GetRunningOrderResponse>> GetAsync(

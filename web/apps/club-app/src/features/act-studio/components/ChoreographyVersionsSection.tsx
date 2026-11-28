@@ -11,23 +11,20 @@ import {
   VERSIONS_OLDER,
   VERSIONS_OLDER_FAILED,
   VERSIONS_OLDER_RETRY,
+  VERSIONS_TITLE,
 } from '../undo-copy';
 import { ChoreographyVersionRow } from './ChoreographyVersionRow';
 
 interface ChoreographyVersionsSectionProps {
   actId: number;
-  eventId: number | null;
   studio: ActStudio;
-  title: string;
 }
 
 export const ChoreographyVersionsSection: FC<ChoreographyVersionsSectionProps> = ({
   actId,
-  eventId,
   studio,
-  title,
 }) => {
-  const versions = useChoreographyVersions(actId, eventId, studio);
+  const versions = useChoreographyVersions(actId, studio);
   const rows = versions.rows.map((row) => (
     <ChoreographyVersionRow key={row.key} row={row} busy={versions.restoring} />
   ));
@@ -49,7 +46,7 @@ export const ChoreographyVersionsSection: FC<ChoreographyVersionsSectionProps> =
   ) : null;
 
   return (
-    <KkPanelSection title={title}>
+    <KkPanelSection title={VERSIONS_TITLE}>
       {failed}
       {empty}
       {list}

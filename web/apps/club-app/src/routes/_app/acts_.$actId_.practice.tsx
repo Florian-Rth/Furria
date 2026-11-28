@@ -7,7 +7,7 @@ const ActPracticeRoute: FC = () => {
   const { actId } = Route.useParams();
   const search = Route.useSearch();
 
-  return <ActPracticePage actId={actId} eventId={null} editing={false} search={search} />;
+  return <ActPracticePage actId={actId} editing={false} search={search} />;
 };
 
 export const Route = createFileRoute('/_app/acts_/$actId_/practice')({

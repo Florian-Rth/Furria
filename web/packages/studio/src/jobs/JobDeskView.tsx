@@ -9,7 +9,6 @@ import { JobZoomTools } from '@furria/studio/JobZoomTools';
 import { JOB_BAR_LABEL, JOB_LANES, JOB_PAGE_LABEL, JOB_STAGE } from '@furria/studio/job-copy';
 import { deskFitOf, jobLaneOf } from '@furria/studio/job-model';
 import { StudioSetupInputs } from '@furria/studio/StudioSetupInputs';
-import { studioBandOf } from '@furria/studio/studio-copy';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import { useJobDesk } from '@furria/studio/use-job-desk';
@@ -17,7 +16,6 @@ import { KkEditorDesk } from '@furria/ui/KkEditorDesk';
 import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import { KkLaneDesk } from '@furria/ui/KkLaneDesk';
 import { KkLaneFocus } from '@furria/ui/KkLaneFocus';
-import { KkStudioView } from '@furria/ui/KkStudioView';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 
@@ -30,8 +28,6 @@ interface JobDeskViewProps {
 export const JobDeskView: FC<JobDeskViewProps> = ({ screen, editor, versions }) => {
   const jobDesk = useJobDesk(screen, editor);
   const { job } = jobDesk.jobs;
-  const bandText = studioBandOf(screen.evening, screen.mode.editing);
-  const band = bandText === null ? null : <KkStudioView.BandNote text={bandText} />;
   const bigNames = job === 'cast';
   const named = job !== 'steps';
   const fit = deskFitOf(job);
@@ -39,7 +35,6 @@ export const JobDeskView: FC<JobDeskViewProps> = ({ screen, editor, versions }) 
 
   return (
     <KkEditorDesk label={JOB_PAGE_LABEL} fit={fit}>
-      <KkEditorDesk.Area area="band">{band}</KkEditorDesk.Area>
       <KkEditorDesk.Area area="bar">
         <JobDeskHead jobDesk={jobDesk} />
       </KkEditorDesk.Area>

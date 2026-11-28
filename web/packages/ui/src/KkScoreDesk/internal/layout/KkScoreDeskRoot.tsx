@@ -14,14 +14,14 @@ export const KkScoreDeskRoot: FC<KkScoreDeskRootProps> = ({ sx, children }) => (
       {
         display: 'grid',
         gridTemplateColumns: 'minmax(0, 1fr)',
-        gridTemplateAreas: '"intro" "head" "score" "list" "evenings"',
+        gridTemplateAreas: '"intro" "head" "score" "list"',
         gap: 1.5,
         minWidth: 0,
         alignItems: 'start',
         [`@media ${KK_SCORE_WIDE_QUERY}`]: {
           gridTemplateColumns: 'minmax(0, 5fr) minmax(0, 7fr)',
-          gridTemplateAreas: '"intro intro" "score score" "head pane" "list pane" "evenings pane"',
-          gridTemplateRows: 'auto auto auto auto 1fr',
+          gridTemplateAreas: '"intro intro" "score score" "head pane" "list pane"',
+          gridTemplateRows: 'auto auto auto 1fr',
           columnGap: 2,
           rowGap: 1.5,
         },

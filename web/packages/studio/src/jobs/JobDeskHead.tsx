@@ -46,10 +46,6 @@ export const JobDeskHead: FC<JobDeskHeadProps> = ({ jobDesk }) => {
   const historyText = JOB_HISTORY;
   const historyOpen = jobDesk.pane === 'history';
   const setupOpen = jobDesk.pane === 'setup';
-  const music =
-    screen.evening === null ? (
-      <KkPillButton text={JOB_MUSIC_PAGE} glyph="music" onPress={jobDesk.openMusic} />
-    ) : null;
 
   return (
     <KkLaneBar label={JOB_HEAD}>
@@ -106,7 +102,7 @@ export const JobDeskHead: FC<JobDeskHeadProps> = ({ jobDesk }) => {
           expanded={setupOpen}
           onToggle={jobDesk.toggleSetup}
         />
-        {music}
+        <KkPillButton text={JOB_MUSIC_PAGE} glyph="music" onPress={jobDesk.openMusic} />
         <KkPillButton
           text={JOB_DONE}
           glyph="check"

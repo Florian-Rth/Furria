@@ -4475,34 +4475,6 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Furria.Core.RunningOrders.AppearanceCastChange", b =>
-                {
-                    b.Property<int>("AppearanceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("appearance_id");
-
-                    b.Property<int>("PersonId")
-                        .HasColumnType("integer")
-                        .HasColumnName("person_id");
-
-                    b.Property<string>("Change")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("change");
-
-                    b.HasKey("AppearanceId", "PersonId")
-                        .HasName("pk_appearance_cast_change");
-
-                    b.HasIndex("PersonId")
-                        .HasDatabaseName("ix_appearance_cast_change_person_id");
-
-                    b.ToTable("appearance_cast_change", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_appearance_cast_change_change", "change IN ('Added', 'Removed')");
-                        });
-                });
-
             modelBuilder.Entity("Furria.Core.RunningOrders.FrozenCastMember", b =>
                 {
                     b.Property<int>("ActId")
@@ -4980,32 +4952,6 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Furria.Core.Studio.AppearanceSpot", b =>
-                {
-                    b.Property<int>("AppearanceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("appearance_id");
-
-                    b.Property<int>("SpotId")
-                        .HasColumnType("integer")
-                        .HasColumnName("spot_id");
-
-                    b.Property<int?>("PersonId")
-                        .HasColumnType("integer")
-                        .HasColumnName("person_id");
-
-                    b.HasKey("AppearanceId", "SpotId")
-                        .HasName("pk_appearance_spot");
-
-                    b.HasIndex("PersonId")
-                        .HasDatabaseName("ix_appearance_spot_person_id");
-
-                    b.HasIndex("SpotId")
-                        .HasDatabaseName("ix_appearance_spot_spot_id");
-
-                    b.ToTable("appearance_spot", (string)null);
-                });
-
             modelBuilder.Entity("Furria.Core.Studio.Choreography", b =>
                 {
                     b.Property<int>("Id")
@@ -5018,14 +4964,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<int>("ActId")
                         .HasColumnType("integer")
                         .HasColumnName("act_id");
-
-                    b.Property<int?>("AppearanceId")
-                        .HasColumnType("integer")
-                        .HasColumnName("appearance_id");
-
-                    b.Property<int?>("CopiedFromVersion")
-                        .HasColumnType("integer")
-                        .HasColumnName("copied_from_version");
 
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -5054,17 +4992,10 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasIndex("ActId")
                         .IsUnique()
-                        .HasDatabaseName("ix_choreography_act_id_session")
-                        .HasFilter("appearance_id IS NULL");
-
-                    b.HasIndex("AppearanceId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_choreography_appearance_id");
+                        .HasDatabaseName("ix_choreography_act_id");
 
                     b.ToTable("choreography", null, t =>
                         {
-                            t.HasCheckConstraint("ck_choreography_copied_from_version", "copied_from_version IS NULL OR appearance_id IS NOT NULL");
-
                             t.HasCheckConstraint("ck_choreography_document", "jsonb_typeof(document) = 'object' AND jsonb_typeof(document -> 'tracks') = 'array'");
 
                             t.HasCheckConstraint("ck_choreography_version", "version >= 1");
@@ -8182,27 +8113,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("CalendarEntry");
                 });
 
-            modelBuilder.Entity("Furria.Core.RunningOrders.AppearanceCastChange", b =>
-                {
-                    b.HasOne("Furria.Core.RunningOrders.Appearance", "Appearance")
-                        .WithMany("CastChanges")
-                        .HasForeignKey("AppearanceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_appearance_cast_change_appearance_appearance_id");
-
-                    b.HasOne("Furria.Core.Identity.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_appearance_cast_change_person_person_id");
-
-                    b.Navigation("Appearance");
-
-                    b.Navigation("Person");
-                });
-
             modelBuilder.Entity("Furria.Core.RunningOrders.FrozenCastMember", b =>
                 {
                     b.HasOne("Furria.Core.RunningOrders.Act", "Act")
@@ -8465,53 +8375,16 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("StartSource");
                 });
 
-            modelBuilder.Entity("Furria.Core.Studio.AppearanceSpot", b =>
-                {
-                    b.HasOne("Furria.Core.RunningOrders.Appearance", "Appearance")
-                        .WithMany()
-                        .HasForeignKey("AppearanceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_appearance_spot_appearance_appearance_id");
-
-                    b.HasOne("Furria.Core.Identity.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("fk_appearance_spot_person_person_id");
-
-                    b.HasOne("Furria.Core.Studio.Spot", "Spot")
-                        .WithMany()
-                        .HasForeignKey("SpotId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_appearance_spot_spot_spot_id");
-
-                    b.Navigation("Appearance");
-
-                    b.Navigation("Person");
-
-                    b.Navigation("Spot");
-                });
-
             modelBuilder.Entity("Furria.Core.Studio.Choreography", b =>
                 {
                     b.HasOne("Furria.Core.RunningOrders.Act", "Act")
-                        .WithMany()
-                        .HasForeignKey("ActId")
+                        .WithOne()
+                        .HasForeignKey("Furria.Core.Studio.Choreography", "ActId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_choreography_act_act_id");
 
-                    b.HasOne("Furria.Core.RunningOrders.Appearance", "Appearance")
-                        .WithMany()
-                        .HasForeignKey("AppearanceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .HasConstraintName("fk_choreography_appearance_appearance_id");
-
                     b.Navigation("Act");
-
-                    b.Navigation("Appearance");
                 });
 
             modelBuilder.Entity("Furria.Core.Studio.ChoreographyVersion", b =>
@@ -8959,11 +8832,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("FrozenCast");
 
                     b.Navigation("Wishes");
-                });
-
-            modelBuilder.Entity("Furria.Core.RunningOrders.Appearance", b =>
-                {
-                    b.Navigation("CastChanges");
                 });
 
             modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrder", b =>

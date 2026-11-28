@@ -87,7 +87,6 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             Videos = [.. content.Videos.Select(ToDto)],
             Choreography = content.Choreography is { } choreography ? ToDto(choreography) : null,
             Stage = content.Stage is { } stage ? ToDto(stage) : null,
-            Evenings = [.. content.Evenings.Select(ToDto)],
             Trainings = [.. content.Trainings.Select(ToDto)],
         };
 
@@ -247,40 +246,6 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             RecordedAt = change.RecordedAt,
         };
 
-    private static StudioEveningDto ToDto(StudioEveningDetails evening) =>
-        new()
-        {
-            EventId = evening.EventId,
-            Title = evening.Title,
-            StartsAt = evening.StartsAt,
-            Appearance = evening.Appearance is { } appearance ? ToDto(appearance) : null,
-        };
-
-    private static StudioAppearanceDto ToDto(StudioAppearanceDetails appearance) =>
-        new()
-        {
-            AppearanceId = appearance.AppearanceId,
-            Position = appearance.Position,
-            Added = [.. appearance.Added.Select(ActPersonDto.From)],
-            RemovedPersonIds = appearance.RemovedPersonIds,
-            SpotChanges =
-            [
-                .. appearance.SpotChanges.Select(change => new StudioSpotChangeDto
-                {
-                    SpotId = change.SpotId,
-                    Person = change.Person is { } person ? ActPersonDto.From(person) : null,
-                }),
-            ],
-            Choreography = appearance.Choreography is { } copy
-                ? new StudioEveningChoreographyDto
-                {
-                    Version = copy.Version,
-                    CopiedFromVersion = copy.CopiedFromVersion,
-                    Tracks = TracksOf(copy.Document),
-                }
-                : null,
-        };
-
     private static KeyframeDto ToDto(Keyframe keyframe) =>
         new()
         {
@@ -367,8 +332,6 @@ public sealed record StudioDto
 
     public required StudioStageDto? Stage { get; init; }
 
-    public required IReadOnlyList<StudioEveningDto> Evenings { get; init; }
-
     public required IReadOnlyList<StudioTrainingDto> Trainings { get; init; }
 }
 
@@ -407,48 +370,6 @@ public sealed record StudioAttendanceChangeDto
     public required string? RecordedBy { get; init; }
 
     public required DateTimeOffset RecordedAt { get; init; }
-}
-
-public sealed record StudioEveningDto
-{
-    public required int EventId { get; init; }
-
-    public required string Title { get; init; }
-
-    public required DateTimeOffset StartsAt { get; init; }
-
-    public required StudioAppearanceDto? Appearance { get; init; }
-}
-
-public sealed record StudioAppearanceDto
-{
-    public required int AppearanceId { get; init; }
-
-    public required int? Position { get; init; }
-
-    public required IReadOnlyList<ActPersonDto> Added { get; init; }
-
-    public required IReadOnlyList<int> RemovedPersonIds { get; init; }
-
-    public required IReadOnlyList<StudioSpotChangeDto> SpotChanges { get; init; }
-
-    public required StudioEveningChoreographyDto? Choreography { get; init; }
-}
-
-public sealed record StudioSpotChangeDto
-{
-    public required int SpotId { get; init; }
-
-    public required ActPersonDto? Person { get; init; }
-}
-
-public sealed record StudioEveningChoreographyDto
-{
-    public required int Version { get; init; }
-
-    public required int? CopiedFromVersion { get; init; }
-
-    public required IReadOnlyList<SpotTrackDto> Tracks { get; init; }
 }
 
 public sealed record StudioStageDto

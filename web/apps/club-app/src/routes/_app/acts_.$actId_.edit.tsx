@@ -7,7 +7,7 @@ const ActEditRoute: FC = () => {
   const { actId } = Route.useParams();
   const search = Route.useSearch();
 
-  return <ActPracticePage actId={actId} eventId={null} editing search={search} />;
+  return <ActPracticePage actId={actId} editing search={search} />;
 };
 
 export const Route = createFileRoute('/_app/acts_/$actId_/edit')({

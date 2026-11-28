@@ -18,20 +18,6 @@ public sealed class RunningOrderService
         "Ein archivierter Auftritt lässt sich nicht neu einplanen.";
     private const string UnknownWishMessage =
         "Dieser Wunsch gehört zu keinem Auftritt in diesem Ablauf.";
-    private const string LostEveningChangesPrefix =
-        "Für diesen Abend angepasst, die Anpassung ginge verloren: ";
-    private const string NotAppearingMessage =
-        "Der Auftritt ist für diesen Abend nicht angemeldet.";
-    private const string PlacedAppearanceMessage =
-        "Der Auftritt steht schon im Ablauf dieses Abends. Nur die Planung nimmt ihn wieder heraus.";
-
-    private static readonly IReadOnlyDictionary<EveningChange, string> EveningChangeWords =
-        new Dictionary<EveningChange, string>
-        {
-            [EveningChange.Cast] = "Besetzung",
-            [EveningChange.Spots] = "Plätze",
-            [EveningChange.Choreography] = "Aufstellung",
-        };
 
     private static readonly IReadOnlyDictionary<
         AppearanceSessionProblem,
@@ -146,7 +132,7 @@ public sealed class RunningOrderService
             : InOrder(await AppearancesOfAsync(eventId, ct, tracked: false))
                 .Where(line => line.Position is not null)
                 .ToList();
-        var evening = await EveningOfAsync(eventId, placed, ct);
+        var acts = await ActsOnEveningAsync(eventId, placed, ct);
         var viewerGroupIds = await _dbContext
             .TiedGroupIds(viewerPersonId, ClubClock.Today(_timeProvider))
             .ToHashSetAsync(ct);
@@ -160,9 +146,9 @@ public sealed class RunningOrderService
                 .. placed.Select(
                     (line, index) =>
                         EveningLineOf(
-                            evening.Acts[line.ActId],
+                            acts[line.ActId],
                             index,
-                            IsOwn(evening.Acts[line.ActId], viewerPersonId, viewerGroupIds)
+                            IsOwn(acts[line.ActId], viewerPersonId, viewerGroupIds)
                         )
                 ),
             ],
@@ -217,11 +203,6 @@ public sealed class RunningOrderService
         if (refusal is { } refused)
             return Result<RunningOrderDetails>.Validation(refused);
 
-        var wanted = command.State.Lines.Select(line => line.ActId).ToHashSet();
-        var dropped = appearances.Where(appearance => !wanted.Contains(appearance.ActId)).ToList();
-        if (await LostEveningChangesOfAsync(dropped, ct) is { } lost)
-            return Result<RunningOrderDetails>.Conflict(lost);
-
         order ??= Created(command.EventId);
         Apply(order, command.State);
         var kept = SyncAppearances(command.EventId, appearances, command.State.Lines);
@@ -258,11 +239,7 @@ public sealed class RunningOrderService
         if (order is null)
             return Result.NotFound(NoRunningOrderMessage);
 
-        var appearances = await AppearancesOfAsync(eventId, ct, tracked: true);
-        if (await LostEveningChangesOfAsync(appearances, ct) is { } lost)
-            return Result.Conflict(lost);
-
-        _dbContext.Appearances.RemoveRange(appearances);
+        _dbContext.Appearances.RemoveRange(await AppearancesOfAsync(eventId, ct, tracked: true));
         _dbContext.RunningOrders.Remove(order);
         await _dbContext.SaveChangesAsync(ct);
 
@@ -283,10 +260,6 @@ public sealed class RunningOrderService
         if (refusal is { } refused)
             return Result<RunningOrderProposal>.Validation(refused);
 
-        var castChanges = appearances.ToDictionary(
-            appearance => appearance.ActId,
-            appearance => appearance.CastChanges
-        );
         var lines = command
             .State.Lines.Select(draft => new Appearance
             {
@@ -295,7 +268,6 @@ public sealed class RunningOrderService
                 Position = draft.Position,
                 IsPinned = draft.IsPinned,
                 BlockKey = draft.BlockKey,
-                CastChanges = castChanges.GetValueOrDefault(draft.ActId) ?? [],
             })
             .ToList();
         var rules = command
@@ -308,9 +280,9 @@ public sealed class RunningOrderService
                 ActKind = draft.ActKind,
             })
             .ToList();
-        var evening = await EveningOfAsync(command.EventId, lines, ct);
+        var acts = await ActsOnEveningAsync(command.EventId, lines, ct);
         var input = ReviewInputOf(
-            evening,
+            acts,
             lines,
             rules,
             command.State.SuspendedActWishIds.ToHashSet()
@@ -330,65 +302,10 @@ public sealed class RunningOrderService
         );
     }
 
-    public async Task<Result<int>> AppearanceForAsync(
-        int eventId,
-        ActSummary act,
-        CancellationToken ct
-    )
-    {
-        var existing = await _dbContext
-            .Appearances.Where(appearance =>
-                appearance.CalendarEntryId == eventId && appearance.ActId == act.ActId
-            )
-            .Select(appearance => (int?)appearance.Id)
-            .SingleOrDefaultAsync(ct);
-        if (existing is { } appearanceId)
-            return Result<int>.Success(appearanceId);
-        if (await SessionRefusalOfAsync(eventId, [act.SessionYear], ct) is { } refused)
-            return Result<int>.Conflict(refused);
-
-        var order = await LoadAsync(eventId, ct, tracked: true) ?? Created(eventId);
-        MarkChanged(order);
-        var appearance = new Appearance { CalendarEntryId = eventId, ActId = act.ActId };
-        _dbContext.Appearances.Add(appearance);
-        await _dbContext.SaveChangesAsync(ct);
-
-        return Result<int>.Success(appearance.Id);
-    }
-
-    public async Task MarkEveningChangedAsync(int eventId, CancellationToken ct)
-    {
-        if (await LoadAsync(eventId, ct, tracked: true) is not { } order)
-            return;
-
-        MarkChanged(order);
-        await _dbContext.SaveChangesAsync(ct);
-    }
-
-    public async Task<Result> RemoveUnplacedAppearanceAsync(
-        int eventId,
+    public async Task<Result> WithdrawFromUpcomingRunningOrdersAsync(
         int actId,
         CancellationToken ct
     )
-    {
-        var appearance = await _dbContext.Appearances.SingleOrDefaultAsync(
-            row => row.CalendarEntryId == eventId && row.ActId == actId,
-            ct
-        );
-        if (appearance is null)
-            return Result.NotFound(NotAppearingMessage);
-        if (appearance.Position is not null)
-            return Result.Conflict(PlacedAppearanceMessage);
-
-        if (await LoadAsync(eventId, ct, tracked: true) is { } order)
-            MarkChanged(order);
-        _dbContext.Appearances.Remove(appearance);
-        await _dbContext.SaveChangesAsync(ct);
-
-        return Result.Success();
-    }
-
-    public async Task<Result> WithdrawFromOpenEveningsAsync(int actId, CancellationToken ct)
     {
         if (!await _dbContext.Acts.AnyAsync(act => act.Id == actId, ct))
             return Result.NotFound(UnknownActMessage);
@@ -485,7 +402,6 @@ public sealed class RunningOrderService
         var appearances = tracked ? _dbContext.Appearances : _dbContext.Appearances.AsNoTracking();
 
         return await appearances
-            .Include(appearance => appearance.CastChanges)
             .Where(appearance => appearance.CalendarEntryId == eventId)
             .ToListAsync(ct);
     }
@@ -561,62 +477,6 @@ public sealed class RunningOrderService
         _dbContext.RunningOrders.Add(order);
 
         return order;
-    }
-
-    private async Task<string?> LostEveningChangesOfAsync(
-        IReadOnlyList<Appearance> dropped,
-        CancellationToken ct
-    )
-    {
-        var changes = await EveningChangesOfAsync(dropped, ct);
-        var changedActIds = changes
-            .Where(act => act.Value.Count > 0)
-            .Select(act => act.Key)
-            .ToList();
-        if (changedActIds.Count == 0)
-            return null;
-
-        var names = await _dbContext
-            .Acts.AsNoTracking()
-            .Where(act => changedActIds.Contains(act.Id))
-            .OrderBy(act => act.Name)
-            .Select(act => new { act.Id, act.Name })
-            .ToListAsync(ct);
-
-        return LostEveningChangesMessageOf(names.Select(act => (act.Name, changes[act.Id])));
-    }
-
-    private async Task<
-        IReadOnlyDictionary<int, IReadOnlyList<EveningChange>>
-    > EveningChangesOfAsync(IReadOnlyList<Appearance> appearances, CancellationToken ct)
-    {
-        var appearanceIds = appearances.Select(appearance => appearance.Id).ToList();
-        var withSpots = (
-            await _dbContext
-                .AppearanceSpots.Where(spot => appearanceIds.Contains(spot.AppearanceId))
-                .Select(spot => spot.AppearanceId)
-                .Distinct()
-                .ToListAsync(ct)
-        ).ToHashSet();
-        var withCopy = (
-            await _dbContext
-                .Choreographies.Where(choreography =>
-                    choreography.AppearanceId != null
-                    && appearanceIds.Contains(choreography.AppearanceId.Value)
-                )
-                .Select(choreography => choreography.AppearanceId!.Value)
-                .ToListAsync(ct)
-        ).ToHashSet();
-
-        return appearances.ToDictionary(
-            appearance => appearance.ActId,
-            appearance =>
-                EveningChangesOf(
-                    appearance,
-                    withSpots.Contains(appearance.Id),
-                    withCopy.Contains(appearance.Id)
-                )
-        );
     }
 
     private async Task<DateOnly> EveningDayOfAsync(int eventId, CancellationToken ct) =>
@@ -702,10 +562,10 @@ public sealed class RunningOrderService
     )
     {
         var lines = InOrder(await AppearancesOfAsync(order.CalendarEntryId, ct, tracked: false));
-        var evening = await EveningOfAsync(order.CalendarEntryId, lines, ct);
+        var acts = await ActsOnEveningAsync(order.CalendarEntryId, lines, ct);
 
         return RunningOrderReview.FindingsOf(
-            ReviewInputOf(evening, lines, [.. order.Rules], SuspendedOf(order))
+            ReviewInputOf(acts, lines, [.. order.Rules], SuspendedOf(order))
         );
     }
 
@@ -716,11 +576,10 @@ public sealed class RunningOrderService
     )
     {
         var lines = InOrder(appearances);
-        var evening = await EveningOfAsync(order.CalendarEntryId, lines, ct);
+        var acts = await ActsOnEveningAsync(order.CalendarEntryId, lines, ct);
         var suspended = SuspendedOf(order);
-        var input = ReviewInputOf(evening, lines, [.. order.Rules], suspended);
+        var input = ReviewInputOf(acts, lines, [.. order.Rules], suspended);
         var lineIds = lines.ToDictionary(KeyOf, line => line.Id);
-        var changes = await EveningChangesOfAsync(lines, ct);
 
         return new RunningOrderDetails
         {
@@ -728,12 +587,12 @@ public sealed class RunningOrderService
             Version = order.Version,
             ConfirmedAt = order.ConfirmedAt,
             ChangedSinceConfirmed = order.ChangedSinceConfirmed,
-            Lines = [.. lines.Select(line => LineDetailsOf(line, evening, changes[line.ActId]))],
+            Lines = [.. lines.Select(line => LineDetailsOf(line, acts))],
             Rules = [.. order.Rules.OrderBy(rule => rule.Id).Select(RuleDetailsOf)],
             ActWishes =
             [
-                .. evening
-                    .Acts.Values.SelectMany(act => act.Wishes)
+                .. acts
+                    .Values.SelectMany(act => act.Wishes)
                     .OrderBy(wish => wish.ActWishId)
                     .Select(wish => new RunningOrderActWishDetails
                     {
@@ -750,7 +609,7 @@ public sealed class RunningOrderService
         };
     }
 
-    private async Task<EveningCast> EveningOfAsync(
+    private async Task<IReadOnlyDictionary<int, ActSummary>> ActsOnEveningAsync(
         int eventId,
         IReadOnlyList<Appearance> lines,
         CancellationToken ct
@@ -765,103 +624,14 @@ public sealed class RunningOrderService
             .ToListAsync(ct);
         var actIds = lines.Select(line => line.ActId).ToHashSet();
         var acts = await _catalogue.ActsOnAsync(act => actIds.Contains(act.Id), eveningDay, ct);
-        var people = await EveningPeopleOfAsync(acts, lines, ct);
         var actsById = acts.ToDictionary(act => act.ActId);
         var absentIds = absent.ToHashSet();
 
-        return new EveningCast(
-            lines.ToDictionary(
-                line => line.ActId,
-                line =>
-                    WithAbsences(
-                        WithEveningCast(actsById[line.ActId], [.. line.CastChanges], people),
-                        absentIds
-                    )
-            )
+        return lines.ToDictionary(
+            line => line.ActId,
+            line => WithAbsences(actsById[line.ActId], absentIds)
         );
     }
-
-    private async Task<IReadOnlyList<CastMember>> EveningPeopleOfAsync(
-        IReadOnlyList<ActSummary> acts,
-        IReadOnlyList<Appearance> lines,
-        CancellationToken ct
-    )
-    {
-        var added = lines
-            .SelectMany(line => line.CastChanges)
-            .Where(change => change.Change == CastChange.Added)
-            .Select(change => change.PersonId)
-            .ToHashSet();
-        if (added.Count == 0)
-            return [];
-
-        var cast = acts.SelectMany(act => act.Cast).Select(member => member.PersonId);
-
-        return await _catalogue.PersonsInNameOrderAsync([.. added.Union(cast)], ct);
-    }
-
-    [Pure]
-    private static ActSummary WithEveningCast(
-        ActSummary act,
-        IReadOnlyCollection<AppearanceCastChange> changes,
-        IReadOnlyList<CastMember> people
-    )
-    {
-        if (changes.Count == 0)
-            return act;
-
-        var removed = PersonsChanged(changes, CastChange.Removed);
-        var added = PersonsChanged(changes, CastChange.Added);
-        var cast = act
-            .Cast.Select(member => member.PersonId)
-            .Union(added)
-            .Except(removed)
-            .ToHashSet();
-
-        return act with
-        {
-            Cast =
-                added.Count == 0
-                    ? [.. act.Cast.Where(member => cast.Contains(member.PersonId))]
-                    : [.. people.Where(person => cast.Contains(person.PersonId))],
-        };
-    }
-
-    [Pure]
-    private static IReadOnlySet<int> PersonsChanged(
-        IEnumerable<AppearanceCastChange> changes,
-        CastChange change
-    ) => changes.Where(row => row.Change == change).Select(row => row.PersonId).ToHashSet();
-
-    [Pure]
-    private static IReadOnlyList<EveningChange> EveningChangesOf(
-        Appearance appearance,
-        bool hasSpotChanges,
-        bool hasOwnChoreography
-    ) =>
-        [
-            .. new[]
-            {
-                (Change: EveningChange.Cast, Made: appearance.CastChanges.Count > 0),
-                (Change: EveningChange.Spots, Made: hasSpotChanges),
-                (Change: EveningChange.Choreography, Made: hasOwnChoreography),
-            }
-                .Where(change => change.Made)
-                .Select(change => change.Change),
-        ];
-
-    [Pure]
-    private static string LostEveningChangesMessageOf(
-        IEnumerable<(string Name, IReadOnlyList<EveningChange> Changes)> acts
-    ) =>
-        LostEveningChangesPrefix
-        + string.Join(
-            ", ",
-            acts.Select(act =>
-                $"„{act.Name}“ ({string.Join(", ", act.Changes.Select(change => EveningChangeWords[change]))})"
-            )
-        )
-        + ".";
 
     [Pure]
     private static IReadOnlyList<Appearance> InOrder(IReadOnlyList<Appearance> appearances) =>
@@ -897,14 +667,14 @@ public sealed class RunningOrderService
 
     [Pure]
     private static RunningOrderReviewInput ReviewInputOf(
-        EveningCast evening,
+        IReadOnlyDictionary<int, ActSummary> acts,
         IReadOnlyList<Appearance> lines,
         IReadOnlyList<RunningOrderRule> rules,
         IReadOnlySet<int> suspended
     ) =>
         new()
         {
-            Lines = [.. lines.Select(line => ReviewLineOf(line, evening))],
+            Lines = [.. lines.Select(line => ReviewLineOf(line, acts))],
             Rules =
             [
                 .. rules.Select(rule => new ReviewRule
@@ -917,8 +687,8 @@ public sealed class RunningOrderService
                     RuleId = rule.Id == 0 ? null : rule.Id,
                     ActWishId = null,
                 }),
-                .. evening
-                    .Acts.Values.SelectMany(act => act.Wishes)
+                .. acts
+                    .Values.SelectMany(act => act.Wishes)
                     .Where(wish => !suspended.Contains(wish.ActWishId))
                     .Select(wish => new ReviewRule
                     {
@@ -934,9 +704,12 @@ public sealed class RunningOrderService
         };
 
     [Pure]
-    private static ReviewLine ReviewLineOf(Appearance line, EveningCast evening)
+    private static ReviewLine ReviewLineOf(
+        Appearance line,
+        IReadOnlyDictionary<int, ActSummary> acts
+    )
     {
-        var act = evening.Acts[line.ActId];
+        var act = acts[line.ActId];
 
         return new ReviewLine
         {
@@ -962,17 +735,15 @@ public sealed class RunningOrderService
     [Pure]
     private static RunningOrderLineDetails LineDetailsOf(
         Appearance line,
-        EveningCast evening,
-        IReadOnlyList<EveningChange> changes
+        IReadOnlyDictionary<int, ActSummary> acts
     ) =>
         new()
         {
             LineId = line.Id,
-            Act = ActDetailsOf(evening.Acts[line.ActId]),
+            Act = ActDetailsOf(acts[line.ActId]),
             Position = line.Position,
             IsPinned = line.IsPinned,
             BlockKey = line.BlockKey,
-            EveningChanges = changes,
         };
 
     [Pure]
@@ -1037,6 +808,4 @@ public sealed class RunningOrderService
             RuleId = finding.RuleId,
             ActWishId = finding.ActWishId,
         };
-
-    private sealed record EveningCast(IReadOnlyDictionary<int, ActSummary> Acts);
 }

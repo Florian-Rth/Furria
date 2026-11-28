@@ -6,77 +6,52 @@ import { hashKey } from '@tanstack/react-query';
 import type { ActStudio, ActStudioResponse } from '@/features/acts/schemas';
 import type { DomainChange } from '@/lib/query/reads';
 import { queryKeys, staleQueryKeysAfter } from '@/lib/query/reads';
-import { eveningSavedOf, eveningViewOf } from './studio-evening';
-import type { EveningSavePort } from './studio-save-port';
-import { eveningSavePortOf, studioSavePortOf } from './studio-save-port';
+import { studioSavePortOf } from './studio-save-port';
 
 type Listener = () => void;
 
-export interface StudioScope {
-  actId: number;
-  eventId: number | null;
-}
-
-export interface ScopedEditor {
-  key: string;
-  scope: StudioScope;
+export interface EditorView {
   editor: StudioEditor<ActStudio>;
-}
-
-export interface EditorView extends ScopedEditor {
   snapshot: StudioEditorSnapshot<ActStudio>;
 }
 
 const CLOSE_GRACE_MS = 5000;
-const SESSION_CHANGES: readonly DomainChange[] = [
+const STUDIO_CHANGES: readonly DomainChange[] = [
   'actMusic',
   'actSteps',
   'actVideos',
   'actChoreography',
 ];
-const EVENING_CHANGES: readonly DomainChange[] = ['actEvening'];
-const NONE: readonly ScopedEditor[] = [];
-const NO_VIEWS: readonly EditorView[] = [];
 
-interface OpenEditor extends ScopedEditor {
-  evening: EveningSavePort | null;
+interface OpenEditor {
+  editor: StudioEditor<ActStudio>;
   holders: number;
   closing: number | null;
   detach: () => void;
 }
 
-const editors = new Map<string, OpenEditor>();
-const listed = new Map<number, readonly ScopedEditor[]>();
-const views = new Map<number, readonly EditorView[]>();
+const editors = new Map<number, OpenEditor>();
+const views = new Map<number, EditorView>();
 const listeners = new Set<Listener>();
 
-export const scopeKeyOf = ({ actId, eventId }: StudioScope): string =>
-  eventId === null ? String(actId) : `${actId}:${eventId}`;
-
 const announce = (): void => {
-  listed.clear();
   for (const listener of listeners) {
     listener();
   }
 };
 
-const savedInto = (open: OpenEditor, current: ActStudio): ActStudio => {
-  const saved = open.editor.savedStudio();
-  const { eventId } = open.scope;
+const savedInto = (open: OpenEditor, current: ActStudio): ActStudio => ({
+  ...open.editor.savedStudio(),
+  trainings: current.trainings,
+});
 
-  return eventId === null || open.evening === null
-    ? { ...saved, evenings: current.evenings, trainings: current.trainings }
-    : eveningSavedOf(current, eventId, saved, open.evening.copied());
-};
-
-const cacheSaved = (key: string, queryClient: QueryClient): void => {
-  const open = editors.get(key);
+const cacheSaved = (actId: number, queryClient: QueryClient): void => {
+  const open = editors.get(actId);
   if (open === undefined) {
     return;
   }
 
-  const { scope } = open;
-  const studioKey = queryKeys.actStudio(scope.actId);
+  const studioKey = queryKeys.actStudio(actId);
   const studioHash = hashKey(studioKey);
   queryClient.setQueryData<ActStudioResponse>(studioKey, (current) =>
     current === undefined || current.studio === null
@@ -84,9 +59,7 @@ const cacheSaved = (key: string, queryClient: QueryClient): void => {
       : { ...current, studio: savedInto(open, current.studio) },
   );
   void queryClient.invalidateQueries({ queryKey: studioKey, refetchType: 'none' });
-  for (const queryKey of staleQueryKeysAfter(
-    scope.eventId === null ? SESSION_CHANGES : EVENING_CHANGES,
-  )) {
+  for (const queryKey of staleQueryKeysAfter(STUDIO_CHANGES)) {
     void queryClient.invalidateQueries({
       queryKey,
       predicate: (query) => hashKey(query.queryKey) !== studioHash,
@@ -95,7 +68,7 @@ const cacheSaved = (key: string, queryClient: QueryClient): void => {
 };
 
 const attached = (
-  key: string,
+  actId: number,
   editor: StudioEditor<ActStudio>,
   queryClient: QueryClient,
 ): (() => void) => {
@@ -103,8 +76,8 @@ const attached = (
   const stopWatching = editor.subscribe(() => {
     const next = editor.snapshot().status;
     if (status !== 'saved' && next === 'saved') {
-      cacheSaved(key, queryClient);
-      closeWhenUnheld(key, editor);
+      cacheSaved(actId, queryClient);
+      closeWhenUnheld(actId, editor);
     }
     status = next;
   });
@@ -126,26 +99,11 @@ const attached = (
   };
 };
 
-export const studioEditorOf = (scope: StudioScope): StudioEditor<ActStudio> | null =>
-  editors.get(scopeKeyOf(scope))?.editor ?? null;
+const studioEditorOf = (actId: number | null): StudioEditor<ActStudio> | null =>
+  actId === null ? null : (editors.get(actId)?.editor ?? null);
 
-export const studioEditorsOf = (actId: number): readonly ScopedEditor[] => {
-  const known = listed.get(actId);
-  if (known !== undefined) {
-    return known;
-  }
-
-  const found = [...editors.values()]
-    .filter((open) => open.scope.actId === actId)
-    .map(({ key, scope, editor }) => ({ key, scope, editor }));
-  const kept = found.length === 0 ? NONE : found;
-  listed.set(actId, kept);
-
-  return kept;
-};
-
-const closeWhenUnheld = (key: string, editor: StudioEditor<ActStudio>): void => {
-  const open = editors.get(key);
+const closeWhenUnheld = (actId: number, editor: StudioEditor<ActStudio>): void => {
+  const open = editors.get(actId);
   if (open?.editor !== editor || open.holders > 0) {
     return;
   }
@@ -153,16 +111,17 @@ const closeWhenUnheld = (key: string, editor: StudioEditor<ActStudio>): void => 
   if (open.closing !== null) {
     window.clearTimeout(open.closing);
   }
-  editors.set(key, {
+  editors.set(actId, {
     ...open,
     closing: window.setTimeout(() => {
-      const latest = editors.get(key);
+      const latest = editors.get(actId);
       if (
         latest?.editor === editor &&
         latest.holders === 0 &&
         editor.snapshot().status === 'saved'
       ) {
-        editors.delete(key);
+        editors.delete(actId);
+        views.delete(actId);
         latest.detach();
         editor.dispose();
         announce();
@@ -171,56 +130,39 @@ const closeWhenUnheld = (key: string, editor: StudioEditor<ActStudio>): void => 
   });
 };
 
-const editorStudioOf = (scope: StudioScope, studio: ActStudio): ActStudio =>
-  scope.eventId === null ? studio : eveningViewOf(studio, scope.eventId);
-
 export const openStudioEditor = (
-  scope: StudioScope,
+  actId: number,
   studio: ActStudio,
   queryClient: QueryClient,
 ): StudioEditor<ActStudio> => {
-  const key = scopeKeyOf(scope);
-  const known = editors.get(key);
+  const known = editors.get(actId);
   if (known !== undefined) {
     return known.editor;
   }
 
-  const evening =
-    scope.eventId === null
-      ? null
-      : eveningSavePortOf(scope.actId, scope.eventId, queryClient, studio);
-  const editor = createStudioEditor(
-    editorStudioOf(scope, studio),
-    evening ?? studioSavePortOf(scope.actId, queryClient),
-  );
-  editors.set(key, {
-    key,
-    scope,
+  const editor = createStudioEditor(studio, studioSavePortOf(actId, queryClient));
+  editors.set(actId, {
     editor,
-    evening,
     holders: 0,
     closing: null,
-    detach: attached(key, editor, queryClient),
+    detach: attached(actId, editor, queryClient),
   });
-  listed.delete(scope.actId);
-  closeWhenUnheld(key, editor);
+  closeWhenUnheld(actId, editor);
 
   return editor;
 };
 
-export const adoptStudio = (scope: StudioScope, studio: ActStudio): void => {
-  const open = editors.get(scopeKeyOf(scope));
+export const adoptStudio = (actId: number, studio: ActStudio): void => {
+  const open = editors.get(actId);
   if (open === undefined) {
     return;
   }
 
-  open.evening?.observe(studio);
-  void open.editor.adopt(editorStudioOf(scope, studio));
+  void open.editor.adopt(studio);
 };
 
-export const holdStudioEditor = (scope: StudioScope): void => {
-  const key = scopeKeyOf(scope);
-  const open = editors.get(key);
+export const holdStudioEditor = (actId: number): void => {
+  const open = editors.get(actId);
   if (open === undefined) {
     return;
   }
@@ -228,79 +170,62 @@ export const holdStudioEditor = (scope: StudioScope): void => {
   if (open.closing !== null) {
     window.clearTimeout(open.closing);
   }
-  editors.set(key, { ...open, holders: open.holders + 1, closing: null });
+  editors.set(actId, { ...open, holders: open.holders + 1, closing: null });
   announce();
 };
 
-export const releaseStudioEditor = (scope: StudioScope): void => {
-  const key = scopeKeyOf(scope);
-  const open = editors.get(key);
+export const releaseStudioEditor = (actId: number): void => {
+  const open = editors.get(actId);
   if (open === undefined) {
     return;
   }
 
-  editors.set(key, { ...open, holders: Math.max(0, open.holders - 1) });
+  editors.set(actId, { ...open, holders: Math.max(0, open.holders - 1) });
   if (open.holders <= 1) {
     void open.editor.leave().finally(() => {
-      closeWhenUnheld(key, open.editor);
+      closeWhenUnheld(actId, open.editor);
     });
   }
 };
 
 export const throughStudioEditor = <TResult>(
-  scope: StudioScope,
+  actId: number,
   action: () => Promise<TResult>,
-): Promise<TResult> => studioEditorOf(scope)?.direct(action) ?? action();
+): Promise<TResult> => studioEditorOf(actId)?.direct(action) ?? action();
 
-export const subscribeStudioEditors = (listener: Listener): (() => void) => {
-  listeners.add(listener);
+export const editorViewOf = (actId: number | null): EditorView | null => {
+  const editor = studioEditorOf(actId);
+  if (actId === null || editor === null) {
+    return null;
+  }
 
-  return () => {
-    listeners.delete(listener);
-  };
-};
-
-const viewsAreCurrent = (known: readonly EditorView[], current: readonly ScopedEditor[]): boolean =>
-  known.length === current.length &&
-  known.every(
-    (view, index) =>
-      view.editor === current[index]?.editor && view.snapshot === view.editor.snapshot(),
-  );
-
-export const editorViewsOf = (actId: number): readonly EditorView[] => {
-  const current = studioEditorsOf(actId);
+  const snapshot = editor.snapshot();
   const known = views.get(actId);
-  if (known !== undefined && viewsAreCurrent(known, current)) {
+  if (known?.editor === editor && known.snapshot === snapshot) {
     return known;
   }
 
-  const next =
-    current.length === 0
-      ? NO_VIEWS
-      : current.map((scoped) => ({ ...scoped, snapshot: scoped.editor.snapshot() }));
-  views.set(actId, next);
+  const view = { editor, snapshot };
+  views.set(actId, view);
 
-  return next;
+  return view;
 };
 
-export const subscribeEditorViews = (actId: number, listener: Listener): (() => void) => {
-  let stops: (() => void)[] = [];
+export const subscribeStudioEditor = (actId: number | null, listener: Listener): (() => void) => {
+  let stopEditor: (() => void) | null = null;
   const watch = (): void => {
-    for (const stop of stops) {
-      stop();
-    }
-    stops = studioEditorsOf(actId).map(({ editor }) => editor.subscribe(listener));
+    stopEditor?.();
+    stopEditor = studioEditorOf(actId)?.subscribe(listener) ?? null;
   };
-  watch();
-  const stopStore = subscribeStudioEditors(() => {
+  const onStoreChange = (): void => {
     watch();
     listener();
-  });
+  };
+  watch();
+  listeners.add(onStoreChange);
 
   return () => {
-    stopStore();
-    for (const stop of stops) {
-      stop();
-    }
+    listeners.delete(onStoreChange);
+    stopEditor?.();
   };
 };

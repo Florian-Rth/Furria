@@ -41,11 +41,11 @@ const detailsLinkOf = (
 
 export const actCardLinksOf = (actId: number, search: ActScreenSearch): ActCardLinks => ({
   play: {
-    ...actScreenLinkOf(actId, { kind: 'practice', eventId: null }),
+    ...actScreenLinkOf(actId, { kind: 'practice' }),
     search: originSearchOf(search),
   },
   edit: {
-    ...actScreenLinkOf(actId, { kind: 'edit', eventId: null }),
+    ...actScreenLinkOf(actId, { kind: 'edit' }),
     search: originSearchOf(search),
   },
   details: detailsLinkOf(actId, search, null),

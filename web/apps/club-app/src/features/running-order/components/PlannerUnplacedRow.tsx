@@ -68,7 +68,6 @@ export const PlannerUnplacedRow: FC<PlannerUnplacedRowProps> = ({ line }) => {
           act={act}
           cast={act.cast}
           compact={!planner.isWide || ordering}
-          eveningChanges={line.eveningChanges}
           archived={planner.isArchived(act.actId)}
         />
       }

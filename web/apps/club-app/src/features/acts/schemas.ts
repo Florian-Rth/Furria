@@ -1,4 +1,4 @@
-import { ChoreographySchema, createStudioSchemas } from '@furria/studio/studio-schemas';
+import { createStudioSchemas } from '@furria/studio/studio-schemas';
 import { z } from 'zod';
 import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
 import {
@@ -61,35 +61,6 @@ const { StudioPersonSchema, StudioSchema: StudioWorkSchema } = createStudioSchem
   PictureSchema,
 });
 
-export const StudioSpotChangeSchema = z.object({
-  spotId: z.int(),
-  person: StudioPersonSchema.nullable(),
-});
-export type StudioSpotChange = z.infer<typeof StudioSpotChangeSchema>;
-
-export const EveningChoreographySchema = ChoreographySchema.extend({
-  copiedFromVersion: z.int().nullable(),
-});
-export type EveningChoreography = z.infer<typeof EveningChoreographySchema>;
-
-export const StudioAppearanceSchema = z.object({
-  appearanceId: z.int(),
-  position: z.int().nullable(),
-  added: z.array(StudioPersonSchema),
-  removedPersonIds: z.array(z.int()),
-  spotChanges: z.array(StudioSpotChangeSchema),
-  choreography: EveningChoreographySchema.nullable(),
-});
-export type StudioAppearance = z.infer<typeof StudioAppearanceSchema>;
-
-export const StudioEveningSchema = z.object({
-  eventId: z.int(),
-  title: z.string(),
-  startsAt: z.iso.datetime({ offset: true }),
-  appearance: StudioAppearanceSchema.nullable(),
-});
-export type StudioEvening = z.infer<typeof StudioEveningSchema>;
-
 export const StudioAttendanceChangeSchema = z.object({
   answer: AttendanceAnswerSchema,
   isRecordedOnBehalf: z.boolean(),
@@ -117,7 +88,6 @@ export const StudioTrainingSchema = z.object({
 export type StudioTraining = z.infer<typeof StudioTrainingSchema>;
 
 export const ActStudioSchema = StudioWorkSchema.extend({
-  evenings: z.array(StudioEveningSchema),
   trainings: z.array(StudioTrainingSchema),
 });
 export type ActStudio = z.infer<typeof ActStudioSchema>;

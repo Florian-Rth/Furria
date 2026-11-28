@@ -150,11 +150,11 @@ Goal: an act's cast is its group everywhere; nothing can add or remove single pe
 
 ### Phase 2 — One version for every evening
 Goal: an appearance is only a place in the running order.
-- [ ] Club app: evening UI removed (`ActEvening*`, `studio-evening`, evening routes, score evenings list, evening choreography versions)
-- [ ] Backend: `ActEveningService`, evening endpoints and `SpotCasting`/`EveningCasting`/`EveningChange` removed; `GetActStudio` without evenings
-- [ ] Running order: `EveningChanges`, lost-evening-change conflicts and evening-cast findings removed; checks use group minus *Nein*; group join/withdraw paths removed (planner's open-appearances endpoint only if nothing else feeds it)
-- [ ] Migration drops `appearance_cast_change`, `appearance_spot`, evening choreography copies and `choreography.appearance_id`; `ChangedTables`, `ReferencesToPerson`, final-track rewrite and spot removal loops updated
-- [ ] Tests: running-order tests and fixtures without evening cast; gate allowlist and wire-name tests updated
+- [x] Club app: evening UI removed (`ActEvening*`, `studio-evening`, evening routes, score evenings list, evening choreography versions)
+- [x] Backend: `ActEveningService`, evening endpoints and `SpotCasting`/`EveningCasting`/`EveningChange` removed; `GetActStudio` without evenings
+- [x] Running order: `EveningChanges`, lost-evening-change conflicts and evening-cast findings removed; checks use group minus *Nein*; group join/withdraw paths removed (planner's open-appearances endpoint kept — the archive notice still feeds it)
+- [x] Migration drops `appearance_cast_change`, `appearance_spot`, evening choreography copies and `choreography.appearance_id`; `ChangedTables`, `ReferencesToPerson`, final-track rewrite and spot removal loops updated
+- [x] Tests: running-order tests and fixtures without evening cast; gate allowlist and wire-name tests updated
 
 ### Phase 3 — Attendance marks in the calendar; hall mode out
 Goal: group admins mark members in the calendar entry; hall mode and roll call are gone.

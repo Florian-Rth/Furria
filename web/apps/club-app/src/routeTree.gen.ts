@@ -168,9 +168,6 @@ import { Route as AppManagePersonsPersonIdFeeReductionsNewRouteImport } from './
 import { Route as AppManagePersonsPersonIdFeeReductionsFeeReductionIdRouteImport } from './routes/_app/manage.persons_.$personId_.fee-reductions.$feeReductionId'
 import { Route as AppManageKeysVenueIdHoldingsNewRouteImport } from './routes/_app/manage.keys_.$venueId_.holdings.new'
 import { Route as AppManageGroupsKindsGroupKindIdEditRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId_.edit'
-import { Route as AppActsActIdEveningsEventIdPracticeRouteImport } from './routes/_app/acts_.$actId_.evenings.$eventId.practice'
-import { Route as AppActsActIdEveningsEventIdEditRouteImport } from './routes/_app/acts_.$actId_.evenings.$eventId.edit'
-import { Route as AppActsActIdDetailsEveningsEventIdRouteImport } from './routes/_app/acts_.$actId_.details.evenings.$eventId'
 import { Route as AppPersonalProfileSecurityPasskeysPasskeyIdRouteImport } from './routes/_app/_personal.profile_.security_.passkeys.$passkeyId'
 import { Route as AppActsActIdDetailsTrainingsTrainingIdRollRouteImport } from './routes/_app/acts_.$actId_.details.trainings.$trainingId.roll'
 
@@ -1028,24 +1025,6 @@ const AppManageGroupsKindsGroupKindIdEditRoute =
     path: '/manage/groups/kinds/$groupKindId/edit',
     getParentRoute: () => AppRoute,
   } as any)
-const AppActsActIdEveningsEventIdPracticeRoute =
-  AppActsActIdEveningsEventIdPracticeRouteImport.update({
-    id: '/acts_/$actId_/evenings/$eventId/practice',
-    path: '/acts/$actId/evenings/$eventId/practice',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppActsActIdEveningsEventIdEditRoute =
-  AppActsActIdEveningsEventIdEditRouteImport.update({
-    id: '/acts_/$actId_/evenings/$eventId/edit',
-    path: '/acts/$actId/evenings/$eventId/edit',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppActsActIdDetailsEveningsEventIdRoute =
-  AppActsActIdDetailsEveningsEventIdRouteImport.update({
-    id: '/evenings/$eventId',
-    path: '/evenings/$eventId',
-    getParentRoute: () => AppActsActIdDetailsRoute,
-  } as any)
 const AppPersonalProfileSecurityPasskeysPasskeyIdRoute =
   AppPersonalProfileSecurityPasskeysPasskeyIdRouteImport.update({
     id: '/profile_/security_/passkeys/$passkeyId',
@@ -1205,9 +1184,6 @@ export interface FileRoutesByFullPath {
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
   '/acts/$actId/details/': typeof AppActsActIdDetailsIndexRoute
   '/profile/security/passkeys/$passkeyId': typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
-  '/acts/$actId/details/evenings/$eventId': typeof AppActsActIdDetailsEveningsEventIdRoute
-  '/acts/$actId/evenings/$eventId/edit': typeof AppActsActIdEveningsEventIdEditRoute
-  '/acts/$actId/evenings/$eventId/practice': typeof AppActsActIdEveningsEventIdPracticeRoute
   '/manage/groups/kinds/$groupKindId/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
   '/manage/keys/$venueId/holdings/new': typeof AppManageKeysVenueIdHoldingsNewRoute
   '/manage/persons/$personId/fee-reductions/$feeReductionId': typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
@@ -1365,9 +1341,6 @@ export interface FileRoutesByTo {
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
   '/acts/$actId/details': typeof AppActsActIdDetailsIndexRoute
   '/profile/security/passkeys/$passkeyId': typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
-  '/acts/$actId/details/evenings/$eventId': typeof AppActsActIdDetailsEveningsEventIdRoute
-  '/acts/$actId/evenings/$eventId/edit': typeof AppActsActIdEveningsEventIdEditRoute
-  '/acts/$actId/evenings/$eventId/practice': typeof AppActsActIdEveningsEventIdPracticeRoute
   '/manage/groups/kinds/$groupKindId/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
   '/manage/keys/$venueId/holdings/new': typeof AppManageKeysVenueIdHoldingsNewRoute
   '/manage/persons/$personId/fee-reductions/$feeReductionId': typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
@@ -1532,9 +1505,6 @@ export interface FileRoutesById {
   '/_app/manage/venues_/$venueId_/edit': typeof AppManageVenuesVenueIdEditRoute
   '/_app/acts_/$actId_/details/': typeof AppActsActIdDetailsIndexRoute
   '/_app/_personal/profile_/security_/passkeys/$passkeyId': typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
-  '/_app/acts_/$actId_/details/evenings/$eventId': typeof AppActsActIdDetailsEveningsEventIdRoute
-  '/_app/acts_/$actId_/evenings/$eventId/edit': typeof AppActsActIdEveningsEventIdEditRoute
-  '/_app/acts_/$actId_/evenings/$eventId/practice': typeof AppActsActIdEveningsEventIdPracticeRoute
   '/_app/manage/groups_/kinds/$groupKindId_/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
   '/_app/manage/keys_/$venueId_/holdings/new': typeof AppManageKeysVenueIdHoldingsNewRoute
   '/_app/manage/persons_/$personId_/fee-reductions/$feeReductionId': typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
@@ -1697,9 +1667,6 @@ export interface FileRouteTypes {
     | '/manage/venues/$venueId/edit'
     | '/acts/$actId/details/'
     | '/profile/security/passkeys/$passkeyId'
-    | '/acts/$actId/details/evenings/$eventId'
-    | '/acts/$actId/evenings/$eventId/edit'
-    | '/acts/$actId/evenings/$eventId/practice'
     | '/manage/groups/kinds/$groupKindId/edit'
     | '/manage/keys/$venueId/holdings/new'
     | '/manage/persons/$personId/fee-reductions/$feeReductionId'
@@ -1857,9 +1824,6 @@ export interface FileRouteTypes {
     | '/manage/venues/$venueId/edit'
     | '/acts/$actId/details'
     | '/profile/security/passkeys/$passkeyId'
-    | '/acts/$actId/details/evenings/$eventId'
-    | '/acts/$actId/evenings/$eventId/edit'
-    | '/acts/$actId/evenings/$eventId/practice'
     | '/manage/groups/kinds/$groupKindId/edit'
     | '/manage/keys/$venueId/holdings/new'
     | '/manage/persons/$personId/fee-reductions/$feeReductionId'
@@ -2023,9 +1987,6 @@ export interface FileRouteTypes {
     | '/_app/manage/venues_/$venueId_/edit'
     | '/_app/acts_/$actId_/details/'
     | '/_app/_personal/profile_/security_/passkeys/$passkeyId'
-    | '/_app/acts_/$actId_/details/evenings/$eventId'
-    | '/_app/acts_/$actId_/evenings/$eventId/edit'
-    | '/_app/acts_/$actId_/evenings/$eventId/practice'
     | '/_app/manage/groups_/kinds/$groupKindId_/edit'
     | '/_app/manage/keys_/$venueId_/holdings/new'
     | '/_app/manage/persons_/$personId_/fee-reductions/$feeReductionId'
@@ -3171,27 +3132,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageGroupsKindsGroupKindIdEditRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/acts_/$actId_/evenings/$eventId/practice': {
-      id: '/_app/acts_/$actId_/evenings/$eventId/practice'
-      path: '/acts/$actId/evenings/$eventId/practice'
-      fullPath: '/acts/$actId/evenings/$eventId/practice'
-      preLoaderRoute: typeof AppActsActIdEveningsEventIdPracticeRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/acts_/$actId_/evenings/$eventId/edit': {
-      id: '/_app/acts_/$actId_/evenings/$eventId/edit'
-      path: '/acts/$actId/evenings/$eventId/edit'
-      fullPath: '/acts/$actId/evenings/$eventId/edit'
-      preLoaderRoute: typeof AppActsActIdEveningsEventIdEditRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/acts_/$actId_/details/evenings/$eventId': {
-      id: '/_app/acts_/$actId_/details/evenings/$eventId'
-      path: '/evenings/$eventId'
-      fullPath: '/acts/$actId/details/evenings/$eventId'
-      preLoaderRoute: typeof AppActsActIdDetailsEveningsEventIdRouteImport
-      parentRoute: typeof AppActsActIdDetailsRoute
-    }
     '/_app/_personal/profile_/security_/passkeys/$passkeyId': {
       id: '/_app/_personal/profile_/security_/passkeys/$passkeyId'
       path: '/profile/security/passkeys/$passkeyId'
@@ -3303,15 +3243,12 @@ const AppManageGroupMatcherRouteWithChildren =
 interface AppActsActIdDetailsRouteChildren {
   AppActsActIdDetailsSettingsRoute: typeof AppActsActIdDetailsSettingsRoute
   AppActsActIdDetailsIndexRoute: typeof AppActsActIdDetailsIndexRoute
-  AppActsActIdDetailsEveningsEventIdRoute: typeof AppActsActIdDetailsEveningsEventIdRoute
   AppActsActIdDetailsTrainingsTrainingIdRollRoute: typeof AppActsActIdDetailsTrainingsTrainingIdRollRoute
 }
 
 const AppActsActIdDetailsRouteChildren: AppActsActIdDetailsRouteChildren = {
   AppActsActIdDetailsSettingsRoute: AppActsActIdDetailsSettingsRoute,
   AppActsActIdDetailsIndexRoute: AppActsActIdDetailsIndexRoute,
-  AppActsActIdDetailsEveningsEventIdRoute:
-    AppActsActIdDetailsEveningsEventIdRoute,
   AppActsActIdDetailsTrainingsTrainingIdRollRoute:
     AppActsActIdDetailsTrainingsTrainingIdRollRoute,
 }
@@ -3431,8 +3368,6 @@ interface AppRouteChildren {
   AppManageRolesRoleIdEditRoute: typeof AppManageRolesRoleIdEditRoute
   AppManageSessionsSessionIdEditRoute: typeof AppManageSessionsSessionIdEditRoute
   AppManageVenuesVenueIdEditRoute: typeof AppManageVenuesVenueIdEditRoute
-  AppActsActIdEveningsEventIdEditRoute: typeof AppActsActIdEveningsEventIdEditRoute
-  AppActsActIdEveningsEventIdPracticeRoute: typeof AppActsActIdEveningsEventIdPracticeRoute
   AppManageGroupsKindsGroupKindIdEditRoute: typeof AppManageGroupsKindsGroupKindIdEditRoute
   AppManageKeysVenueIdHoldingsNewRoute: typeof AppManageKeysVenueIdHoldingsNewRoute
   AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute: typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
@@ -3567,9 +3502,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageRolesRoleIdEditRoute: AppManageRolesRoleIdEditRoute,
   AppManageSessionsSessionIdEditRoute: AppManageSessionsSessionIdEditRoute,
   AppManageVenuesVenueIdEditRoute: AppManageVenuesVenueIdEditRoute,
-  AppActsActIdEveningsEventIdEditRoute: AppActsActIdEveningsEventIdEditRoute,
-  AppActsActIdEveningsEventIdPracticeRoute:
-    AppActsActIdEveningsEventIdPracticeRoute,
   AppManageGroupsKindsGroupKindIdEditRoute:
     AppManageGroupsKindsGroupKindIdEditRoute,
   AppManageKeysVenueIdHoldingsNewRoute: AppManageKeysVenueIdHoldingsNewRoute,

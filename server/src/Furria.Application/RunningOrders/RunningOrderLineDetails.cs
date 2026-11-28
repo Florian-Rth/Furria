@@ -1,5 +1,3 @@
-using Furria.Core.RunningOrders;
-
 namespace Furria.Application.RunningOrders;
 
 public sealed record RunningOrderLineDetails
@@ -13,6 +11,4 @@ public sealed record RunningOrderLineDetails
     public required bool IsPinned { get; init; }
 
     public required int? BlockKey { get; init; }
-
-    public required IReadOnlyList<EveningChange> EveningChanges { get; init; }
 }

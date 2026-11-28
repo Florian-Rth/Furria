@@ -1,12 +1,7 @@
 import { JOB_VERSION_RESTORE, JOB_VERSION_SURE } from '@furria/studio/job-copy';
 import { useJobConfirm } from '@furria/studio/use-job-confirm';
 import type { ActStudio } from '@/features/acts/schemas';
-import {
-  EVENING_VERSIONS_TITLE,
-  VERSIONS_OLDER,
-  VERSIONS_OLDER_RETRY,
-  VERSIONS_TITLE,
-} from '../undo-copy';
+import { VERSIONS_OLDER, VERSIONS_OLDER_RETRY, VERSIONS_TITLE } from '../undo-copy';
 import type { ChoreographyVersionsState } from './use-choreography-versions';
 import { useChoreographyVersions } from './use-choreography-versions';
 
@@ -31,7 +26,7 @@ export interface EditorVersions {
   loadOlder: () => void;
 }
 
-export const olderTextOf = (hasOlder: boolean, failed: boolean): string | null => {
+const olderTextOf = (hasOlder: boolean, failed: boolean): string | null => {
   if (!hasOlder) {
     return null;
   }
@@ -39,16 +34,12 @@ export const olderTextOf = (hasOlder: boolean, failed: boolean): string | null =
   return failed ? VERSIONS_OLDER_RETRY : VERSIONS_OLDER;
 };
 
-export const useEditorVersions = (
-  actId: number,
-  eventId: number | null,
-  studio: ActStudio,
-): EditorVersions => {
-  const versions = useChoreographyVersions(actId, eventId, studio);
+export const useEditorVersions = (actId: number, studio: ActStudio): EditorVersions => {
+  const versions = useChoreographyVersions(actId, studio);
   const confirm = useJobConfirm();
 
   return {
-    title: eventId === null ? VERSIONS_TITLE : EVENING_VERSIONS_TITLE,
+    title: VERSIONS_TITLE,
     state: versions.state,
     rows: versions.rows.map((row) => {
       const armed = confirm.armed(row.key);

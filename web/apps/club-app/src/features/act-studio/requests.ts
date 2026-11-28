@@ -317,120 +317,31 @@ export const requestVideoRemoval = (
     accessToken,
   });
 
-const eveningPathOf = (actId: number, eventId: number): string =>
-  `/api/acts/${actId}/evenings/${eventId}`;
+const choreographyPathOf = (actId: number): string => `/api/acts/${actId}/choreography`;
 
-export const requestEveningJoin = (
-  actId: number,
-  eventId: number,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(eveningPathOf(actId, eventId), {
-    method: 'PUT',
-    body: {},
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestEveningLeave = (
-  actId: number,
-  eventId: number,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(eveningPathOf(actId, eventId), {
-    method: 'DELETE',
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestEveningDancer = (
-  actId: number,
-  eventId: number,
-  personId: number,
-  dances: boolean,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`${eveningPathOf(actId, eventId)}/cast/${personId}`, {
-    method: 'PUT',
-    body: { dances },
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestEveningSpot = (
-  actId: number,
-  eventId: number,
-  spotId: number,
-  personId: number | null,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`${eveningPathOf(actId, eventId)}/spots/${spotId}`, {
-    method: 'PUT',
-    body: { personId },
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export type EveningChoreographyBody = {
-  baseVersion: number | null;
-  sessionVersion: number | null;
-  tracks: Choreography['tracks'];
-};
-
-export const requestEveningChoreographySave = (
-  actId: number,
-  eventId: number,
-  body: EveningChoreographyBody,
-  accessToken: string,
-): Promise<SavedChoreography> =>
-  apiFetch(`${eveningPathOf(actId, eventId)}/choreography`, {
-    method: 'PUT',
-    body,
-    schema: SavedChoreographySchema,
-    accessToken,
-  });
-
-const choreographyPathOf = (actId: number, eventId: number | null): string =>
-  eventId === null
-    ? `/api/acts/${actId}/choreography`
-    : `${eveningPathOf(actId, eventId)}/choreography`;
-
-const versionsPathOf = (actId: number, eventId: number | null, before: number | null): string =>
+const versionsPathOf = (actId: number, before: number | null): string =>
   before === null
-    ? `${choreographyPathOf(actId, eventId)}/versions`
-    : `${choreographyPathOf(actId, eventId)}/versions?before=${before}`;
+    ? `${choreographyPathOf(actId)}/versions`
+    : `${choreographyPathOf(actId)}/versions?before=${before}`;
 
 export const requestChoreographyVersions = (
   actId: number,
-  eventId: number | null,
   before: number | null,
   accessToken: string,
 ): Promise<ChoreographyVersionPage> =>
-  apiFetch(versionsPathOf(actId, eventId, before), {
+  apiFetch(versionsPathOf(actId, before), {
     schema: ChoreographyVersionPageSchema,
     accessToken,
   });
 
 export const requestChoreographyRestore = (
   actId: number,
-  eventId: number | null,
   version: number,
   accessToken: string,
 ): Promise<SavedChoreography> =>
-  apiFetch(`${choreographyPathOf(actId, eventId)}/versions/${version}/restore`, {
+  apiFetch(`${choreographyPathOf(actId)}/versions/${version}/restore`, {
     method: 'POST',
     schema: SavedChoreographySchema,
-    accessToken,
-  });
-
-export const requestEveningCopyDrop = (
-  actId: number,
-  eventId: number,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`${eveningPathOf(actId, eventId)}/choreography`, {
-    method: 'DELETE',
-    schema: NoContentSchema,
     accessToken,
   });
 

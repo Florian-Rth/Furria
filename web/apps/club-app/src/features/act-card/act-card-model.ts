@@ -1,4 +1,4 @@
-import type { ActStudio, MyAct, StudioEvening, StudioTraining } from '@/features/acts/schemas';
+import type { ActStudio, MyAct, StudioTraining } from '@/features/acts/schemas';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import type { ActKind } from '@/features/running-order/schemas';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
@@ -40,7 +40,6 @@ export interface HubBand {
   playable: boolean;
 }
 
-const EVENING_GRACE_MS = 6 * 60 * 60 * 1000;
 const TRAINING_GRACE_MS = 2 * 60 * 60 * 1000;
 const SECONDS_PER_MINUTE = 60;
 
@@ -79,12 +78,6 @@ const isAhead = (startsAt: string, now: number, graceMs: number): boolean =>
 
 const byStart = (left: { startsAt: string }, right: { startsAt: string }): number =>
   Date.parse(left.startsAt) - Date.parse(right.startsAt);
-
-export const upcomingEveningsOf = (
-  evenings: readonly StudioEvening[],
-  now: number,
-): StudioEvening[] =>
-  evenings.filter((evening) => isAhead(evening.startsAt, now, EVENING_GRACE_MS)).sort(byStart);
 
 export const upcomingTrainingsOf = (
   trainings: readonly StudioTraining[],

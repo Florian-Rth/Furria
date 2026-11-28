@@ -67,7 +67,8 @@ const byNumber = (spots: readonly StudioSpot[]): StudioSpot[] =>
   [...spots].sort((left, right) => left.number - right.number);
 
 export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
-  const { playback, practice, studio, mode, stageDocument } = screen;
+  const { playback, practice, studio, mode } = screen;
+  const work = screen.document;
   const { player, paths, stage, ownSpotId, steps, controls, length } = playback;
   const writes = useTrackCommit(screen);
   const { preview, commit, drop } = writes;
@@ -263,10 +264,10 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
       );
     },
     addSpot: () => {
-      stageDocument.startGesture();
-      const spotId = stageDocument.addSpot();
+      work.startGesture();
+      const spotId = work.addSpot();
       settle(new Map([[spotId, freePointOf([...current.values()], stage)]]));
-      stageDocument.endGesture();
+      work.endGesture();
       setPicked([spotId]);
     },
   };

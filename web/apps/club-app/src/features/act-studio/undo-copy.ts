@@ -33,7 +33,6 @@ export const UNDO_ARIA = 'Rückgängig (Strg+Z)';
 export const REDO_ARIA = 'Wiederholen (Strg+Umschalt+Z)';
 
 export const VERSIONS_TITLE = 'Fassungen der Aufstellung';
-export const EVENING_VERSIONS_TITLE = 'Fassungen dieses Abends';
 export const VERSIONS_OLDER = 'Ältere Fassungen laden';
 export const VERSIONS_OLDER_RETRY = 'Ältere Fassungen erneut laden';
 export const VERSIONS_OLDER_FAILED = 'Ältere Fassungen konnten nicht geladen werden.';
@@ -78,10 +77,4 @@ export const versionMetaOf = (version: ChoreographyVersion): string => {
 export const restoreLabelOf = (version: ChoreographyVersion): string =>
   `${VERSION_RESTORE}: Fassung ${version.version}`;
 
-export const visitMetaOf = (at: number, eveningTitle: string | null): string => {
-  const when = CLOCK.format(new Date(at));
-
-  return eveningTitle === null
-    ? `${HISTORY_YOU} · ${when}`
-    : `${HISTORY_YOU} · ${when} · ${eveningTitle}`;
-};
+export const visitMetaOf = (at: number): string => `${HISTORY_YOU} · ${CLOCK.format(new Date(at))}`;

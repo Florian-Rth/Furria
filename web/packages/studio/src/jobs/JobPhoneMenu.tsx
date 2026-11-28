@@ -22,16 +22,12 @@ export const JobPhoneMenu: FC<JobPhoneMenuProps> = ({ jobPhone }) => {
       onPress={jobPhone.toggleSetup}
     />
   ) : null;
-  const music =
-    screen.evening === null ? (
-      <KkMenuItem text={JOB_MUSIC_PAGE} glyph="music" aside={null} onPress={jobPhone.openMusic} />
-    ) : null;
 
   return (
     <>
       <KkMenuItem text={JOB_HISTORY} glyph="history" aside={historyCount} onPress={openHistory} />
       {setup}
-      {music}
+      <KkMenuItem text={JOB_MUSIC_PAGE} glyph="music" aside={null} onPress={jobPhone.openMusic} />
     </>
   );
 };

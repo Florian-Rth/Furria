@@ -5,7 +5,6 @@ import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { ActStudio } from '@/features/acts/schemas';
 import { useVisitHistory } from '../hooks/use-visit-history';
 import {
   HISTORY_EMPTY,
@@ -18,11 +17,10 @@ import {
 
 interface StudioHistorySectionProps {
   actId: number;
-  studio: ActStudio;
 }
 
-export const StudioHistorySection: FC<StudioHistorySectionProps> = ({ actId, studio }) => {
-  const visit = useVisitHistory(actId, studio);
+export const StudioHistorySection: FC<StudioHistorySectionProps> = ({ actId }) => {
+  const visit = useVisitHistory(actId);
   const rows = visit.rows.map((row) => (
     <KkHubRow
       key={row.key}

@@ -60,7 +60,7 @@ export const practiceTargetOf = (act: MyAct): PracticeTarget => ({
 });
 
 export const practiceLinkOf = (act: MyAct): ActPageLink => ({
-  to: actScreenPathOf(act.actId, { kind: 'practice', eventId: null }),
+  to: actScreenPathOf(act.actId, { kind: 'practice' }),
   search: practiceTargetOf(act).search,
 });
 

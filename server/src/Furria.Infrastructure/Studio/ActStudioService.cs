@@ -4,8 +4,6 @@ using Furria.Application.Results;
 using Furria.Application.RunningOrders;
 using Furria.Application.Studio;
 using Furria.Core.Club;
-using Furria.Core.RunningOrders;
-using Furria.Core.Studio;
 using Furria.Core.Ties;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;

@@ -130,9 +130,6 @@ export const toVideosMeta = (counts: StudioCounts): string =>
 export const toSessionLine = (sessionYear: number): string =>
   `Session ${sessionYear}/${String((sessionYear + 1) % 100).padStart(2, '0')}`;
 
-export const toCountLine = (count: number, one: string, many: string): string =>
-  `${count} ${count === 1 ? one : many}`;
-
 export const headerFactsOf = (
   kind: ActKind | null,
   sessionYear: number | null,
@@ -175,4 +172,4 @@ export const toHubActMeta = (kind: ActKind | null, castSize: number): string => 
 
 export const toOpenActHint = (name: string): string => `: ${name} öffnen`;
 
-export const toEveningsAside = (count: number): string => (count === 1 ? 'Abend' : 'Abende');
+export const toTrainingsAside = (count: number): string => (count === 1 ? 'Training' : 'Trainings');

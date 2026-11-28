@@ -15,21 +15,18 @@ public sealed class ActStudioReader
     private readonly AppDbContext _dbContext;
     private readonly MediaUrlSigner _signer;
     private readonly ClubRecordService _clubRecords;
-    private readonly ActEveningReader _evenings;
     private readonly ActTrainingReader _trainings;
 
     public ActStudioReader(
         AppDbContext dbContext,
         MediaUrlSigner signer,
         ClubRecordService clubRecords,
-        ActEveningReader evenings,
         ActTrainingReader trainings
     )
     {
         _dbContext = dbContext;
         _signer = signer;
         _clubRecords = clubRecords;
-        _evenings = evenings;
         _trainings = trainings;
     }
 
@@ -68,7 +65,6 @@ public sealed class ActStudioReader
             Videos = await VideosOfAsync(actId, owner, music, ct),
             Choreography = await ChoreographyOfAsync(actId, ct),
             Stage = await _clubRecords.StageOfClubAsync(ct),
-            Evenings = await _evenings.EveningsOfAsync(act, ct),
             Trainings = await _trainings.TrainingsOfAsync(act, spots, ct),
         };
     }
@@ -344,7 +340,7 @@ public sealed class ActStudioReader
     ) =>
         await _dbContext
             .Choreographies.AsNoTracking()
-            .Where(choreography => choreography.ActId == actId && choreography.AppearanceId == null)
+            .Where(choreography => choreography.ActId == actId)
             .Select(choreography => new StudioChoreographyDetails
             {
                 Version = choreography.Version,

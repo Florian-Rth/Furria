@@ -1,11 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
-using Furria.Api.Endpoints.RunningOrders;
-using Furria.Api.Media;
-using Furria.Application.RunningOrders;
 using Furria.Core.Club;
-using Furria.Core.RunningOrders;
 using Furria.Infrastructure.RunningOrders;
 
 namespace Furria.Api.Endpoints.Acts;

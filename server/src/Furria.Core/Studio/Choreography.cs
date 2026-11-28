@@ -11,19 +11,13 @@ public sealed class Choreography : ITimestamped
 
     public int ActId { get; set; }
 
-    public int? AppearanceId { get; set; }
-
     public ChoreographyDocument Document { get; set; } = ChoreographyDocument.Empty;
 
     public int Version { get; set; } = FirstVersion;
-
-    public int? CopiedFromVersion { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
 
     public Act? Act { get; set; }
-
-    public Appearance? Appearance { get; set; }
 }

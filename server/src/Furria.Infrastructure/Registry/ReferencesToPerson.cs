@@ -38,12 +38,10 @@ public static class ReferencesToPerson
         HerOwn<SignUpLine>(nameof(SignUpLine.PersonId)),
         HerOwn<NewsPostMention>(nameof(NewsPostMention.PersonId)),
         HerOwn<FrozenCastMember>(nameof(FrozenCastMember.PersonId)),
-        HerOwn<AppearanceCastChange>(nameof(AppearanceCastChange.PersonId)),
         HerOwn<ActCoEditor>(nameof(ActCoEditor.PersonId)),
         HerOwn<BeerListEnrollment>(nameof(BeerListEnrollment.PersonId)),
         HerOwn<BeerTabReminder>(nameof(BeerTabReminder.PersonId)),
         Reference<Spot>(nameof(Spot.PersonId), OnAbsorption.BlocksIt, OnErasure.KeptNamingNobody),
-        HerOwn<AppearanceSpot>(nameof(AppearanceSpot.PersonId)),
         Reference<Announcement>(
             nameof(Announcement.AuthorPersonId),
             OnAbsorption.BlocksIt,

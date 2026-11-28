@@ -55,7 +55,6 @@ export const useStepListDetail = (
   partId: number | null,
   choosePart: Dispatch<SetStateAction<number | null>>,
   confirm: JobConfirm,
-  editable: boolean,
 ): StepListDetails => {
   const { playback, practice } = screen;
   const work = screen.document;
@@ -156,7 +155,7 @@ export const useStepListDetail = (
   const dissolveKey = `part:${partId}`;
 
   return {
-    detail: current === null || partId !== null || !editable ? null : detailOf(current),
+    detail: current === null || partId !== null ? null : detailOf(current),
     partDetail:
       shownPart === null
         ? null
@@ -174,22 +173,18 @@ export const useStepListDetail = (
               jobActionOf('loopPart', STEP_LIST_PART_LOOP, 'loop', () => {
                 practice.loopPart(shownPart.firstStepId);
               }),
-              ...(editable
-                ? [
-                    jobActionOf(
-                      'dissolve',
-                      confirm.armed(dissolveKey) ? SETUP_SURE : SETUP_PART_DISSOLVE,
-                      'dissolve',
-                      () => {
-                        confirm.press(dissolveKey, () => {
-                          choosePart(null);
-                          work.change({ kind: 'partRemove', partId: shownPart.partId });
-                        });
-                      },
-                      { tone: 'danger' },
-                    ),
-                  ]
-                : []),
+              jobActionOf(
+                'dissolve',
+                confirm.armed(dissolveKey) ? SETUP_SURE : SETUP_PART_DISSOLVE,
+                'dissolve',
+                () => {
+                  confirm.press(dissolveKey, () => {
+                    choosePart(null);
+                    work.change({ kind: 'partRemove', partId: shownPart.partId });
+                  });
+                },
+                { tone: 'danger' },
+              ),
             ],
           },
   };

@@ -19,6 +19,4 @@ public sealed class Appearance
     public CalendarEntry? CalendarEntry { get; set; }
 
     public Act? Act { get; set; }
-
-    public ICollection<AppearanceCastChange> CastChanges { get; set; } = [];
 }

@@ -13,7 +13,7 @@ interface ActStudioEditorProps {
 }
 
 export const ActStudioEditor: FC<ActStudioEditorProps> = ({ actId, title, studio, screen }) => {
-  const versions = useEditorVersions(actId, screen.evening?.eventId ?? null, studio);
+  const versions = useEditorVersions(actId, studio);
   const versionsSection = <EditorVersionsSection versions={versions} />;
 
   return <JobEditor title={title} screen={screen} versions={versionsSection} />;

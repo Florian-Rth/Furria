@@ -5,7 +5,6 @@ import type {
   ActStudioResponse,
   CoEditor,
   MyAct,
-  StudioEvening,
   StudioTraining,
 } from '@/features/acts/schemas';
 import type { ActKind, ActWish } from '@/features/running-order/schemas';
@@ -29,7 +28,6 @@ import {
   tallyOf,
   templateOf,
   trainingTallyOf,
-  upcomingEveningsOf,
   upcomingTrainingsOf,
   viewerAnswerOf,
 } from './act-card-model';
@@ -66,7 +64,6 @@ export interface ActCardView {
   canEditStudio: boolean;
   canEditSettings: boolean;
   hasStudio: boolean;
-  evenings: StudioEvening[];
   nextEvening: NextEvening | null;
   trainings: StudioTraining[];
   nextTraining: NextTraining | null;
@@ -80,26 +77,14 @@ export interface ActCardView {
   links: ActCardLinks;
 }
 
-const nextEveningOf = (
-  summary: MyAct | undefined,
-  evenings: readonly StudioEvening[],
-): NextEvening | null => {
-  if (summary?.nextEvening != null) {
-    const { eventId, title, startsAt, position } = summary.nextEvening;
-
-    return { eventId, title, startsAt, slot: eveningSlotOf(position) };
+const nextEveningOf = (summary: MyAct | undefined): NextEvening | null => {
+  if (summary?.nextEvening == null) {
+    return null;
   }
 
-  const first = evenings.find((evening) => evening.appearance !== null);
+  const { eventId, title, startsAt, position } = summary.nextEvening;
 
-  return first === undefined
-    ? null
-    : {
-        eventId: first.eventId,
-        title: first.title,
-        startsAt: first.startsAt,
-        slot: eveningSlotOf(first.appearance?.position ?? null),
-      };
+  return { eventId, title, startsAt, slot: eveningSlotOf(position) };
 };
 
 const nextTrainingOf = (
@@ -140,7 +125,6 @@ export const actCardViewOf = (
 ): ActCardView => {
   const { act, viewer, studio } = data;
   const template = templateOf(act.kind);
-  const evenings = studio === null ? [] : upcomingEveningsOf(studio.evenings, now);
   const trainings = studio === null ? [] : upcomingTrainingsOf(studio.trainings, now);
   const leads = summary?.viewerLeads ?? false;
   const editors = summary?.editors ?? [];
@@ -161,8 +145,7 @@ export const actCardViewOf = (
     canEditStudio: viewer.canEditStudio,
     canEditSettings: viewer.canEditSettings,
     hasStudio: studio !== null,
-    evenings,
-    nextEvening: nextEveningOf(summary, evenings),
+    nextEvening: nextEveningOf(summary),
     trainings,
     nextTraining: nextTrainingOf(summary, trainings, viewerId, act.cast.length),
     cast: act.cast,

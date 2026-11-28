@@ -22,7 +22,5 @@ public sealed record ActStudioContent
 
     public required ClubStageDetails? Stage { get; init; }
 
-    public required IReadOnlyList<StudioEveningDetails> Evenings { get; init; }
-
     public required IReadOnlyList<StudioTrainingDetails> Trainings { get; init; }
 }

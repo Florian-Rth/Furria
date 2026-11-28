@@ -5,14 +5,11 @@ import type { FC } from 'react';
 import { ActCardDetailsHead } from '@/features/act-card/components/ActCardDetailsHead';
 import { ChoreographyVersionsSection } from '@/features/act-studio/components/ChoreographyVersionsSection';
 import { StudioHistorySection } from '@/features/act-studio/components/StudioHistorySection';
-import { VERSIONS_TITLE } from '@/features/act-studio/undo-copy';
 import { ActTrainingRollPanel } from '@/features/act-training/components/ActTrainingRollPanel';
 import { ActTrainingsSection } from '@/features/act-training/components/ActTrainingsSection';
 import { toActStateNote } from '../act-page-copy';
 import type { ActDetailsPageState } from '../hooks/use-act-details-page';
 import { ActCoEditorsSection } from './ActCoEditorsSection';
-import { ActEveningPanel } from './ActEveningPanel';
-import { ActEveningsSection } from './ActEveningsSection';
 import { ActPageLoading } from './ActPageLoading';
 import { ActSettingsSide } from './ActSettingsSide';
 
@@ -34,32 +31,13 @@ export const ActDetailsBody: FC<ActDetailsBodyProps> = ({ page }) => {
       <ActTrainingsSection actId={data.act.actId} studio={data.studio} cast={data.act.cast} />
     );
   const coEditors = data.studio === null ? null : <ActCoEditorsSection page={data} />;
-  const editedStudio = data.viewer.canEditStudio ? data.studio : null;
   const history =
-    editedStudio === null ? null : (
+    data.studio === null || !data.viewer.canEditStudio ? null : (
       <>
-        <StudioHistorySection actId={data.act.actId} studio={editedStudio} />
-        <ChoreographyVersionsSection
-          actId={data.act.actId}
-          eventId={null}
-          studio={editedStudio}
-          title={VERSIONS_TITLE}
-        />
+        <StudioHistorySection actId={data.act.actId} />
+        <ChoreographyVersionsSection actId={data.act.actId} studio={data.studio} />
       </>
     );
-  const evenings =
-    data.studio === null ? null : <ActEveningsSection data={data} studio={data.studio} />;
-  const eveningPanel =
-    data.studio === null || page.evening === null || !page.isEveningOpen ? null : (
-      <ActEveningPanel
-        key={page.evening.eventId}
-        page={page}
-        data={data}
-        studio={data.studio}
-        evening={page.evening}
-      />
-    );
-
   const rollPanel =
     data.studio === null || page.rollTraining === null || !page.isRollOpen ? null : (
       <ActTrainingRollPanel
@@ -77,14 +55,12 @@ export const ActDetailsBody: FC<ActDetailsBodyProps> = ({ page }) => {
         <Stack sx={{ gap: 2, minWidth: 0 }}>
           <ActCardDetailsHead data={data} viewerId={page.viewerId} search={page.search} />
           {state}
-          {evenings}
           {trainings}
           {history}
           {coEditors}
         </Stack>
       </KkMasterDetail.Master>
       <ActSettingsSide page={page} act={data.act} />
-      {eveningPanel}
       {rollPanel}
     </KkMasterDetail>
   );

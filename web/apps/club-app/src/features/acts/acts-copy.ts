@@ -3,7 +3,6 @@ import type { KkIconName } from '@furria/ui/KkIcon';
 import { toActKindLabel } from '@/features/running-order/running-order-copy';
 import type { ActKind, ActWishKind, Strength } from '@/features/running-order/schemas';
 import { sessionYearsLabelOf } from '@/lib/club';
-import type { CastTileState } from './act-cast';
 import type { NameIssue } from './act-editor';
 import type { HistoryActMark, SessionPhase } from './act-history';
 import type { ActsFilter, GroupAct } from './schemas';
@@ -131,14 +130,7 @@ export const toSharedActMeta = (shared: number): string =>
 export const toCastCountLine = (count: number): string =>
   count === 0 ? 'Niemand in der Gruppe' : `${count} dabei`;
 
-const TILE_STATE_LABELS: Record<CastTileState, string> = {
-  in: 'dabei',
-  out: 'nicht dabei',
-  guest: 'Gast, dabei',
-  person: 'dabei',
-};
-
-export const toTileStateLabel = (state: CastTileState): string => TILE_STATE_LABELS[state];
+export const IN_CAST_LABEL = 'dabei';
 
 const NAME_ISSUES: Record<NameIssue, string> = {
   missing: 'Der Sessionsauftritt braucht einen Namen.',

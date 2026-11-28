@@ -2,7 +2,7 @@ import { toImageSource } from '@furria/ui/image-source';
 import type { KkCastTile } from '@furria/ui/KkCastGrid';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
 import { toInitials } from '@/lib/initials';
-import { toShortName, toTileStateLabel } from './acts-copy';
+import { IN_CAST_LABEL, toShortName } from './acts-copy';
 
 const COLLATOR = new Intl.Collator('de-DE');
 
@@ -18,5 +18,5 @@ export const readOnlyCastTilesOf = (people: readonly PortraitPersonRef[] | null)
     portrait: toImageSource(person.portrait, 'portrait'),
     state: 'in',
     badge: null,
-    stateLabel: toTileStateLabel('in'),
+    stateLabel: IN_CAST_LABEL,
   }));

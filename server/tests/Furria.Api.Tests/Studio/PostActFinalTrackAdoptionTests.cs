@@ -4,7 +4,6 @@ using Furria.Tests.Common;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSeeds;
-using static Furria.Api.Tests.Studio.EveningSteps;
 using static Furria.Api.Tests.Studio.StudioSeeds;
 using static Furria.Api.Tests.Studio.StudioSteps;
 
@@ -90,56 +89,6 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
-    public Task Should_MoveTheEveningCopyAlongAndKeepItCurrent_When_ItWasMadeFromTheLatestSession() =>
-        _fixture.AtInstantAsync(
-            InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var (admin, actId, opener, finale, gala) = await EveningMixAsync(ct);
-                var spotId = await AddSpotAsync(admin, actId);
-                var (_, session) = await SaveChoreographyAsync(
-                    admin,
-                    actId,
-                    null,
-                    [StandingTrack(spotId, opener, 0, 1)]
-                );
-                var (_, copy) = await SaveEveningChoreographyAsync(
-                    admin,
-                    actId,
-                    gala,
-                    null,
-                    session,
-                    [StandingTrack(spotId, opener, 2, 1)]
-                );
-                var (finalTrackId, finalMedia) = await FinalTrackOfAsync(
-                    _fixture,
-                    admin,
-                    actId,
-                    120,
-                    ct
-                );
-                await TuneOffsetAsync(admin, actId, finalTrackId, opener, 5);
-                await TuneOffsetAsync(admin, actId, finalTrackId, finale, 55);
-
-                await AdoptAsync(admin, actId, finalTrackId);
-
-                var studio = (await StudioOfAsync(admin, actId)).Studio!;
-                var evening = Assert.Single(studio.Evenings).Appearance!.Choreography!;
-                var keyframe = evening.Tracks.Single().Keyframes.Single();
-                Assert.Equal(
-                    (finalMedia, 6d, copy + 1, (int?)studio.Choreography!.Version),
-                    (
-                        keyframe.SourceMediaItemId,
-                        keyframe.Seconds,
-                        evening.Version,
-                        evening.CopiedFromVersion
-                    )
-                );
-            }
-        );
-
-    [Fact]
     public async Task Should_RefuseAndLeaveTheMusicAsItWas_When_NoSongWasMatched()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -168,22 +117,5 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
         var finale = await SongMediaOfAsync(_fixture, admin, actId, 60, ct);
 
         return (admin, actId, opener, finale);
-    }
-
-    private async Task<(
-        HttpClient Admin,
-        int ActId,
-        int Opener,
-        int Finale,
-        int Gala
-    )> EveningMixAsync(CancellationToken ct)
-    {
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var opener = await SongMediaOfAsync(_fixture, admin, actId, 60, ct);
-        var finale = await SongMediaOfAsync(_fixture, admin, actId, 60, ct);
-
-        return (admin, actId, opener, finale, ctx.Club.Events.IdOf(Gala));
     }
 }

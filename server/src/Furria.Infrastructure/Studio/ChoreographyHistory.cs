@@ -83,18 +83,18 @@ public sealed class ChoreographyHistory
             ct
         );
 
+    public Task<Choreography?> ChoreographyOfAsync(int actId, CancellationToken ct) =>
+        _dbContext.Choreographies.SingleOrDefaultAsync(row => row.ActId == actId, ct);
+
     public async Task<ChoreographyVersionPage> VersionsOfAsync(
-        int? choreographyId,
+        int actId,
         int? before,
         CancellationToken ct
     )
     {
-        if (choreographyId is not { } id)
-            return ChoreographyVersionPage.Empty;
-
         var history = _dbContext
             .ChoreographyVersions.AsNoTracking()
-            .Where(row => row.ChoreographyId == id);
+            .Where(row => row.Choreography!.ActId == actId);
         var rows = await history
             .Where(row => before == null || row.Version < before)
             .OrderByDescending(row => row.Version)

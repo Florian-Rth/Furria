@@ -31,7 +31,6 @@ const selectedLast = (bars: readonly ActStudioVideoBar[]): ActStudioVideoBar[] =
 export const useVideoLanes = (screen: StudioScreen, takes: ActStudioTakes): VideoLanes => {
   const { playback, practice } = screen;
   const { player, length, countMarks, segments, paths } = playback;
-  const movable = screen.evening === null;
   const { parts } = timelineRowsOf(screen.studio, paths, countMarks, practice.step?.stepId ?? null);
 
   const bars = selectedLast(takes.bars);
@@ -70,7 +69,7 @@ export const useVideoLanes = (screen: StudioScreen, takes: ActStudioTakes): Vide
       seconds: bar.startSeconds,
       until: bar.endSeconds,
       lane: TIMELINE_LANE.videos,
-      movable,
+      movable: true,
       tappable: true,
       snaps: false,
       move: bar.moveTo,

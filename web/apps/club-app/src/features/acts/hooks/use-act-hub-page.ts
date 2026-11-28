@@ -39,7 +39,7 @@ export const useActHubPage = (rawActId: string, search: ActPageSearch): ActHubPa
     icon: 'music',
     onSelect: () => {
       if (actId !== null) {
-        open(actScreenPathOf(actId, { kind: 'practice', eventId: null }));
+        open(actScreenPathOf(actId, { kind: 'practice' }));
       }
     },
   };

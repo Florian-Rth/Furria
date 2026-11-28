@@ -1,19 +1,10 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
 import type { KkScoreReadinessState } from '@furria/ui/KkScoreReadiness';
-import type { StudioEvening, StudioTraining } from '@/features/acts/schemas';
-import {
-  dayOf,
-  eveningFactOf,
-  eveningHintOf,
-  readinessHintOf,
-  readinessLabelOf,
-  readinessValueOf,
-} from './score-copy';
+import type { StudioTraining } from '@/features/acts/schemas';
+import { readinessHintOf, readinessLabelOf, readinessValueOf } from './score-copy';
 import type { ScoreDoor } from './score-doors';
 import type { ScoreLink } from './score-links';
 import type { ReadinessItem, ReadinessKey, ReadinessTarget } from './score-readiness';
-import type { ActEvening } from './score-season';
-import { eveningNumberOf } from './score-season';
 
 const READINESS_ICONS: Record<ReadinessKey, KkIconName> = {
   music: 'music',
@@ -25,7 +16,6 @@ const READINESS_ICONS: Record<ReadinessKey, KkIconName> = {
 };
 
 export type ScoreGo = (link: ScoreLink) => () => void;
-export type ScoreEveningOpener = (eventId: number) => () => void;
 export type ScoreReadinessOpener = (target: ReadinessTarget) => () => void;
 export type TrainingAnswer = 'yes' | 'no';
 
@@ -42,25 +32,13 @@ export interface ScoreReadinessView {
 export interface ScoreFactsView {
   training: StudioTraining | null;
   trainingAnswer: TrainingAnswer | null;
-  evening: string | null;
-  eveningOpen: (() => void) | null;
   music: string | null;
 }
 
 export interface ScoreFactsInput {
   training: StudioTraining | null;
-  evening: StudioEvening | null;
   viewerId: number | null;
   music: string | null;
-}
-
-export interface ScoreEveningView {
-  eventId: number;
-  number: string | null;
-  title: string;
-  date: string;
-  hint: string;
-  open: (() => void) | null;
 }
 
 export interface ScoreDoorView {
@@ -91,36 +69,11 @@ export const readinessViewsOf = (
     open: open === null ? null : open(item.target),
   }));
 
-export const factsViewOf = (
-  input: ScoreFactsInput,
-  openEvening: ScoreEveningOpener | null,
-): ScoreFactsView => {
-  const { training, evening } = input;
-
-  return {
-    training,
-    trainingAnswer: trainingAnswerOf(training, input.viewerId),
-    evening:
-      evening === null
-        ? null
-        : eveningFactOf(evening.title, eveningNumberOf(evening), evening.startsAt),
-    eveningOpen: evening === null || openEvening === null ? null : openEvening(evening.eventId),
-    music: input.music,
-  };
-};
-
-export const eveningViewsOf = (
-  evenings: readonly ActEvening[],
-  openEvening: ScoreEveningOpener | null,
-): ScoreEveningView[] =>
-  evenings.map((entry) => ({
-    eventId: entry.eventId,
-    number: entry.number === null ? null : String(entry.number),
-    title: entry.title,
-    date: dayOf(entry.startsAt),
-    hint: eveningHintOf(entry.title, entry.number, entry.startsAt),
-    open: openEvening === null ? null : openEvening(entry.eventId),
-  }));
+export const factsViewOf = ({ training, viewerId, music }: ScoreFactsInput): ScoreFactsView => ({
+  training,
+  trainingAnswer: trainingAnswerOf(training, viewerId),
+  music,
+});
 
 export const doorViewsOf = (doors: readonly ScoreDoor[], go: ScoreGo): ScoreDoorView[] =>
   doors.map((door) => ({ key: door.key, open: go(door.link) }));

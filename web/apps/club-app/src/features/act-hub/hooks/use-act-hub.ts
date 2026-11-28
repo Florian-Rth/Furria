@@ -31,18 +31,16 @@ import { EDIT_LABEL, introOf, musicFactOf, sessionTextOf } from '../score-copy';
 import { hasEditDoors, scoreDoorsOf } from '../score-doors';
 import type {
   ScoreDoorView,
-  ScoreEveningOpener,
-  ScoreEveningView,
   ScoreFactsView,
   ScoreGo,
   ScoreReadinessOpener,
   ScoreReadinessView,
 } from '../score-hub-views';
-import { doorViewsOf, eveningViewsOf, factsViewOf, readinessViewsOf } from '../score-hub-views';
-import { detailsLinkOf, eveningLinkOf, musicLinkOf } from '../score-links';
+import { doorViewsOf, factsViewOf, readinessViewsOf } from '../score-hub-views';
+import { detailsLinkOf, musicLinkOf } from '../score-links';
 import { readinessOf } from '../score-readiness';
 import { scrollToAnchor } from '../score-scroll';
-import { actEveningsOf, nextEveningOf, nextTrainingOf } from '../score-season';
+import { nextTrainingOf } from '../score-season';
 import type { ScoreRoute } from './use-score-route';
 import { useScoreRoute } from './use-score-route';
 
@@ -63,7 +61,6 @@ export interface ActHub {
   readiness: ScoreReadinessView[];
   showReadiness: boolean;
   facts: ScoreFactsView;
-  evenings: ScoreEveningView[];
   doors: ScoreDoorView[];
   pane: ScoreStepView | null;
   paneStepId: number | null;
@@ -113,21 +110,16 @@ export const useActHub = (
   );
   const paneStep = stepOf(model, paneStepId);
   const training = nextTrainingOf(studio.trainings, now);
-  const evening = nextEveningOf(studio.evenings, now);
   const remembered = rememberedStepOf(model.steps, stored);
   const readiness = readinessOf(studio, model.steps);
   const go: ScoreGo = (link) => () => {
     route.go(link);
   };
-  const openEvening: ScoreEveningOpener | null = editor
-    ? (eventId) => go(eveningLinkOf(actId, eventId))
-    : null;
   const openReadiness: ScoreReadinessOpener | null = editor
     ? (target) => (target === 'music' ? go(musicLinkOf(actId)) : () => route.editFrom(paneStepId))
     : null;
   const doors = scoreDoorsOf(viewer, {
     actId,
-    nextEveningId: evening?.eventId ?? null,
     hallTrainingId:
       training?.calendarEntryId ??
       hallTrainingOf(studio.trainings, undefined)?.calendarEntryId ??
@@ -178,8 +170,7 @@ export const useActHub = (
     you: viewer.inCast ? scoreYouOf(model, studio.spots, remembered) : null,
     readiness: readinessViewsOf(readiness, openReadiness),
     showReadiness: editDoors && readiness.some((item) => item.state !== 'empty'),
-    facts: factsViewOf({ training, evening, viewerId, music }, openEvening),
-    evenings: eveningViewsOf(actEveningsOf(studio.evenings, now), openEvening),
+    facts: factsViewOf({ training, viewerId, music }),
     doors: doorViewsOf(doors, go),
     pane: wide && paneStep !== null ? scoreStepViewOf(paneStep, model, studio) : null,
     paneStepId: wide ? paneStepId : null,

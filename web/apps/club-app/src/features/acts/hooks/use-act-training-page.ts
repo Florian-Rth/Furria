@@ -17,7 +17,7 @@ export const useActTrainingPage = (
   search: ActScreenSearch,
 ): ActTrainingPage => {
   const trainingId = rawTrainingId === null ? null : parsePositiveId(rawTrainingId);
-  const page = useActScreenPage(rawActId, search, 'training', null);
+  const page = useActScreenPage(rawActId, search, 'training');
   const studio = page.load.query.data?.studio;
   const found =
     studio?.trainings.some((candidate) => candidate.calendarEntryId === trainingId) === true;

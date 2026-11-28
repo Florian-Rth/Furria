@@ -49,8 +49,8 @@ export const useCastJob = (
   confirm: JobConfirm,
   openPicker: () => void,
 ): JobView => {
-  const { studio, cast, stageDocument, playback, evening } = screen;
-  const onSession = evening === null;
+  const { studio, cast, playback } = screen;
+  const work = screen.document;
   const spots = [...studio.spots].sort((left, right) => left.number - right.number);
   const count = castCountOf(spots);
   const chosen = editor.selected.length;
@@ -76,20 +76,20 @@ export const useCastJob = (
     if (changes.length === 0) {
       return;
     }
-    stageDocument.startGesture();
+    work.startGesture();
     for (const change of changes) {
       const person = cast.find((candidate) => candidate.personId === change.personId) ?? null;
-      stageDocument.change({
+      work.change({
         kind: 'spotAssign',
         spotId: change.spotId,
         person: person === null ? null : spotPersonOf(person),
       });
     }
-    stageDocument.endGesture();
+    work.endGesture();
   };
-  const addSpot = onSession
-    ? [jobActionOf('addSpot', JOB_ADD_SPOT, 'add', editor.addSpot, { label: JOB_ADD_SPOT_LABEL })]
-    : [];
+  const addSpot = [
+    jobActionOf('addSpot', JOB_ADD_SPOT, 'add', editor.addSpot, { label: JOB_ADD_SPOT_LABEL }),
+  ];
   const heldChosen = spots.filter(
     (spot) => editor.selected.includes(spot.spotId) && spot.person !== null,
   );
@@ -106,7 +106,7 @@ export const useCastJob = (
       : [];
   const deleteKey = `spot:${picked?.spotId ?? 0}`;
   const deleteSpot =
-    picked === null || !onSession
+    picked === null
       ? null
       : jobActionOf(
           'deleteSpot',
@@ -115,7 +115,7 @@ export const useCastJob = (
           () => {
             confirm.press(deleteKey, () => {
               editor.forget(picked.spotId);
-              stageDocument.change({ kind: 'spotRemove', spotId: picked.spotId });
+              work.change({ kind: 'spotRemove', spotId: picked.spotId });
             });
           },
           { tone: 'danger' },

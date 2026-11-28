@@ -21,7 +21,7 @@ import { SETTINGS_LABEL, STUDIO_MUSIC_LABEL } from '../act-page-copy';
 import { shownActionsOf } from '../act-screen-actions';
 import { actScreenPathOf } from '../act-screens';
 import { actCardOriginOf, actPagePathOf } from '../acts-origin';
-import type { ActScreenSearch, ActStudioResponse, StudioEvening, StudioTraining } from '../schemas';
+import type { ActScreenSearch, ActStudioResponse, StudioTraining } from '../schemas';
 import type { ActLoad } from './use-act-load';
 import { useActLoad } from './use-act-load';
 
@@ -41,20 +41,16 @@ export interface ActDetailsPageState {
   originSearch: CardLinkSearch;
   redirectPath: string | null;
   canEditStudio: boolean;
-  evening: StudioEvening | null;
   rollTraining: StudioTraining | null;
   isRollOpen: boolean;
   isSettingsOpen: boolean;
-  isEveningOpen: boolean;
   isWide: boolean;
   masterSpan: KkMasterDetailSpan;
   acts: readonly CatalogueAct[];
   fixedGroupId: number | null;
   closeSettings: () => void;
-  closeEvening: () => void;
   closeRoll: () => void;
   startTraining: (calendarEntryId: number) => void;
-  practiseEvening: (eventId: number, edit: boolean) => void;
   reload: () => void;
 }
 
@@ -84,17 +80,12 @@ export const useActDetailsPage = (
   const canEditSettings = data?.viewer.canEditSettings === true;
   const isSettingsOpen = shownPane?.kind === 'settings';
   const catalogue = useActsQuery(act?.sessionYear ?? null, isSettingsOpen);
-  const evening =
-    shownPane?.kind === 'evening'
-      ? (studio?.evenings.find((candidate) => candidate.eventId === shownPane.eventId) ?? null)
-      : null;
   const rollTraining =
     shownPane?.kind === 'roll'
       ? (studio?.trainings.find(
           (candidate) => candidate.calendarEntryId === shownPane.trainingId,
         ) ?? null)
       : null;
-  const isEveningOpen = evening !== null;
   const isRollOpen = rollTraining !== null;
   const origin = originSearchOf(search);
 
@@ -124,7 +115,7 @@ export const useActDetailsPage = (
     icon: practisable ? 'play' : 'music',
     onSelect: () => {
       if (actId !== null) {
-        openScreen(actScreenPathOf(actId, { kind: 'practice', eventId: null }));
+        openScreen(actScreenPathOf(actId, { kind: 'practice' }));
       }
     },
   };
@@ -152,26 +143,18 @@ export const useActDetailsPage = (
     originSearch: origin,
     redirectPath: redirectPathOf(actId, access),
     canEditStudio,
-    evening,
     rollTraining,
     isRollOpen,
     isSettingsOpen,
-    isEveningOpen,
     isWide,
     masterSpan: isWide && shownPane !== null ? SIDE_OPEN_SPAN : FULL_SPAN,
     acts: catalogue.data?.acts ?? NO_ACTS,
     fixedGroupId: plans ? null : (act?.group?.groupId ?? null),
     closeSettings: closePane,
-    closeEvening: closePane,
     closeRoll: closePane,
     startTraining: (calendarEntryId) => {
       if (actId !== null) {
         openScreen(actScreenPathOf(actId, { kind: 'training', trainingId: calendarEntryId }));
-      }
-    },
-    practiseEvening: (eventId, edit) => {
-      if (actId !== null) {
-        openScreen(actScreenPathOf(actId, { kind: edit ? 'edit' : 'practice', eventId }));
       }
     },
     reload: load.reload,

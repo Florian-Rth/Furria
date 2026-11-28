@@ -10,12 +10,6 @@ import type { PracticeVideo } from '@furria/studio/use-practice-video';
 import type { StudioPlayback } from '@furria/studio/use-studio-playback';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 
-export interface StudioWorkEvening {
-  eventId: number;
-  title: string;
-  startsAt: string;
-}
-
 export interface StudioFinalView {
   pending: StudioFinalTrack | null;
   previewing: boolean;
@@ -32,10 +26,8 @@ export interface StudioVideoActions {
 
 export interface StudioWorkScreen {
   tone: KkGroupTone | null;
-  evening: StudioWorkEvening | null;
   studio: Studio;
   document: StudioDocumentEdit;
-  stageDocument: StudioDocumentEdit;
   final: StudioFinalView;
   mode: ActStudioMode;
   edits: ActStudioEdits;

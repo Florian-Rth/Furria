@@ -101,7 +101,7 @@ public sealed class ActSpotService
             return Result.NotFound(UnknownSpotMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await DropTracksOfAsync(accountId, command, ct);
+        await DropTrackOfAsync(accountId, command, ct);
         await _dbContext.Spots.Where(spot => spot.Id == command.SpotId).ExecuteDeleteAsync(ct);
         await CloseNumberGapAsync(command.ActId, removedNumber, ct);
         await transaction.CommitAsync(ct);
@@ -128,28 +128,26 @@ public sealed class ActSpotService
                 ct
             );
 
-    private async Task DropTracksOfAsync(
+    private async Task DropTrackOfAsync(
         int accountId,
         RemoveSpotCommand command,
         CancellationToken ct
     )
     {
-        var choreographies = await _dbContext
-            .Choreographies.Where(choreography => choreography.ActId == command.ActId)
-            .ToListAsync(ct);
+        var choreography = await _history.ChoreographyOfAsync(command.ActId, ct);
+        if (choreography is null)
+            return;
 
-        foreach (var choreography in choreographies)
-            await _history.WriteAsync(
-                choreography,
-                new ChoreographyWrite
-                {
-                    AccountId = accountId,
-                    Document = choreography.Document.WithoutSpot(command.SpotId),
-                    Kind = ChoreographyVersionKind.SpotRemoved,
-                },
-                ct
-            );
-
+        await _history.WriteAsync(
+            choreography,
+            new ChoreographyWrite
+            {
+                AccountId = accountId,
+                Document = choreography.Document.WithoutSpot(command.SpotId),
+                Kind = ChoreographyVersionKind.SpotRemoved,
+            },
+            ct
+        );
         await _dbContext.SaveChangesAsync(ct);
     }
 

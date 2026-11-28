@@ -218,7 +218,6 @@ export const actCardLinkOf = (actId: number, search: ActScreenSearch): KkScreenA
 export const playerOriginOf = (
   actId: number,
   search: ActScreenSearch,
-  eventId: number | null,
   behind: BackStackSpot | undefined,
   away: KkScreenOrigin,
   name: string,
@@ -228,7 +227,7 @@ export const playerOriginOf = (
   if (view === 'details') {
     return {
       label: ACT_DETAILS_LABEL,
-      ...actDetailsLinkOf(actId, eventId === null ? null : { kind: 'evening', eventId }),
+      ...actDetailsLinkOf(actId, null),
       search: originTextSearchOf(search),
     };
   }

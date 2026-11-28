@@ -34,7 +34,6 @@ public enum DomainChange
     ActChoreography = 30,
     ActSteps = 31,
     ActVideos = 32,
-    ActEvening = 33,
     RunningOrder = 34,
     BeerListEnrollment = 35,
     BeerPot = 36,

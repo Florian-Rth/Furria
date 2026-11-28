@@ -16,7 +16,6 @@ using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
-using Furria.Core.RunningOrders;
 using Furria.Infrastructure.Assistant;
 using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Changes;
@@ -931,32 +930,30 @@ public sealed class ApiTestFixture : IAsyncLifetime
     public string SignedMediaUrl(int mediaItemId, MediaOwner owner, MediaRendition rendition) =>
         Services.GetRequiredService<MediaUrlSigner>().UrlOf(mediaItemId, owner, rendition);
 
-    public async Task ChangeEveningCastDirectlyAsync(
-        int eventId,
+    public async Task<int> CopyChoreographyForEveningOnOldSchemaDirectlyAsync(
         int actId,
-        int personId,
-        CastChange change,
+        int eventId,
+        int copyVersion,
         CancellationToken ct = default
     )
     {
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var appearanceId = await db
-            .Appearances.Where(appearance =>
-                appearance.CalendarEntryId == eventId && appearance.ActId == actId
-            )
-            .Select(appearance => appearance.Id)
-            .SingleAsync(ct);
-        db.AppearanceCastChanges.Add(
-            new AppearanceCastChange
-            {
-                AppearanceId = appearanceId,
-                PersonId = personId,
-                Change = change,
-            }
+        return await db.Database.ExecuteSqlAsync(
+            $"""
+            WITH copy AS (
+                INSERT INTO choreography (act_id, appearance_id, document, version, copied_from_version)
+                SELECT c.act_id, a.id, c.document, {copyVersion}, c.version
+                FROM choreography AS c
+                JOIN appearance AS a ON a.act_id = c.act_id AND a.calendar_entry_id = {eventId}
+                WHERE c.act_id = {actId} AND c.appearance_id IS NULL
+                RETURNING id, version, document)
+            INSERT INTO choreography_version (choreography_id, version, kind, document, saved_at)
+            SELECT id, version, 'Saved', document, now() FROM copy
+            """,
+            ct
         );
-        await db.SaveChangesAsync(ct);
     }
 
     public async Task SeatAndEntrustDirectlyAsync(

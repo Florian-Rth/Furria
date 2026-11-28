@@ -1,4 +1,3 @@
-import { toEveningDay } from '@/features/acts/act-evenings-copy';
 import type { StudioAttendance, StudioTraining } from '@/features/acts/schemas';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import type { AttendanceTally, MarkedAnswer, TrailStep } from './training-attendance';
@@ -15,6 +14,12 @@ export const ROLL_MAYBE_BADGE = '?';
 export const TRAININGS_EMPTY = 'In dieser Session steht kein Training mehr an.';
 export const TRAINING_START = 'Training starten';
 
+const DAY = new Intl.DateTimeFormat('de-DE', {
+  weekday: 'short',
+  day: '2-digit',
+  month: '2-digit',
+  timeZone: 'Europe/Berlin',
+});
 const TIME = new Intl.DateTimeFormat('de-DE', {
   hour: '2-digit',
   minute: '2-digit',
@@ -37,7 +42,7 @@ const openSpotsOf = (gaps: readonly TrainingGap[]): string | null =>
   gaps.length === 0 ? null : gaps.map((gap) => `Platz ${gap.number} offen`).join(' · ');
 
 export const trainingWhenOf = (training: StudioTraining): string =>
-  `${toEveningDay(training.startsAt)}, ${TIME.format(new Date(training.startsAt))}`;
+  `${DAY.format(new Date(training.startsAt))}, ${TIME.format(new Date(training.startsAt))}`;
 
 export const trainingRowMetaOf = (
   training: StudioTraining,

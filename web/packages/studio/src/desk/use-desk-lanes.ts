@@ -78,7 +78,6 @@ export const useDeskLanes = (desk: ActDesk, borders: DeskBorders): DeskLaneRows 
   const { screen, editor, takes, focus, partId, keySeconds } = desk;
   const { playback, practice, studio } = screen;
   const { length, countMarks, paths, segments } = playback;
-  const movable = screen.evening === null;
   const currentId = practice.step?.stepId ?? null;
   const chosen = paths.filter((path) => editor.selected.includes(path.spotId));
   const shownPaths = chosen.length > 0 ? chosen : paths;
@@ -96,7 +95,7 @@ export const useDeskLanes = (desk: ActDesk, borders: DeskBorders): DeskLaneRows 
     seconds: bar.startSeconds,
     until: bar.endSeconds,
     lane: TIMELINE_LANE.videos,
-    movable,
+    movable: true,
     tappable: true,
     snaps: false,
     start: desk.focusVideo,

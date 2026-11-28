@@ -292,7 +292,6 @@
     "./KkRoster": "./src/KkRoster/KkRoster.tsx",
     "./KkRule": "./src/KkRule.tsx",
     "./KkScoreDesk": "./src/KkScoreDesk/KkScoreDesk.tsx",
-    "./KkScoreEvenings": "./src/KkScoreEvenings/KkScoreEvenings.tsx",
     "./KkScoreFacts": "./src/KkScoreFacts/KkScoreFacts.tsx",
     "./KkScoreGlyph": "./src/KkScoreGlyph/KkScoreGlyph.tsx",
     "./KkScoreManual": "./src/KkScoreManual/KkScoreManual.tsx",

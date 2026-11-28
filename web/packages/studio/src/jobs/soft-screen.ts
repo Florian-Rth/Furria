@@ -3,7 +3,8 @@ import type { StudioChange } from '@furria/studio/studio-changes';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 
 export const softScreenOf = (screen: StudioScreen): StudioScreen => {
-  const { stageDocument, studio } = screen;
+  const { studio } = screen;
+  const work = screen.document;
   const softened = (change: StudioChange): StudioChange =>
     change.kind === 'tracks'
       ? {
@@ -14,10 +15,10 @@ export const softScreenOf = (screen: StudioScreen): StudioScreen => {
 
   return {
     ...screen,
-    stageDocument: {
-      ...stageDocument,
+    document: {
+      ...work,
       change: (change) => {
-        stageDocument.change(softened(change));
+        work.change(softened(change));
       },
     },
   };

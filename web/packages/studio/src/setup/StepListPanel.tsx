@@ -27,30 +27,24 @@ export const StepListPanel: FC<StepListPanelProps> = ({ screen }) => {
     return <StepListGroup key={key} group={group} list={list} stage={stage} />;
   });
   const empty = groups.length === 0 ? <KkJobPanel.Note text={STEP_LIST_EMPTY} /> : null;
-  const add = list.editable ? (
-    <KkJobPanel.Tools>
-      <JobActionButton action={list.add} />
-    </KkJobPanel.Tools>
-  ) : null;
-  const setup = list.editable ? (
-    <KkJobPanel.Block label={STEP_SETUP_TITLE}>
-      <KkJobPanel.Context
-        owner={STEP_LIST_SETUP_OWNER}
-        title={STEP_SETUP_TITLE}
-        meta={list.setup.text}
-      />
-      <KkJobPanel.Tools>
-        <JobActionButton action={list.setup.action} />
-      </KkJobPanel.Tools>
-    </KkJobPanel.Block>
-  ) : null;
 
   return (
     <KkJobPanel label={STEP_LIST_LIST}>
-      {setup}
+      <KkJobPanel.Block label={STEP_SETUP_TITLE}>
+        <KkJobPanel.Context
+          owner={STEP_LIST_SETUP_OWNER}
+          title={STEP_SETUP_TITLE}
+          meta={list.setup.text}
+        />
+        <KkJobPanel.Tools>
+          <JobActionButton action={list.setup.action} />
+        </KkJobPanel.Tools>
+      </KkJobPanel.Block>
       <KkStudioStepList label={STEP_LIST_LIST}>{groups}</KkStudioStepList>
       {empty}
-      {add}
+      <KkJobPanel.Tools>
+        <JobActionButton action={list.add} />
+      </KkJobPanel.Tools>
     </KkJobPanel>
   );
 };

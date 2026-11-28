@@ -295,7 +295,6 @@ export const JOB_REASON_TEXT: Record<JobReason, string> = {
   noMusic: 'Erst ein Lied hochladen',
   lastStep: 'Der letzte Schritt endet mit dem Lied',
   noSpots: 'Noch keine Plätze',
-  sessionOnly: 'Nur in der Session',
   pickSpot: 'Erst einen Platz antippen',
   noWaypoint: 'Kein Wegpunkt an dieser Stelle',
   noWay: 'Kein Weg an dieser Stelle',

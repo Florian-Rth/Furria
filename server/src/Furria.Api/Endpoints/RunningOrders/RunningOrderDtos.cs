@@ -40,8 +40,6 @@ public sealed record RunningOrderLineDto
 
     public required int? BlockKey { get; init; }
 
-    public required IReadOnlyList<EveningChange> EveningChanges { get; init; }
-
     [Pure]
     public static RunningOrderLineDto From(RunningOrderLineDetails line) =>
         new()
@@ -51,7 +49,6 @@ public sealed record RunningOrderLineDto
             Position = line.Position,
             Pinned = line.IsPinned,
             BlockKey = line.BlockKey,
-            EveningChanges = line.EveningChanges,
         };
 }
 

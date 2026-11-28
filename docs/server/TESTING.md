@@ -508,9 +508,14 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    Acts and running orders (2026-10-22) are arranged over the real API through `RunningOrderSteps`
    (`Furria.Api.Tests/RunningOrders`; `RunningOrderSeeds.PlannerWithGala` seeds the planner, the
    group and the evening) and read through `Expected.Act(id)` (`ToHaveName`, `ToBelongTo`,
-   `ToBeArchivedAt`, `ToBeInUse`, `ToChangeTheCastExactly`, `ToWishExactly`) and
-   `Expected.RunningOrder(eventId)` (`ToHaveVersion`, `ToNotExist`). The checks and the suggestion
-   are pure (`RunningOrderReviewTests`, `RunningOrderSuggestionTests`).
+   `ToBelongToSession`, `ToHaveFrozenCastExactly`, `ToSeatExactly`, `ToBeCoEditedByExactly`,
+   `ToHaveChoreographiesAtVersions`, `ToHaveChoreographyHistoryAtVersions`, `ToBeInUse`,
+   `ToWishExactly`) and `Expected.RunningOrder(eventId)` (`ToHaveVersion`, `ToNotExist`,
+   `ToHaveAppearancesOf`). The checks and the suggestion are pure (`RunningOrderReviewTests`,
+   `RunningOrderSuggestionTests`). A data migration is tested by arranging over the API,
+   `MigrateDatabaseToAsync(<previous migration>)`, seeding old-schema rows through a
+   `…OnOldSchemaDirectlyAsync`/`…DirectlyAsync` fixture helper, then `RunDatabaseMigratorAsync`
+   (`ActCastMigrationTests`, `EveningCopiesMigrationTests`).
 16. **Portraits and group pictures (L7a S3)** — `PictureSteps` (`Furria.Api.Tests/Media`) uploads
    a picture over tus (`UploadedPortraitAsync`) or uploads it and stands in for the worker
    (`RenderedPortraitAsync`, `RenderedGroupPictureAsync` → `RenderMediaItemDirectlyAsync`: *ready*,

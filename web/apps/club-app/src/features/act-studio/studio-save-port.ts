@@ -6,11 +6,8 @@ import { requestActStudio } from '@/features/acts/requests';
 import type { ActStudio } from '@/features/acts/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
-import type { EveningChoreographyBody } from './requests';
 import {
   requestChoreographySave,
-  requestEveningChoreographySave,
-  requestEveningSpot,
   requestFinalTrackBeat,
   requestFinalTrackOffset,
   requestPartAdd,
@@ -30,11 +27,9 @@ import {
   requestVideoStart,
 } from './requests';
 import { choreographyConflictOf } from './studio-conflict';
-import { eveningCopyOf, eveningViewOf } from './studio-evening';
 
 const NOT_FOUND_STATUS = 404;
 const DONE: SaveOutcome = { kind: 'done' };
-const REJECTED: SaveOutcome = { kind: 'rejected' };
 
 export const refusedSaveOf = (write: ServerWrite, error: Error): SaveOutcome | null => {
   const conflict = write.kind === 'tracks' ? choreographyConflictOf(refusalPayloadOf(error)) : null;
@@ -167,64 +162,3 @@ export const studioSavePortOf = (
   save: (write) => savedOrRefused(write, (accessToken) => performed(actId, write, accessToken)),
   load: () => loadedStudio(actId, queryClient),
 });
-
-export interface EveningSavePort extends StudioSavePort<ActStudio> {
-  observe: (studio: ActStudio) => void;
-  copied: () => boolean;
-}
-
-export const eveningTracksBodyOf = (
-  write: TracksWrite,
-  copied: boolean,
-): EveningChoreographyBody => ({
-  baseVersion: copied ? write.baseVersion : null,
-  sessionVersion: copied ? null : write.baseVersion,
-  tracks: trackBodyOf(write.tracks),
-});
-
-export const eveningSavePortOf = (
-  actId: number,
-  eventId: number,
-  queryClient: QueryClient,
-  studio: ActStudio,
-): EveningSavePort => {
-  let copied = eveningCopyOf(studio, eventId) !== null;
-
-  const eveningPerformed = async (
-    write: ServerWrite,
-    accessToken: string,
-  ): Promise<SaveOutcome> => {
-    switch (write.kind) {
-      case 'spotAssign':
-        await requestEveningSpot(actId, eventId, write.spotId, write.personId, accessToken);
-        return DONE;
-      case 'tracks': {
-        const { version } = await requestEveningChoreographySave(
-          actId,
-          eventId,
-          eveningTracksBodyOf(write, copied),
-          accessToken,
-        );
-        copied = true;
-
-        return { kind: 'choreographySaved', version };
-      }
-      default:
-        return REJECTED;
-    }
-  };
-
-  return {
-    copied: () => copied,
-    observe: (fresh) => {
-      copied = eveningCopyOf(fresh, eventId) !== null;
-    },
-    save: (write) => savedOrRefused(write, (accessToken) => eveningPerformed(write, accessToken)),
-    load: async () => {
-      const fresh = await loadedStudio(actId, queryClient);
-      copied = eveningCopyOf(fresh, eventId) !== null;
-
-      return eveningViewOf(fresh, eventId);
-    },
-  };
-};

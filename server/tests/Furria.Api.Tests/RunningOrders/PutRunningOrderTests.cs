@@ -143,39 +143,6 @@ public sealed class PutRunningOrderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseToTakeTheActOut_When_ItsAppearanceChangesTheEvening()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var eventId = ctx.Club.Events.IdOf(Gala);
-        var tanz = await CreateActAsync(client, "Gardetanz", ctx.Groups.Groups.IdOf(Garde));
-        var finale = await CreateActAsync(client, "Finale");
-        var first = await SavedAsync(client, eventId, null, [Line(tanz, 0), Line(finale, 1)]);
-        await _fixture.ChangeEveningCastDirectlyAsync(
-            eventId,
-            tanz,
-            ctx.Identity.People.IdOf(Clara),
-            CastChange.Added,
-            ct
-        );
-
-        var (response, _) = await SaveAsync(client, eventId, first.Version, [Line(finale, 0)]);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        Assert.Equal(
-            "Für diesen Abend angepasst, die Anpassung ginge verloren: „Gardetanz“ (Besetzung).",
-            await RefusalOfAsync(response)
-        );
-        await ctx
-            .Expected.RunningOrder(eventId)
-            .ToHaveVersion(first.Version)
-            .RunningOrder(eventId)
-            .ToHaveAppearancesOf(tanz, finale)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_RefuseTheAct_When_ItBelongsToAnotherSessionThanTheEvening()
     {
         var ct = TestContext.Current.CancellationToken;

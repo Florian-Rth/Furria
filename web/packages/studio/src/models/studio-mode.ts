@@ -3,7 +3,6 @@ import { STUDIO_TOOLS } from '@furria/studio/studio-copy';
 
 export interface StudioModeStart {
   silent: boolean;
-  evening: boolean;
   editing: boolean;
   stageOnly: boolean;
   tool: StudioTool | null;
@@ -14,15 +13,15 @@ export type StudioEditor = 'cards' | 'desk';
 const ALL_TOOLS: readonly StudioTool[] = STUDIO_TOOLS.map((entry) => entry.tool);
 const STAGE_TOOLS: readonly StudioTool[] = ['formation', 'movement'];
 
-export const studioToolsOf = ({ evening, stageOnly }: StudioModeStart): readonly StudioTool[] =>
-  evening || stageOnly ? STAGE_TOOLS : ALL_TOOLS;
+export const studioToolsOf = ({ stageOnly }: StudioModeStart): readonly StudioTool[] =>
+  stageOnly ? STAGE_TOOLS : ALL_TOOLS;
 
 export const firstStudioToolOf = (start: StudioModeStart): StudioTool => {
-  const { silent, evening, stageOnly, tool } = start;
+  const { silent, stageOnly, tool } = start;
   if (tool !== null && studioToolsOf(start).includes(tool)) {
     return tool;
   }
-  if (evening || stageOnly) {
+  if (stageOnly) {
     return 'formation';
   }
 

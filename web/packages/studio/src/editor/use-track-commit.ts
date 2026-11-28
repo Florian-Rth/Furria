@@ -11,7 +11,8 @@ export interface TrackCommit {
 }
 
 export const useTrackCommit = (screen: StudioWorkScreen): TrackCommit => {
-  const { studio, edits, stageDocument, playback } = screen;
+  const { studio, edits, playback } = screen;
+  const work = screen.document;
 
   return {
     preview: edits.setTracks,
@@ -32,7 +33,7 @@ export const useTrackCommit = (screen: StudioWorkScreen): TrackCommit => {
           ),
         ]),
       );
-      stageDocument.change({ kind: 'tracks', tracks: changes });
+      work.change({ kind: 'tracks', tracks: changes });
       edits.dropTracks(tracks);
     },
   };

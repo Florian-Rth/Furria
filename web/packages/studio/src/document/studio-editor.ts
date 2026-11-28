@@ -36,8 +36,6 @@ export interface StudioEditorSnapshot<TStudio extends Studio = Studio> {
   status: SaveStatus;
   canUndo: boolean;
   canRedo: boolean;
-  undoAt: number | null;
-  redoAt: number | null;
   history: readonly HistoryRecord[];
   note: EditorNote | null;
 }
@@ -106,11 +104,6 @@ const noteOfRun = (end: RunEnd): EditorNote | null => {
   }
 };
 
-const undoAtOf = (edit: EditState): number | null =>
-  (edit.gesture?.patches.length ?? 0) > 0
-    ? (edit.gesture?.at ?? null)
-    : (edit.past.at(-1)?.at ?? null);
-
 export const createStudioEditor = <TStudio extends Studio>(
   studio: TStudio,
   port: StudioSavePort<TStudio>,
@@ -139,8 +132,6 @@ export const createStudioEditor = <TStudio extends Studio>(
       status: saveStatusOf(session.autosave),
       canUndo: canUndo(session.edit),
       canRedo: canRedo(session.edit),
-      undoAt: undoAtOf(session.edit),
-      redoAt: session.edit.future.at(-1)?.at ?? null,
       history: historyRecordsOf(session.edit),
       note: session.note,
     };
