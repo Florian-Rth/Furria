@@ -870,128 +870,128 @@ ended one. An *Ablaufpunkt* or an act without a kind is **timeless**: it belongs
 is reused until archived. Once its session has ended (the day after Ash Wednesday) an act is
 **read-only** — no edit, no archiving — and its **cast is frozen** as it stood on Ash Wednesday, so
 later group changes never rewrite who danced that season (built 2026-10-29, RFC 0001 phase 1).
+An act's **cast** is always its whole group — every member, nobody else, no single additions or
+removals; an act without a group has no cast (ruled 2026-11-28, Probenraum rework;
+[ADR-0045](docs/adr/0045-an-act-is-danced-by-its-whole-group-the-same-every-evening.md)).
 A group's acts read as its **history per session** — newest session first, most groups keep one
 act a session; an archived act stays in that history for those who manage the group (ruled
 2026-10-31, Auftritte rework).
-_UI copy_: **Sessionsauftritt** (the act; renamed from *Auftritt* 2026-10-31 so the per-session
-nature is in the name — *Auftritt* alone now means the act at one evening, see **Appearance**);
-*Sessionsauftritte* (the group's history, the planners' catalogue); kinds Tanz, Rede, Musik,
-Show, Ablaufpunkt
+_UI copy_: **Sessionsauftritt** (the act, in the planners' copy; renamed from *Auftritt*
+2026-10-31 so the per-session nature is in the name — *Auftritt* alone now means the act at one
+evening, see **Appearance**); *Sessionsauftritte* (the planners' catalogue); kinds Tanz, Rede,
+Musik, Show, Ablaufpunkt. Member-facing copy names a dance by its own name inside the
+**Probenraum** (ruled 2026-11-27)
 _Avoid_: **Nummer** (retired 2026-10-22), number, routine, piece (as an entity name); bare
 *Auftritt* for the per-session act; *Programm*, *Beitrag* (clashes with *Mitgliedsbeitrag*);
 deriving the training from the group kind
 
+**Probenraum** (act):
+Where a group meets a dance **act**'s training material: its landing, *Üben* and *Schritte*, and
+for its editors *Bearbeiten* and *Einstellungen*. It is reached from the group hub (one row per
+dance of the relevant session, *Frühere Sessionen* below) and from the Start tile *Üben*, and is
+marked Beta. Only dance acts have one; an ended session's Probenraum is read-only, practice still
+works (ruled 2026-11-27, Probenraum rework).
+_UI copy_: Probenraum, Üben, Schritte, Bearbeiten, Einstellungen, Frühere Sessionen
+_Avoid_: Sessionsauftritt or *Stück* in member-facing copy; studio, hall mode, *Gruppentraining*
+(retired 2026-11-27)
+
 **Appearance** (`Appearance`):
-One **act** at one **calendar entry** — the gala evening's guard dance. It inherits the act's cast
-and choreography and keeps only what differs that evening: people in or out, who stands on which
-spot, optionally its own copy of the choreography; it holds that evening's pictures. Its place in
-the evening's **running order** belongs to it — there is no separate running-order line (ruled
-2026-10-29, group-year grilling). The evening is planned and checked with its **evening cast** —
-the act's cast on that day, plus and minus the appearance's own changes. An act joins an evening
-only from that evening's session (or timeless) and never once its session has ended. Taking an act
-out of the running order deletes its appearance; while the appearance still holds evening changes
-that is refused, so nothing an evening was adjusted for gets lost silently (built 2026-10-29,
-RFC 0001 phase 2). The group's editors create an appearance themselves (*Wir tanzen hier*, or any
-adjustment for that evening): it lands unplaced in the planner's tray and the group may withdraw it
-until the planner has placed it. Without its own copy the evening plays the session choreography
-live; with a copy, later session changes do not reach it — the evening only shows that the
-session moved on (built 2026-10-30, RFC 0001 phase 15).
+One **act** at one **calendar entry** — the gala evening's guard dance: the act's place in that
+evening's **running order**, nothing else. It has no separate running-order line (ruled
+2026-10-29, group-year grilling). The planners create it in the running order; an act joins an
+evening only from that evening's session (or timeless) and never once its session has ended.
+Every evening plays the act's one choreography with its one cast; the evening is checked with that
+cast minus the people who answered *Nein* to the evening (ruled 2026-11-28, Probenraum rework:
+evening cast, evening spots, evening copies of the choreography and the group's own *Wir tanzen
+hier* are retired, [ADR-0045](docs/adr/0045-an-act-is-danced-by-its-whole-group-the-same-every-evening.md)).
 _UI copy_: always in context — *Auftritt am 11.11.*, *an diesem Abend*
-_Avoid_: performance (that is the calendar entry kind), show, gig, line (for the running-order place)
+_Avoid_: performance (that is the calendar entry kind), show, gig, line (for the running-order place);
+evening cast, stand-in, evening copy (retired 2026-11-28)
 
 **Co-editor** (act):
-A **cast** member a **group admin** has entrusted with one **act**'s training material — she edits
-it like the group admin does, but never the act's cast or group. Only the cast, the co-editors and
-the group's admins see an act's training material at all (ruled 2026-10-29, group-year grilling).
-Only someone in the cast can be made a co-editor, and only while the act is neither archived nor
-closed. Planners and the group's other members open the act page too, but see the act without its
-training material; anyone else is refused. A co-editor who leaves the cast loses the training
-material with it (built 2026-10-29, RFC 0001 phase 5).
+A member of the act's group whom a **group admin** has entrusted with one **act**'s training
+material — she edits it like the group admin does, but never the act's group. The
+group (the act's cast) sees the training material; planners open the act page too, but without
+it; anyone else is refused. Only a group member can be made a co-editor, and only while the act
+is neither archived nor closed; leaving the group ends it (built 2026-10-29, RFC 0001 phase 5;
+cast = group 2026-11-28).
 _UI copy_: *Bearbeiten mit*, *mitbearbeiten*
 _Avoid_: choreographer, owner, moderator
 
-**Working mix**, **final file** (act):
-A dance act's music. The **working mix** is the group's songs in order, each cut to a start and an
-end point (no end point: the end of its file), played as one gapless timeline; an adopted final
-file replaces the working mix as the music, played whole. The **final file** is the one file the group uploads
-for the stage — versioned; adopting it moves everything that hangs on the music onto it once.
-Before adopting, each song of the music playing (or the previously adopted final file) is
-**matched** into the new file: one offset per song, suggested by comparing the sound and
-fine-tuned by hand. Only one newer final file waits at a time. Whatever hangs on music the final
-file leaves out keeps its anchor and reads as *Musik fehlt* (RFC 0001 phase 10). A final file
-in which no song is matched cannot be adopted (ruled 2026-10-30).
-_UI copy_: Musik; *Endfassung*, *Probehören*, *Endfassung übernehmen*
-_Avoid_: playlist, track list, render
+**Music** (act):
+A dance act's music is a chain of **songs** in order, each cut to a start and an end point,
+played as one gapless timeline. Editors add, remove, reorder, crop, **split** and **replace** songs
+at any time; splitting cuts a song exactly at the now line into two songs that are cropped, moved
+or removed on their own (so a middle part can be dropped). Replacing a song with a newer file (a DJ's edit, the final mix) finds where the song lies in
+the new file; a file that also holds neighbouring songs may replace them too, and they become one
+song. Whatever hangs on the music re-finds its place step by step; what cannot be placed surely is
+flagged for the editors, never moved silently. A removed or cut-away song leaves its steps
+without music — flagged, never deleted (ruled 2026-11-28, Probenraum rework;
+[ADR-0046](docs/adr/0046-a-dance-s-music-is-a-chain-of-songs-replaced-in-place.md)).
+_UI copy_: Musik, Song; *Song hinzufügen*, *Zuschneiden*, *Teilen*, *Ersetzen*, *Verschieben*,
+*Entfernen*
+_Avoid_: working mix, final file, *Endfassung*, *Probehören* (all retired 2026-11-28); playlist,
+track list, render
 
 **Anchor** (act music):
-Where something sits in the music: a song (or the final file) and a moment in it — never a moment
-of the mix. Re-cutting a song therefore moves what hangs on it along; whatever its cut leaves out
+Where something sits in the music: a song and a moment in it — never a moment of the whole
+music. Re-cutting a song therefore moves what hangs on it along; whatever its cut leaves out
 is flagged, never moved or deleted (RFC 0001 phase 4).
 _UI copy_: — (invisible)
 _Avoid_: timestamp, mix position
 
 **Step**, **part** (act):
-The manual of a dance laid over its music. **Steps** tile the music without gaps — a step ends
-where the next begins, the first reaches back to the start, and a new mark splits the step it
-falls in. **Parts** are optional: a part is a named range of consecutive steps from its first to
-its last step, parts never overlap, and steps may belong to no part. A removed step shrinks its
-part (an emptied part goes), a mark that splits a part's last step keeps both halves in it, and a
-part may name its main trainer video. A step has a **name only** — no description (ruled
-2026-11-07); an unnamed step reads *Schritt n*.
+The manual of a dance laid over its music. **Steps** follow each other on the music and never
+overlap; each has its own start and end, so music may stay **without steps** — before the first
+step, between two steps (a trainer may begin the second song before the first is finished) and
+after the last one. A dance grows step by step during the season; members see it up to its last
+step (ruled 2026-11-28, Probenraum rework). **Parts** are optional: a part is a named range of
+consecutive steps from its first to its last step, parts never overlap, and steps may belong to no
+part. A removed step shrinks its part (an emptied part goes) and a split of a part's last step
+keeps both halves in it. A step has a **name only** — no description (ruled 2026-11-07); an
+unnamed step reads *Schritt n*.
 _UI copy_: Schritt, Teil
-_Avoid_: section, scene, figure, sequence; step description
+_Avoid_: section, scene, figure, sequence; step description; a part's main video (retired
+2026-11-28)
 
-**Step setup** (act):
-Turns one new trainer video into steps, in three stages: *Video* (pick or upload it and lay it on
-the music, starting from the automatic sound match), *Schritte trennen* (mark where each step ends
-while video and music play) and *Schritte benennen*; a short finish offers *Zum Tanz* or *Noch ein
-Video*. Every write is a normal save, so the setup may stop anywhere and resume (*Weiter
-einrichten*, counted by unnamed steps). Formations are not part of it — they are made later in the
-edit page; parts are grouped in its step list (ruled 2026-11-07, RFC 0003 phase 13).
-_UI copy_: *Schritte einrichten*, *Weiter einrichten*; stages Video, Schritte trennen, Schritte
-benennen
-_Avoid_: wizard (in copy), import
+**Trainer video** (act):
+A video of the dance filmed during training, usually covering only the steps that exist so far,
+placed on the music by its sound. Several may cover the same step; per step the one **filmed
+latest** wins (its recording time, else its upload time) unless an editor puts another on top for
+its steps. Older ones drop out of practice silently (ruled 2026-11-28, Probenraum rework).
+_UI copy_: Video; *Für diese Schritte nehmen*
+_Avoid_: clip (for the whole video), main video
 
 **Edit page** (act):
-Where the act's editors change its steps and choreography — **one job at a time**: *Schritte* (the
-step list: names, marks, parts), *Aufstellung* (the formation at a step's start), *Bewegung* (the
-ways between keyframes, *Wegpunkte*) and *Besetzung* (who holds which spot). The chosen job decides
-what the stage and the timeline let you touch; the selection shows as one chip. Phone and tablet
-offer the same jobs (ruled 2026-11-04, built 2026-11-07, RFC 0003 phase 13).
-_UI copy_: *Sessionsauftritt bearbeiten*; Schritte, Aufstellung, Bewegung, Besetzung; Wegpunkt
-_Avoid_: card editor, desk editor, inspector (retired), Zeitpunkt (for a keyframe)
+Where the act's editors build the dance during the season: one screen around the music with its
+fixed "now" line, where every change happens at that line — add and crop songs, start and end
+steps, set formations, place videos. Nothing in it is ever "done"; whatever exists is what the
+members practise. A step's **Aufstellung** is where everyone stands when the step ends; one more
+picture, *Anfang*, is where everyone stands before the first step. The way during a step leads
+from the previous step's end to its own; a step without its own Aufstellung holds the previous
+one, and nothing moves in music without steps. Phone and tablet offer the same tools (ruled
+2026-11-27/28, Probenraum rework; replaces the one-job-at-a-time edit page and the step setup).
+_UI copy_: *Bearbeiten*; Anfang, Aufstellung, *Schritt beginnt hier*, *Schritt endet hier*
+_Avoid_: step setup, wizard, checklist (all retired 2026-11-28); card editor, desk editor,
+inspector; Zeitpunkt or Wegpunkt (for a keyframe)
 
 **Spot**, **choreography** (act):
-A **spot** is a numbered place in the formation (*Platz 1…n*), held by at most one person — at
-most one spot per person; a stand-in takes the spot and the choreography stays. The
+A **spot** is a numbered place in the formation (*Platz 1…n*), held by at most one member of the
+act's group — at most one spot per person, and a member may hold none (a trainer, someone
+injured). The
 **choreography** is where every spot stands and moves: keyframes per spot on the music, in metres
 from the centre of the stage front, so a later change of the stage size never distorts it. Every
-write keeps a **version** (who, when, how: saved, restored, spot removed, final file adopted); the
+write keeps a **version** (who, when, how: saved, restored, spot removed, music replaced); the
 history lists them page by page, newest first, and restoring one writes a new version — never a
 rewind. Every version of the last 14 days stays; of each older day only the last one and every
-final-file adoption stay (thinned on the next write, RFC 0002 phase 20). A save names the
+music replacement stay (thinned on the next write, RFC 0002 phase 20). A save names the
 version it builds on and carries only the spots it changed; it is merged per spot and keyframe
 (a keyframe is known by its place on the music) and refused only where someone else changed the
-same keyframe since — the refusal names those spots and keyframes. Adopting a final file moves
-every keyframe, so nothing can be merged onto or restored from a version before it. An
-**appearance** may hold its own copy (with its own history) and its own spot holders; everything
-else it inherits from the act.
+same keyframe since — the refusal names those spots and keyframes. Replacing music moves the
+keyframes on it, so nothing can be merged onto or restored from a version before it. A dance has
+one choreography and one set of spot holders for every evening (ruled 2026-11-28).
 _UI copy_: Platz, Aufstellung, Bewegung, Fassung
 _Avoid_: position (for the spot), dancer slot, formation (for the whole document)
-
-**Open spot** (training):
-A **spot** whose holder's answer to one of the group's coming trainings is *Nein*
-(*Absage*) — the group owns the calendar entry or is its audience, the training carries the Zu-/Absage add-on, and the *Nein* is hers or a
-group admin's mark for her (ADR-0038, 2026-11-10). For that training the spot
-shows open on the stage, and the training names the **steps** in which the open spot moves, since
-that is where the others lose their reference. *Vielleicht* and no answer leave the spot held;
-trainings are always the session's version — the evening's changes never reach them. The
-**training mode** plays the act on the trainer's phone for the whole hall: the music over the
-speaker, the current step with its count and the formation large, the open spots of the chosen
-training marked, one tap to repeat a step (built 2026-10-30, RFC 0001 phase 16).
-_UI copy_: *offen*, *x von y da*, *Platz n offen*, *Wer ist da*, *eingetragen von …*,
-*Training starten*, *Schritt wiederholen*
-_Avoid_: missing, gap (in copy), absence (that is the evening review's word)
 
 **Running order**:
 The order of acts within a single event — a per-event ordering the club app manages. Not a list
@@ -1097,11 +1097,11 @@ Made precise when L2 was built (ruled 2026-10-02):
 - **Nothing asks by default** (ruled 2026-11-10, superseding 2026-10-30;
   [ADR-0038](docs/adr/0038-attendance-is-an-add-on-nothing-asks-by-default.md)). An entry asks for a
   response only when its scheduler attached the **Zu-/Absage add-on** — a training too. Attached to
-  a training that a group owns or is the audience of, it also **concerns** the whole cast of that
-  group's act (not archived) in the entry's relevant session, a guest from another group included.
-  A training without it has no open spots and takes no marks.
-- **Recorded on behalf.** A group admin of the act's group may mark a cast member present or absent
-  on one of the act's coming trainings — kids without accounts too. The mark is stored as her
+  a training that a group owns or is the audience of, it **concerns** that group's members.
+  A training without it takes no marks.
+- **Recorded on behalf.** A group admin may mark a member of her group present or absent on one of
+  the group's coming trainings, right in the calendar entry (*Für andere eintragen*, moved out of
+  the act 2026-11-28) — kids without accounts too. The mark is stored as her
   response, naming who recorded it; the latest answer wins (her own answer replaces a mark), and
   the training's trail shows both. Undoing a mark restores the answer before it.
 - **Push** (ruled 2026-11-10, creation pushes folded into **notifying** 2026-11-16). A phone is
@@ -1118,8 +1118,7 @@ Made precise when L2 was built (ruled 2026-10-02):
   **linked WhatsApp group** that stands for the audience — today only the club group, so only an
   audience of the club reaches WhatsApp. There is no separate WhatsApp switch.
   Precisely, an entry notifies the people its audience names — the club's running members, the
-  groups' current members, the chosen people — never a paused member, and never a guest of the
-  act's cast for being in it.
+  groups' current members, the chosen people — never a paused member.
   It is the creator's choice each time, offered on creation only and on by default for entries
   and announcements alike. It is the only push on creation: when the entry asks for something
   (a Zu-/Absage, a poll, a sign-up list) the one push asks her to answer; left off, nothing is
@@ -1145,8 +1144,8 @@ audience, a public calendar entry
 A piece whoever schedules a **calendar entry** — or posts an **announcement** — attaches to it so the entry does more than state a
 date — the members build what they need themselves instead of the calendar growing new kinds
 (ruled 2026-11-10, calendar grilling). The **attendance response** is one add-on and keeps its
-fixed meaning (yes / maybe / no), because Start, the cast's trainings, open spots and answers
-recorded on behalf all rely on it; it is never rebuilt from a **poll**. An add-on has exactly one
+fixed meaning (yes / maybe / no), because Start, the group's trainings and answers recorded on
+behalf all rely on it; it is never rebuilt from a **poll**. An add-on has exactly one
 **host** — a calendar entry or an announcement — which decides who it concerns, who manages it and
 when it closes ([ADR-0040](docs/adr/0040-an-add-on-has-one-host-and-may-be-shown-elsewhere.md)).
 Further add-ons:
@@ -1191,7 +1190,7 @@ _Avoid_: training rhythm, training slot (retired 2026-10-31), generating trainin
 A concrete, dated **calendar entry** of kind *Training* that a group plans one at a time — from its
 hub (*Training planen*, prefilled from the next usual training time) or from a usual-time hint in
 the calendar (prefilled with that day). It is a real appointment: solid in the calendar; with the Zu-/Absage add-on attached it asks the
-cast and carries the act training attendance
+group's members and takes marks recorded on their behalf
 ([ADR-0038](docs/adr/0038-attendance-is-an-add-on-nothing-asks-by-default.md)). A training needs no usual training time and may differ from it.
 _UI copy_: Training, Training planen
 _Avoid_: generated training, training batch

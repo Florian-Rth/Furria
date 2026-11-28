@@ -4,7 +4,10 @@ status: accepted
 
 # Attendance is an add-on — nothing asks by default, not even a training
 
-Supersedes [ADR-0032](0032-every-training-asks-its-cast.md). The calendar grilling of 2026-11-10
+Supersedes [ADR-0032](0032-every-training-asks-its-cast.md). Amended by
+[ADR-0045](0045-an-act-is-danced-by-its-whole-group-the-same-every-evening.md) (2026-11-28): the
+cast is the whole group, so there are no guests from other groups, and marks move into the calendar
+entry. The calendar grilling of 2026-11-10
 replaced most calendar entry kinds with **add-ons** the scheduler attaches herself. The
 **attendance response** (*Zu-/Absage*) became one of them, and Florian ruled that no entry carries
 it unless its scheduler attaches it — a training included.
