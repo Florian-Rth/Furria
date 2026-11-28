@@ -28,6 +28,7 @@ export const ActPane: FC<ActPaneProps> = ({
 }) => {
   const editor = useActEditor({ act, acts, fixedGroupId, onCreated });
   const groupSection = editor.canChooseGroup ? <ActGroupChoice editor={editor} /> : null;
+  const castSection = editor.grouped ? <ActCastSection editor={editor} /> : null;
   const closeAction = framed ? onClose : undefined;
 
   return (
@@ -35,7 +36,7 @@ export const ActPane: FC<ActPaneProps> = ({
       <ActPaneHead editor={editor} onClose={closeAction} />
       <KkStepPane.Body>
         {groupSection}
-        <ActCastSection editor={editor} />
+        {castSection}
         <ActWishesSection editor={editor} />
         <ActSharedSection shared={editor.shared} />
       </KkStepPane.Body>

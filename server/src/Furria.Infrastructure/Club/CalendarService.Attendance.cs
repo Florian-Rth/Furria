@@ -1,7 +1,6 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Core.Club;
-using Furria.Core.RunningOrders;
 using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -97,13 +96,7 @@ public sealed partial class CalendarService
             && castGroupIds.Contains(act.GroupId.Value)
         );
 
-        return acts.SelectMany(act => act.FrozenCast.Select(member => member.PersonId))
-            .Concat(
-                acts.SelectMany(act =>
-                    act.CastChanges.Where(change => change.Change == CastChange.Added)
-                        .Select(change => change.PersonId)
-                )
-            );
+        return acts.SelectMany(act => act.FrozenCast.Select(member => member.PersonId));
     }
 
     private sealed record AttendanceRoll(

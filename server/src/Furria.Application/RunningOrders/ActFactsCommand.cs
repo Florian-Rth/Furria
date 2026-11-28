@@ -12,9 +12,5 @@ public sealed record ActFactsCommand
 
     public required int? SessionYear { get; init; }
 
-    public required IReadOnlyList<int> AddedPersonIds { get; init; }
-
-    public required IReadOnlyList<int> RemovedPersonIds { get; init; }
-
     public required IReadOnlyList<ActWishInput> Wishes { get; init; }
 }

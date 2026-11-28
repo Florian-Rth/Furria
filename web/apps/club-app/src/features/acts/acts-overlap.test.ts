@@ -18,8 +18,6 @@ const act = (actId: number, name: string, castIds: number[], archived = false): 
   closed: false,
   archived,
   cast: castIds.map((personId) => ({ ...person(personId, `P${personId}`), absent: false })),
-  added: [],
-  removed: [],
   wishes: [],
 });
 

@@ -21,11 +21,6 @@ public sealed class ActService
         "Eine archivierte Gruppe lässt sich keinem Auftritt zuordnen.";
     private const string ManagementGroupMessage =
         "Einer Verwaltungsgruppe lässt sich kein Auftritt zuordnen.";
-    private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
-    private const string AddedAndRemovedMessage =
-        "Eine Person kann nicht zugleich hinzugefügt und herausgenommen werden.";
-    private const string RemovedWithoutGroupMessage =
-        "Aus einem Auftritt ohne Gruppe lässt sich niemand herausnehmen.";
     private const string ForeignGroupMessage =
         "Auftritte anderer Gruppen lassen sich hier nicht bearbeiten.";
     private const string UnknownWishMessage = "Diesen Wunsch gibt es für einen Auftritt nicht.";
@@ -134,8 +129,7 @@ public sealed class ActService
     )
     {
         var act = await _dbContext
-            .Acts.Include(row => row.CastChanges)
-            .Include(row => row.Wishes)
+            .Acts.Include(row => row.Wishes)
             .SingleOrDefaultAsync(row => row.Id == command.ActId, ct);
         if (act is null)
             return Result.NotFound(UnknownActMessage);
@@ -195,10 +189,9 @@ public sealed class ActService
         DateOnly today,
         CancellationToken ct
     ) =>
-        ShapeRefusalOf(facts)
+        WishRefusalOf(facts.Wishes)
         ?? SessionRefusalOf(facts, today)
-        ?? await GroupRefusalOfAsync(facts.GroupId, currentGroupId, ct)
-        ?? await PersonRefusalOfAsync(facts, ct);
+        ?? await GroupRefusalOfAsync(facts.GroupId, currentGroupId, ct);
 
     private async Task FreezeAsync(int sessionYear, IReadOnlyList<Act> acts, CancellationToken ct)
     {
@@ -254,13 +247,10 @@ public sealed class ActService
             : _ => true;
 
     [Pure]
-    private static string? ShapeRefusalOf(ActFactsCommand facts) =>
-        facts.AddedPersonIds.Intersect(facts.RemovedPersonIds).Any() ? AddedAndRemovedMessage
-        : facts.GroupId is null && facts.RemovedPersonIds.Count > 0 ? RemovedWithoutGroupMessage
-        : facts.Wishes.Any(wish => !RunningOrderRuleKinds.ActWishKinds.Contains(wish.Kind))
+    private static string? WishRefusalOf(IReadOnlyList<ActWishInput> wishes) =>
+        wishes.Any(wish => !RunningOrderRuleKinds.ActWishKinds.Contains(wish.Kind))
             ? UnknownWishMessage
-        : facts.Wishes.DistinctBy(wish => wish.Kind).Count() != facts.Wishes.Count
-            ? RepeatedWishMessage
+        : wishes.DistinctBy(wish => wish.Kind).Count() != wishes.Count ? RepeatedWishMessage
         : null;
 
     private async Task<string?> GroupRefusalOfAsync(
@@ -284,49 +274,13 @@ public sealed class ActService
             : null;
     }
 
-    private async Task<string?> PersonRefusalOfAsync(ActFactsCommand facts, CancellationToken ct)
-    {
-        var personIds = facts.AddedPersonIds.Concat(facts.RemovedPersonIds).ToHashSet();
-        var known = await _dbContext.People.CountAsync(person => personIds.Contains(person.Id), ct);
-
-        return known == personIds.Count ? null : UnknownPersonMessage;
-    }
-
     private static void Apply(Act act, ActFactsCommand facts, DateOnly today)
     {
         act.Name = facts.Name.Trim();
         act.GroupId = facts.GroupId;
         act.Kind = facts.Kind;
         act.SessionYear = ActSession.YearFor(facts.Kind, facts.SessionYear, today);
-        SyncCastChanges(act, facts);
         SyncWishes(act, facts.Wishes);
-    }
-
-    private static void SyncCastChanges(Act act, ActFactsCommand facts)
-    {
-        var wanted = facts
-            .AddedPersonIds.Distinct()
-            .Select(personId => (PersonId: personId, Change: CastChange.Added))
-            .Concat(
-                facts
-                    .RemovedPersonIds.Distinct()
-                    .Select(personId => (PersonId: personId, Change: CastChange.Removed))
-            )
-            .ToDictionary(pair => pair.PersonId, pair => pair.Change);
-
-        foreach (
-            var stale in act.CastChanges.Where(row => !wanted.ContainsKey(row.PersonId)).ToList()
-        )
-            act.CastChanges.Remove(stale);
-
-        foreach (var (personId, change) in wanted)
-        {
-            var existing = act.CastChanges.SingleOrDefault(row => row.PersonId == personId);
-            if (existing is null)
-                act.CastChanges.Add(new ActCastChange { PersonId = personId, Change = change });
-            else
-                existing.Change = change;
-        }
     }
 
     private static void SyncWishes(Act act, IReadOnlyList<ActWishInput> wishes)

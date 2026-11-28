@@ -24,10 +24,6 @@ public sealed record ActSummaryDto
 
     public required IReadOnlyList<CastPersonDto> Cast { get; init; }
 
-    public required IReadOnlyList<ActPersonDto> Added { get; init; }
-
-    public required IReadOnlyList<ActPersonDto> Removed { get; init; }
-
     public required IReadOnlyList<ActWishDto> Wishes { get; init; }
 
     [Pure]
@@ -42,8 +38,6 @@ public sealed record ActSummaryDto
             Group = ActGroupDto.From(act.Group),
             Archived = act.IsArchived,
             Cast = [.. act.Cast.Select(CastPersonDto.From)],
-            Added = [.. act.Added.Select(ActPersonDto.From)],
-            Removed = [.. act.Removed.Select(ActPersonDto.From)],
             Wishes = [.. act.Wishes.Select(ActWishDto.From)],
         };
 }

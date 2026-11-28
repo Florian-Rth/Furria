@@ -12,7 +12,8 @@ public sealed class ActSpotService
     private const int RenumberingOffset = 1000;
     private const string FullStageMessage = "Mehr Plätze passen nicht in einen Auftritt.";
     private const string UnknownSpotMessage = "Diesen Platz gibt es im Auftritt nicht.";
-    private const string NotInCastMessage = "Einen Platz bekommt nur, wer im Auftritt mitmacht.";
+    private const string NotInGroupMessage =
+        "Einen Platz bekommt nur, wer in der Gruppe des Auftritts ist.";
 
     private readonly AppDbContext _dbContext;
     private readonly ActStudioGate _gate;
@@ -67,7 +68,7 @@ public sealed class ActSpotService
         if (!await IsSpotOfAsync(command.ActId, command.SpotId, ct))
             return Result.NotFound(UnknownSpotMessage);
         if (command.PersonId is { } personId && !IsInCast(editable.Value, personId))
-            return Result.Conflict(NotInCastMessage);
+            return Result.Conflict(NotInGroupMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await FreeOtherSpotOfAsync(command, ct);

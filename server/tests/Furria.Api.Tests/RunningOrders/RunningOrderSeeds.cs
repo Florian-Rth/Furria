@@ -108,6 +108,23 @@ internal static class RunningOrderSeeds
                 );
         };
 
+    internal static Action<SeedContextBuilder> SoloGroupsOf(params string[] personAliases) =>
+        builder =>
+            builder.Groups(groups =>
+            {
+                foreach (var personAlias in personAliases)
+                    groups
+                        .AddGroup(SoloOf(personAlias), $"Solo {personAlias}")
+                        .AddGroupMembership(
+                            $"{personAlias}-solo-member",
+                            SoloOf(personAlias),
+                            personAlias,
+                            JoinedIn2017
+                        );
+            });
+
+    internal static string SoloOf(string personAlias) => $"{personAlias}-solo";
+
     private static DateTimeOffset EveningOf(DateOnly day) =>
         ClubClock.At(day, new TimeOnly(19, 11));
 }

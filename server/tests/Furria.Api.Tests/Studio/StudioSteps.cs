@@ -21,21 +21,12 @@ internal static class StudioSteps
     internal static async Task<int> GardetanzAsync(
         SeededContext ctx,
         CancellationToken ct,
-        IReadOnlyList<int>? added = null,
-        IReadOnlyList<int>? removed = null,
         string name = "Gardetanz"
     )
     {
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
 
-        return await CreateActAsync(
-            admin,
-            name,
-            ctx.Groups.Groups.IdOf(Garde),
-            ActKind.Dance,
-            added: added,
-            removed: removed
-        );
+        return await CreateActAsync(admin, name, ctx.Groups.Groups.IdOf(Garde), ActKind.Dance);
     }
 
     internal static async Task<GetActStudioResponse> StudioOfAsync(HttpClient client, int actId)

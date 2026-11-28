@@ -959,6 +959,29 @@ public sealed class ApiTestFixture : IAsyncLifetime
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task SeatAndEntrustDirectlyAsync(
+        int actId,
+        int spotId,
+        int personId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE spot SET person_id = {personId} WHERE id = {spotId}",
+            ct
+        );
+        await db.Database.ExecuteSqlAsync(
+            $"""
+            INSERT INTO act_co_editor (act_id, person_id, granted_by_person_id, granted_at)
+            VALUES ({actId}, {personId}, NULL, now())
+            """,
+            ct
+        );
+    }
+
     public async Task RemoveRolePermissionDirectlyAsync(
         int roleId,
         string permissionKey,

@@ -37,7 +37,6 @@ public static class ReferencesToPerson
         HerOwn<WhatsAppAnswer>(nameof(WhatsAppAnswer.PersonId)),
         HerOwn<SignUpLine>(nameof(SignUpLine.PersonId)),
         HerOwn<NewsPostMention>(nameof(NewsPostMention.PersonId)),
-        HerOwn<ActCastChange>(nameof(ActCastChange.PersonId)),
         HerOwn<FrozenCastMember>(nameof(FrozenCastMember.PersonId)),
         HerOwn<AppearanceCastChange>(nameof(AppearanceCastChange.PersonId)),
         HerOwn<ActCoEditor>(nameof(ActCoEditor.PersonId)),

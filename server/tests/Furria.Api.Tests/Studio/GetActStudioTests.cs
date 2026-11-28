@@ -3,6 +3,7 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSeeds;
@@ -109,32 +110,79 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeTheStudioFromACoEditor_When_SheLeavesTheCast()
+    public async Task Should_EndTheCoEditing_When_TheCoEditorLeavesTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var annaId = ctx.Identity.People.IdOf(Anna);
-        await GrantCoEditorAsync(admin, actId, annaId);
-        await admin.PUTAsync<PutAct, PutActRequest>(
-            new()
+        SeededContext? ctx = null;
+        var actId = 0;
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
             {
-                ActId = actId,
-                Name = "Gardetanz",
-                GroupId = ctx.Groups.Groups.IdOf(Garde),
-                Kind = ActKind.Dance,
-                SessionYear = null,
-                AddedPersonIds = [],
-                RemovedPersonIds = [annaId],
-                Wishes = [],
+                ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+                actId = await GardetanzAsync(ctx, ct);
+                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+                await GrantCoEditorAsync(admin, actId, ctx.Identity.People.IdOf(Ben));
             }
         );
-        var anna = await ctx.Identity.ClientForAsync(Anna, ct);
 
-        var studio = await StudioOfAsync(anna, actId);
+        await _fixture.AtInstantAsync(
+            InTheRunningSession.AddDays(GalaInDays),
+            async () =>
+            {
+                var seeded = ctx!;
+                var admin = await seeded.Identity.SignInAgainAsync(GardeAdmin, ct);
+                var ben = await seeded.Identity.SignInAgainAsync(Ben, ct);
 
-        Assert.False(studio.Viewer.CanEditStudio);
-        Assert.Null(studio.Studio);
+                var studio = await StudioOfAsync(admin, actId);
+                var (response, _) = await ben.GETAsync<
+                    GetActStudio,
+                    GetActStudioRequest,
+                    GetActStudioResponse
+                >(new() { ActId = actId });
+
+                Assert.Empty(studio.CoEditors);
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ShowTheSpotOpen_When_ItsHolderLeftTheGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        SeededContext? ctx = null;
+        var actId = 0;
+        var spotId = 0;
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+                actId = await GardetanzAsync(ctx, ct);
+                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+                spotId = await AddSpotAsync(admin, actId);
+                var assigned = await AssignSpotAsync(
+                    admin,
+                    actId,
+                    spotId,
+                    ctx.Identity.People.IdOf(Ben)
+                );
+                assigned.EnsureSuccessStatusCode();
+            }
+        );
+
+        await _fixture.AtInstantAsync(
+            InTheRunningSession.AddDays(GalaInDays),
+            async () =>
+            {
+                var admin = await ctx!.Identity.SignInAgainAsync(GardeAdmin, ct);
+
+                var studio = await StudioOfAsync(admin, actId);
+
+                var spot = Assert.Single(studio.Studio!.Spots);
+                Assert.Equal((spotId, (int?)null), (spot.SpotId, spot.Person?.PersonId));
+            }
+        );
     }
 }

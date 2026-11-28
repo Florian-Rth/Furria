@@ -81,8 +81,6 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
             client,
             "Alter Tanz",
             ctx.Groups.Groups.IdOf(ArchivedGroup),
-            [],
-            [],
             []
         );
 
@@ -93,31 +91,19 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Theory]
-    [InlineData("added-and-removed")]
-    [InlineData("removed-without-group")]
-    [InlineData("wish-about-two-acts")]
-    public async Task Should_RefuseTheAct_When_ItsCastOrWishesContradict(string contradiction)
+    [Fact]
+    public async Task Should_RefuseTheAct_When_AWishIsAboutTwoActs()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
         var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var anna = ctx.Identity.People.IdOf(Anna);
-        var gardeId = ctx.Groups.Groups.IdOf(Garde);
 
-        var (response, _) = contradiction switch
-        {
-            "added-and-removed" => await PostAsync(client, "Tanz", gardeId, [anna], [anna], []),
-            "removed-without-group" => await PostAsync(client, "Tanz", null, [], [anna], []),
-            _ => await PostAsync(
-                client,
-                "Tanz",
-                null,
-                [],
-                [],
-                [Wish(RunningOrderRuleKind.Apart, RuleStrength.Must)]
-            ),
-        };
+        var (response, _) = await PostAsync(
+            client,
+            "Tanz",
+            null,
+            [Wish(RunningOrderRuleKind.Apart, RuleStrength.Must)]
+        );
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
@@ -134,7 +120,7 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
         int? groupId = groupAlias is null ? null : ctx.Groups.Groups.IdOf(groupAlias);
 
-        var (response, _) = await PostAsync(admin, "Fremder Auftritt", groupId, [], [], []);
+        var (response, _) = await PostAsync(admin, "Fremder Auftritt", groupId, []);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
@@ -151,8 +137,6 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
             admin,
             "Gardetanz",
             gardeId,
-            [],
-            [],
             [Wish(RunningOrderRuleKind.First, RuleStrength.Must)]
         );
 
@@ -163,8 +147,6 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
         HttpClient client,
         string name,
         int? groupId,
-        IReadOnlyList<int> added,
-        IReadOnlyList<int> removed,
         IReadOnlyList<ActWishDataDto> wishes
     ) =>
         client.POSTAsync<PostAct, PostActRequest, PostActResponse>(
@@ -174,8 +156,6 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
                 GroupId = groupId,
                 Kind = null,
                 SessionYear = null,
-                AddedPersonIds = added,
-                RemovedPersonIds = removed,
                 Wishes = wishes,
             }
         );

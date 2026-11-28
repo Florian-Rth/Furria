@@ -32,12 +32,16 @@ public sealed class PostRunningOrderSuggestionTests : IClassFixture<ApiTestFixtu
     public async Task Should_ProposeTheCheapestOrderWithoutSaving_When_NeighboursShareAPerson()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var ctx = await _fixture.BuildAsync(
+            PlannerWithGala(_fixture.Today) + SoloGroupsOf(Anna),
+            ct
+        );
         var client = await ctx.Identity.ClientForAsync(Planner, ct);
         var anna = ctx.Identity.People.IdOf(Anna);
+        var annaSolo = ctx.Groups.Groups.IdOf(SoloOf(Anna));
         var eventId = ctx.Club.Events.IdOf(Gala);
-        var einmarsch = await CreateActAsync(client, "Einmarsch", added: [anna]);
-        var rede = await CreateActAsync(client, "Büttenrede", added: [anna]);
+        var einmarsch = await CreateActAsync(client, "Einmarsch", annaSolo);
+        var rede = await CreateActAsync(client, "Büttenrede", annaSolo);
         var lied = await CreateActAsync(client, "Lied");
         var finale = await CreateActAsync(client, "Finale");
 
@@ -75,14 +79,17 @@ public sealed class PostRunningOrderSuggestionTests : IClassFixture<ApiTestFixtu
     public async Task Should_StreamTheCheaperOrdersBeforeTheFinalOne_When_TheSearchImprovesOnTheDraft()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var ctx = await _fixture.BuildAsync(
+            PlannerWithGala(_fixture.Today) + SoloGroupsOf(Anna, Ben),
+            ct
+        );
         var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var anna = ctx.Identity.People.IdOf(Anna);
-        var ben = ctx.Identity.People.IdOf(Ben);
-        var einmarsch = await CreateActAsync(client, "Einmarsch", added: [anna]);
-        var rede = await CreateActAsync(client, "Büttenrede", added: [anna]);
-        var tanz = await CreateActAsync(client, "Showtanz", added: [ben]);
-        var lied = await CreateActAsync(client, "Lied", added: [ben]);
+        var annaSolo = ctx.Groups.Groups.IdOf(SoloOf(Anna));
+        var benSolo = ctx.Groups.Groups.IdOf(SoloOf(Ben));
+        var einmarsch = await CreateActAsync(client, "Einmarsch", annaSolo);
+        var rede = await CreateActAsync(client, "Büttenrede", annaSolo);
+        var tanz = await CreateActAsync(client, "Showtanz", benSolo);
+        var lied = await CreateActAsync(client, "Lied", benSolo);
         var finale = await CreateActAsync(client, "Finale");
 
         var (response, lines) = await StreamAsync(

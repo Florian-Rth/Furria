@@ -22,14 +22,18 @@ public sealed class GetRunningOrderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RecheckTheOrder_When_TheCastChangedAfterSaving()
+    public async Task Should_RecheckTheOrder_When_AnActMovedToAnotherGroupAfterSaving()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var ctx = await _fixture.BuildAsync(
+            PlannerWithGala(_fixture.Today) + SoloGroupsOf(Clara),
+            ct
+        );
         var client = await ctx.Identity.ClientForAsync(Planner, ct);
         var clara = ctx.Identity.People.IdOf(Clara);
+        var claraSolo = ctx.Groups.Groups.IdOf(SoloOf(Clara));
         var eventId = ctx.Club.Events.IdOf(Gala);
-        var rede = await CreateActAsync(client, "Büttenrede", added: [clara]);
+        var rede = await CreateActAsync(client, "Büttenrede", claraSolo);
         var lied = await CreateActAsync(client, "Lied");
         var saved = await SavedAsync(client, eventId, null, [Line(rede, 0), Line(lied, 1)]);
         await client.PUTAsync<PutAct, PutActRequest>(
@@ -37,11 +41,9 @@ public sealed class GetRunningOrderTests : IClassFixture<ApiTestFixture>
             {
                 ActId = lied,
                 Name = "Lied",
-                GroupId = null,
+                GroupId = claraSolo,
                 Kind = ActKind.Music,
                 SessionYear = null,
-                AddedPersonIds = [clara],
-                RemovedPersonIds = [],
                 Wishes = [],
             }
         );
@@ -59,12 +61,19 @@ public sealed class GetRunningOrderTests : IClassFixture<ApiTestFixture>
     public async Task Should_CastTheEveningAndCheckIt_When_TheAppearanceChangesTheCastForTheEvening()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var ctx = await _fixture.BuildAsync(
+            PlannerWithGala(_fixture.Today) + SoloGroupsOf(Clara),
+            ct
+        );
         var client = await ctx.Identity.ClientForAsync(Planner, ct);
         var people = ctx.Identity.People;
         var eventId = ctx.Club.Events.IdOf(Gala);
         var tanz = await CreateActAsync(client, "Gardetanz", ctx.Groups.Groups.IdOf(Garde));
-        var rede = await CreateActAsync(client, "Büttenrede", added: [people.IdOf(Clara)]);
+        var rede = await CreateActAsync(
+            client,
+            "Büttenrede",
+            ctx.Groups.Groups.IdOf(SoloOf(Clara))
+        );
         await SavedAsync(client, eventId, null, [Line(tanz, 0), Line(rede, 1)]);
         await _fixture.ChangeEveningCastDirectlyAsync(
             eventId,

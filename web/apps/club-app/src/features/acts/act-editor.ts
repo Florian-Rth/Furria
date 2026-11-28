@@ -7,16 +7,12 @@ import type {
   Strength,
 } from '@/features/running-order/schemas';
 import { ACT_NAME_MAX_LENGTH, ACT_WISH_KINDS } from '@/features/running-order/schemas';
-import type { PortraitPersonRef } from '@/lib/api/schemas';
-import type { CastDraft } from './act-cast';
-import { castBodyOf, castDraftOf, EMPTY_CAST } from './act-cast';
 
 export interface ActDraft {
   name: string;
   groupId: number | null;
   kind: ActKind | null;
   sessionYear: number | null;
-  cast: CastDraft;
   wishes: ActWishBody[];
 }
 
@@ -38,7 +34,6 @@ export const draftOfAct = (act: CatalogueAct): ActDraft => ({
   groupId: act.group?.groupId ?? null,
   kind: act.kind,
   sessionYear: act.sessionYear,
-  cast: castDraftOf(act),
   wishes: sortedWishes(act.wishes.map(({ kind, strength }) => ({ kind, strength }))),
 });
 
@@ -47,7 +42,6 @@ export const newActDraft = (groupId: number | null): ActDraft => ({
   groupId,
   kind: null,
   sessionYear: null,
-  cast: EMPTY_CAST,
   wishes: [],
 });
 
@@ -67,8 +61,6 @@ const fingerprintOf = (draft: ActDraft): string =>
     groupId: draft.groupId,
     kind: draft.kind,
     sessionYear: draft.sessionYear,
-    removed: [...draft.cast.removedIds].sort((left, right) => left - right),
-    added: draft.cast.added.map((person) => person.personId).sort((left, right) => left - right),
     wishes: sortedWishes(draft.wishes),
   });
 
@@ -114,16 +106,10 @@ export const withoutWish = (draft: ActDraft, kind: ActWishKind): ActDraft => ({
   wishes: draft.wishes.filter((wish) => wish.kind !== kind),
 });
 
-export const withGroup = (draft: ActDraft, groupId: number | null): ActDraft =>
-  draft.groupId === groupId
-    ? draft
-    : { ...draft, groupId, cast: { removedIds: [], added: draft.cast.added } };
-
-export const actBodyOf = (draft: ActDraft, members: readonly PortraitPersonRef[]): ActForm => ({
+export const actBodyOf = (draft: ActDraft): ActForm => ({
   name: draft.name.trim(),
   groupId: draft.groupId,
   kind: draft.kind,
   sessionYear: draft.sessionYear,
-  ...castBodyOf(draft.cast, members, draft.groupId !== null),
   wishes: sortedWishes(draft.wishes),
 });

@@ -1,7 +1,7 @@
 ---
 rfc: 0013
 title: The Probenraum — the dance studio reworked for how groups really build a dance
-status: draft
+status: in-progress
 github_issue: 109
 branch: feat/rfc-109-probenraum
 created: 2026-11-28
@@ -142,11 +142,11 @@ Every new screen ships with its "?" help sheet and is checked at 420×740 and 39
 
 ### Phase 1 — Cast is the whole group
 Goal: an act's cast is its group everywhere; nothing can add or remove single people.
-- [ ] Migration drops `act_cast_change`; cast readers (catalogue, studio, glance, running order, attendance "concerns") use group members
-- [ ] `PutAct`/`PostAct` lose cast changes; spots accept only members of the act's group (refusal otherwise)
-- [ ] Co-editors: only group members; leaving the group ends it
-- [ ] Club app: cast editing removed from `ActPane` (catalogue, details, group acts); spot pickers list group members
-- [ ] Tests: cast = group incl. frozen cast after Ash Wednesday; spot holder must be a group member; running-order findings with group cast
+- [x] Migration drops `act_cast_change`; cast readers (catalogue, studio, glance, running order, attendance "concerns") use group members
+- [x] `PutAct`/`PostAct` lose cast changes; spots accept only members of the act's group (refusal otherwise)
+- [x] Co-editors: only group members; leaving the group ends it
+- [x] Club app: cast editing removed from `ActPane` (catalogue, details, group acts); spot pickers list group members
+- [x] Tests: cast = group incl. frozen cast after Ash Wednesday; spot holder must be a group member; running-order findings with group cast
 
 ### Phase 2 — One version for every evening
 Goal: an appearance is only a place in the running order.

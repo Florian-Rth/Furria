@@ -1084,7 +1084,7 @@ public sealed partial class CalendarService
     {
         var tiedGroupIds = _dbContext.TiedGroupIds(personId, today);
         var administeredGroupIds = _dbContext.AdministeredGroupIds(personId, today);
-        var castGroupIds = _dbContext.CastGroupIds(personId, today);
+        var castGroupIds = _dbContext.FrozenCastGroupIds(personId);
         var holdsClubRead = rights.HoldsClubRead;
         var managesClubCalendar = rights.ManagesClubCalendar;
 

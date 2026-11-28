@@ -14,18 +14,9 @@ import type {
   Strength,
 } from '@/features/running-order/schemas';
 import { ACT_KINDS } from '@/features/running-order/schemas';
-import type { PersonRef, PortraitPersonRef } from '@/lib/api/schemas';
+import type { PortraitPersonRef } from '@/lib/api/schemas';
 import { relevantSessionYear } from '@/lib/club';
 import { useNow } from '@/lib/use-now';
-import type { CastTally, CastTile } from '../act-cast';
-import {
-  addCastPerson,
-  castTallyOf,
-  castTilesOf,
-  membersOfAct,
-  presentPeopleOf,
-  toggleCastPerson,
-} from '../act-cast';
 import type { ActDraft, EditorState } from '../act-editor';
 import {
   actBodyOf,
@@ -34,7 +25,6 @@ import {
   isTimelessKind,
   newActDraft,
   sessionYearsToChoose,
-  withGroup,
   withKind,
   withoutWish,
   withWish,
@@ -73,10 +63,8 @@ export interface ActEditor {
   showsSession: boolean;
   sessionChoices: KkChoiceChip[];
   membersLoading: boolean;
-  tiles: CastTile[];
-  tally: CastTally;
+  members: readonly PortraitPersonRef[] | null;
   shared: SharedAct[];
-  isAdding: boolean;
   wishStrength: Strength | null;
   isSaving: boolean;
   isArchiving: boolean;
@@ -84,10 +72,6 @@ export interface ActEditor {
   chooseKind: (kind: ActKind) => void;
   chooseSession: (value: string) => void;
   chooseGroup: (value: string) => void;
-  toggleCast: (personId: number) => void;
-  openAdding: () => void;
-  closeAdding: () => void;
-  addPerson: (person: PersonRef) => void;
   chooseWishStrength: (strength: Strength) => void;
   addWish: (kind: ActWishKind) => void;
   removeWish: (kind: ActWishKind) => void;
@@ -121,6 +105,18 @@ const groupOf = (
   return listed.find((group) => group.groupId === groupId) ?? null;
 };
 
+const membersOf = (
+  act: CatalogueAct | null,
+  groupId: number | null,
+  hubMembers: readonly PortraitPersonRef[] | undefined,
+): readonly PortraitPersonRef[] | null => {
+  if (groupId === null) {
+    return NO_MEMBERS;
+  }
+
+  return act?.group?.groupId === groupId ? act.cast : (hubMembers ?? null);
+};
+
 export const useActEditor = ({
   act,
   acts,
@@ -134,7 +130,6 @@ export const useActEditor = ({
   const initial = act === null ? newActDraft(fixedGroupId) : draftOfAct(act);
   const [draft, setDraft] = useState<ActDraft>(initial);
   const [touched, setTouched] = useState(false);
-  const [isAdding, setIsAdding] = useState(false);
   const [wishStrength, setWishStrength] = useState<Strength | null>(null);
   const canChooseGroup = fixedGroupId === null;
   const groups = useGroupsQuery(canChooseGroup);
@@ -144,9 +139,7 @@ export const useActEditor = ({
   const runningOrders = useRunningOrdersQuery(plans);
   const grouped = draft.groupId !== null;
   const hubData = hub.data?.groupId === draft.groupId ? hub.data : undefined;
-  const fallbackMembers =
-    act !== null && act.group?.groupId === draft.groupId ? membersOfAct(act) : NO_MEMBERS;
-  const members: readonly PortraitPersonRef[] = hubData?.members ?? fallbackMembers;
+  const members = membersOf(act, draft.groupId, hubData?.members);
   const listedGroups = knownGroupsOf(
     (groups.data?.groups ?? [])
       .filter((group) => !group.isManagementGroup)
@@ -169,7 +162,6 @@ export const useActEditor = ({
           icon: hubData.icon,
           picture: hubData.picture,
         };
-  const tiles = castTilesOf(members, draft.cast, grouped);
   const groupChoices: KkChoiceChip[] = [
     { id: '', label: NO_GROUP_OPTION, icon: 'flag' },
     ...listedGroups.map((group) => ({ id: String(group.groupId), label: group.name })),
@@ -206,12 +198,9 @@ export const useActEditor = ({
     kindChoices: kindChoicesOf(closed),
     showsSession: !isTimelessKind(draft.kind),
     sessionChoices,
-    membersLoading:
-      grouped && hubData === undefined && fallbackMembers.length === 0 && hub.isPending,
-    tiles,
-    tally: castTallyOf(tiles),
-    shared: sharedActsOf(act?.actId ?? null, presentPeopleOf(tiles), acts),
-    isAdding,
+    membersLoading: members === null && hub.isPending,
+    members,
+    shared: sharedActsOf(act?.actId ?? null, members ?? NO_MEMBERS, acts),
     wishStrength,
     isSaving: mutations.create.isPending || mutations.update.isPending,
     isArchiving: mutations.archive.isPending,
@@ -228,28 +217,7 @@ export const useActEditor = ({
     chooseGroup: (value) => {
       const groupId = value === '' ? null : Number(value);
 
-      update((current) => withGroup(current, groupId));
-    },
-    toggleCast: (personId) => {
-      update((current) => ({
-        ...current,
-        cast: toggleCastPerson(current.cast, members, current.groupId !== null, personId),
-      }));
-    },
-    openAdding: () => {
-      setIsAdding(true);
-    },
-    closeAdding: () => {
-      setIsAdding(false);
-    },
-    addPerson: (person) => {
-      update((current) => ({
-        ...current,
-        cast: addCastPerson(current.cast, members, current.groupId !== null, {
-          ...person,
-          portrait: null,
-        }),
-      }));
+      update((current) => ({ ...current, groupId }));
     },
     chooseWishStrength: (strength) => {
       setWishStrength(strength);
@@ -269,7 +237,7 @@ export const useActEditor = ({
         return;
       }
 
-      const form = actBodyOf(draft, members);
+      const form = actBodyOf(draft);
 
       if (act === null) {
         mutations.create.mutate(form, {

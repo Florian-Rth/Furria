@@ -134,10 +134,16 @@ interface EventSpec {
 
 interface ActSpec {
   readonly name: string;
-  readonly group: GroupName | null;
+  readonly group: string | null;
   readonly kind: ActKind;
-  readonly added: readonly string[];
   readonly wish: 'first' | 'last' | null;
+}
+
+interface SpeakerGroupSpec {
+  readonly name: string;
+  readonly icon: 'mic' | 'musicNote' | 'star';
+  readonly joinedOn: IsoDay;
+  readonly speakers: readonly string[];
 }
 
 interface TrainingSpec {
@@ -447,44 +453,38 @@ const MAENNERBALLETT = 'Männerballett: Schwanensee mal anders';
 const FINALE = 'Großes Finale mit allen Aktiven';
 
 const ACTS: readonly ActSpec[] = [
-  { name: EINMARSCH, group: 'Elferrat', kind: 'show', added: [], wish: 'first' },
-  { name: BEGRUESSUNG, group: null, kind: 'point', added: [], wish: null },
-  { name: MARSCHTANZ, group: 'Tanzgarde', kind: 'dance', added: [], wish: null },
+  { name: EINMARSCH, group: 'Elferrat', kind: 'show', wish: 'first' },
+  { name: BEGRUESSUNG, group: null, kind: 'point', wish: null },
+  { name: MARSCHTANZ, group: 'Tanzgarde', kind: 'dance', wish: null },
+  { name: HAUSMEISTER, group: 'Ralf Köhler', kind: 'speech', wish: null },
+  { name: KINDERGARDE, group: 'Kindergarde', kind: 'dance', wish: null },
+  { name: BAUAMT, group: 'Heike Martin & Dieter Beyer', kind: 'speech', wish: null },
+  { name: MARIECHEN, group: 'Mia Schubert', kind: 'dance', wish: null },
+  { name: ORDEN, group: null, kind: 'point', wish: null },
+  { name: SHOWTANZ, group: 'Showtanzgruppe', kind: 'dance', wish: null },
+  { name: PUTZFRAU, group: 'Gabriele Hahn', kind: 'speech', wish: null },
+  { name: SESSIONSLIED, group: 'Jörg Sommer & Silke Brückner', kind: 'music', wish: null },
+  { name: TOMBOLA, group: null, kind: 'point', wish: null },
+  { name: MAENNERBALLETT, group: 'Männerballett', kind: 'dance', wish: null },
+  { name: FINALE, group: null, kind: 'point', wish: 'last' },
+];
+
+const SPEAKER_GROUPS: readonly SpeakerGroupSpec[] = [
+  { name: 'Ralf Köhler', icon: 'mic', joinedOn: '2010-11-11', speakers: ['Ralf Köhler'] },
   {
-    name: HAUSMEISTER,
-    group: null,
-    kind: 'speech',
-    added: ['Ralf Köhler'],
-    wish: null,
+    name: 'Heike Martin & Dieter Beyer',
+    icon: 'mic',
+    joinedOn: '2016-11-11',
+    speakers: ['Heike Martin', 'Dieter Beyer'],
   },
-  { name: KINDERGARDE, group: 'Kindergarde', kind: 'dance', added: [], wish: null },
+  { name: 'Mia Schubert', icon: 'star', joinedOn: '2023-11-11', speakers: ['Mia Schubert'] },
+  { name: 'Gabriele Hahn', icon: 'mic', joinedOn: '2012-11-11', speakers: ['Gabriele Hahn'] },
   {
-    name: BAUAMT,
-    group: null,
-    kind: 'speech',
-    added: ['Heike Martin', 'Dieter Beyer'],
-    wish: null,
+    name: 'Jörg Sommer & Silke Brückner',
+    icon: 'musicNote',
+    joinedOn: '2019-11-11',
+    speakers: ['Jörg Sommer', 'Silke Brückner'],
   },
-  { name: MARIECHEN, group: null, kind: 'dance', added: ['Mia Schubert'], wish: null },
-  { name: ORDEN, group: null, kind: 'point', added: [], wish: null },
-  { name: SHOWTANZ, group: 'Showtanzgruppe', kind: 'dance', added: [], wish: null },
-  {
-    name: PUTZFRAU,
-    group: null,
-    kind: 'speech',
-    added: ['Gabriele Hahn'],
-    wish: null,
-  },
-  {
-    name: SESSIONSLIED,
-    group: null,
-    kind: 'music',
-    added: ['Jörg Sommer', 'Silke Brückner'],
-    wish: null,
-  },
-  { name: TOMBOLA, group: null, kind: 'point', added: [], wish: null },
-  { name: MAENNERBALLETT, group: 'Männerballett', kind: 'dance', added: [], wish: null },
-  { name: FINALE, group: null, kind: 'point', added: [], wish: 'last' },
 ];
 
 const eventSpecsOf = (sessionYear: number): EventSpec[] => {
@@ -1227,7 +1227,42 @@ const ensureGroupTies = async (ctx: Context): Promise<void> => {
   log('group memberships, trainers and usual training times: in place');
 };
 
-const groupDetailOf = (ctx: Context, group: GroupName): Promise<GroupDetail> =>
+const ensureSpeakerGroup = async (ctx: Context, spec: SpeakerGroupSpec): Promise<void> => {
+  const knownId = ctx.groupIds.get(spec.name);
+  const groupId =
+    knownId ??
+    (
+      await postJson(
+        'manage/groups',
+        ctx.admin,
+        { name: spec.name, groupKindId: null, icon: spec.icon },
+        CreatedGroupSchema,
+      )
+    ).groupId;
+  ctx.groupIds.set(spec.name, groupId);
+  const detail = await groupDetailOf(ctx, spec.name);
+  for (const speaker of spec.speakers) {
+    const personId = lookUp(ctx.personIds, speaker, 'person');
+    const isTied = [...detail.members, ...detail.pastMembers].some(
+      (row) => row.personId === personId,
+    );
+    if (!isTied) {
+      await send('POST', `groups/${groupId}/memberships`, ctx.admin, {
+        personId,
+        joinedOn: spec.joinedOn,
+      });
+    }
+  }
+};
+
+const ensureSpeakerGroups = async (ctx: Context): Promise<void> => {
+  for (const spec of SPEAKER_GROUPS) {
+    await ensureSpeakerGroup(ctx, spec);
+  }
+  log(`speaker groups: ${SPEAKER_GROUPS.length}`);
+};
+
+const groupDetailOf = (ctx: Context, group: string): Promise<GroupDetail> =>
   getJson(`groups/${lookUp(ctx.groupIds, group, 'group')}`, ctx.admin, GroupDetailSchema);
 
 const ensureVenues = async (ctx: Context): Promise<void> => {
@@ -1403,8 +1438,6 @@ const ensureActs = async (ctx: Context): Promise<Map<string, number>> => {
       groupId: spec.group === null ? null : lookUp(ctx.groupIds, spec.group, 'group'),
       kind: spec.kind,
       sessionYear: spec.kind === 'point' ? null : ctx.sessionYear,
-      addedPersonIds: spec.added.map((name) => lookUp(ctx.personIds, name, 'person')),
-      removedPersonIds: [],
       wishes: spec.wish === null ? [] : [{ kind: spec.wish, strength: 'must' }],
     };
     const actId = actIds.get(spec.name);
@@ -1873,6 +1906,7 @@ const run = async (): Promise<void> => {
   await ensureShowtanzGroup(ctx);
   await ensurePersons(ctx);
   await ensureGroupTies(ctx);
+  await ensureSpeakerGroups(ctx);
   await ensureRoles(ctx);
   await ensureAccounts(ctx);
 

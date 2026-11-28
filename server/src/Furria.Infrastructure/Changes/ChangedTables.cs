@@ -88,7 +88,6 @@ public static class ChangedTables
         [typeof(NewsPostMention)] = [DomainChange.NewsPost],
         [typeof(WebsitePicture)] = [DomainChange.WebsitePicture],
         [typeof(Act)] = [DomainChange.Act],
-        [typeof(ActCastChange)] = [DomainChange.Act],
         [typeof(FrozenCastMember)] = [DomainChange.Act],
         [typeof(ActWish)] = [DomainChange.Act],
         [typeof(ActCoEditor)] = [DomainChange.ActCoEditor],

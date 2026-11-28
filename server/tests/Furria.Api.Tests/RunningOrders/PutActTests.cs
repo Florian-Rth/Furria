@@ -22,16 +22,14 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReplaceTheCastChangesAndKeepTheWishIds_When_ThePlannerEditsTheAct()
+    public async Task Should_KeepTheWishIds_When_ThePlannerEditsTheAct()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
         var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var people = ctx.Identity.People;
         var actId = await CreateActAsync(
             client,
             "Begrüßung",
-            added: [people.IdOf(Anna), people.IdOf(Ben)],
             wishes: [Wish(RunningOrderRuleKind.First, RuleStrength.Prefer)]
         );
         var wishId = await WishIdOfAsync(client, actId);
@@ -40,7 +38,6 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
             client,
             actId,
             "Große Begrüßung",
-            [people.IdOf(Ben), people.IdOf(Clara)],
             [
                 Wish(RunningOrderRuleKind.First, RuleStrength.Must),
                 Wish(RunningOrderRuleKind.Early, RuleStrength.Prefer),
@@ -52,11 +49,6 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.Act(actId)
             .ToHaveName("Große Begrüßung")
-            .Act(actId)
-            .ToChangeTheCastExactly(
-                (people.IdOf(Ben), CastChange.Added),
-                (people.IdOf(Clara), CastChange.Added)
-            )
             .Act(actId)
             .ToWishExactly(
                 (RunningOrderRuleKind.First, RuleStrength.Must),
@@ -87,7 +79,7 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
             {
                 var client = await ctx!.Identity.SignInAgainAsync(Planner, ct);
 
-                var response = await PutAsync(client, actId, "Neuer Gardetanz", [], []);
+                var response = await PutAsync(client, actId, "Neuer Gardetanz", []);
 
                 Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
                 await ctx.Expected.Act(actId).ToHaveName("Gardetanz").AssertAsync(ct);
@@ -103,7 +95,7 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
         var client = await ctx.Identity.ClientForAsync(Planner, ct);
         var actId = await CreateActAsync(client, "Gardetanz", kind: ActKind.Dance);
 
-        var response = await PutAsync(client, actId, "Gardetanz", [], []);
+        var response = await PutAsync(client, actId, "Gardetanz", []);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx.Expected.Act(actId).ToBelongToSession(null).AssertAsync(ct);
@@ -137,7 +129,7 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
             _ => [],
         };
 
-        var response = await PutAsync(admin, actId, "Großer Gardetanz", [], wishes, gardeId);
+        var response = await PutAsync(admin, actId, "Großer Gardetanz", wishes, gardeId);
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         await ctx
@@ -197,13 +189,12 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
         int actId,
         string name,
         int? groupId
-    ) => PutAsync(client, actId, name, [], [], groupId);
+    ) => PutAsync(client, actId, name, [], groupId);
 
     private static Task<HttpResponseMessage> PutAsync(
         HttpClient client,
         int actId,
         string name,
-        IReadOnlyList<int> added,
         IReadOnlyList<ActWishDataDto> wishes,
         int? groupId = null
     ) =>
@@ -215,8 +206,6 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
                 GroupId = groupId,
                 Kind = ActKind.Point,
                 SessionYear = null,
-                AddedPersonIds = added,
-                RemovedPersonIds = [],
                 Wishes = wishes,
             }
         );

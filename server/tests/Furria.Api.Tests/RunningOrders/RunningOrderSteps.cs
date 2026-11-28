@@ -14,8 +14,6 @@ internal static class RunningOrderSteps
         string name,
         int? groupId = null,
         ActKind? kind = null,
-        IReadOnlyList<int>? added = null,
-        IReadOnlyList<int>? removed = null,
         IReadOnlyList<ActWishDataDto>? wishes = null,
         int? sessionYear = null
     )
@@ -27,8 +25,6 @@ internal static class RunningOrderSteps
                 GroupId = groupId,
                 Kind = kind,
                 SessionYear = sessionYear,
-                AddedPersonIds = added ?? [],
-                RemovedPersonIds = removed ?? [],
                 Wishes = wishes ?? [],
             }
         );

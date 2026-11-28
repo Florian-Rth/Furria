@@ -3,7 +3,7 @@ import type { KkIconName } from '@furria/ui/KkIcon';
 import { toActKindLabel } from '@/features/running-order/running-order-copy';
 import type { ActKind, ActWishKind, Strength } from '@/features/running-order/schemas';
 import { sessionYearsLabelOf } from '@/lib/club';
-import type { CastTally, CastTileState } from './act-cast';
+import type { CastTileState } from './act-cast';
 import type { NameIssue } from './act-editor';
 import type { HistoryActMark, SessionPhase } from './act-history';
 import type { ActsFilter, GroupAct } from './schemas';
@@ -49,11 +49,7 @@ export const GROUP_FIELD_LABEL = 'Gruppe';
 export const NO_GROUP_OPTION = 'Keine Gruppe';
 export const CAST_TITLE = 'Besetzung';
 export const CAST_LABEL = 'Wer steht drin';
-export const ADD_GUEST_LABEL = 'Gast';
-export const ADD_PERSON_LABEL = 'Person';
 export const GUEST_BADGE = 'Gast';
-export const GUEST_SEARCH_TITLE = 'Wer kommt dazu?';
-export const GUEST_SEARCH_DONE = 'Fertig';
 export const WISHES_TITLE = 'Wünsche';
 export const NEW_WISH_LABEL = 'Wunsch hinzufügen';
 export const WISH_STRENGTH_LABEL = 'Wie fest?';
@@ -132,19 +128,8 @@ export const toSpotlightLine = (name: string, acts: number): string =>
 export const toSharedActMeta = (shared: number): string =>
   `${shared} ${shared === 1 ? 'Person' : 'Leute'} gemeinsam`;
 
-export const toCastTallyLine = (tally: CastTally, grouped: boolean): string => {
-  if (!grouped) {
-    return tally.present === 0 ? 'Niemand eingetragen' : `${tally.present} dabei`;
-  }
-
-  const parts = [
-    `${tally.present} dabei`,
-    tally.out === 0 ? null : `${tally.out} nicht dabei`,
-    tally.guests === 0 ? null : countOf(tally.guests, 'Gast', 'Gäste'),
-  ].filter((part): part is string => part !== null);
-
-  return parts.join(' · ');
-};
+export const toCastCountLine = (count: number): string =>
+  count === 0 ? 'Niemand in der Gruppe' : `${count} dabei`;
 
 const TILE_STATE_LABELS: Record<CastTileState, string> = {
   in: 'dabei',

@@ -35,7 +35,7 @@ public sealed class ActCastFreezeTests : IClassFixture<ApiTestFixture>
                 var people = ctx.Identity.People;
                 await ctx
                     .Expected.Act(actId)
-                    .ToHaveFrozenCastExactly(people.IdOf(Anna), people.IdOf(Ben), people.IdOf(Dora))
+                    .ToHaveFrozenCastExactly(people.IdOf(Anna), people.IdOf(Dora))
                     .AssertAsync(ct);
             }
         );
@@ -71,8 +71,7 @@ public sealed class ActCastFreezeTests : IClassFixture<ApiTestFixture>
                     client,
                     "Gardetanz",
                     ctx.Groups.Groups.IdOf(Garde),
-                    ActKind.Dance,
-                    added: [ctx.Identity.People.IdOf(Ben)]
+                    ActKind.Dance
                 );
             }
         );

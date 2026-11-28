@@ -68,8 +68,6 @@ const catalogueAct = (actId: number, wishes: ActWish[] = []): CatalogueAct => ({
   closed: false,
   archived: false,
   cast: [],
-  added: [],
-  removed: [],
   wishes,
 });
 

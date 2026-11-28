@@ -47,24 +47,39 @@ public sealed class ActExpectations
                 )
         );
 
-    public Expected ToBeInUse() =>
-        _expected.Enqueue(
-            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ArchivedAt)
-        );
-
-    public Expected ToChangeTheCastExactly(params (int PersonId, CastChange Change)[] changes) =>
+    public Expected ToSeatExactly(params (int SpotId, int? PersonId)[] spots) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(
-                    changes.OrderBy(change => change.PersonId),
+                    spots.OrderBy(spot => spot.SpotId),
                     (
                         await dbContext
-                            .ActCastChanges.AsNoTracking()
+                            .Spots.AsNoTracking()
                             .Where(row => row.ActId == _actId)
-                            .OrderBy(row => row.PersonId)
+                            .OrderBy(row => row.Id)
+                            .Select(row => new { row.Id, row.PersonId })
                             .ToListAsync(ct)
-                    ).Select(row => (row.PersonId, row.Change))
+                    ).Select(row => (row.Id, row.PersonId))
                 )
+        );
+
+    public Expected ToBeCoEditedByExactly(params int[] personIds) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    personIds.Order(),
+                    await dbContext
+                        .ActCoEditors.AsNoTracking()
+                        .Where(row => row.ActId == _actId)
+                        .OrderBy(row => row.PersonId)
+                        .Select(row => row.PersonId)
+                        .ToListAsync(ct)
+                )
+        );
+
+    public Expected ToBeInUse() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ArchivedAt)
         );
 
     public Expected ToWishExactly(

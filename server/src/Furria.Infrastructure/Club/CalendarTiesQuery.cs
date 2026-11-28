@@ -111,41 +111,16 @@ public static class CalendarTiesQuery
     ) => dbContext.RunningGroupAdminTenures(personId, today).Select(admin => admin.GroupId);
 
     [Pure]
-    public static IQueryable<int> CastGroupIds(
-        this AppDbContext dbContext,
-        int? personId,
-        DateOnly today
-    ) => dbContext.CastActs(personId, today).Select(act => act.GroupId!.Value);
-
-    [Pure]
-    private static IQueryable<Act> CastActs(
-        this AppDbContext dbContext,
-        int? personId,
-        DateOnly today
-    )
-    {
-        var memberGroupIds = dbContext
-            .RunningGroupMemberships(personId, today)
-            .Select(membership => membership.GroupId);
-
-        return dbContext
+    public static IQueryable<int> FrozenCastGroupIds(this AppDbContext dbContext, int? personId) =>
+        dbContext
             .Acts.Where(act =>
-                act.ArchivedAt == null && act.SessionYear != null && act.GroupId != null
+                act.ArchivedAt == null
+                && act.SessionYear != null
+                && act.GroupId != null
+                && act.CastFrozenAt != null
+                && act.FrozenCast.Any(member => member.PersonId == personId)
             )
-            .Where(act =>
-                act.CastFrozenAt != null
-                    ? act.FrozenCast.Any(member => member.PersonId == personId)
-                    : act.CastChanges.Any(change =>
-                        change.PersonId == personId && change.Change == CastChange.Added
-                    )
-                        || (
-                            memberGroupIds.Contains(act.GroupId!.Value)
-                            && !act.CastChanges.Any(change =>
-                                change.PersonId == personId && change.Change == CastChange.Removed
-                            )
-                        )
-            );
-    }
+            .Select(act => act.GroupId!.Value);
 
     private static async Task<List<CastSessionRow>> CastSessionsOfManyAsync(
         AppDbContext dbContext,
@@ -165,16 +140,6 @@ public static class CalendarTiesQuery
                     new CastSessionRow(member.PersonId, act.GroupId!.Value, act.SessionYear!.Value)
             );
 
-        var added = acts.Where(act => act.CastFrozenAt == null)
-            .SelectMany(
-                act =>
-                    act.CastChanges.Where(change =>
-                        change.Change == CastChange.Added && personIds.Contains(change.PersonId)
-                    ),
-                (act, change) =>
-                    new CastSessionRow(change.PersonId, act.GroupId!.Value, act.SessionYear!.Value)
-            );
-
         var members = acts.Where(act => act.CastFrozenAt == null)
             .SelectMany(
                 act =>
@@ -183,10 +148,6 @@ public static class CalendarTiesQuery
                         .Where(membership =>
                             membership.GroupId == act.GroupId
                             && personIds.Contains(membership.PersonId)
-                            && !act.CastChanges.Any(change =>
-                                change.PersonId == membership.PersonId
-                                && change.Change == CastChange.Removed
-                            )
                         ),
                 (act, membership) =>
                     new CastSessionRow(
@@ -197,7 +158,6 @@ public static class CalendarTiesQuery
             );
 
         var rows = await frozen.AsNoTracking().ToListAsync(ct);
-        rows.AddRange(await added.AsNoTracking().ToListAsync(ct));
         rows.AddRange(await members.AsNoTracking().ToListAsync(ct));
 
         return [.. rows.Distinct()];

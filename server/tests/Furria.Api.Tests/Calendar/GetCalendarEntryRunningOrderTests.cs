@@ -33,7 +33,11 @@ public sealed class GetCalendarEntryRunningOrderTests : IClassFixture<ApiTestFix
         var planner = await ctx.Identity.ClientForAsync(Planner, ct);
         var people = ctx.Identity.People;
         var eventId = ctx.Club.Events.IdOf(Gala);
-        var rede = await CreateActAsync(planner, "Büttenrede", added: [people.IdOf(Clara)]);
+        var rede = await CreateActAsync(
+            planner,
+            "Büttenrede",
+            ctx.Groups.Groups.IdOf(SoloOf(Clara))
+        );
         var tanz = await GardetanzAsync(ctx, ct);
         await SavedAsync(planner, eventId, null, [Line(rede, 0), Line(tanz, 1)]);
 
@@ -69,6 +73,7 @@ public sealed class GetCalendarEntryRunningOrderTests : IClassFixture<ApiTestFix
         builder =>
         {
             PlannerWithGardeAdmin(today)(builder);
+            SoloGroupsOf(Clara)(builder);
             builder.Identity(identity =>
                 identity
                     .AddPerson(Mia, "Mia", "Mitglied")

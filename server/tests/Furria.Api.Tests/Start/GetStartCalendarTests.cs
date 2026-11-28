@@ -233,65 +233,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Theory]
-    [InlineData(true, 1)]
-    [InlineData(false, 0)]
-    public Task Should_OweAResponseOnlyWhenAsked_When_SheIsAGuestInTheCastOfTheGroupsTraining(
-        bool asksForResponse,
-        int owedEntries
-    ) =>
-        _fixture.AtInstantAsync(
-            RunningOrderSeeds.InTheRunningSession,
-            async () =>
-            {
-                var ct = TestContext.Current.CancellationToken;
-                var today = _fixture.Today;
-                var ctx = await _fixture.BuildAsync(
-                    builder =>
-                    {
-                        StudioSeeds.GardeWithDancers(today)(builder);
-                        builder
-                            .Groups(groups =>
-                                groups.AddGroupMembership(
-                                    "clara-elferrat",
-                                    RunningOrderSeeds.Elferrat,
-                                    RunningOrderSeeds.Clara,
-                                    today.AddDays(-100)
-                                )
-                            )
-                            .Club(club =>
-                                club.AddCalendarEntry(
-                                    "garde-training",
-                                    "Training",
-                                    ClubClock.At(today.AddDays(2), new TimeOnly(18, 30)),
-                                    kind: CalendarEntryKind.Training,
-                                    ownerGroupAlias: RunningOrderSeeds.Garde,
-                                    asksForResponse: asksForResponse
-                                )
-                            );
-                    },
-                    ct
-                );
-                await StudioSteps.GardetanzAsync(
-                    ctx,
-                    ct,
-                    added: [ctx.Identity.People.IdOf(RunningOrderSeeds.Clara)]
-                );
-                var clara = await ctx.Identity.ClientForAsync(RunningOrderSeeds.Clara, ct);
-
-                var (_, start) = await clara.GETAsync<GetStart, GetStartResponse>();
-
-                Assert.Equal(
-                    owedEntries,
-                    EntriesOf(start)
-                        .Count(entry =>
-                            entry.CalendarEntryId == IdOf(ctx, "garde-training")
-                            && entry.Attendance is { IsOwed: true }
-                        )
-                );
-            }
-        );
-
     private static IReadOnlyList<StartEntryDto> EntriesOf(GetStartResponse start) =>
         start.Panels.SingleOrDefault(panel => panel.Kind == StartPanelKind.Calendar)?.Entries ?? [];
 

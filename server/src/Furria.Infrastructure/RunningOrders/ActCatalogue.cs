@@ -45,8 +45,6 @@ public sealed class ActCatalogue
                 act.Group == null ? null : act.Group.Name,
                 act.Group == null ? null : act.Group.Tone,
                 act.Group == null ? null : act.Group.Icon,
-                act.CastChanges.Select(change => new ChangeRow(change.PersonId, change.Change))
-                    .ToList(),
                 act.CastFrozenAt != null,
                 act.FrozenCast.Select(member => member.PersonId).ToList(),
                 act.Wishes.Select(wish => new ActWishDetails
@@ -69,10 +67,7 @@ public sealed class ActCatalogue
             act => act.ActId,
             act => CastOf(act, memberships, CastDayOf(act, day, today))
         );
-        var personIds = casts
-            .Values.SelectMany(cast => cast)
-            .Concat(acts.SelectMany(act => act.Changes.Select(change => change.PersonId)))
-            .ToHashSet();
+        var personIds = casts.Values.SelectMany(cast => cast).ToHashSet();
         var persons = await PersonsInNameOrderAsync(personIds, ct);
         var groupPictures = await _pictures.GroupPicturesOfAsync(groupIds, ct);
 
@@ -97,12 +92,8 @@ public sealed class ActCatalogue
         IReadOnlyList<CastMember> persons,
         PictureDetails? groupPicture,
         DateOnly today
-    )
-    {
-        var added = PersonsChanged(act, CastChange.Added);
-        var removed = PersonsChanged(act, CastChange.Removed);
-
-        return new ActSummary
+    ) =>
+        new()
         {
             ActId = act.ActId,
             Name = act.Name,
@@ -121,11 +112,8 @@ public sealed class ActCatalogue
                 }
                 : null,
             Cast = InNameOrder(cast, persons),
-            Added = InNameOrder(added, persons),
-            Removed = InNameOrder(removed, persons),
             Wishes = [.. act.Wishes.OrderBy(wish => wish.Kind)],
         };
-    }
 
     [Pure]
     private static DateOnly CastDayOf(ActRow act, DateOnly day, DateOnly today) =>
@@ -146,19 +134,11 @@ public sealed class ActCatalogue
         if (act.IsCastFrozen)
             return act.FrozenCast.ToHashSet();
 
-        var groupMembers = memberships
+        return memberships
             .Where(membership => membership.GroupId == act.GroupId && membership.HeldOn(castDay))
-            .Select(membership => membership.PersonId);
-
-        return groupMembers
-            .Concat(PersonsChanged(act, CastChange.Added))
-            .Except(PersonsChanged(act, CastChange.Removed))
+            .Select(membership => membership.PersonId)
             .ToHashSet();
     }
-
-    [Pure]
-    private static IReadOnlySet<int> PersonsChanged(ActRow act, CastChange change) =>
-        act.Changes.Where(row => row.Change == change).Select(row => row.PersonId).ToHashSet();
 
     [Pure]
     private static IReadOnlyList<CastMember> InNameOrder(
@@ -237,13 +217,10 @@ public sealed class ActCatalogue
         string? GroupName,
         GroupTone? GroupTone,
         ClubIcon? GroupIcon,
-        List<ChangeRow> Changes,
         bool IsCastFrozen,
         List<int> FrozenCast,
         List<ActWishDetails> Wishes
     );
-
-    private sealed record ChangeRow(int PersonId, CastChange Change);
 
     private sealed record MembershipRow(
         int GroupId,

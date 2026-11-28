@@ -22,19 +22,16 @@ public sealed class GetActsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CastTodaysGroupMembersWithTheChanges_When_TheActBelongsToAGroup()
+    public async Task Should_CastTodaysGroupMembers_When_TheActBelongsToAGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
         var client = await ctx.Identity.ClientForAsync(Planner, ct);
-        var people = ctx.Identity.People;
         await CreateActAsync(
             client,
             "Gardetanz",
             ctx.Groups.Groups.IdOf(Garde),
             ActKind.Dance,
-            added: [people.IdOf(Clara)],
-            removed: [people.IdOf(Anna)],
             wishes: [Wish(RunningOrderRuleKind.Early, RuleStrength.Prefer)]
         );
 
@@ -45,9 +42,7 @@ public sealed class GetActsTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var act = Assert.Single(result.Acts);
         Assert.Equal("Tanzgarde", act.Group?.Name);
-        Assert.Equal(["Ben", "Clara"], act.Cast.Select(person => person.FirstName));
-        Assert.Equal([people.IdOf(Clara)], act.Added.Select(person => person.PersonId));
-        Assert.Equal([people.IdOf(Anna)], act.Removed.Select(person => person.PersonId));
+        Assert.Equal(["Anna", "Ben"], act.Cast.Select(person => person.FirstName));
         Assert.Equal(
             [(RunningOrderRuleKind.Early, RuleStrength.Prefer)],
             act.Wishes.Select(wish => (wish.Kind, wish.Strength))

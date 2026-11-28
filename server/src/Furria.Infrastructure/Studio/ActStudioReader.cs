@@ -6,7 +6,6 @@ using Furria.Core.Studio;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
-using Furria.Infrastructure.RunningOrders;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Studio;
@@ -14,7 +13,6 @@ namespace Furria.Infrastructure.Studio;
 public sealed class ActStudioReader
 {
     private readonly AppDbContext _dbContext;
-    private readonly ActCatalogue _catalogue;
     private readonly MediaUrlSigner _signer;
     private readonly ClubRecordService _clubRecords;
     private readonly ActEveningReader _evenings;
@@ -22,7 +20,6 @@ public sealed class ActStudioReader
 
     public ActStudioReader(
         AppDbContext dbContext,
-        ActCatalogue catalogue,
         MediaUrlSigner signer,
         ClubRecordService clubRecords,
         ActEveningReader evenings,
@@ -30,7 +27,6 @@ public sealed class ActStudioReader
     )
     {
         _dbContext = dbContext;
-        _catalogue = catalogue;
         _signer = signer;
         _clubRecords = clubRecords;
         _evenings = evenings;
@@ -53,7 +49,7 @@ public sealed class ActStudioReader
             steps.Values.Select(step => new StepStart(step.Id, AnchorOf(step))),
             music
         );
-        var spots = await SpotsOfAsync(actId, ct);
+        var spots = await SpotsOfAsync(act, ct);
 
         return new ActStudioContent
         {
@@ -234,13 +230,13 @@ public sealed class ActStudioReader
     }
 
     private async Task<IReadOnlyList<StudioSpotDetails>> SpotsOfAsync(
-        int actId,
+        ActSummary act,
         CancellationToken ct
     )
     {
         var spots = await _dbContext
             .Spots.AsNoTracking()
-            .Where(spot => spot.ActId == actId)
+            .Where(spot => spot.ActId == act.ActId)
             .OrderBy(spot => spot.Number)
             .Select(spot => new
             {
@@ -249,11 +245,7 @@ public sealed class ActStudioReader
                 spot.PersonId,
             })
             .ToListAsync(ct);
-        var persons = await _catalogue.PersonsInNameOrderAsync(
-            [.. spots.Select(spot => spot.PersonId).OfType<int>()],
-            ct
-        );
-        var personOf = persons.ToDictionary(person => person.PersonId);
+        var castMemberOf = act.Cast.ToDictionary(member => member.PersonId);
 
         return
         [
@@ -262,7 +254,7 @@ public sealed class ActStudioReader
                 SpotId = spot.Id,
                 Number = spot.Number,
                 Person = spot.PersonId is { } personId
-                    ? personOf.GetValueOrDefault(personId)
+                    ? castMemberOf.GetValueOrDefault(personId)
                     : null,
             }),
         ];

@@ -18,6 +18,7 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
     private const string Teaser = "Der närrische Höhepunkt der Session.";
     private const string Description = "Garde, Bütt und Elferrat.";
     private const string AgeHint = "ab 16 Jahren";
+    private const string MaxSolo = "max-solo";
     private const int PriceCents = 2_200;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
@@ -72,8 +73,8 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                 var ctx = await BuildClubAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("vera", ct);
                 var eventId = ctx.Club.Events.IdOf("first-gala");
-                var max = ctx.Identity.People.IdOf("max");
-                var rede = await CreateActAsync(client, "Büttenrede", added: [max]);
+                var maxSolo = ctx.Groups.Groups.IdOf(MaxSolo);
+                var rede = await CreateActAsync(client, "Büttenrede", maxSolo);
                 var lied = await CreateActAsync(client, "Lied");
                 await SavedAsync(client, eventId, null, [Line(rede, 0), Line(lied, 1)]);
                 await ConfirmAsync(client, eventId, confirmed: true);
@@ -146,9 +147,9 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                 var ctx = await BuildClubAsync(ct);
                 var client = await ctx.Identity.ClientForAsync("vera", ct);
                 var eventId = ctx.Club.Events.IdOf("first-gala");
-                var max = ctx.Identity.People.IdOf("max");
-                var rede = await CreateActAsync(client, "Büttenrede", added: [max]);
-                var lied = await CreateActAsync(client, "Lied", added: [max]);
+                var maxSolo = ctx.Groups.Groups.IdOf(MaxSolo);
+                var rede = await CreateActAsync(client, "Büttenrede", maxSolo);
+                var lied = await CreateActAsync(client, "Lied", maxSolo);
                 await SavedAsync(client, eventId, null, [Line(rede, 0), Line(lied, 1)]);
                 await ConfirmAsync(client, eventId, confirmed: true);
 
@@ -189,6 +190,11 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                             .AddPerson("max", "Max", "Mitglied")
                             .AddAccount("max")
                             .AddMembership("max-first", "max", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup(MaxSolo, "Solo Max")
+                            .AddGroupMembership("max-solo-member", MaxSolo, "max", JoinedIn2017)
                     )
                     .Roles(roles =>
                         roles.AddRoleWithHolder(

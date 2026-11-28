@@ -60,6 +60,7 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
+    private static readonly DateOnly LeftAfterAshWednesday = new(2027, 2, 20);
     private static readonly DateTimeOffset AtTheCastTraining = ClubClock.At(
         new DateOnly(2027, 2, 2),
         new TimeOnly(18, 30)
@@ -317,7 +318,7 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
         var ctx = await _fixture.BuildAsync(
             builder =>
             {
-                StudioSeeds.GardeWithDancers(_fixture.Today)(builder);
+                ClaraLeavesTheGardeAfterAshWednesday(_fixture.Today)(builder);
                 builder.Club(club =>
                     club.AddCalendarEntry(
                         "cast-training",
@@ -331,14 +332,27 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
             },
             ct
         );
-        await StudioSteps.GardetanzAsync(
-            ctx,
-            ct,
-            added: [ctx.Identity.People.IdOf(RunningOrderSeeds.Clara)]
-        );
+        await StudioSteps.GardetanzAsync(ctx, ct);
 
         return ctx;
     }
+
+    private static Action<SeedContextBuilder> ClaraLeavesTheGardeAfterAshWednesday(
+        DateOnly today
+    ) =>
+        builder =>
+        {
+            StudioSeeds.GardeWithDancers(today)(builder);
+            builder.Groups(groups =>
+                groups.AddGroupMembership(
+                    "clara-garde",
+                    RunningOrderSeeds.Garde,
+                    RunningOrderSeeds.Clara,
+                    today.AddDays(-400),
+                    LeftAfterAshWednesday
+                )
+            );
+        };
 
     [Fact]
     public async Task Should_ShowOnlyCounts_When_ThePollIsAnonymous()
@@ -720,17 +734,19 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
         );
 
     [Fact]
-    public Task Should_NotFindATrainingOfAnotherSession_When_HerOnlyTieIsTheCastOfTheGroupsAct() =>
-        _fixture.AtInstantAsync(
+    public async Task Should_NotFindATrainingOfAnotherSession_When_HerOnlyTieIsAFrozenCast()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        SeededContext? ctx = null;
+        await _fixture.AtInstantAsync(
             RunningOrderSeeds.InTheRunningSession,
             async () =>
             {
-                var ct = TestContext.Current.CancellationToken;
                 var today = _fixture.Today;
-                var ctx = await _fixture.BuildAsync(
+                ctx = await _fixture.BuildAsync(
                     builder =>
                     {
-                        StudioSeeds.GardeWithDancers(today)(builder);
+                        ClaraLeavesTheGardeAfterAshWednesday(today)(builder);
                         builder.Club(club =>
                             club.AddCalendarEntry(
                                 "next-session-training",
@@ -744,22 +760,33 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                     },
                     ct
                 );
-                await StudioSteps.GardetanzAsync(
-                    ctx,
-                    ct,
-                    added: [ctx.Identity.People.IdOf(RunningOrderSeeds.Clara)]
-                );
-
-                var result = await ReadAsync(
-                    ctx,
-                    RunningOrderSeeds.Clara,
-                    ctx.Club.CalendarEntries.IdOf("next-session-training"),
-                    ct
-                );
-
-                Assert.Equal(HttpStatusCode.NotFound, result.Response.StatusCode);
+                await StudioSteps.GardetanzAsync(ctx, ct);
             }
         );
+
+        await _fixture.AtInstantAsync(
+            RunningOrderSeeds.AfterItsAshWednesday,
+            async () =>
+            {
+                await _fixture.FreezeActCastsAsync(ct);
+                var seeded = ctx!;
+                var clara = await seeded.Identity.SignInAgainAsync(RunningOrderSeeds.Clara, ct);
+
+                var (response, _) = await clara.GETAsync<
+                    GetCalendarEntryById,
+                    GetCalendarEntryByIdRequest,
+                    GetCalendarEntryByIdResponse
+                >(
+                    new GetCalendarEntryByIdRequest
+                    {
+                        CalendarEntryId = seeded.Club.CalendarEntries.IdOf("next-session-training"),
+                    }
+                );
+
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
+        );
+    }
 
     private static async Task<TestResult<GetCalendarEntryByIdResponse>> ReadAsync(
         SeededContext ctx,

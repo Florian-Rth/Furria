@@ -20,9 +20,5 @@ public sealed record ActSummary
 
     public required IReadOnlyList<CastMember> Cast { get; init; }
 
-    public required IReadOnlyList<CastMember> Added { get; init; }
-
-    public required IReadOnlyList<CastMember> Removed { get; init; }
-
     public required IReadOnlyList<ActWishDetails> Wishes { get; init; }
 }

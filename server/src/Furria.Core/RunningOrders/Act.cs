@@ -29,8 +29,6 @@ public sealed class Act : ITimestamped
 
     public Act? FollowsAct { get; set; }
 
-    public ICollection<ActCastChange> CastChanges { get; set; } = [];
-
     public ICollection<ActWish> Wishes { get; set; } = [];
 
     public ICollection<FrozenCastMember> FrozenCast { get; set; } = [];

@@ -11,8 +11,6 @@ const act: CatalogueAct = {
   closed: false,
   archived: false,
   cast: [],
-  added: [{ personId: 9, firstName: 'Zoe', lastName: 'Gast', portrait: null }],
-  removed: [{ personId: 2, firstName: 'Ben', lastName: 'Narr', portrait: null }],
   wishes: [
     { actWishId: 1, actId: 4, kind: 'late', strength: 'prefer' },
     { actWishId: 2, actId: 4, kind: 'first', strength: 'must' },

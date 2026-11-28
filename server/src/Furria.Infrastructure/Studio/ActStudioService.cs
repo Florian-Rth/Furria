@@ -6,6 +6,7 @@ using Furria.Application.Studio;
 using Furria.Core.Club;
 using Furria.Core.RunningOrders;
 using Furria.Core.Studio;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.RunningOrders;
@@ -18,7 +19,8 @@ public sealed class ActStudioService
     private const string NoTieMessage = "Dieser Auftritt gehört nicht zu deinen Gruppen.";
     private const string NotGroupAdminMessage =
         "Mitbearbeiter ernennt nur die Leitung der Gruppe des Auftritts.";
-    private const string NotInCastMessage = "Mitbearbeiten kann nur, wer im Auftritt mitmacht.";
+    private const string NotInGroupMessage =
+        "Mitbearbeiten kann nur, wer in der Gruppe des Auftritts ist.";
     private const string NoCoEditorMessage = "Diese Person bearbeitet den Auftritt nicht mit.";
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
 
@@ -87,7 +89,7 @@ public sealed class ActStudioService
                     CanGrantCoEditors = editable && editorship.LeadsGroup,
                     CanMarkAttendance = editable && editorship.LeadsGroup,
                 },
-                CoEditors = seesStudio ? await CoEditorsOfAsync(actId, ct) : [],
+                CoEditors = seesStudio ? await CoEditorsOfAsync(act, ct) : [],
                 Content = seesStudio ? await _reader.ContentOfAsync(act, ct) : null,
             }
         );
@@ -107,7 +109,7 @@ public sealed class ActStudioService
         if (ActStudioGate.ReadOnlyRefusalOf(act) is { } refused)
             return refused;
         if (act.Cast.All(member => member.PersonId != command.PersonId))
-            return Result.Conflict(NotInCastMessage);
+            return Result.Conflict(NotInGroupMessage);
 
         var grantedBy = await _authorizer.ActivePersonIdAsync(accountId, ct);
         var grantedAt = _timeProvider.GetUtcNow();
@@ -159,7 +161,6 @@ public sealed class ActStudioService
         var viewer = new ActGlanceViewer(
             personId.Value,
             await _authorizer.AdministeredGroupIdsAsync(accountId, ct),
-            await CoEditedActIdsAsync(personId.Value, ct),
             today,
             ClubSession.RelevantYearOf(today)
         );
@@ -168,12 +169,13 @@ public sealed class ActStudioService
                 act.SessionYear == viewer.SessionYear
                 && act.ArchivedAt == null
                 && (
-                    viewer.CoEditedActIds.Contains(act.Id)
-                    || (act.GroupId != null && viewer.LedGroupIds.Contains(act.GroupId.Value))
-                    || act.CastChanges.Any(change => change.PersonId == viewer.PersonId)
-                    || _dbContext.GroupMemberships.Any(membership =>
-                        membership.GroupId == act.GroupId && membership.PersonId == viewer.PersonId
-                    )
+                    (act.GroupId != null && viewer.LedGroupIds.Contains(act.GroupId.Value))
+                    || _dbContext
+                        .GroupMemberships.Where(Conferring.GroupMemberships(today))
+                        .Any(membership =>
+                            membership.GroupId == act.GroupId
+                            && membership.PersonId == viewer.PersonId
+                        )
                 ),
             today,
             ct
@@ -244,36 +246,30 @@ public sealed class ActStudioService
         act.Group is { } group
         && await _authorizer.IsGroupMemberOrAdminAsync(accountId, group.GroupId, ct);
 
-    private async Task<List<int>> CoEditedActIdsAsync(int personId, CancellationToken ct) =>
-        await _dbContext
-            .ActCoEditors.Where(editor => editor.PersonId == personId)
-            .Select(editor => editor.ActId)
-            .ToListAsync(ct);
-
     private async Task<IReadOnlyList<ActCoEditorDetails>> CoEditorsOfAsync(
-        int actId,
+        ActSummary act,
         CancellationToken ct
     )
     {
         var grants = await _dbContext
             .ActCoEditors.AsNoTracking()
-            .Where(editor => editor.ActId == actId)
+            .Where(editor => editor.ActId == act.ActId)
             .ToDictionaryAsync(editor => editor.PersonId, editor => editor.GrantedAt, ct);
-        var persons = await _catalogue.PersonsInNameOrderAsync(grants.Keys, ct);
 
         return
         [
-            .. persons.Select(person => new ActCoEditorDetails
-            {
-                Person = person,
-                GrantedAt = grants[person.PersonId],
-            }),
+            .. act
+                .Cast.Where(member => grants.ContainsKey(member.PersonId))
+                .Select(member => new ActCoEditorDetails
+                {
+                    Person = member,
+                    GrantedAt = grants[member.PersonId],
+                }),
         ];
     }
 
     [Pure]
     private static bool Involves(ActSummary act, ActGlanceViewer viewer) =>
-        viewer.CoEditedActIds.Contains(act.ActId)
-        || (act.Group is { } group && viewer.LedGroupIds.Contains(group.GroupId))
+        (act.Group is { } group && viewer.LedGroupIds.Contains(group.GroupId))
         || act.Cast.Any(member => member.PersonId == viewer.PersonId);
 }

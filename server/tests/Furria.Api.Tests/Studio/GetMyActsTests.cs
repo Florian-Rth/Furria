@@ -3,6 +3,7 @@ using Furria.Api.Endpoints.Acts;
 using Furria.Core.Club;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSeeds;
@@ -57,6 +58,36 @@ public sealed class GetMyActsTests : IClassFixture<ApiTestFixture>
         Assert.Equal(1, act.NextTraining?.Absent);
         Assert.Contains("Anna", act.Cast.Select(member => member.FirstName));
         Assert.Equal(["Gerd"], act.Editors.Select(editor => editor.FirstName));
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutACoEditor_When_SheLeftTheGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        SeededContext? ctx = null;
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+                var actId = await GardetanzAsync(ctx, ct);
+                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+                await GrantCoEditorAsync(admin, actId, ctx.Identity.People.IdOf(Ben));
+            }
+        );
+
+        await _fixture.AtInstantAsync(
+            InTheRunningSession.AddDays(GalaInDays),
+            async () =>
+            {
+                var anna = await ctx!.Identity.SignInAgainAsync(Anna, ct);
+
+                var (_, result) = await anna.GETAsync<GetMyActs, GetMyActsResponse>();
+
+                var act = Assert.Single(result.Acts);
+                Assert.Equal(["Gerd"], act.Editors.Select(editor => editor.FirstName));
+            }
+        );
     }
 
     [Fact]

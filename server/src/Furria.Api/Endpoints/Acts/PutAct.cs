@@ -61,8 +61,6 @@ public sealed class PutAct : Endpoint<PutActRequest>
                 GroupId = req.GroupId,
                 Kind = req.Kind,
                 SessionYear = req.SessionYear,
-                AddedPersonIds = req.AddedPersonIds,
-                RemovedPersonIds = req.RemovedPersonIds,
                 Wishes = [.. req.Wishes.Select(wish => wish.ToInput())],
             },
         };
@@ -81,10 +79,6 @@ public sealed record PutActRequest
 
     public required int? SessionYear { get; init; }
 
-    public required IReadOnlyList<int> AddedPersonIds { get; init; }
-
-    public required IReadOnlyList<int> RemovedPersonIds { get; init; }
-
     public required IReadOnlyList<ActWishDataDto> Wishes { get; init; }
 }
 
@@ -97,14 +91,6 @@ public sealed class PutActValidator : Validator<PutActRequest>
             .Must(name => !string.IsNullOrWhiteSpace(name))
             .WithMessage(ActLimits.NameMissingMessage)
             .MaximumLength(ActLimits.NameLength);
-        RuleFor(request => request.AddedPersonIds)
-            .Cascade(CascadeMode.Stop)
-            .NotNull()
-            .Must(personIds => personIds.Count <= ActLimits.MostPersons);
-        RuleFor(request => request.RemovedPersonIds)
-            .Cascade(CascadeMode.Stop)
-            .NotNull()
-            .Must(personIds => personIds.Count <= ActLimits.MostPersons);
         RuleFor(request => request.Wishes).NotNull();
         RuleFor(request => request.SessionYear)
             .GreaterThanOrEqualTo(ClubSession.EarliestSessionYear);

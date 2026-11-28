@@ -302,6 +302,7 @@ public sealed class ActGlanceReader
         public IReadOnlyList<CastMember> EditorsOf(ActSummary act)
         {
             var ids = _coEditorsByAct[act.ActId]
+                .Where(personId => act.Cast.Any(member => member.PersonId == personId))
                 .Concat(act.Group is { } group ? _leadsByGroup[group.GroupId] : [])
                 .ToHashSet();
 

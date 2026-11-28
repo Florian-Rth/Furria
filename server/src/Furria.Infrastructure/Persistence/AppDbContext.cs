@@ -198,8 +198,6 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<Act> Acts => Set<Act>();
 
-    public DbSet<ActCastChange> ActCastChanges => Set<ActCastChange>();
-
     public DbSet<FrozenCastMember> FrozenCastMembers => Set<FrozenCastMember>();
 
     public DbSet<ActWish> ActWishes => Set<ActWish>();

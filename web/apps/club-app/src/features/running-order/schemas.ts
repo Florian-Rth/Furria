@@ -111,8 +111,6 @@ export const CatalogueActSchema = ActRefSchema.extend({
   closed: z.boolean(),
   archived: z.boolean(),
   cast: z.array(CastPersonSchema),
-  added: z.array(PortraitPersonRefSchema),
-  removed: z.array(PortraitPersonRefSchema),
   wishes: z.array(ActWishSchema),
 });
 export type CatalogueAct = z.infer<typeof CatalogueActSchema>;
@@ -132,8 +130,6 @@ export const ActFormSchema = z.object({
   groupId: z.number().int().nullable(),
   kind: ActKindSchema.nullable(),
   sessionYear: z.number().int().nullable(),
-  addedPersonIds: z.array(z.number().int()),
-  removedPersonIds: z.array(z.number().int()),
   wishes: z.array(ActWishBodySchema),
 });
 export type ActForm = z.infer<typeof ActFormSchema>;

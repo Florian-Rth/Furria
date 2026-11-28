@@ -40,15 +40,15 @@ public sealed class PutActSpotTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_Refuse_When_ThePersonIsNotInTheCast()
+    public async Task Should_Refuse_When_ThePersonIsNotInTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct, removed: [ctx.Identity.People.IdOf(Ben)]);
+        var actId = await GardetanzAsync(ctx, ct);
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
         var spotId = await AddSpotAsync(admin, actId);
 
-        var response = await AssignSpotAsync(admin, actId, spotId, ctx.Identity.People.IdOf(Ben));
+        var response = await AssignSpotAsync(admin, actId, spotId, ctx.Identity.People.IdOf(Clara));
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }

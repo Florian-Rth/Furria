@@ -21,15 +21,15 @@ public sealed class PutActCoEditorTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_Refuse_When_ThePersonIsNotInTheCast()
+    public async Task Should_Refuse_When_ThePersonIsNotInTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
-        var actId = await GardetanzAsync(ctx, ct, removed: [ctx.Identity.People.IdOf(Ben)]);
+        var actId = await GardetanzAsync(ctx, ct);
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
 
         var response = await admin.PUTAsync<PutActCoEditor, PutActCoEditorRequest>(
-            new() { ActId = actId, PersonId = ctx.Identity.People.IdOf(Ben) }
+            new() { ActId = actId, PersonId = ctx.Identity.People.IdOf(Clara) }
         );
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);

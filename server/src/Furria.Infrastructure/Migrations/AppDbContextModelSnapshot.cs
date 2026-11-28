@@ -4390,34 +4390,6 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Furria.Core.RunningOrders.ActCastChange", b =>
-                {
-                    b.Property<int>("ActId")
-                        .HasColumnType("integer")
-                        .HasColumnName("act_id");
-
-                    b.Property<int>("PersonId")
-                        .HasColumnType("integer")
-                        .HasColumnName("person_id");
-
-                    b.Property<string>("Change")
-                        .IsRequired()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasColumnName("change");
-
-                    b.HasKey("ActId", "PersonId")
-                        .HasName("pk_act_cast_change");
-
-                    b.HasIndex("PersonId")
-                        .HasDatabaseName("ix_act_cast_change_person_id");
-
-                    b.ToTable("act_cast_change", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_act_cast_change_change", "change IN ('Added', 'Removed')");
-                        });
-                });
-
             modelBuilder.Entity("Furria.Core.RunningOrders.ActWish", b =>
                 {
                     b.Property<int>("Id")
@@ -8177,27 +8149,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Group");
                 });
 
-            modelBuilder.Entity("Furria.Core.RunningOrders.ActCastChange", b =>
-                {
-                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
-                        .WithMany("CastChanges")
-                        .HasForeignKey("ActId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_act_cast_change_act_act_id");
-
-                    b.HasOne("Furria.Core.Identity.Person", "Person")
-                        .WithMany()
-                        .HasForeignKey("PersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_act_cast_change_person_person_id");
-
-                    b.Navigation("Act");
-
-                    b.Navigation("Person");
-                });
-
             modelBuilder.Entity("Furria.Core.RunningOrders.ActWish", b =>
                 {
                     b.HasOne("Furria.Core.RunningOrders.Act", "Act")
@@ -9005,8 +8956,6 @@ namespace Furria.Infrastructure.Migrations
 
             modelBuilder.Entity("Furria.Core.RunningOrders.Act", b =>
                 {
-                    b.Navigation("CastChanges");
-
                     b.Navigation("FrozenCast");
 
                     b.Navigation("Wishes");
