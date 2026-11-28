@@ -75,6 +75,8 @@ public sealed class ActSongService
         if (!editable.IsSuccess)
             return editable;
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.LockStepsOfActAsync(command.ActId, ct);
         var songs = await _dbContext
             .ActSongs.Where(song => song.ActId == command.ActId)
             .ToDictionaryAsync(song => song.Id, ct);
@@ -84,6 +86,7 @@ public sealed class ActSongService
         foreach (var (songId, position) in command.SongIds.Select((id, index) => (id, index)))
             songs[songId].Position = position;
         await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         return Result.Success();
     }

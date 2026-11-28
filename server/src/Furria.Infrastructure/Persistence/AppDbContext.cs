@@ -213,6 +213,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<ActSong> ActSongs => Set<ActSong>();
 
+    public DbSet<ActMusicReplacement> ActMusicReplacements => Set<ActMusicReplacement>();
+
     public DbSet<ActStep> ActSteps => Set<ActStep>();
 
     public DbSet<ActPart> ActParts => Set<ActPart>();

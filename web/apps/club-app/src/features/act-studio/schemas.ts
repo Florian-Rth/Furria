@@ -29,7 +29,7 @@ export const CHOREOGRAPHY_VERSION_KINDS = [
   'saved',
   'restored',
   'spotRemoved',
-  'musicAdopted',
+  'musicReplaced',
 ] as const;
 
 export const ChoreographyVersionSchema = z.object({

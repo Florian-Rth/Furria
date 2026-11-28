@@ -47,6 +47,7 @@ public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
         "/api/acts/{actId}/songs/order",
         "/api/acts/{actId}/songs/{songId}",
         "/api/acts/{actId}/songs/{songId}/split",
+        "/api/acts/{actId}/songs/{songId}/replacement",
         "/api/acts/{actId}/spots",
         "/api/acts/{actId}/spots/{spotId}",
         "/api/acts/{actId}/choreography",

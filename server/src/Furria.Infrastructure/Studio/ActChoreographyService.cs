@@ -22,7 +22,7 @@ public sealed class ActChoreographyService
     private const string UnknownVersionMessage = "Diese Fassung der Aufstellung gibt es nicht.";
 
     private const string OutdatedVersionMessage =
-        "Diese Fassung ist älter als die übernommene Endfassung und passt nicht mehr zur Musik.";
+        "Diese Fassung stammt von vor dem Ersetzen der Musik und passt nicht mehr zu ihr.";
 
     private readonly AppDbContext _dbContext;
     private readonly ActStudioGate _gate;
@@ -171,7 +171,7 @@ public sealed class ActChoreographyService
         if (version == choreography.Version)
             return choreography.Document;
 
-        return await _history.MusicAdoptedSinceAsync(choreography, version, ct)
+        return await _history.MusicReplacedSinceAsync(choreography, version, ct)
             ? null
             : await _history.DocumentAtAsync(choreography, version, ct);
     }
@@ -203,7 +203,7 @@ public sealed class ActChoreographyService
         var document = await _history.DocumentAtAsync(choreography, version, ct);
         if (document is null)
             return Result<ChoreographyDocument>.NotFound(UnknownVersionMessage);
-        if (await _history.MusicAdoptedSinceAsync(choreography, version, ct))
+        if (await _history.MusicReplacedSinceAsync(choreography, version, ct))
             return Result<ChoreographyDocument>.Conflict(OutdatedVersionMessage);
 
         var frame = await FrameOfAsync(choreography.ActId, ct);

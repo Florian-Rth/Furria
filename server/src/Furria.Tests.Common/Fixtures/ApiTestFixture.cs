@@ -1031,6 +1031,23 @@ public sealed class ApiTestFixture : IAsyncLifetime
         return inserted.Single();
     }
 
+    public async Task MarkMusicAdoptedOnOldSchemaDirectlyAsync(
+        int actId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"""
+            UPDATE choreography_version SET kind = 'MusicAdopted'
+            WHERE choreography_id IN (SELECT id FROM choreography WHERE act_id = {actId})
+            """,
+            ct
+        );
+    }
+
     public async Task SeatAndEntrustDirectlyAsync(
         int actId,
         int spotId,

@@ -163,6 +163,7 @@ public static class ChangedTables
         typeof(MediaFileTombstone),
         typeof(MediaWorkerHeartbeat),
         typeof(BeerTabReminder),
+        typeof(ActMusicReplacement),
     }.ToFrozenSet();
 
     [Pure]

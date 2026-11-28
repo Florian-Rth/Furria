@@ -25,7 +25,7 @@ public static class ChoreographyRetention
                 .Where(version => version.SavedAt < cutoff)
                 .GroupBy(version => ClubClock.DayOf(version.SavedAt))
                 .SelectMany(day => day.OrderByDescending(version => version.Version).Skip(1))
-                .Where(version => version.Kind != ChoreographyVersionKind.MusicAdopted)
+                .Where(version => version.Kind != ChoreographyVersionKind.MusicReplaced)
                 .Select(version => version.Version)
                 .Order(),
         ];

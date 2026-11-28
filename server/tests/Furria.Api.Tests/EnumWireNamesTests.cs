@@ -107,7 +107,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(AnchorPlacement)] = "onTimeline cutAway musicMissing",
         [typeof(VideoPlacement)] = "onTimeline cutAway musicMissing unaligned",
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
-        [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
+        [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicReplaced",
         [typeof(BeerStockMovementKind)] = "delivery correction handoverCarry handedOver",
         [typeof(InvitationChannel)] = "mail inPerson request claimWindow",
         [typeof(AccountEventKind)] =

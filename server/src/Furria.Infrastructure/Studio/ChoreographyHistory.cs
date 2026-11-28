@@ -70,7 +70,7 @@ public sealed class ChoreographyHistory
                 .Select(row => row.Document)
                 .SingleOrDefaultAsync(ct);
 
-    public Task<bool> MusicAdoptedSinceAsync(
+    public Task<bool> MusicReplacedSinceAsync(
         Choreography choreography,
         int version,
         CancellationToken ct
@@ -79,7 +79,7 @@ public sealed class ChoreographyHistory
             row =>
                 row.ChoreographyId == choreography.Id
                 && row.Version > version
-                && row.Kind == ChoreographyVersionKind.MusicAdopted,
+                && row.Kind == ChoreographyVersionKind.MusicReplaced,
             ct
         );
 

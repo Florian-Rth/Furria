@@ -196,9 +196,15 @@ Decided while building (2026-11-28):
 
 ### Phase 5b — Music chain: replace in place
 Goal: songs are replaced in place (per-song offset for now; phase 6 goes per border).
-- [ ] Replacement: match endpoint (where the song lies in the new file + which neighbouring songs it also holds), apply endpoint (song or run of songs, merged into one; anchors rewritten per song; version kind *music replaced*, renaming `MusicAdopted` with its stored rows), one-level undo endpoint while nothing changed since
-- [ ] `FinalTrackMatching`/`FinalTrackAdoption` reshaped into song matching/replacement
-- [ ] Tests: replace one song, replace and merge neighbours, no match, undo, undo refused after a later change
+- [x] Replacement: match endpoint (where the song lies in the new file + which neighbouring songs it also holds), apply endpoint (song or run of songs, merged into one; anchors rewritten per song; version kind *music replaced*, renaming `MusicAdopted` with its stored rows), one-level undo endpoint while nothing changed since
+- [x] `FinalTrackMatching`/`FinalTrackAdoption` reshaped into song matching/replacement
+- [x] Tests: replace one song, replace and merge neighbours, no match, undo, undo refused after a later change
+
+Decided while building (2026-11-28):
+- `GET acts/{id}/songs/{songId}/replacement?mediaItemId=` → the run of songs the new file holds around the song, in chain order, each with where it plays in the file (empty = "Passt zu keinem Song"); a neighbour joins only while it plays on its side of the run in the file, and one whose sound is not analysed yet ends the run. `POST …/replacement {mediaItemId, withSongIds}` (contiguous neighbours only, 422; the file may not be a song outside the run, 409) re-matches on the server before taking the act lock, re-checks the songs under it (409 if they changed) and returns the new song's id; `DELETE acts/{id}/songs/{newSongId}/replacement` undoes it.
+- The new song takes the first replaced song's position and is cut from where the first replaced song starts to where the last one ends in the file. One replaced song carries a hand-set beat grid through its placement; a merged run takes the file's own grid.
+- Anchors move with the replaced song that holds them (cut-away ones with the nearest song of their file at or before them). A step wholly outside the new file keeps its anchors ("ohne Musik"); the step running across the file's start or end is clamped onto it; keyframes move only when they lie in the file (0,05 s tolerance at both edges), otherwise they stay — never two anchors clamped onto one moment. A crossfade's overlap is closed by ending the earlier step where the next begins.
+- Undo snapshot: one `act_music_replacement` row per act (jsonb before-state + SHA-256 fingerprint of songs, step anchors, placed video anchors and the choreography version right after), cascading with the new song; not in the change feed (it always rides with `act_song` writes). Undo restores the replaced songs with their old ids, the anchors and the old choreography as another *music replaced* version, so nothing from before either version can be merged onto or restored (conservative; revisit if trainers miss it). A choreography save racing replace/undo loses via the version token (409); video writes and first choreography saves still do not take the act lock (pre-existing, rare). Song reordering now takes the act lock.
 
 ### Phase 6 — Steps follow replaced music (helper 5)
 Goal: on *Ersetzen* every border re-finds its music; unsure ones are flagged.

@@ -36,14 +36,14 @@ public sealed class ChoreographyRetentionTests
     }
 
     [Fact]
-    public void Should_KeepAnAdoptedFinalTrack_When_ItsDayIsThinnedOut()
+    public void Should_KeepAMusicReplacement_When_ItsDayIsThinnedOut()
     {
         var versions = new[]
         {
             Saved(1, Now.AddDays(-20).AddHours(-3)),
             new ChoreographyVersionStamp(
                 2,
-                ChoreographyVersionKind.MusicAdopted,
+                ChoreographyVersionKind.MusicReplaced,
                 Now.AddDays(-20).AddHours(-2)
             ),
             Saved(3, Now.AddDays(-20).AddHours(-1)),

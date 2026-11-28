@@ -4642,6 +4642,51 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("act_co_editor", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.Studio.ActMusicReplacement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<string>("Before")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("before");
+
+                    b.Property<string>("Fingerprint")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character(64)")
+                        .HasColumnName("fingerprint")
+                        .IsFixedLength();
+
+                    b.Property<int>("SongId")
+                        .HasColumnType("integer")
+                        .HasColumnName("song_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_act_music_replacement");
+
+                    b.HasIndex("ActId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_act_music_replacement_act_id");
+
+                    b.HasIndex("SongId")
+                        .HasDatabaseName("ix_act_music_replacement_song_id");
+
+                    b.ToTable("act_music_replacement", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_act_music_replacement_before", "jsonb_typeof(before) = 'object'");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Studio.ActPart", b =>
                 {
                     b.Property<int>("Id")
@@ -4978,7 +5023,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_choreography_version_document", "jsonb_typeof(document) = 'object' AND jsonb_typeof(document -> 'tracks') = 'array'");
 
-                            t.HasCheckConstraint("ck_choreography_version_kind", "kind IN ('Saved', 'Restored', 'SpotRemoved', 'MusicAdopted')");
+                            t.HasCheckConstraint("ck_choreography_version_kind", "kind IN ('Saved', 'Restored', 'SpotRemoved', 'MusicReplaced')");
 
                             t.HasCheckConstraint("ck_choreography_version_restored_from", "(kind = 'Restored') = (restored_from_version IS NOT NULL)");
 
@@ -8142,6 +8187,27 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("GrantedBy");
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActMusicReplacement", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_music_replacement_act_act_id");
+
+                    b.HasOne("Furria.Core.Studio.ActSong", "Song")
+                        .WithMany()
+                        .HasForeignKey("SongId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_music_replacement_act_song_song_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("Song");
                 });
 
             modelBuilder.Entity("Furria.Core.Studio.ActPart", b =>

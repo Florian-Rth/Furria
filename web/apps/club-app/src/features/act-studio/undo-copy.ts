@@ -44,7 +44,7 @@ const VERSION_KIND_TEXT: Record<ChoreographyVersion['kind'], string> = {
   saved: 'Gespeichert',
   restored: 'Wiederhergestellt',
   spotRemoved: 'Platz entfernt',
-  musicAdopted: 'Endfassung übernommen',
+  musicReplaced: 'Musik ersetzt',
 };
 
 const STAMP = new Intl.DateTimeFormat('de-DE', {
