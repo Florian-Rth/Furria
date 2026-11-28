@@ -2,7 +2,7 @@ import { canPractise } from '@furria/studio/music-timeline';
 import type { CastPerson } from '@/features/running-order/schemas';
 import type { ActStudio, ActViewer, CoEditor } from './schemas';
 
-export type ActStudioScreen = 'practice' | 'edit' | 'training';
+export type ActStudioScreen = 'practice' | 'edit';
 
 export type ActScreenAccess = 'open' | 'practice' | 'hub';
 
@@ -21,10 +21,7 @@ export const canChangeCoEditors = (
 ): boolean => canGrant && !act.closed && !act.archived;
 
 export const seesDetailsOf = (viewer: ActViewer): boolean =>
-  viewer.canEditStudio ||
-  viewer.canEditSettings ||
-  viewer.canGrantCoEditors ||
-  viewer.canMarkAttendance;
+  viewer.canEditStudio || viewer.canEditSettings || viewer.canGrantCoEditors;
 
 export const actScreenAccessOf = (
   studio: ActStudio | null,
@@ -35,15 +32,10 @@ export const actScreenAccessOf = (
     return 'hub';
   }
 
-  const practisable = canPractise(studio);
-
-  if (screen === 'training') {
-    return practisable ? 'open' : 'hub';
-  }
   if (canEditStudio) {
     return 'open';
   }
-  if (!practisable) {
+  if (!canPractise(studio)) {
     return 'hub';
   }
 

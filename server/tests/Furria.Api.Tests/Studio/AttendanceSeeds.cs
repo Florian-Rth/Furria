@@ -1,6 +1,5 @@
 using System.Net;
 using FastEndpoints;
-using Furria.Api.Endpoints.Acts;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Core.Club;
 using Furria.Tests.Common.Builder;
@@ -51,38 +50,6 @@ internal static class AttendanceSeeds
                         )
                 );
         };
-
-    internal static Task<HttpResponseMessage> MarkAttendanceAsync(
-        HttpClient client,
-        int actId,
-        int calendarEntryId,
-        int personId,
-        AttendanceAnswer answer
-    ) =>
-        client.PUTAsync<PutActTrainingAttendance, PutActTrainingAttendanceRequest>(
-            new()
-            {
-                ActId = actId,
-                CalendarEntryId = calendarEntryId,
-                PersonId = personId,
-                Answer = answer,
-            }
-        );
-
-    internal static Task<HttpResponseMessage> WithdrawAttendanceAsync(
-        HttpClient client,
-        int actId,
-        int calendarEntryId,
-        int personId
-    ) =>
-        client.DELETEAsync<DeleteActTrainingAttendance, DeleteActTrainingAttendanceRequest>(
-            new()
-            {
-                ActId = actId,
-                CalendarEntryId = calendarEntryId,
-                PersonId = personId,
-            }
-        );
 
     internal static async Task AnswerAsync(
         HttpClient client,

@@ -1,12 +1,7 @@
-import type { HallTraining } from '@furria/studio/hall-scene';
-import { hallTrainingOf } from '@furria/studio/hall-scene';
-
 export const ACT_PRACTICE_PATH = '/acts/$actId/practice';
 export const ACT_EDIT_PATH = '/acts/$actId/edit';
 export const ACT_MUSIC_PATH = '/acts/$actId/music';
 export const ACT_VIDEOS_PATH = '/acts/$actId/videos';
-export const ACT_FREE_HALL_PATH = '/acts/$actId/training';
-export const ACT_HALL_TRAINING_PATH = '/acts/$actId/trainings/$trainingId';
 export const ACT_STEP_SETUP_PATH = '/acts/$actId/steps/setup';
 
 export type ActScreen =
@@ -14,8 +9,6 @@ export type ActScreen =
   | { kind: 'edit' }
   | { kind: 'music' }
   | { kind: 'videos' }
-  | { kind: 'training'; trainingId: number }
-  | { kind: 'freeHall' }
   | { kind: 'stepSetup' };
 
 export interface ActScreenLink {
@@ -35,13 +28,6 @@ export const actScreenLinkOf = (actId: number, screen: ActScreen): ActScreenLink
       return { to: ACT_MUSIC_PATH, params: { actId: id } };
     case 'videos':
       return { to: ACT_VIDEOS_PATH, params: { actId: id } };
-    case 'training':
-      return {
-        to: ACT_HALL_TRAINING_PATH,
-        params: { actId: id, trainingId: String(screen.trainingId) },
-      };
-    case 'freeHall':
-      return { to: ACT_FREE_HALL_PATH, params: { actId: id } };
     case 'stepSetup':
       return { to: ACT_STEP_SETUP_PATH, params: { actId: id } };
   }
@@ -63,9 +49,3 @@ export const switchedEditingOf = (screen: ActScreen): ActScreen => {
 
   return screen.kind === 'edit' ? { kind: 'practice' } : screen;
 };
-
-export const hallScreenOf = (trainingId: number | null): ActScreen =>
-  trainingId === null ? { kind: 'freeHall' } : { kind: 'training', trainingId };
-
-export const startedHallOf = (trainings: readonly HallTraining[]): ActScreen =>
-  hallScreenOf(hallTrainingOf(trainings, undefined)?.calendarEntryId ?? null);

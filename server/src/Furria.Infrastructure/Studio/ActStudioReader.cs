@@ -15,19 +15,16 @@ public sealed class ActStudioReader
     private readonly AppDbContext _dbContext;
     private readonly MediaUrlSigner _signer;
     private readonly ClubRecordService _clubRecords;
-    private readonly ActTrainingReader _trainings;
 
     public ActStudioReader(
         AppDbContext dbContext,
         MediaUrlSigner signer,
-        ClubRecordService clubRecords,
-        ActTrainingReader trainings
+        ClubRecordService clubRecords
     )
     {
         _dbContext = dbContext;
         _signer = signer;
         _clubRecords = clubRecords;
-        _trainings = trainings;
     }
 
     public async Task<ActStudioContent> ContentOfAsync(ActSummary act, CancellationToken ct)
@@ -46,7 +43,6 @@ public sealed class ActStudioReader
             steps.Values.Select(step => new StepStart(step.Id, AnchorOf(step))),
             music
         );
-        var spots = await SpotsOfAsync(act, ct);
 
         return new ActStudioContent
         {
@@ -61,11 +57,10 @@ public sealed class ActStudioReader
             FinalTracks = finalTracks,
             Steps = StepsOf(steps, music, stepTiling),
             Parts = await PartsOfAsync(actId, stepTiling, ct),
-            Spots = spots,
+            Spots = await SpotsOfAsync(act, ct),
             Videos = await VideosOfAsync(actId, owner, music, ct),
             Choreography = await ChoreographyOfAsync(actId, ct),
             Stage = await _clubRecords.StageOfClubAsync(ct),
-            Trainings = await _trainings.TrainingsOfAsync(act, spots, ct),
         };
     }
 

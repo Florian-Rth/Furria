@@ -60,21 +60,15 @@ internal static class AttendanceRecords
         );
     }
 
-    public static async Task<bool> StillAsksForResponseAsync(
+    public static Task ShareLockEntryAsync(
         this AppDbContext dbContext,
         int calendarEntryId,
         CancellationToken ct
-    )
-    {
-        await dbContext.Database.ExecuteSqlAsync(
+    ) =>
+        dbContext.Database.ExecuteSqlAsync(
             $"SELECT 1 FROM calendar_entry WHERE id = {calendarEntryId} FOR SHARE",
             ct
         );
-
-        return await dbContext
-            .CalendarEntries.AsNoTracking()
-            .AnyAsync(entry => entry.Id == calendarEntryId && entry.AsksForResponse, ct);
-    }
 
     public static void Record(
         this AppDbContext dbContext,

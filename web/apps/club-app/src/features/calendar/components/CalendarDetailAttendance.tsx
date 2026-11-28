@@ -1,9 +1,11 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useCalendarDetailAttendance } from '../hooks/use-calendar-detail-attendance';
+import { useCalendarMarking } from '../hooks/use-calendar-marking';
 import type { CalendarEntry } from '../schemas';
 import { CalendarAttendanceAnswer } from './CalendarAttendanceAnswer';
 import { CalendarAttendanceRoll } from './CalendarAttendanceRoll';
+import { CalendarMarkingAction } from './CalendarMarkingAction';
 import { CalendarNamesSheet } from './CalendarNamesSheet';
 import { CalendarReminderAction } from './CalendarReminderAction';
 
@@ -15,12 +17,14 @@ interface CalendarDetailAttendanceProps {
 
 export const CalendarDetailAttendance: FC<CalendarDetailAttendanceProps> = ({ entry }) => {
   const control = useCalendarDetailAttendance(entry);
+  const marking = useCalendarMarking(entry);
   const tabs = control.roll?.tabs ?? NO_TABS;
 
   return (
     <Stack sx={{ gap: 1.5, minWidth: 0 }}>
       <CalendarAttendanceAnswer answer={control.answer} />
       <CalendarAttendanceRoll roll={control.roll} onOpen={control.sheet.open} />
+      <CalendarMarkingAction marking={marking} />
       <CalendarNamesSheet
         title={entry.title}
         tabs={tabs}

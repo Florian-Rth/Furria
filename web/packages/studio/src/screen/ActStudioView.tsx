@@ -35,7 +35,7 @@ export const ActStudioView: FC<ActStudioViewProps> = ({ title, tone, screen }) =
       <KkPracticeView.Controls>
         <ActStudioLargeKeys screen={screen} />
       </KkPracticeView.Controls>
-      <PracticeSteps steps={screen.steps} onTraining={screen.startHall} />
+      <PracticeSteps steps={screen.steps} />
     </KkStudioView>
   );
 };

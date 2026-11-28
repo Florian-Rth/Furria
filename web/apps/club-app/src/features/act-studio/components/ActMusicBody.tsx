@@ -13,7 +13,6 @@ interface ActMusicBodyProps {
 export const ActMusicBody: FC<ActMusicBodyProps> = ({ page, actId, studio }) => {
   const screen = useStudioScreen(actId, studio, page.viewerId, page.canEdit, page.cast, {
     startEditing: true,
-    startHall: null,
     startTool: page.tool,
     tone: page.tone,
   });

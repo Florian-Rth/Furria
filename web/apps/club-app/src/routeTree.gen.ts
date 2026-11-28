@@ -119,7 +119,6 @@ import { Route as AppBeerListManageCratesRouteImport } from './routes/_app/beer-
 import { Route as AppBeerListManageCodeRouteImport } from './routes/_app/beer-list_.manage.code'
 import { Route as AppAnnouncementsAnnouncementIdEditRouteImport } from './routes/_app/announcements_.$announcementId_.edit'
 import { Route as AppActsActIdVideosRouteImport } from './routes/_app/acts_.$actId_.videos'
-import { Route as AppActsActIdTrainingRouteImport } from './routes/_app/acts_.$actId_.training'
 import { Route as AppActsActIdPracticeRouteImport } from './routes/_app/acts_.$actId_.practice'
 import { Route as AppActsActIdMusicRouteImport } from './routes/_app/acts_.$actId_.music'
 import { Route as AppActsActIdEditRouteImport } from './routes/_app/acts_.$actId_.edit'
@@ -150,7 +149,6 @@ import { Route as AppGroupsGroupIdAdminsAdminIdRouteImport } from './routes/_app
 import { Route as AppBeerListManagePotsBeerPotIdRouteImport } from './routes/_app/beer-list_.manage.pots_.$beerPotId'
 import { Route as AppBeerListManagePersonsPersonIdRouteImport } from './routes/_app/beer-list_.manage.persons.$personId'
 import { Route as AppBeerListManageDrinksBeerDrinkIdRouteImport } from './routes/_app/beer-list_.manage.drinks_.$beerDrinkId'
-import { Route as AppActsActIdTrainingsTrainingIdRouteImport } from './routes/_app/acts_.$actId_.trainings.$trainingId'
 import { Route as AppActsActIdStepsSetupRouteImport } from './routes/_app/acts_.$actId_.steps.setup'
 import { Route as AppActsActIdDetailsSettingsRouteImport } from './routes/_app/acts_.$actId_.details.settings'
 import { Route as AppPersonalProfileSecurityPasswordRouteImport } from './routes/_app/_personal.profile_.security_.password'
@@ -169,7 +167,6 @@ import { Route as AppManagePersonsPersonIdFeeReductionsFeeReductionIdRouteImport
 import { Route as AppManageKeysVenueIdHoldingsNewRouteImport } from './routes/_app/manage.keys_.$venueId_.holdings.new'
 import { Route as AppManageGroupsKindsGroupKindIdEditRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId_.edit'
 import { Route as AppPersonalProfileSecurityPasskeysPasskeyIdRouteImport } from './routes/_app/_personal.profile_.security_.passkeys.$passkeyId'
-import { Route as AppActsActIdDetailsTrainingsTrainingIdRollRouteImport } from './routes/_app/acts_.$actId_.details.trainings.$trainingId.roll'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
@@ -738,11 +735,6 @@ const AppActsActIdVideosRoute = AppActsActIdVideosRouteImport.update({
   path: '/acts/$actId/videos',
   getParentRoute: () => AppRoute,
 } as any)
-const AppActsActIdTrainingRoute = AppActsActIdTrainingRouteImport.update({
-  id: '/acts_/$actId_/training',
-  path: '/acts/$actId/training',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppActsActIdPracticeRoute = AppActsActIdPracticeRouteImport.update({
   id: '/acts_/$actId_/practice',
   path: '/acts/$actId/practice',
@@ -918,12 +910,6 @@ const AppBeerListManageDrinksBeerDrinkIdRoute =
     path: '/drinks/$beerDrinkId',
     getParentRoute: () => AppBeerListManageRoute,
   } as any)
-const AppActsActIdTrainingsTrainingIdRoute =
-  AppActsActIdTrainingsTrainingIdRouteImport.update({
-    id: '/acts_/$actId_/trainings/$trainingId',
-    path: '/acts/$actId/trainings/$trainingId',
-    getParentRoute: () => AppRoute,
-  } as any)
 const AppActsActIdStepsSetupRoute = AppActsActIdStepsSetupRouteImport.update({
   id: '/acts_/$actId_/steps/setup',
   path: '/acts/$actId/steps/setup',
@@ -1031,12 +1017,6 @@ const AppPersonalProfileSecurityPasskeysPasskeyIdRoute =
     path: '/profile/security/passkeys/$passkeyId',
     getParentRoute: () => AppPersonalRoute,
   } as any)
-const AppActsActIdDetailsTrainingsTrainingIdRollRoute =
-  AppActsActIdDetailsTrainingsTrainingIdRollRouteImport.update({
-    id: '/trainings/$trainingId/roll',
-    path: '/trainings/$trainingId/roll',
-    getParentRoute: () => AppActsActIdDetailsRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
@@ -1112,7 +1092,6 @@ export interface FileRoutesByFullPath {
   '/acts/$actId/edit': typeof AppActsActIdEditRoute
   '/acts/$actId/music': typeof AppActsActIdMusicRoute
   '/acts/$actId/practice': typeof AppActsActIdPracticeRoute
-  '/acts/$actId/training': typeof AppActsActIdTrainingRoute
   '/acts/$actId/videos': typeof AppActsActIdVideosRoute
   '/announcements/$announcementId/edit': typeof AppAnnouncementsAnnouncementIdEditRoute
   '/beer-list/manage/code': typeof AppBeerListManageCodeRoute
@@ -1158,7 +1137,6 @@ export interface FileRoutesByFullPath {
   '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
   '/acts/$actId/details/settings': typeof AppActsActIdDetailsSettingsRoute
   '/acts/$actId/steps/setup': typeof AppActsActIdStepsSetupRoute
-  '/acts/$actId/trainings/$trainingId': typeof AppActsActIdTrainingsTrainingIdRoute
   '/beer-list/manage/drinks/$beerDrinkId': typeof AppBeerListManageDrinksBeerDrinkIdRoute
   '/beer-list/manage/persons/$personId': typeof AppBeerListManagePersonsPersonIdRoute
   '/beer-list/manage/pots/$beerPotId': typeof AppBeerListManagePotsBeerPotIdRoute
@@ -1196,7 +1174,6 @@ export interface FileRoutesByFullPath {
   '/manage/persons/$personId/pauses/new': typeof AppManagePersonsPersonIdPausesNewRoute
   '/manage/persons/intakes/$intakeId/edit': typeof AppManagePersonsIntakesIntakeIdEditRoute
   '/manage/persons/intakes/$intakeId/review': typeof AppManagePersonsIntakesIntakeIdReviewRoute
-  '/acts/$actId/details/trainings/$trainingId/roll': typeof AppActsActIdDetailsTrainingsTrainingIdRollRoute
 }
 export interface FileRoutesByTo {
   '/claim-window': typeof ClaimWindowRoute
@@ -1269,7 +1246,6 @@ export interface FileRoutesByTo {
   '/acts/$actId/edit': typeof AppActsActIdEditRoute
   '/acts/$actId/music': typeof AppActsActIdMusicRoute
   '/acts/$actId/practice': typeof AppActsActIdPracticeRoute
-  '/acts/$actId/training': typeof AppActsActIdTrainingRoute
   '/acts/$actId/videos': typeof AppActsActIdVideosRoute
   '/announcements/$announcementId/edit': typeof AppAnnouncementsAnnouncementIdEditRoute
   '/beer-list/manage/code': typeof AppBeerListManageCodeRoute
@@ -1315,7 +1291,6 @@ export interface FileRoutesByTo {
   '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
   '/acts/$actId/details/settings': typeof AppActsActIdDetailsSettingsRoute
   '/acts/$actId/steps/setup': typeof AppActsActIdStepsSetupRoute
-  '/acts/$actId/trainings/$trainingId': typeof AppActsActIdTrainingsTrainingIdRoute
   '/beer-list/manage/drinks/$beerDrinkId': typeof AppBeerListManageDrinksBeerDrinkIdRoute
   '/beer-list/manage/persons/$personId': typeof AppBeerListManagePersonsPersonIdRoute
   '/beer-list/manage/pots/$beerPotId': typeof AppBeerListManagePotsBeerPotIdRoute
@@ -1353,7 +1328,6 @@ export interface FileRoutesByTo {
   '/manage/persons/$personId/pauses/new': typeof AppManagePersonsPersonIdPausesNewRoute
   '/manage/persons/intakes/$intakeId/edit': typeof AppManagePersonsIntakesIntakeIdEditRoute
   '/manage/persons/intakes/$intakeId/review': typeof AppManagePersonsIntakesIntakeIdReviewRoute
-  '/acts/$actId/details/trainings/$trainingId/roll': typeof AppActsActIdDetailsTrainingsTrainingIdRollRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -1433,7 +1407,6 @@ export interface FileRoutesById {
   '/_app/acts_/$actId_/edit': typeof AppActsActIdEditRoute
   '/_app/acts_/$actId_/music': typeof AppActsActIdMusicRoute
   '/_app/acts_/$actId_/practice': typeof AppActsActIdPracticeRoute
-  '/_app/acts_/$actId_/training': typeof AppActsActIdTrainingRoute
   '/_app/acts_/$actId_/videos': typeof AppActsActIdVideosRoute
   '/_app/announcements_/$announcementId_/edit': typeof AppAnnouncementsAnnouncementIdEditRoute
   '/_app/beer-list_/manage/code': typeof AppBeerListManageCodeRoute
@@ -1479,7 +1452,6 @@ export interface FileRoutesById {
   '/_app/_personal/profile_/security_/password': typeof AppPersonalProfileSecurityPasswordRoute
   '/_app/acts_/$actId_/details/settings': typeof AppActsActIdDetailsSettingsRoute
   '/_app/acts_/$actId_/steps/setup': typeof AppActsActIdStepsSetupRoute
-  '/_app/acts_/$actId_/trainings/$trainingId': typeof AppActsActIdTrainingsTrainingIdRoute
   '/_app/beer-list_/manage/drinks_/$beerDrinkId': typeof AppBeerListManageDrinksBeerDrinkIdRoute
   '/_app/beer-list_/manage/persons/$personId': typeof AppBeerListManagePersonsPersonIdRoute
   '/_app/beer-list_/manage/pots_/$beerPotId': typeof AppBeerListManagePotsBeerPotIdRoute
@@ -1517,7 +1489,6 @@ export interface FileRoutesById {
   '/_app/manage/persons_/$personId_/pauses/new': typeof AppManagePersonsPersonIdPausesNewRoute
   '/_app/manage/persons_/intakes_/$intakeId_/edit': typeof AppManagePersonsIntakesIntakeIdEditRoute
   '/_app/manage/persons_/intakes_/$intakeId_/review': typeof AppManagePersonsIntakesIntakeIdReviewRoute
-  '/_app/acts_/$actId_/details/trainings/$trainingId/roll': typeof AppActsActIdDetailsTrainingsTrainingIdRollRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -1595,7 +1566,6 @@ export interface FileRouteTypes {
     | '/acts/$actId/edit'
     | '/acts/$actId/music'
     | '/acts/$actId/practice'
-    | '/acts/$actId/training'
     | '/acts/$actId/videos'
     | '/announcements/$announcementId/edit'
     | '/beer-list/manage/code'
@@ -1641,7 +1611,6 @@ export interface FileRouteTypes {
     | '/profile/security/password'
     | '/acts/$actId/details/settings'
     | '/acts/$actId/steps/setup'
-    | '/acts/$actId/trainings/$trainingId'
     | '/beer-list/manage/drinks/$beerDrinkId'
     | '/beer-list/manage/persons/$personId'
     | '/beer-list/manage/pots/$beerPotId'
@@ -1679,7 +1648,6 @@ export interface FileRouteTypes {
     | '/manage/persons/$personId/pauses/new'
     | '/manage/persons/intakes/$intakeId/edit'
     | '/manage/persons/intakes/$intakeId/review'
-    | '/acts/$actId/details/trainings/$trainingId/roll'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/claim-window'
@@ -1752,7 +1720,6 @@ export interface FileRouteTypes {
     | '/acts/$actId/edit'
     | '/acts/$actId/music'
     | '/acts/$actId/practice'
-    | '/acts/$actId/training'
     | '/acts/$actId/videos'
     | '/announcements/$announcementId/edit'
     | '/beer-list/manage/code'
@@ -1798,7 +1765,6 @@ export interface FileRouteTypes {
     | '/profile/security/password'
     | '/acts/$actId/details/settings'
     | '/acts/$actId/steps/setup'
-    | '/acts/$actId/trainings/$trainingId'
     | '/beer-list/manage/drinks/$beerDrinkId'
     | '/beer-list/manage/persons/$personId'
     | '/beer-list/manage/pots/$beerPotId'
@@ -1836,7 +1802,6 @@ export interface FileRouteTypes {
     | '/manage/persons/$personId/pauses/new'
     | '/manage/persons/intakes/$intakeId/edit'
     | '/manage/persons/intakes/$intakeId/review'
-    | '/acts/$actId/details/trainings/$trainingId/roll'
   id:
     | '__root__'
     | '/_app'
@@ -1915,7 +1880,6 @@ export interface FileRouteTypes {
     | '/_app/acts_/$actId_/edit'
     | '/_app/acts_/$actId_/music'
     | '/_app/acts_/$actId_/practice'
-    | '/_app/acts_/$actId_/training'
     | '/_app/acts_/$actId_/videos'
     | '/_app/announcements_/$announcementId_/edit'
     | '/_app/beer-list_/manage/code'
@@ -1961,7 +1925,6 @@ export interface FileRouteTypes {
     | '/_app/_personal/profile_/security_/password'
     | '/_app/acts_/$actId_/details/settings'
     | '/_app/acts_/$actId_/steps/setup'
-    | '/_app/acts_/$actId_/trainings/$trainingId'
     | '/_app/beer-list_/manage/drinks_/$beerDrinkId'
     | '/_app/beer-list_/manage/persons/$personId'
     | '/_app/beer-list_/manage/pots_/$beerPotId'
@@ -1999,7 +1962,6 @@ export interface FileRouteTypes {
     | '/_app/manage/persons_/$personId_/pauses/new'
     | '/_app/manage/persons_/intakes_/$intakeId_/edit'
     | '/_app/manage/persons_/intakes_/$intakeId_/review'
-    | '/_app/acts_/$actId_/details/trainings/$trainingId/roll'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -2789,13 +2751,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppActsActIdVideosRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/acts_/$actId_/training': {
-      id: '/_app/acts_/$actId_/training'
-      path: '/acts/$actId/training'
-      fullPath: '/acts/$actId/training'
-      preLoaderRoute: typeof AppActsActIdTrainingRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/acts_/$actId_/practice': {
       id: '/_app/acts_/$actId_/practice'
       path: '/acts/$actId/practice'
@@ -3006,13 +2961,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBeerListManageDrinksBeerDrinkIdRouteImport
       parentRoute: typeof AppBeerListManageRoute
     }
-    '/_app/acts_/$actId_/trainings/$trainingId': {
-      id: '/_app/acts_/$actId_/trainings/$trainingId'
-      path: '/acts/$actId/trainings/$trainingId'
-      fullPath: '/acts/$actId/trainings/$trainingId'
-      preLoaderRoute: typeof AppActsActIdTrainingsTrainingIdRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/acts_/$actId_/steps/setup': {
       id: '/_app/acts_/$actId_/steps/setup'
       path: '/acts/$actId/steps/setup'
@@ -3139,13 +3087,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPersonalProfileSecurityPasskeysPasskeyIdRouteImport
       parentRoute: typeof AppPersonalRoute
     }
-    '/_app/acts_/$actId_/details/trainings/$trainingId/roll': {
-      id: '/_app/acts_/$actId_/details/trainings/$trainingId/roll'
-      path: '/trainings/$trainingId/roll'
-      fullPath: '/acts/$actId/details/trainings/$trainingId/roll'
-      preLoaderRoute: typeof AppActsActIdDetailsTrainingsTrainingIdRollRouteImport
-      parentRoute: typeof AppActsActIdDetailsRoute
-    }
   }
 }
 
@@ -3243,14 +3184,11 @@ const AppManageGroupMatcherRouteWithChildren =
 interface AppActsActIdDetailsRouteChildren {
   AppActsActIdDetailsSettingsRoute: typeof AppActsActIdDetailsSettingsRoute
   AppActsActIdDetailsIndexRoute: typeof AppActsActIdDetailsIndexRoute
-  AppActsActIdDetailsTrainingsTrainingIdRollRoute: typeof AppActsActIdDetailsTrainingsTrainingIdRollRoute
 }
 
 const AppActsActIdDetailsRouteChildren: AppActsActIdDetailsRouteChildren = {
   AppActsActIdDetailsSettingsRoute: AppActsActIdDetailsSettingsRoute,
   AppActsActIdDetailsIndexRoute: AppActsActIdDetailsIndexRoute,
-  AppActsActIdDetailsTrainingsTrainingIdRollRoute:
-    AppActsActIdDetailsTrainingsTrainingIdRollRoute,
 }
 
 const AppActsActIdDetailsRouteWithChildren =
@@ -3317,7 +3255,6 @@ interface AppRouteChildren {
   AppActsActIdEditRoute: typeof AppActsActIdEditRoute
   AppActsActIdMusicRoute: typeof AppActsActIdMusicRoute
   AppActsActIdPracticeRoute: typeof AppActsActIdPracticeRoute
-  AppActsActIdTrainingRoute: typeof AppActsActIdTrainingRoute
   AppActsActIdVideosRoute: typeof AppActsActIdVideosRoute
   AppAnnouncementsAnnouncementIdEditRoute: typeof AppAnnouncementsAnnouncementIdEditRoute
   AppClubNewsSlugRoute: typeof AppClubNewsSlugRoute
@@ -3348,7 +3285,6 @@ interface AppRouteChildren {
   AppManageVenuesVenueIdRoute: typeof AppManageVenuesVenueIdRoute
   AppManageVenuesNewRoute: typeof AppManageVenuesNewRoute
   AppActsActIdStepsSetupRoute: typeof AppActsActIdStepsSetupRoute
-  AppActsActIdTrainingsTrainingIdRoute: typeof AppActsActIdTrainingsTrainingIdRoute
   AppGroupsGroupIdAdminsAdminIdRoute: typeof AppGroupsGroupIdAdminsAdminIdRoute
   AppGroupsGroupIdAdminsNewRoute: typeof AppGroupsGroupIdAdminsNewRoute
   AppGroupsGroupIdMembershipsMembershipIdRoute: typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -3443,7 +3379,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppActsActIdEditRoute: AppActsActIdEditRoute,
   AppActsActIdMusicRoute: AppActsActIdMusicRoute,
   AppActsActIdPracticeRoute: AppActsActIdPracticeRoute,
-  AppActsActIdTrainingRoute: AppActsActIdTrainingRoute,
   AppActsActIdVideosRoute: AppActsActIdVideosRoute,
   AppAnnouncementsAnnouncementIdEditRoute:
     AppAnnouncementsAnnouncementIdEditRoute,
@@ -3476,7 +3411,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageVenuesVenueIdRoute: AppManageVenuesVenueIdRoute,
   AppManageVenuesNewRoute: AppManageVenuesNewRoute,
   AppActsActIdStepsSetupRoute: AppActsActIdStepsSetupRoute,
-  AppActsActIdTrainingsTrainingIdRoute: AppActsActIdTrainingsTrainingIdRoute,
   AppGroupsGroupIdAdminsAdminIdRoute: AppGroupsGroupIdAdminsAdminIdRoute,
   AppGroupsGroupIdAdminsNewRoute: AppGroupsGroupIdAdminsNewRoute,
   AppGroupsGroupIdMembershipsMembershipIdRoute:

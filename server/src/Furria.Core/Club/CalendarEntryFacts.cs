@@ -37,6 +37,12 @@ public sealed record CalendarEntryFacts
             : [.. ParticipatingGroupIds, .. AudienceGroupIds];
 
     [Pure]
+    public bool TakesMarksOn(DateOnly today) =>
+        CastAttendance.AsksTheCastOn(Kind, AsksForResponse)
+        && !IsForChosenPeople
+        && ClubClock.DayOf(StartsAt) >= today;
+
+    [Pure]
     public bool AsksTheCastOf(IReadOnlySet<GroupSession> actSessions) =>
         CastAttendance.AsksTheCast(
             Kind,

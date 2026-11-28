@@ -11,7 +11,6 @@ import { KkLessonRoot } from './internal/layout/KkLessonRoot';
 import { KkLessonBeat } from './internal/ui/KkLessonBeat';
 import { KkLessonCounts } from './internal/ui/KkLessonCounts';
 import { KkLessonCue } from './internal/ui/KkLessonCue';
-import { KkLessonHall } from './internal/ui/KkLessonHall';
 import { KkLessonHeading } from './internal/ui/KkLessonHeading';
 import { KkLessonLoop } from './internal/ui/KkLessonLoop';
 import { KkLessonNext } from './internal/ui/KkLessonNext';
@@ -53,5 +52,4 @@ export const KkLesson = Object.assign(KkLessonRoot, {
   RailStep: KkLessonRailStep,
   RailFill: KkLessonRailFill,
   Dock: KkLessonDock,
-  Hall: KkLessonHall,
 });

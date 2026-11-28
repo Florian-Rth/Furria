@@ -61,35 +61,7 @@ const { StudioPersonSchema, StudioSchema: StudioWorkSchema } = createStudioSchem
   PictureSchema,
 });
 
-export const StudioAttendanceChangeSchema = z.object({
-  answer: AttendanceAnswerSchema,
-  isRecordedOnBehalf: z.boolean(),
-  recordedBy: z.string().nullable(),
-  recordedAt: z.iso.datetime({ offset: true }),
-});
-export type StudioAttendanceChange = z.infer<typeof StudioAttendanceChangeSchema>;
-
-export const StudioAttendanceSchema = z.object({
-  personId: z.int(),
-  answer: AttendanceAnswerSchema,
-  isRecordedOnBehalf: z.boolean(),
-  recordedBy: z.string().nullable(),
-  trail: z.array(StudioAttendanceChangeSchema),
-});
-export type StudioAttendance = z.infer<typeof StudioAttendanceSchema>;
-
-export const StudioTrainingSchema = z.object({
-  calendarEntryId: z.int(),
-  title: z.string(),
-  startsAt: z.iso.datetime({ offset: true }),
-  openSpotIds: z.array(z.int()),
-  responses: z.array(StudioAttendanceSchema),
-});
-export type StudioTraining = z.infer<typeof StudioTrainingSchema>;
-
-export const ActStudioSchema = StudioWorkSchema.extend({
-  trainings: z.array(StudioTrainingSchema),
-});
+export const ActStudioSchema = StudioWorkSchema;
 export type ActStudio = z.infer<typeof ActStudioSchema>;
 
 export const CoEditorSchema = StudioPersonSchema.extend({
@@ -102,7 +74,6 @@ export const ActViewerSchema = z.object({
   canEditSettings: z.boolean(),
   canEditStudio: z.boolean(),
   canGrantCoEditors: z.boolean(),
-  canMarkAttendance: z.boolean(),
 });
 export type ActViewer = z.infer<typeof ActViewerSchema>;
 
@@ -142,11 +113,8 @@ export type MyActEvening = z.infer<typeof MyActEveningSchema>;
 
 export const MyActTrainingSchema = z.object({
   calendarEntryId: z.int(),
-  title: z.string(),
   startsAt: z.iso.datetime({ offset: true }),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
-  present: z.int(),
-  absent: z.int(),
 });
 export type MyActTraining = z.infer<typeof MyActTrainingSchema>;
 

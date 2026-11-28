@@ -158,11 +158,11 @@ Goal: an appearance is only a place in the running order.
 
 ### Phase 3 — Attendance marks in the calendar; hall mode out
 Goal: group admins mark members in the calendar entry; hall mode and roll call are gone.
-- [ ] Endpoints `PUT/DELETE calendar/entries/{id}/attendance/{personId}` (group admins of the entry's group, same rules: stored as her answer, "eingetragen von", own answer replaces, undo restores); act training attendance endpoints removed
-- [ ] Calendar entry detail: "Für andere eintragen" sheet (group members, Ja / Nein, trail) for trainings with Zu-/Absage
-- [ ] Studio read model without trainings/open spots; glance keeps next training date + own answer
-- [ ] Club app: `act-training/` folder, training routes, `ST/hall`, `KkHall`, Üben's "Gruppentraining" and the score hall door removed
-- [ ] Tests: marking permissions and replacement rules on the calendar endpoints
+- [x] Endpoints `PUT/DELETE calendar/entries/{id}/attendance/{personId}` (group admins of the entry's group, same rules: stored as her answer, "eingetragen von", own answer replaces, undo restores); act training attendance endpoints removed
+- [x] Calendar entry detail: "Für andere eintragen" sheet (group members, Ja / Nein, trail) for trainings with Zu-/Absage
+- [x] Studio read model without trainings/open spots; glance keeps next training date + own answer
+- [x] Club app: `act-training/` folder, training routes, `ST/hall`, `KkHall`, Üben's "Gruppentraining" and the score hall door removed
+- [x] Tests: marking permissions and replacement rules on the calendar endpoints
 
 ### Phase 4 — Steps with their own end
 Goal: steps may leave music without steps; overlaps are refused; current screens keep working.

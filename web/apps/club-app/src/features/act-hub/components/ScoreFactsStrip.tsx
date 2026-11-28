@@ -8,14 +8,14 @@ interface ScoreFactsStripProps {
   facts: ScoreFactsView;
   inCast: boolean;
   withMusic?: boolean;
-  onOpenTrainings: () => void;
+  onOpenTraining: () => void;
 }
 
 export const ScoreFactsStrip: FC<ScoreFactsStripProps> = ({
   facts,
   inCast,
   withMusic = true,
-  onOpenTrainings,
+  onOpenTraining,
 }) => {
   const training =
     facts.training === null ? null : (
@@ -24,7 +24,7 @@ export const ScoreFactsStrip: FC<ScoreFactsStripProps> = ({
         training={facts.training}
         saved={facts.trainingAnswer}
         inCast={inCast}
-        onOpen={onOpenTrainings}
+        onOpen={onOpenTraining}
       />
     );
   const music =

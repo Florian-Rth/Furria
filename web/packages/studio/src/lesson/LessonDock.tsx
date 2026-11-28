@@ -1,4 +1,4 @@
-import { LESSON_DOCK_LABEL, LESSON_HALL_LABEL } from '@furria/studio/lesson-copy';
+import { LESSON_DOCK_LABEL } from '@furria/studio/lesson-copy';
 import type { LessonScreen } from '@furria/studio/lesson-screen';
 import {
   PRACTICE_BACK,
@@ -19,15 +19,13 @@ interface LessonDockProps {
 }
 
 export const LessonDock: FC<LessonDockProps> = ({ screen }) => {
-  const { practice, mode, startHall } = screen;
+  const { practice, mode } = screen;
   const back = (): void => {
     practice.skip('back');
   };
   const forward = (): void => {
     practice.skip('forward');
   };
-  const hall =
-    startHall === null ? null : <KkLesson.Hall label={LESSON_HALL_LABEL} onOpen={startHall} />;
   const edit = mode.canEdit ? (
     <>
       <KkPracticeTransport.Divider />
@@ -71,7 +69,6 @@ export const LessonDock: FC<LessonDockProps> = ({ screen }) => {
         />
         {edit}
       </KkPracticeTransport.Pill>
-      {hall}
       <KkKeyHelp label={PRACTICE_KEYS_TITLE} opens="up">
         <KkKeyList title={PRACTICE_KEYS_TITLE} entries={PRACTICE_KEYS} />
       </KkKeyHelp>

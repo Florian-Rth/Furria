@@ -13,6 +13,7 @@ export interface ScoreRoute {
   go: (link: ScoreLink) => void;
   practiseFrom: (stepId: number | null) => void;
   editFrom: (stepId: number | null) => void;
+  openTraining: (calendarEntryId: number) => void;
 }
 
 export const useScoreRoute = (
@@ -58,6 +59,12 @@ export const useScoreRoute = (
     },
     editFrom: (stepId) => {
       goFrom(editorLinkOf(actId), stepId);
+    },
+    openTraining: (calendarEntryId) => {
+      void navigate({
+        to: '/calendar/$calendarEntryId',
+        params: { calendarEntryId: String(calendarEntryId) },
+      });
     },
   };
 };

@@ -43,6 +43,5 @@ export interface StudioScreen extends StudioWorkScreen {
   editor: StudioEditor | null;
   frame: ActStudioFrame;
   large: StudioLargeText;
-  startHall: (() => void) | null;
   steps: PracticeSteps;
 }

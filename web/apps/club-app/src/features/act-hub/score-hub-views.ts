@@ -1,6 +1,6 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
 import type { KkScoreReadinessState } from '@furria/ui/KkScoreReadiness';
-import type { StudioTraining } from '@/features/acts/schemas';
+import type { MyActTraining } from '@/features/acts/schemas';
 import { readinessHintOf, readinessLabelOf, readinessValueOf } from './score-copy';
 import type { ScoreDoor } from './score-doors';
 import type { ScoreLink } from './score-links';
@@ -30,14 +30,13 @@ export interface ScoreReadinessView {
 }
 
 export interface ScoreFactsView {
-  training: StudioTraining | null;
+  training: MyActTraining | null;
   trainingAnswer: TrainingAnswer | null;
   music: string | null;
 }
 
 export interface ScoreFactsInput {
-  training: StudioTraining | null;
-  viewerId: number | null;
+  training: MyActTraining | null;
   music: string | null;
 }
 
@@ -46,11 +45,8 @@ export interface ScoreDoorView {
   open: () => void;
 }
 
-export const trainingAnswerOf = (
-  training: StudioTraining | null,
-  viewerId: number | null,
-): TrainingAnswer | null => {
-  const answer = training?.responses.find((response) => response.personId === viewerId)?.answer;
+export const trainingAnswerOf = (training: MyActTraining | null): TrainingAnswer | null => {
+  const answer = training?.viewerAnswer;
 
   return answer === 'yes' || answer === 'no' ? answer : null;
 };
@@ -69,9 +65,9 @@ export const readinessViewsOf = (
     open: open === null ? null : open(item.target),
   }));
 
-export const factsViewOf = ({ training, viewerId, music }: ScoreFactsInput): ScoreFactsView => ({
+export const factsViewOf = ({ training, music }: ScoreFactsInput): ScoreFactsView => ({
   training,
-  trainingAnswer: trainingAnswerOf(training, viewerId),
+  trainingAnswer: trainingAnswerOf(training),
   music,
 });
 

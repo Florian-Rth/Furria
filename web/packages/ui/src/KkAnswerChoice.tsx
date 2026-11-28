@@ -19,7 +19,8 @@ export type KkAnswerChoiceLabels = Record<KkAnswer, string>;
 
 const { light, dark } = kkTokens.color;
 const CHOICE_CONTAINER = 'kk-answer-choice';
-const STACKED = `@container ${CHOICE_CONTAINER} (max-width: 14rem)`;
+const TRIO_STACK_WIDTH = '14rem';
+const PAIR_STACK_WIDTH = '8rem';
 const FACE_HEIGHT = '2.25rem';
 const FACE = '[data-kk-answer-face]';
 const PRESS_SCALE = 0.96;
@@ -32,15 +33,18 @@ const CHOICE_FRAME: CSSObject = {
   containerName: CHOICE_CONTAINER,
 };
 
-const SEGMENTS_FRAME: CSSObject = {
+const stackWidthOf = (answerCount: number): string =>
+  answerCount < KK_ANSWERS.length ? PAIR_STACK_WIDTH : TRIO_STACK_WIDTH;
+
+const segmentsFrameOf = (answerCount: number): CSSObject => ({
   gap: 0.75,
   minWidth: 0,
-  [STACKED]: {
+  [`@container ${CHOICE_CONTAINER} (max-width: ${stackWidthOf(answerCount)})`]: {
     flexDirection: 'column',
     gap: 0,
     '& > [data-kk-answer]': { flexBasis: 'auto' },
   },
-};
+});
 
 const faceRing = (theme: Theme): CSSObject => ({
   outline: `${kkTokens.line.section}px solid`,
@@ -93,6 +97,7 @@ interface KkAnswerChoiceProps {
   value: KkAnswer | null;
   onChange: (answer: KkAnswer) => void;
   labels: KkAnswerChoiceLabels;
+  answers?: readonly KkAnswer[];
   disabled?: boolean;
   error?: string;
   id?: string;
@@ -104,6 +109,7 @@ export const KkAnswerChoice: FC<KkAnswerChoiceProps> = ({
   value,
   onChange,
   labels,
+  answers = KK_ANSWERS,
   disabled = false,
   error,
   id,
@@ -126,7 +132,7 @@ export const KkAnswerChoice: FC<KkAnswerChoiceProps> = ({
     no: () => press('no'),
   };
 
-  const segments = KK_ANSWERS.map((answer) => {
+  const segments = answers.map((answer) => {
     const pressed = answer === value;
 
     return (
@@ -148,6 +154,7 @@ export const KkAnswerChoice: FC<KkAnswerChoiceProps> = ({
     );
   });
 
+  const segmentsFrame = segmentsFrameOf(answers.length);
   const errorLine =
     error === undefined ? null : (
       <Typography id={errorId} component="p" variant="caption" role="alert" sx={errorPaint}>
@@ -162,7 +169,7 @@ export const KkAnswerChoice: FC<KkAnswerChoiceProps> = ({
         role="group"
         aria-label={label}
         aria-describedby={describedBy}
-        sx={SEGMENTS_FRAME}
+        sx={segmentsFrame}
       >
         {segments}
       </Stack>

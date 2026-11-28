@@ -69,11 +69,8 @@ public sealed class GetMyActs : EndpointWithoutRequest<GetMyActsResponse>
         new()
         {
             CalendarEntryId = training.CalendarEntryId,
-            Title = training.Title,
             StartsAt = training.StartsAt,
             ViewerAnswer = training.ViewerAnswer,
-            Present = training.Present,
-            Absent = training.Absent,
         };
 }
 
@@ -124,13 +121,7 @@ public sealed record MyActTrainingDto
 {
     public required int CalendarEntryId { get; init; }
 
-    public required string Title { get; init; }
-
     public required DateTimeOffset StartsAt { get; init; }
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }
-
-    public required int Present { get; init; }
-
-    public required int Absent { get; init; }
 }

@@ -20,7 +20,6 @@ export interface ActScreenPage {
   access: ActScreenAccess | null;
   originSearch: CardLinkSearch;
   hubPath: string | null;
-  open: (screen: ActScreen) => void;
   swap: (screen: ActScreen) => void;
 }
 
@@ -36,12 +35,12 @@ export const useActScreenPage = (
   const originSearch = originSearchOf(search);
   const studio = load.query.data?.studio;
   const hubPath = actId === null ? null : actPagePathOf(actId);
-  const go = (target: ActScreen, replace: boolean): void => {
+  const swap = (target: ActScreen): void => {
     if (actId !== null) {
       void navigate({
         to: actScreenPathOf(actId, target),
         search: originSearch,
-        replace,
+        replace: true,
         resetScroll: true,
       });
     }
@@ -66,11 +65,6 @@ export const useActScreenPage = (
     access: studio === undefined ? null : actScreenAccessOf(studio, load.canEditStudio, screen),
     originSearch,
     hubPath,
-    open: (target) => {
-      go(target, false);
-    },
-    swap: (target) => {
-      go(target, true);
-    },
+    swap,
   };
 };

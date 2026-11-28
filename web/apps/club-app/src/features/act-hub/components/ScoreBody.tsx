@@ -26,7 +26,7 @@ export const ScoreBody: FC<ScoreBodyProps> = ({ score }) => {
       facts={score.facts}
       inCast={score.inCast}
       withMusic={false}
-      onOpenTrainings={score.openTrainings}
+      onOpenTraining={score.openTraining}
     />
   );
   const drawerReadiness = score.showReadiness && !score.wide ? score.readiness : null;
@@ -35,7 +35,7 @@ export const ScoreBody: FC<ScoreBodyProps> = ({ score }) => {
       <ScoreFactsStrip
         facts={score.facts}
         inCast={score.inCast}
-        onOpenTrainings={score.openTrainings}
+        onOpenTraining={score.openTraining}
       />
       {readiness}
     </Stack>

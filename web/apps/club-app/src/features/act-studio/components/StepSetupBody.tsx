@@ -15,7 +15,6 @@ interface StepSetupBodyProps {
 export const StepSetupBody: FC<StepSetupBodyProps> = ({ page, actId, studio }) => {
   const screen = useStudioScreen(actId, studio, page.viewerId, page.canEdit, page.cast, {
     startEditing: true,
-    startHall: null,
     stageEditor: true,
     tone: page.tone,
   });

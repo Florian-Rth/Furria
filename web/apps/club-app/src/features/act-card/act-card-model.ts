@@ -1,4 +1,4 @@
-import type { ActStudio, MyAct, StudioTraining } from '@/features/acts/schemas';
+import type { ActStudio, MyAct } from '@/features/acts/schemas';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import type { ActKind } from '@/features/running-order/schemas';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
@@ -13,12 +13,6 @@ export interface PlacedSlot {
 }
 
 export type EveningSlot = PlacedSlot | { kind: 'unplaced' } | { kind: 'absent' };
-
-export interface Tally {
-  present: number;
-  absent: number;
-  of: number;
-}
 
 export interface StudioCounts {
   musicSeconds: number;
@@ -40,7 +34,6 @@ export interface HubBand {
   playable: boolean;
 }
 
-const TRAINING_GRACE_MS = 2 * 60 * 60 * 1000;
 const SECONDS_PER_MINUTE = 60;
 
 const TEMPLATES: Record<ActKind, ActTemplate> = {
@@ -73,36 +66,8 @@ export const eveningSlotOf = (position: number | null | undefined): EveningSlot 
   return position === null ? { kind: 'unplaced' } : { kind: 'placed', number: position + 1 };
 };
 
-const isAhead = (startsAt: string, now: number, graceMs: number): boolean =>
-  Date.parse(startsAt) + graceMs >= now;
-
-const byStart = (left: { startsAt: string }, right: { startsAt: string }): number =>
-  Date.parse(left.startsAt) - Date.parse(right.startsAt);
-
-export const upcomingTrainingsOf = (
-  trainings: readonly StudioTraining[],
-  now: number,
-): StudioTraining[] =>
-  trainings.filter((training) => isAhead(training.startsAt, now, TRAINING_GRACE_MS)).sort(byStart);
-
-export const viewerAnswerOf = (
-  training: StudioTraining,
-  viewerId: number | null,
-): AttendanceAnswer | null =>
-  training.responses.find((response) => response.personId === viewerId)?.answer ?? null;
-
 export const answerKeyOf = (answer: AttendanceAnswer | null | undefined): AnswerKey | null =>
   answer === 'yes' || answer === 'no' ? answer : null;
-
-export const tallyOf = (present: number, absent: number, castSize: number): Tally | null =>
-  present + absent === 0 ? null : { present, absent, of: castSize };
-
-export const trainingTallyOf = (training: StudioTraining, castSize: number): Tally | null =>
-  tallyOf(
-    training.responses.filter((response) => response.answer === 'yes').length,
-    training.responses.filter((response) => response.answer === 'no').length,
-    castSize,
-  );
 
 export type Ask = { kind: 'names'; names: string[] } | { kind: 'self' } | { kind: 'nobody' };
 

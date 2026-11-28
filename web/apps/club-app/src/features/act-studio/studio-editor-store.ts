@@ -40,11 +40,6 @@ const announce = (): void => {
   }
 };
 
-const savedInto = (open: OpenEditor, current: ActStudio): ActStudio => ({
-  ...open.editor.savedStudio(),
-  trainings: current.trainings,
-});
-
 const cacheSaved = (actId: number, queryClient: QueryClient): void => {
   const open = editors.get(actId);
   if (open === undefined) {
@@ -56,7 +51,7 @@ const cacheSaved = (actId: number, queryClient: QueryClient): void => {
   queryClient.setQueryData<ActStudioResponse>(studioKey, (current) =>
     current === undefined || current.studio === null
       ? current
-      : { ...current, studio: savedInto(open, current.studio) },
+      : { ...current, studio: open.editor.savedStudio() },
   );
   void queryClient.invalidateQueries({ queryKey: studioKey, refetchType: 'none' });
   for (const queryKey of staleQueryKeysAfter(STUDIO_CHANGES)) {

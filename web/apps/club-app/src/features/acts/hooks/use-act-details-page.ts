@@ -21,7 +21,7 @@ import { SETTINGS_LABEL, STUDIO_MUSIC_LABEL } from '../act-page-copy';
 import { shownActionsOf } from '../act-screen-actions';
 import { actScreenPathOf } from '../act-screens';
 import { actCardOriginOf, actPagePathOf } from '../acts-origin';
-import type { ActScreenSearch, ActStudioResponse, StudioTraining } from '../schemas';
+import type { ActScreenSearch, ActStudioResponse } from '../schemas';
 import type { ActLoad } from './use-act-load';
 import { useActLoad } from './use-act-load';
 
@@ -41,16 +41,12 @@ export interface ActDetailsPageState {
   originSearch: CardLinkSearch;
   redirectPath: string | null;
   canEditStudio: boolean;
-  rollTraining: StudioTraining | null;
-  isRollOpen: boolean;
   isSettingsOpen: boolean;
   isWide: boolean;
   masterSpan: KkMasterDetailSpan;
   acts: readonly CatalogueAct[];
   fixedGroupId: number | null;
   closeSettings: () => void;
-  closeRoll: () => void;
-  startTraining: (calendarEntryId: number) => void;
   reload: () => void;
 }
 
@@ -75,18 +71,11 @@ export const useActDetailsPage = (
   const data = query.data;
   const studio = data?.studio ?? null;
   const pane: ActDetailsPane | null = actDetailsPaneOf(childMatches[0]);
-  const access = data === undefined ? null : actDetailsAccessOf(data.viewer, studio, pane);
+  const access = data === undefined ? null : actDetailsAccessOf(data.viewer, pane);
   const shownPane = access === 'open' ? pane : null;
   const canEditSettings = data?.viewer.canEditSettings === true;
   const isSettingsOpen = shownPane?.kind === 'settings';
   const catalogue = useActsQuery(act?.sessionYear ?? null, isSettingsOpen);
-  const rollTraining =
-    shownPane?.kind === 'roll'
-      ? (studio?.trainings.find(
-          (candidate) => candidate.calendarEntryId === shownPane.trainingId,
-        ) ?? null)
-      : null;
-  const isRollOpen = rollTraining !== null;
   const origin = originSearchOf(search);
 
   const showPane = (target: ActDetailsPane | null): void => {
@@ -143,20 +132,12 @@ export const useActDetailsPage = (
     originSearch: origin,
     redirectPath: redirectPathOf(actId, access),
     canEditStudio,
-    rollTraining,
-    isRollOpen,
     isSettingsOpen,
     isWide,
     masterSpan: isWide && shownPane !== null ? SIDE_OPEN_SPAN : FULL_SPAN,
     acts: catalogue.data?.acts ?? NO_ACTS,
     fixedGroupId: plans ? null : (act?.group?.groupId ?? null),
     closeSettings: closePane,
-    closeRoll: closePane,
-    startTraining: (calendarEntryId) => {
-      if (actId !== null) {
-        openScreen(actScreenPathOf(actId, { kind: 'training', trainingId: calendarEntryId }));
-      }
-    },
     reload: load.reload,
   };
 };

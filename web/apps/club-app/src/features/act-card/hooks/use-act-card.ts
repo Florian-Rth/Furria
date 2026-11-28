@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useMyActsQuery } from '@/features/acts/api';
 import type { ActScreenSearch, ActStudioResponse } from '@/features/acts/schemas';
 import type { ActCardView } from '../act-card-view';
@@ -9,7 +8,6 @@ export const useActCard = (
   viewerId: number | null,
   search: ActScreenSearch,
 ): ActCardView | null => {
-  const [now] = useState(Date.now);
   const mine = useMyActsQuery();
 
   if (mine.isPending) {
@@ -18,5 +16,5 @@ export const useActCard = (
 
   const summary = mine.data?.acts.find((act) => act.actId === data.act.actId);
 
-  return actCardViewOf(data, summary, viewerId, search, now);
+  return actCardViewOf(data, summary, viewerId, search);
 };

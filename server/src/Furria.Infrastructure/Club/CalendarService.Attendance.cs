@@ -103,6 +103,7 @@ public sealed partial class CalendarService
         IReadOnlyList<CalendarAttendanceAnswerDetails> Answers,
         IReadOnlyList<CalendarAttendancePerson>? NotAnswered,
         CalendarReminderDetails? Reminder,
-        IReadOnlyList<WhatsAppUnassignedAnswer>? Unassigned
+        IReadOnlyList<WhatsAppUnassignedAnswer>? Unassigned,
+        IReadOnlyList<CalendarMarkablePerson>? Markable = null
     );
 }

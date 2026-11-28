@@ -1,8 +1,10 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { MutationKey, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
+import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import type { CalendarEntryPayload } from './calendar-authoring';
 import { toEntryWriteNotice } from './calendar-authoring';
 import {
@@ -19,10 +21,14 @@ import {
   toEntryDeletedMessage,
   toEntrySavedMessage,
 } from './calendar-labels';
+import type { AttendanceMarkInput, AttendanceMarkTarget } from './calendar-marking';
+import { withMark, withWithdrawnMark } from './calendar-marking';
 import type { CalendarQuery } from './calendar-query';
 import { toReminderFailure } from './calendar-reminders';
 import type { NotifyReachQuery } from './notify-reach';
 import {
+  requestAttendanceMark,
+  requestAttendanceMarkWithdrawal,
   requestCalendar,
   requestCalendarEntry,
   requestCalendarEntryCreation,
@@ -261,3 +267,39 @@ export const useCalendarReminderMutation = (): UseMutationResult<
       failure: (error) => REMINDER_FAILURE_MESSAGES[toReminderFailure(error)],
     },
   });
+
+export interface AttendanceMarks {
+  mark: UseMutationResult<void, Error, AttendanceMarkInput>;
+  withdraw: UseMutationResult<void, Error, AttendanceMarkTarget>;
+}
+
+const ATTENDANCE_MARK_CHANGES = ['attendanceResponse'] as const;
+
+export const attendanceMarkMutationKey = (calendarEntryId: number): MutationKey => [
+  'attendance-mark',
+  calendarEntryId,
+];
+
+export const useAttendanceMarks = (calendarEntryId: number): AttendanceMarks => {
+  const entryKey = queryKeys.calendarEntry(calendarEntryId);
+  const key = attendanceMarkMutationKey(calendarEntryId);
+
+  const withdraw = useApiMutation({
+    request: requestAttendanceMarkWithdrawal,
+    changes: ATTENDANCE_MARK_CHANGES,
+    optimistic: [
+      optimisticPatch<CalendarEntryResponse, AttendanceMarkTarget>(entryKey, withWithdrawnMark),
+    ],
+    notice: { failure: toWriteErrorMessage },
+    key,
+  });
+  const mark = useApiMutation({
+    request: requestAttendanceMark,
+    changes: ATTENDANCE_MARK_CHANGES,
+    optimistic: [optimisticPatch<CalendarEntryResponse, AttendanceMarkInput>(entryKey, withMark)],
+    notice: { failure: toWriteErrorMessage },
+    key,
+  });
+
+  return { mark, withdraw };
+};

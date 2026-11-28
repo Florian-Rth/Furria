@@ -1620,7 +1620,6 @@ const ensureAttendance = async (
   ctx: Context,
   specs: readonly TrainingSpec[],
   trainingIds: ReadonlyMap<string, number>,
-  marschtanzId: number,
 ): Promise<void> => {
   const trainer = await sessionOf(ctx, TRAINER);
   const members = MEMBERS.filter((spec) => spec.hasAccount);
@@ -1644,7 +1643,7 @@ const ensureAttendance = async (
           if (spec.day >= ctx.moment.today && answer !== 'maybe') {
             await send(
               'PUT',
-              `acts/${marschtanzId}/trainings/${calendarEntryId}/attendance/${lookUp(ctx.personIds, person, 'person')}`,
+              `calendar/entries/${calendarEntryId}/attendance/${lookUp(ctx.personIds, person, 'person')}`,
               trainer,
               { answer },
             );
@@ -1921,7 +1920,7 @@ const run = async (): Promise<void> => {
   await ensureStudio(ctx, marschtanzId);
   const trainingSpecs = trainingSpecsOf(moment);
   const trainingIds = await ensureTrainings(ctx, trainingSpecs);
-  await ensureAttendance(ctx, trainingSpecs, trainingIds, marschtanzId);
+  await ensureAttendance(ctx, trainingSpecs, trainingIds);
 
   const newsSpecs = newsSpecsOf();
   await ensureNews(ctx, newsSpecs, eventIds);
@@ -1943,14 +1942,13 @@ const run = async (): Promise<void> => {
     log('realism SQL applied');
   }
 
-  const studio = await studioOf(await sessionOf(ctx, TRAINER), marschtanzId);
-  const nextTraining = studio.trainings.find((training) => training.title.startsWith('Marschtanz'));
+  const nextTraining = trainingSpecs
+    .filter((spec) => spec.day >= moment.today && spec.title.startsWith('Marschtanz'))
+    .toSorted((left, right) => left.day.localeCompare(right.day))[0];
   log(`\npersona: ${PERSONA} lena.brandt@furria.local / ${PERSONA_PASSWORD}`);
+  log(`act ${MARSCHTANZ}: ${marschtanzId} (/acts/${marschtanzId}, /practice)`);
   log(
-    `act ${MARSCHTANZ}: ${marschtanzId} (/acts/${marschtanzId}, /practice, /training, /trainings/<training id>)`,
-  );
-  log(
-    `next Marschtanz training: ${nextTraining === undefined ? 'none' : `${nextTraining.calendarEntryId} ${nextTraining.title}`}`,
+    `next Marschtanz training: ${nextTraining === undefined ? 'none' : `${lookUp(trainingIds, nextTraining.title, 'training')} ${nextTraining.title}`}`,
   );
   log(
     `event 1. Prunksitzung: ${lookUp(eventIds, PRUNKSITZUNG, 'event')} (/events/<id>/running-order, /table-plan)`,

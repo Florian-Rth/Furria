@@ -1,5 +1,5 @@
 import type { ActScreen } from '../act-screens';
-import { actScreenPathOf, startedHallOf, switchedEditingOf } from '../act-screens';
+import { actScreenPathOf, switchedEditingOf } from '../act-screens';
 import type { ActScreenSearch } from '../schemas';
 import type { ActScreenPage } from './use-act-screen-page';
 import { useActScreenPage } from './use-act-screen-page';
@@ -8,7 +8,6 @@ export interface ActPracticePage extends ActScreenPage {
   title: string;
   redirectPath: string | null;
   startEditing: boolean;
-  startHall: () => void;
   toggleEditing: () => void;
 }
 
@@ -19,7 +18,6 @@ export const useActPracticePage = (
 ): ActPracticePage => {
   const page = useActScreenPage(rawActId, search, editing ? 'edit' : 'practice');
   const { actId, name } = page.load;
-  const studio = page.load.query.data?.studio;
   const current: ActScreen = { kind: editing ? 'edit' : 'practice' };
   const practisePath = actId === null ? null : actScreenPathOf(actId, { kind: 'practice' });
   const redirectPath = page.access === 'practice' ? practisePath : null;
@@ -29,9 +27,6 @@ export const useActPracticePage = (
     title: name,
     redirectPath: page.access === 'hub' ? page.hubPath : redirectPath,
     startEditing: editing,
-    startHall: () => {
-      page.open(startedHallOf(studio?.trainings ?? []));
-    },
     toggleEditing: () => {
       page.swap(switchedEditingOf(current));
     },

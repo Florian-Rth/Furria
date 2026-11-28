@@ -72,7 +72,6 @@ export const PRACTICE_KEYS: readonly KkKeyListEntry[] = keyHelpOf([
   { id: 'loop', commands: ['loop'], action: 'Schritt wiederholen' },
 ]);
 
-export const PRACTICE_TRAINING_START = 'Training starten';
 export const PRACTICE_LARGE_KEYS_LABEL = 'Schritte und Tempo';
 export const PRACTICE_VIDEO_SHOW = 'Video';
 export const PRACTICE_VIDEO_SHOW_LABEL = 'Trainervideo statt Bühne zeigen';

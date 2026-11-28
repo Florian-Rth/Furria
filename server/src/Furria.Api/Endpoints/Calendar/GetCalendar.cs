@@ -281,6 +281,8 @@ public sealed record CalendarAttendanceDto
 
     public required IReadOnlyList<WhatsAppUnassignedAnswerDto>? Unassigned { get; init; }
 
+    public required IReadOnlyList<CalendarMarkablePersonDto>? Markable { get; init; }
+
     [Pure]
     public static CalendarAttendanceDto From(CalendarAttendanceDetails attendance) =>
         new()
@@ -297,6 +299,57 @@ public sealed record CalendarAttendanceDto
                 : null,
             Reminder = CalendarReminderDto.From(attendance.Reminder),
             Unassigned = WhatsAppUnassignedAnswerDto.FromAll(attendance.Unassigned),
+            Markable = attendance.Markable is { } markable
+                ? [.. markable.Select(CalendarMarkablePersonDto.From)]
+                : null,
+        };
+}
+
+public sealed record CalendarMarkablePersonDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    public required AttendanceAnswer? Answer { get; init; }
+
+    public required IReadOnlyList<CalendarAttendanceChangeDto> Trail { get; init; }
+
+    [Pure]
+    public static CalendarMarkablePersonDto From(CalendarMarkablePerson person) =>
+        new()
+        {
+            PersonId = person.PersonId,
+            FirstName = person.FirstName,
+            LastName = person.LastName,
+            Answer = person.Answer,
+            Trail = [.. person.Trail.Select(CalendarAttendanceChangeDto.From)],
+        };
+}
+
+public sealed record CalendarAttendanceChangeDto
+{
+    public required AttendanceAnswer Answer { get; init; }
+
+    public required bool IsRecordedOnBehalf { get; init; }
+
+    public required string? RecordedByFirstName { get; init; }
+
+    public required string? RecordedByLastName { get; init; }
+
+    public required DateTimeOffset RecordedAt { get; init; }
+
+    [Pure]
+    public static CalendarAttendanceChangeDto From(CalendarAttendanceChangeDetails change) =>
+        new()
+        {
+            Answer = change.Answer,
+            IsRecordedOnBehalf = change.IsRecordedOnBehalf,
+            RecordedByFirstName = change.RecordedByFirstName,
+            RecordedByLastName = change.RecordedByLastName,
+            RecordedAt = change.RecordedAt,
         };
 }
 

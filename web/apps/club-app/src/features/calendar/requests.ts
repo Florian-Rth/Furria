@@ -2,6 +2,7 @@ import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import { toAddOnRouteRoot, toReminderPath } from './add-on-host';
 import type { CalendarEntryPayload } from './calendar-authoring';
+import type { AttendanceMarkInput, AttendanceMarkTarget } from './calendar-marking';
 import type { CalendarQuery } from './calendar-query';
 import { toCalendarPath } from './calendar-query';
 import type { NotifyReachQuery } from './notify-reach';
@@ -197,6 +198,30 @@ export const requestCalendarEntryDeletion = (
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`/api/calendar/entries/${calendarEntryId}`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+const attendanceMarkPath = (calendarEntryId: number, personId: number): string =>
+  `/api/calendar/entries/${calendarEntryId}/attendance/${personId}`;
+
+export const requestAttendanceMark = (
+  { calendarEntryId, personId, answer }: AttendanceMarkInput,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(attendanceMarkPath(calendarEntryId, personId), {
+    method: 'PUT',
+    body: { answer },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestAttendanceMarkWithdrawal = (
+  { calendarEntryId, personId }: AttendanceMarkTarget,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(attendanceMarkPath(calendarEntryId, personId), {
     method: 'DELETE',
     schema: NoContentSchema,
     accessToken,

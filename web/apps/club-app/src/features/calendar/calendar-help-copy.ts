@@ -32,6 +32,7 @@ export const CALENDAR_HELP_COPY = {
     title: 'Alles zu einem Termin',
     text: 'Tippe einen Termin an: Du siehst, wann und wo er ist, für wen er gilt, dazu Umfragen, Listen und den Tagesablauf.',
     edit: 'Darfst du ihn ändern, findest du unten „Bearbeiten“.',
+    mark: 'Leitest du eine Gruppe, trägst du bei ihren Trainings mit „Für andere eintragen“ ein, wer kommt, auch für Kinder ohne eigenen Zugang. „Rückgängig“ holt die Antwort davor zurück.',
   },
   usual: {
     title: 'Übliche Trainingszeiten',

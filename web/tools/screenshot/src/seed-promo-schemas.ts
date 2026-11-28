@@ -66,9 +66,6 @@ export const StudioSchema = z.object({
           ),
         })
         .nullable(),
-      trainings: z.array(
-        z.object({ calendarEntryId: z.number().int(), title: z.string(), startsAt: z.string() }),
-      ),
     })
     .nullable(),
 });

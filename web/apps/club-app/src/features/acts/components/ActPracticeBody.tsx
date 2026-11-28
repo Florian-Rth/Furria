@@ -13,7 +13,6 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page, actId, studio 
   const tone = page.load.act?.group?.tone ?? null;
   const context = {
     startEditing: page.startEditing,
-    startHall: page.startHall,
     toggleEditing: page.toggleEditing,
     stageEditor: true,
     tone,

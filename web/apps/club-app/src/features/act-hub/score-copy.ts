@@ -27,13 +27,12 @@ export const NONE = 'keine';
 export const ANSWER_YES = 'Bin da';
 export const ANSWER_NO = 'Kann nicht';
 export const ANSWER_LABEL = 'Deine Antwort zum Training';
-export const TRAININGS_HINT = 'Alle Trainings und Anwesenheit';
+export const TRAINING_HINT = 'Training im Kalender öffnen';
 export const EDIT_DOORS_TITLE = 'Alles bearbeiten';
 export const READINESS_TITLE = 'Stand';
 export const STUDIO_DOOR = 'Im Studio bearbeiten';
 export const MUSIC_DOOR = 'Musik & Video';
-export const TRAININGS_DOOR = 'Trainings & Anwesenheit';
-export const HALL_DOOR = 'Training starten';
+export const DETAILS_DOOR = 'Verlauf & Mitbearbeiter';
 export const SETTINGS_DOOR = 'Einstellungen';
 export const STUDIO_DOOR_META = 'Schritte, Plätze, Bewegung';
 export const MUSIC_DOOR_META = 'Lieder, Endfassung, Videos';
@@ -42,8 +41,7 @@ export const SETTINGS_DOOR_META = 'Name, Besetzung, Wünsche, Archiv';
 export const DOOR_COPY: Record<ScoreDoorKey, { label: string; meta?: string }> = {
   studio: { label: STUDIO_DOOR, meta: STUDIO_DOOR_META },
   music: { label: MUSIC_DOOR, meta: MUSIC_DOOR_META },
-  trainings: { label: TRAININGS_DOOR },
-  hall: { label: HALL_DOOR },
+  details: { label: DETAILS_DOOR },
   settings: { label: SETTINGS_DOOR, meta: SETTINGS_DOOR_META },
 };
 

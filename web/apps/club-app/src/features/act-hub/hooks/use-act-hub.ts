@@ -1,4 +1,3 @@
-import { hallTrainingOf } from '@furria/studio/hall-scene';
 import { practiceMemoryKeyOf } from '@furria/studio/practice-memory';
 import { partAnchorOf } from '@furria/studio/score-anchor';
 import { clockOf } from '@furria/studio/score-copy';
@@ -25,7 +24,7 @@ import type { KkGroupTone } from '@furria/ui/group-tone';
 import { useKkScoreWide } from '@furria/ui/KkScoreDesk';
 import type { KkQuietScreenAction } from '@furria/ui/screen-declaration';
 import { useState } from 'react';
-import { useAudioPeaks } from '@/features/acts/api';
+import { useAudioPeaks, useMyActsQuery } from '@/features/acts/api';
 import type { ActPageSearch, ActStudio, ActStudioResponse } from '@/features/acts/schemas';
 import { EDIT_LABEL, introOf, musicFactOf, sessionTextOf } from '../score-copy';
 import { hasEditDoors, scoreDoorsOf } from '../score-doors';
@@ -37,10 +36,9 @@ import type {
   ScoreReadinessView,
 } from '../score-hub-views';
 import { doorViewsOf, factsViewOf, readinessViewsOf } from '../score-hub-views';
-import { detailsLinkOf, musicLinkOf } from '../score-links';
+import { musicLinkOf } from '../score-links';
 import { readinessOf } from '../score-readiness';
 import { scrollToAnchor } from '../score-scroll';
-import { nextTrainingOf } from '../score-season';
 import type { ScoreRoute } from './use-score-route';
 import { useScoreRoute } from './use-score-route';
 
@@ -72,7 +70,7 @@ export interface ActHub {
   selectRow: (stepId: number) => void;
   selectPart: (partId: number) => void;
   practise: (() => void) | null;
-  openTrainings: () => void;
+  openTraining: () => void;
 }
 
 const readStored = (key: string): string | null => {
@@ -89,7 +87,6 @@ export const useActHub = (
   search: ActPageSearch,
   viewerId: number | null,
 ): ActHub => {
-  const [now] = useState(Date.now);
   const wide = useKkScoreWide();
   const actId = data.act.actId;
   const { viewer } = data;
@@ -109,7 +106,8 @@ export const useActHub = (
     timedStepsOf(model)[0]?.stepId ?? model.steps[0]?.stepId ?? null,
   );
   const paneStep = stepOf(model, paneStepId);
-  const training = nextTrainingOf(studio.trainings, now);
+  const training =
+    useMyActsQuery().data?.acts.find((act) => act.actId === actId)?.nextTraining ?? null;
   const remembered = rememberedStepOf(model.steps, stored);
   const readiness = readinessOf(studio, model.steps);
   const go: ScoreGo = (link) => () => {
@@ -118,14 +116,7 @@ export const useActHub = (
   const openReadiness: ScoreReadinessOpener | null = editor
     ? (target) => (target === 'music' ? go(musicLinkOf(actId)) : () => route.editFrom(paneStepId))
     : null;
-  const doors = scoreDoorsOf(viewer, {
-    actId,
-    hallTrainingId:
-      training?.calendarEntryId ??
-      hallTrainingOf(studio.trainings, undefined)?.calendarEntryId ??
-      null,
-    playable: player.canPlay,
-  });
+  const doors = scoreDoorsOf(viewer, actId);
   const scene: LiveScene = {
     paths: model.paths,
     spots: studio.spots,
@@ -170,7 +161,7 @@ export const useActHub = (
     you: viewer.inCast ? scoreYouOf(model, studio.spots, remembered) : null,
     readiness: readinessViewsOf(readiness, openReadiness),
     showReadiness: editDoors && readiness.some((item) => item.state !== 'empty'),
-    facts: factsViewOf({ training, viewerId, music }),
+    facts: factsViewOf({ training, music }),
     doors: doorViewsOf(doors, go),
     pane: wide && paneStep !== null ? scoreStepViewOf(paneStep, model, studio) : null,
     paneStepId: wide ? paneStepId : null,
@@ -193,6 +184,10 @@ export const useActHub = (
           route.practiseFrom(remembered?.stepId ?? null);
         }
       : null,
-    openTrainings: go(detailsLinkOf(actId)),
+    openTraining: () => {
+      if (training !== null) {
+        route.openTraining(training.calendarEntryId);
+      }
+    },
   };
 };

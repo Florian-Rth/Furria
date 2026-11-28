@@ -130,9 +130,20 @@ public sealed partial class CalendarService
             ct
         );
         var mayAnswer = MayAnswer(row, ties, OrganisedOwners.Of(row.OwnerGroupId, organises));
+        var roll = concern.Roll is { } answered
+            ? answered with
+            {
+                Markable = await MarkableOfAsync(
+                    viewerAccountId,
+                    FactsOf(row),
+                    row.CalendarEntryId,
+                    ct
+                ),
+            }
+            : null;
 
         return Result<CalendarEntrySummary>.Success(
-            ToSummary(row, concern.Extras, now, mayAnswer, concern.Roll)
+            ToSummary(row, concern.Extras, now, mayAnswer, roll)
         );
     }
 
@@ -841,6 +852,7 @@ public sealed partial class CalendarService
             NotAnswered = roll?.NotAnswered,
             Reminder = roll?.Reminder,
             Unassigned = roll?.Unassigned,
+            Markable = roll?.Markable,
         };
 
     private PictureDetails? EventPictureOf(int eventId, EventFactsRow facts) =>

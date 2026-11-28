@@ -16,7 +16,7 @@ export const KkLessonDock: FC<KkLessonDockProps> = ({ label, children }) => (
       alignItems: 'center',
       justifyContent: 'flex-start',
       gap: 1,
-      '& > [data-kk-lesson-hall]': { marginInlineStart: 'auto' },
+      '& > [data-kk-key-help]': { marginInlineStart: 'auto' },
       minWidth: 0,
       [LESSON_PHONE]: { '& [data-kk-key-help]': { display: 'none' } },
       [LESSON_CRAMPED]: {

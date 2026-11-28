@@ -1,18 +1,18 @@
 import { KkScoreFacts } from '@furria/ui/KkScoreFacts';
 import type { FC } from 'react';
 import { useTrainingAnswer } from '@/features/act-card/hooks/use-training-answer';
-import type { StudioTraining } from '@/features/acts/schemas';
+import type { MyActTraining } from '@/features/acts/schemas';
 import {
   ANSWER_LABEL,
   ANSWER_NO,
   ANSWER_YES,
   dayClockOf,
   TRAINING_FACT,
-  TRAININGS_HINT,
+  TRAINING_HINT,
 } from '../score-copy';
 
 interface ScoreTrainingFactProps {
-  training: StudioTraining;
+  training: MyActTraining;
   saved: 'yes' | 'no' | null;
   inCast: boolean;
   onOpen: () => void;
@@ -43,7 +43,7 @@ export const ScoreTrainingFact: FC<ScoreTrainingFactProps> = ({
       label={TRAINING_FACT}
       value={dayClockOf(training.startsAt)}
       trail={keys}
-      openLabel={TRAININGS_HINT}
+      openLabel={TRAINING_HINT}
       onOpen={onOpen}
     />
   );

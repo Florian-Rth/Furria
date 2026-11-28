@@ -153,7 +153,6 @@
     "./KkGroupToneDot": "./src/KkGroupToneDot.tsx",
     "./KkGroupToneEdge": "./src/KkGroupToneEdge.tsx",
     "./KkGroupToneSwatch": "./src/KkGroupToneSwatch.tsx",
-    "./KkHall": "./src/KkHall/KkHall.tsx",
     "./KkLaneBar": "./src/KkLaneBar/KkLaneBar.tsx",
     "./KkLaneButton": "./src/KkLaneButton.tsx",
     "./KkLaneCards": "./src/KkLaneCards/KkLaneCards.tsx",

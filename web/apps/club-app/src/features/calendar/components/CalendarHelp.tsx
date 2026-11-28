@@ -38,6 +38,9 @@ export const CalendarHelp: FC<CalendarHelpProps> = ({ viewer }) => {
   const detailEdit = viewer.mayAuthor ? (
     <KkHelp.Text>{CALENDAR_HELP_COPY.detail.edit}</KkHelp.Text>
   ) : null;
+  const detailMark = viewer.mayAuthor ? (
+    <KkHelp.Text>{CALENDAR_HELP_COPY.detail.mark}</KkHelp.Text>
+  ) : null;
   const usualPlan = viewer.mayPlan ? (
     <KkHelp.Text>{CALENDAR_HELP_COPY.usual.plan}</KkHelp.Text>
   ) : null;
@@ -76,6 +79,7 @@ export const CalendarHelp: FC<CalendarHelpProps> = ({ viewer }) => {
         <KkHelp.Title>{CALENDAR_HELP_COPY.detail.title}</KkHelp.Title>
         <KkHelp.Text>{CALENDAR_HELP_COPY.detail.text}</KkHelp.Text>
         {detailEdit}
+        {detailMark}
       </KkHelp.Hint>
       <KkHelp.Hint>
         <KkHelp.Preview>

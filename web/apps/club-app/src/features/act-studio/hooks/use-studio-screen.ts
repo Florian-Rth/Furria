@@ -34,7 +34,6 @@ import { useVisitHistory } from './use-visit-history';
 
 export interface StudioScreenContext {
   startEditing: boolean;
-  startHall: (() => void) | null;
   toggleEditing?: () => void;
   startTool?: StudioTool;
   stageEditor?: boolean;
@@ -52,14 +51,7 @@ export const useStudioScreen = (
   viewerId: number | null,
   canEdit: boolean,
   cast: readonly CastPerson[],
-  {
-    startEditing,
-    startHall,
-    toggleEditing,
-    startTool,
-    stageEditor = false,
-    tone = null,
-  }: StudioScreenContext,
+  { startEditing, toggleEditing, startTool, stageEditor = false, tone = null }: StudioScreenContext,
 ): StudioScreen => {
   const wide = useKkLaneWide();
   const ownMode = useActStudioMode(canEdit, {
@@ -120,7 +112,6 @@ export const useStudioScreen = (
     final,
     frame: largeTextFrameOf(video.hero, large.videoShown),
     large,
-    startHall,
     edits,
     studio,
     playback,

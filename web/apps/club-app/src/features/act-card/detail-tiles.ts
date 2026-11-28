@@ -4,17 +4,14 @@ import {
   EDITORS_TITLE,
   MUSIC_TITLE,
   NONE,
-  SESSION_TITLE,
   SETTINGS_OPEN,
   SPOTS_TITLE,
   STEPS_TITLE,
   STUDIO_OPEN,
   toMusicFigure,
   toMusicSource,
-  toSessionLine,
   toSpotsMeta,
   toStepsMeta,
-  toTrainingsAside,
   toVideosMeta,
   VIDEOS_TITLE,
   WISHES_TITLE,
@@ -122,26 +119,8 @@ const wishesTileOf = (view: ActCardView): DetailTile => ({
   hint: SETTINGS_OPEN,
 });
 
-const sessionTileOf = (view: ActCardView): DetailTile => {
-  const trainings = view.trainings.length;
-
-  return {
-    key: 'session',
-    icon: 'session',
-    label: SESSION_TITLE,
-    value: String(trainings),
-    aside: toTrainingsAside(trainings),
-    tone: countTone(trainings),
-    lines: view.sessionYear === null ? [] : [toSessionLine(view.sessionYear)],
-    link: null,
-    hint: '',
-  };
-};
-
 export const detailTilesOf = (view: ActCardView, seesWishes: boolean): DetailTile[] => {
   const wishes = seesWishes ? [wishesTileOf(view)] : [];
 
-  return view.hasStudio
-    ? [...studioTilesOf(view), peopleTileOf(view), ...wishes, sessionTileOf(view)]
-    : wishes;
+  return view.hasStudio ? [...studioTilesOf(view), peopleTileOf(view), ...wishes] : wishes;
 };

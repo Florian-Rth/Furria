@@ -22,7 +22,6 @@ const UNPLACED = 'noch ohne Nr.';
 const NOT_THERE = 'nicht dabei';
 export const EDITORS_TITLE = 'Mitbearbeitung';
 export const WISHES_TITLE = 'Wünsche';
-export const SESSION_TITLE = 'Session';
 export const MUSIC_TITLE = 'Musik';
 export const STEPS_TITLE = 'Schritte';
 export const SPOTS_TITLE = 'Plätze';
@@ -171,5 +170,3 @@ export const toHubActMeta = (kind: ActKind | null, castSize: number): string => 
 };
 
 export const toOpenActHint = (name: string): string => `: ${name} öffnen`;
-
-export const toTrainingsAside = (count: number): string => (count === 1 ? 'Training' : 'Trainings');

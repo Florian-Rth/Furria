@@ -1,41 +1,27 @@
 import type { ActViewer } from '@/features/acts/schemas';
 import type { ScoreLink } from './score-links';
-import {
-  detailsLinkOf,
-  editorLinkOf,
-  hallLinkOf,
-  musicLinkOf,
-  settingsLinkOf,
-} from './score-links';
+import { detailsLinkOf, editorLinkOf, musicLinkOf, settingsLinkOf } from './score-links';
 
-export type ScoreDoorKey = 'studio' | 'music' | 'trainings' | 'hall' | 'settings';
+export type ScoreDoorKey = 'studio' | 'music' | 'details' | 'settings';
 
 export interface ScoreDoor {
   key: ScoreDoorKey;
   link: ScoreLink;
 }
 
-export interface ScoreDoorFacts {
-  actId: number;
-  hallTrainingId: number | null;
-  playable: boolean;
-}
-
 export const hasEditDoors = (viewer: ActViewer): boolean =>
   viewer.canEditStudio || viewer.canEditSettings;
 
-export const scoreDoorsOf = (viewer: ActViewer, facts: ScoreDoorFacts): ScoreDoor[] => {
+export const scoreDoorsOf = (viewer: ActViewer, actId: number): ScoreDoor[] => {
   if (!hasEditDoors(viewer)) {
     return [];
   }
 
-  const { actId } = facts;
   const studio = viewer.canEditStudio;
   const doors: (ScoreDoor | null)[] = [
     studio ? { key: 'studio', link: editorLinkOf(actId) } : null,
     studio ? { key: 'music', link: musicLinkOf(actId) } : null,
-    studio || viewer.canMarkAttendance ? { key: 'trainings', link: detailsLinkOf(actId) } : null,
-    facts.playable ? { key: 'hall', link: hallLinkOf(actId, facts.hallTrainingId) } : null,
+    studio ? { key: 'details', link: detailsLinkOf(actId) } : null,
     viewer.canEditSettings ? { key: 'settings', link: settingsLinkOf(actId) } : null,
   ];
 

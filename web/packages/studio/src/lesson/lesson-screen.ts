@@ -15,5 +15,4 @@ export interface LessonScreen {
   practice: Practice;
   video: PracticeVideo;
   mode: LessonEditSwitch;
-  startHall: (() => void) | null;
 }

@@ -151,7 +151,6 @@ public sealed class ActGlanceReader
             )
             .Select(entry => new TrainingRow(
                 entry.Id,
-                entry.Title,
                 entry.StartsAt,
                 entry.OwnerGroupId,
                 entry.AudienceGroups.Select(audience => audience.GroupId).ToList()
@@ -164,38 +163,32 @@ public sealed class ActGlanceReader
                     : []
             )
             .ToDictionary(pair => pair.act, pair => pair.training);
-        var answers = await AnswersAsync(nextByAct, ct);
+        var answers = await ViewerAnswersAsync(nextByAct.Values, viewer.PersonId, ct);
 
         return nextByAct.ToDictionary(
             pair => pair.Key.ActId,
-            pair => TrainingOf(pair.Value, pair.Key, answers, viewer.PersonId)
+            pair => TrainingOf(pair.Value, answers)
         );
     }
 
-    private async Task<ILookup<int, AnswerRow>> AnswersAsync(
-        Dictionary<ActSummary, TrainingRow> nextByAct,
+    private async Task<Dictionary<int, AttendanceAnswer>> ViewerAnswersAsync(
+        IEnumerable<TrainingRow> trainings,
+        int viewerId,
         CancellationToken ct
     )
     {
-        var entryIds = nextByAct.Values.Select(training => training.Id).Distinct().ToList();
-        var personIds = nextByAct
-            .Keys.SelectMany(act => act.Cast.Select(member => member.PersonId))
-            .Distinct()
-            .ToList();
-        var answers = await _dbContext
+        var entryIds = trainings.Select(training => training.Id).Distinct().ToList();
+
+        return await _dbContext
             .AttendanceResponses.AsNoTracking()
             .Where(response =>
-                entryIds.Contains(response.CalendarEntryId!.Value)
-                && personIds.Contains(response.PersonId)
+                entryIds.Contains(response.CalendarEntryId!.Value) && response.PersonId == viewerId
             )
-            .Select(response => new AnswerRow(
-                response.CalendarEntryId!.Value,
-                response.PersonId,
-                response.Answer
-            ))
-            .ToListAsync(ct);
-
-        return answers.ToLookup(answer => answer.CalendarEntryId);
+            .ToDictionaryAsync(
+                response => response.CalendarEntryId!.Value,
+                response => response.Answer,
+                ct
+            );
     }
 
     [Pure]
@@ -243,26 +236,14 @@ public sealed class ActGlanceReader
     [Pure]
     private static MyActTrainingSummary TrainingOf(
         TrainingRow training,
-        ActSummary act,
-        ILookup<int, AnswerRow> answers,
-        int viewerId
-    )
-    {
-        var castIds = act.Cast.Select(member => member.PersonId).ToHashSet();
-        var castAnswers = answers[training.Id].Where(answer => castIds.Contains(answer.PersonId));
-
-        return new MyActTrainingSummary
+        IReadOnlyDictionary<int, AttendanceAnswer> viewerAnswers
+    ) =>
+        new()
         {
             CalendarEntryId = training.Id,
-            Title = training.Title,
             StartsAt = training.StartsAt,
-            ViewerAnswer = castAnswers
-                .FirstOrDefault(answer => answer.PersonId == viewerId)
-                ?.Answer,
-            Present = castAnswers.Count(answer => answer.Answer == AttendanceAnswer.Yes),
-            Absent = castAnswers.Count(answer => answer.Answer == AttendanceAnswer.No),
+            ViewerAnswer = viewerAnswers.TryGetValue(training.Id, out var answer) ? answer : null,
         };
-    }
 
     private sealed record EveningRow(
         int ActId,
@@ -274,13 +255,10 @@ public sealed class ActGlanceReader
 
     private sealed record TrainingRow(
         int Id,
-        string Title,
         DateTimeOffset StartsAt,
         int? OwnerGroupId,
         List<int> AudienceGroupIds
     );
-
-    private sealed record AnswerRow(int CalendarEntryId, int PersonId, AttendanceAnswer Answer);
 
     private sealed class ActEditors
     {

@@ -500,7 +500,6 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   acts: ['act', 'group', 'groupMembership', 'person', 'picture'],
   actStudio: [
     'act',
-    'attendanceResponse',
     'actCoEditor',
     'actMusic',
     'actChoreography',

@@ -55,7 +55,6 @@ public sealed class GetMyActsTests : IClassFixture<ApiTestFixture>
         Assert.Equal(1, act.NextEvening?.Position);
         Assert.Equal(training, act.NextTraining?.CalendarEntryId);
         Assert.Equal(AttendanceAnswer.No, act.NextTraining?.ViewerAnswer);
-        Assert.Equal(1, act.NextTraining?.Absent);
         Assert.Contains("Anna", act.Cast.Select(member => member.FirstName));
         Assert.Equal(["Gerd"], act.Editors.Select(editor => editor.FirstName));
     }

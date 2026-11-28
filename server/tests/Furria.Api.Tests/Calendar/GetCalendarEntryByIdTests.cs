@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Furria.Api.Tests.Calendar;
 
-public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
+public sealed partial class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
 {
     private const string ClubMeeting = "Vereinssitzung";
     private const string LastSessionsParade = "Rosenmontagsumzug 2026";

@@ -1,35 +1,16 @@
 import { canPractise } from '@furria/studio/music-timeline';
 import { seesDetailsOf } from '@/features/acts/act-studio';
-import type {
-  ActScreenSearch,
-  ActStudioResponse,
-  CoEditor,
-  MyAct,
-  StudioTraining,
-} from '@/features/acts/schemas';
+import type { ActScreenSearch, ActStudioResponse, CoEditor, MyAct } from '@/features/acts/schemas';
 import type { ActKind, ActWish } from '@/features/running-order/schemas';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
-import type {
-  ActTemplate,
-  AnswerKey,
-  Ask,
-  DoorKey,
-  EveningSlot,
-  StudioCounts,
-  Tally,
-} from './act-card-model';
+import type { ActTemplate, Ask, DoorKey, EveningSlot, StudioCounts } from './act-card-model';
 import {
-  answerKeyOf,
   askOf,
   doorsOf,
   eveningSlotOf,
   isEditorOf,
   studioCountsOf,
-  tallyOf,
   templateOf,
-  trainingTallyOf,
-  upcomingTrainingsOf,
-  viewerAnswerOf,
 } from './act-card-model';
 import type { ActCardLinks } from './act-card-paths';
 import { actCardLinksOf } from './act-card-paths';
@@ -39,13 +20,6 @@ export interface NextEvening {
   title: string;
   startsAt: string;
   slot: EveningSlot;
-}
-
-export interface NextTraining {
-  calendarEntryId: number;
-  startsAt: string;
-  answer: AnswerKey | null;
-  tally: Tally | null;
 }
 
 export interface ActCardView {
@@ -65,8 +39,6 @@ export interface ActCardView {
   canEditSettings: boolean;
   hasStudio: boolean;
   nextEvening: NextEvening | null;
-  trainings: StudioTraining[];
-  nextTraining: NextTraining | null;
   cast: PortraitPersonRef[];
   editors: PortraitPersonRef[];
   ask: Ask;
@@ -87,45 +59,14 @@ const nextEveningOf = (summary: MyAct | undefined): NextEvening | null => {
   return { eventId, title, startsAt, slot: eveningSlotOf(position) };
 };
 
-const nextTrainingOf = (
-  summary: MyAct | undefined,
-  trainings: readonly StudioTraining[],
-  viewerId: number | null,
-  castSize: number,
-): NextTraining | null => {
-  if (summary?.nextTraining != null) {
-    const { calendarEntryId, startsAt, viewerAnswer, present, absent } = summary.nextTraining;
-
-    return {
-      calendarEntryId,
-      startsAt,
-      answer: answerKeyOf(viewerAnswer),
-      tally: tallyOf(present, absent, castSize),
-    };
-  }
-
-  const [first] = trainings;
-
-  return first === undefined
-    ? null
-    : {
-        calendarEntryId: first.calendarEntryId,
-        startsAt: first.startsAt,
-        answer: answerKeyOf(viewerAnswerOf(first, viewerId)),
-        tally: trainingTallyOf(first, castSize),
-      };
-};
-
 export const actCardViewOf = (
   data: ActStudioResponse,
   summary: MyAct | undefined,
   viewerId: number | null,
   search: ActScreenSearch,
-  now: number,
 ): ActCardView => {
   const { act, viewer, studio } = data;
   const template = templateOf(act.kind);
-  const trainings = studio === null ? [] : upcomingTrainingsOf(studio.trainings, now);
   const leads = summary?.viewerLeads ?? false;
   const editors = summary?.editors ?? [];
 
@@ -146,8 +87,6 @@ export const actCardViewOf = (
     canEditSettings: viewer.canEditSettings,
     hasStudio: studio !== null,
     nextEvening: nextEveningOf(summary),
-    trainings,
-    nextTraining: nextTrainingOf(summary, trainings, viewerId, act.cast.length),
     cast: act.cast,
     editors,
     ask: askOf(editors, viewerId),

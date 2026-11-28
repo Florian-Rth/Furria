@@ -234,6 +234,21 @@ export const WhatsAppUnassignedAnswerSchema = WhatsAppSenderSchema.extend({
 });
 export type WhatsAppUnassignedAnswer = z.infer<typeof WhatsAppUnassignedAnswerSchema>;
 
+export const CalendarAttendanceChangeSchema = z.object({
+  answer: AttendanceAnswerSchema,
+  isRecordedOnBehalf: z.boolean(),
+  recordedByFirstName: z.string().nullable(),
+  recordedByLastName: z.string().nullable(),
+  recordedAt: z.iso.datetime({ offset: true }),
+});
+export type CalendarAttendanceChange = z.infer<typeof CalendarAttendanceChangeSchema>;
+
+export const CalendarMarkablePersonSchema = CalendarAttendancePersonSchema.extend({
+  answer: AttendanceAnswerSchema.nullable(),
+  trail: z.array(CalendarAttendanceChangeSchema),
+});
+export type CalendarMarkablePerson = z.infer<typeof CalendarMarkablePersonSchema>;
+
 export const CalendarAttendanceSchema = z.object({
   isClosed: z.boolean(),
   yes: z.number().int(),
@@ -243,6 +258,7 @@ export const CalendarAttendanceSchema = z.object({
   notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
   reminder: CalendarReminderSchema.nullable(),
   unassigned: z.array(WhatsAppUnassignedAnswerSchema).nullable(),
+  markable: z.array(CalendarMarkablePersonSchema).nullable(),
 });
 export type CalendarAttendance = z.infer<typeof CalendarAttendanceSchema>;
 

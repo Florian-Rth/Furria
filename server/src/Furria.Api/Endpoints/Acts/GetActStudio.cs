@@ -55,7 +55,6 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
                 CanEditSettings = details.Viewer.CanEditSettings,
                 CanEditStudio = details.Viewer.CanEditStudio,
                 CanGrantCoEditors = details.Viewer.CanGrantCoEditors,
-                CanMarkAttendance = details.Viewer.CanMarkAttendance,
             },
             CoEditors =
             [
@@ -87,7 +86,6 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             Videos = [.. content.Videos.Select(ToDto)],
             Choreography = content.Choreography is { } choreography ? ToDto(choreography) : null,
             Stage = content.Stage is { } stage ? ToDto(stage) : null,
-            Trainings = [.. content.Trainings.Select(ToDto)],
         };
 
     private static StudioStageDto ToDto(ClubStageDetails stage) =>
@@ -217,35 +215,6 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             }),
         ];
 
-    private static StudioTrainingDto ToDto(StudioTrainingDetails training) =>
-        new()
-        {
-            CalendarEntryId = training.CalendarEntryId,
-            Title = training.Title,
-            StartsAt = training.StartsAt,
-            OpenSpotIds = training.OpenSpotIds,
-            Responses = [.. training.Responses.Select(ToDto)],
-        };
-
-    private static StudioAttendanceDto ToDto(StudioAttendanceDetails response) =>
-        new()
-        {
-            PersonId = response.PersonId,
-            Answer = response.Answer,
-            IsRecordedOnBehalf = response.IsRecordedOnBehalf,
-            RecordedBy = response.RecordedBy,
-            Trail = [.. response.Trail.Select(ToDto)],
-        };
-
-    private static StudioAttendanceChangeDto ToDto(StudioAttendanceChangeDetails change) =>
-        new()
-        {
-            Answer = change.Answer,
-            IsRecordedOnBehalf = change.IsRecordedOnBehalf,
-            RecordedBy = change.RecordedBy,
-            RecordedAt = change.RecordedAt,
-        };
-
     private static KeyframeDto ToDto(Keyframe keyframe) =>
         new()
         {
@@ -295,8 +264,6 @@ public sealed record StudioViewerDto
     public required bool CanEditStudio { get; init; }
 
     public required bool CanGrantCoEditors { get; init; }
-
-    public required bool CanMarkAttendance { get; init; }
 }
 
 public sealed record CoEditorDto
@@ -331,45 +298,6 @@ public sealed record StudioDto
     public required StudioChoreographyDto? Choreography { get; init; }
 
     public required StudioStageDto? Stage { get; init; }
-
-    public required IReadOnlyList<StudioTrainingDto> Trainings { get; init; }
-}
-
-public sealed record StudioTrainingDto
-{
-    public required int CalendarEntryId { get; init; }
-
-    public required string Title { get; init; }
-
-    public required DateTimeOffset StartsAt { get; init; }
-
-    public required IReadOnlyList<int> OpenSpotIds { get; init; }
-
-    public required IReadOnlyList<StudioAttendanceDto> Responses { get; init; }
-}
-
-public sealed record StudioAttendanceDto
-{
-    public required int PersonId { get; init; }
-
-    public required AttendanceAnswer Answer { get; init; }
-
-    public required bool IsRecordedOnBehalf { get; init; }
-
-    public required string? RecordedBy { get; init; }
-
-    public required IReadOnlyList<StudioAttendanceChangeDto> Trail { get; init; }
-}
-
-public sealed record StudioAttendanceChangeDto
-{
-    public required AttendanceAnswer Answer { get; init; }
-
-    public required bool IsRecordedOnBehalf { get; init; }
-
-    public required string? RecordedBy { get; init; }
-
-    public required DateTimeOffset RecordedAt { get; init; }
 }
 
 public sealed record StudioStageDto
